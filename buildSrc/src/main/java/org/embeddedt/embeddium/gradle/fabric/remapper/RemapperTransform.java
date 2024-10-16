@@ -6,7 +6,10 @@ import net.fabricmc.mappingio.extras.MappingTreeRemapper;
 import net.fabricmc.mappingio.format.MappingFormat;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
 import net.fabricmc.mappingio.tree.VisitableMappingTree;
-import org.gradle.api.artifacts.transform.*;
+import org.gradle.api.artifacts.transform.InputArtifact;
+import org.gradle.api.artifacts.transform.TransformAction;
+import org.gradle.api.artifacts.transform.TransformOutputs;
+import org.gradle.api.artifacts.transform.TransformParameters;
 import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
@@ -27,7 +30,6 @@ import java.util.zip.ZipFile;
 /**
  * An artifact transform that deobfuscates intermediary-mapped Fabric mods to Mojmap.
  */
-@CacheableTransform
 abstract public class RemapperTransform implements TransformAction<RemapperTransform.Parameters> {
     public interface Parameters extends TransformParameters {
         @Input
@@ -46,16 +48,11 @@ abstract public class RemapperTransform implements TransformAction<RemapperTrans
     }
 
     @InputArtifact
-    @PathSensitive(PathSensitivity.NONE)
     protected abstract Provider<FileSystemLocation> getInputArtifact();
 
     @Override
     public void transform(TransformOutputs outputs) {
         File originalJar = getInputArtifact().get().getAsFile();
-        if (!originalJar.exists()) {
-            return;
-        }
-
         String originalJarName = originalJar.getName();
 
         if(isFabricMod(originalJar)) {
