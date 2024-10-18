@@ -15,6 +15,7 @@ import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.MultipartModelData;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -104,6 +105,20 @@ public class MultipartBakedModelMixin {
         return models;
     }
 
+    @Unique
+    private static ArrayList<BakedQuad> addAllQuads(@Nullable ArrayList<BakedQuad> targetList, List<BakedQuad> incomingList) {
+        if (targetList == null) {
+            targetList = new ArrayList<>(incomingList);
+        } else {
+            int n = incomingList.size();
+            targetList.ensureCapacity(targetList.size() + n);
+            for (int i = 0; i < n; i++) {
+                targetList.add(incomingList.get(i));
+            }
+        }
+        return targetList;
+    }
+
     /**
      * @author JellySquid
      * @reason Avoid expensive allocations and replace bitfield indirection
@@ -116,7 +131,7 @@ public class MultipartBakedModelMixin {
 
         BakedModel[] models = getModelComponents(state);
 
-        List<BakedQuad> quads = null;
+        ArrayList<BakedQuad> quads = null;
         long seed = random.nextLong();
 
         boolean checkSubmodelTypes = this.embeddium$hasCustomRenderTypes;
@@ -136,11 +151,7 @@ public class MultipartBakedModelMixin {
                     // Nobody else will return quads, so no need to make a wrapper list
                     return submodelQuads;
                 } else {
-                    // Allocate a list to merge all the inner lists together
-                    if(quads == null) {
-                        quads = new ArrayList<>();
-                    }
-                    quads.addAll(submodelQuads);
+                    quads = addAllQuads(quads, submodelQuads);
                 }
             }
         }
