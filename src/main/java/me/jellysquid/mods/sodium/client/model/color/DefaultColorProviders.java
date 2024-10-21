@@ -23,49 +23,6 @@ public class DefaultColorProviders {
         return new ForgeFluidAdapter();
     }
 
-    @Deprecated(forRemoval = true)
-    public static class GrassColorProvider<T> extends BlendedColorProvider<T> {
-        public static final ColorProvider<BlockState> BLOCKS = new GrassColorProvider<>();
-
-        private GrassColorProvider() {
-
-        }
-
-        @Override
-        protected int getColor(WorldSlice world, int x, int y, int z) {
-            return world.getColor(BiomeColorSource.GRASS, x, y, z);
-        }
-    }
-
-    @Deprecated(forRemoval = true)
-    public static class FoliageColorProvider<T> extends BlendedColorProvider<T> {
-        public static final ColorProvider<BlockState> BLOCKS = new FoliageColorProvider<>();
-
-        private FoliageColorProvider() {
-
-        }
-
-        @Override
-        protected int getColor(WorldSlice world, int x, int y, int z) {
-            return world.getColor(BiomeColorSource.FOLIAGE, x, y, z);
-        }
-    }
-
-    @Deprecated(forRemoval = true)
-    public static class WaterColorProvider<T> extends BlendedColorProvider<T> {
-        public static final ColorProvider<BlockState> BLOCKS = new WaterColorProvider<>();
-        public static final ColorProvider<FluidState> FLUIDS = new WaterColorProvider<>();
-
-        private WaterColorProvider() {
-
-        }
-
-        @Override
-        protected int getColor(WorldSlice world, int x, int y, int z) {
-            return world.getColor(BiomeColorSource.WATER, x, y, z);
-        }
-    }
-
     /**
      * Adapter for {@link BlendedColorProvider} that accepts a BiomeColors method reference (or any biome color
      * getter using a similar interface) and uses it to perform per-vertex biome blending.
