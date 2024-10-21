@@ -1,7 +1,5 @@
 package me.jellysquid.mods.sodium.client;
 
-import me.jellysquid.mods.sodium.client.data.fingerprint.FingerprintMeasure;
-import me.jellysquid.mods.sodium.client.data.fingerprint.HashedFingerprint;
 import me.jellysquid.mods.sodium.client.gui.SodiumGameOptions;
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModList;
@@ -43,12 +41,6 @@ public class SodiumClientMod {
         TaintDetector.init();
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
-
-        try {
-            updateFingerprint();
-        } catch (Throwable t) {
-            LOGGER.error("Failed to update fingerprint", t);
-        }
     }
 
     public void onClientSetup(final FMLClientSetupEvent event) {
@@ -102,35 +94,6 @@ public class SodiumClientMod {
         }
 
         return MOD_VERSION;
-    }
-
-    private static void updateFingerprint() {
-        var current = FingerprintMeasure.create();
-
-        if (current == null) {
-            return;
-        }
-
-        HashedFingerprint saved = null;
-
-        try {
-            saved = HashedFingerprint.loadFromDisk();
-        } catch (Throwable t) {
-            LOGGER.error("Failed to load existing fingerprint",  t);
-        }
-
-        if (saved == null || !current.looselyMatches(saved)) {
-            HashedFingerprint.writeToDisk(current.hashed());
-
-            CONFIG.notifications.hasSeenDonationPrompt = false;
-            CONFIG.notifications.hasClearedDonationButton = false;
-
-            try {
-                CONFIG.writeChanges();
-            } catch (IOException e) {
-                LOGGER.error("Failed to update config file", e);
-            }
-        }
     }
 
     public static boolean canUseVanillaVertices() {

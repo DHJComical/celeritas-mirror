@@ -1,20 +1,15 @@
 package me.jellysquid.mods.sodium.client.gui;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import me.jellysquid.mods.sodium.client.SodiumClientMod;
-import me.jellysquid.mods.sodium.client.data.fingerprint.HashedFingerprint;
 import me.jellysquid.mods.sodium.client.gui.console.Console;
 import me.jellysquid.mods.sodium.client.gui.console.message.MessageLevel;
 import me.jellysquid.mods.sodium.client.gui.options.*;
 import me.jellysquid.mods.sodium.client.gui.options.control.Control;
 import me.jellysquid.mods.sodium.client.gui.options.control.ControlElement;
 import me.jellysquid.mods.sodium.client.gui.options.storage.OptionStorage;
-import me.jellysquid.mods.sodium.client.gui.prompt.ScreenPrompt;
-import me.jellysquid.mods.sodium.client.gui.prompt.ScreenPromptable;
 import me.jellysquid.mods.sodium.client.gui.widgets.FlatButtonWidget;
 import me.jellysquid.mods.sodium.client.util.Dim2i;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -22,19 +17,12 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.VideoSettingsScreen;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraftforge.fml.loading.FMLLoader;
 import org.embeddedt.embeddium.api.OptionGUIConstructionEvent;
 import org.embeddedt.embeddium.gui.EmbeddiumVideoOptionsScreen;
-import org.embeddedt.embeddium.util.PlatformUtil;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
-import java.io.IOException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -44,10 +32,7 @@ import java.util.stream.Stream;
 import static me.jellysquid.mods.sodium.client.SodiumClientMod.MODNAME;
 
 @Deprecated(forRemoval = true)
-public class SodiumOptionsGUI extends Screen implements ScreenPromptable {
-    // Donation prompt should not be shown with Controllable present (as it's impossible to exit) or in a dev env.
-    private static final boolean IS_POPUP_SAFE = !PlatformUtil.modPresent("controllable") && !PlatformUtil.isDevelopmentEnvironment();
-
+public class SodiumOptionsGUI extends Screen {
     private final List<OptionPage> pages = new ArrayList<>();
 
     private final List<ControlElement<?>> controls = new ArrayList<>();
@@ -57,12 +42,9 @@ public class SodiumOptionsGUI extends Screen implements ScreenPromptable {
     private OptionPage currentPage;
 
     private FlatButtonWidget applyButton, closeButton, undoButton;
-    private FlatButtonWidget donateButton, hideDonateButton;
 
     private boolean hasPendingChanges;
     private ControlElement<?> hoveredElement;
-
-    private @Nullable ScreenPrompt prompt;
 
     private boolean forceOldScreen;
 
@@ -79,59 +61,6 @@ public class SodiumOptionsGUI extends Screen implements ScreenPromptable {
         OptionGUIConstructionEvent.BUS.post(new OptionGUIConstructionEvent(this.pages));
     }
 
-    private void checkPromptTimers() {
-        // Don't show the donation prompt in situations where we know it causes problems.
-        if (!IS_POPUP_SAFE) {
-            return;
-        }
-
-        var options = SodiumClientMod.options();
-
-        // If the user has disabled the nags forcefully (by config), or has already seen the prompt, don't show it again.
-        if (options.notifications.forceDisableDonationPrompts || options.notifications.hasSeenDonationPrompt) {
-            return;
-        }
-
-        HashedFingerprint fingerprint = null;
-
-        try {
-            fingerprint = HashedFingerprint.loadFromDisk();
-        } catch (Throwable t) {
-            SodiumClientMod.logger()
-                    .error("Failed to read the fingerprint from disk", t);
-        }
-
-        // If the fingerprint doesn't exist, or failed to be loaded, abort.
-        if (fingerprint == null) {
-            return;
-        }
-
-        // The fingerprint records the installation time. If it's been a while since installation, show the user
-        // a prompt asking for them to consider donating.
-        var now = Instant.now();
-        var threshold = Instant.ofEpochSecond(fingerprint.timestamp())
-                .plus(3, ChronoUnit.DAYS);
-
-        if (now.isAfter(threshold)) {
-            this.openDonationPrompt(options);
-        }
-    }
-
-    private void openDonationPrompt(SodiumGameOptions options) {
-        var prompt = new ScreenPrompt(this, DONATION_PROMPT_MESSAGE, 320, 190,
-                new ScreenPrompt.Action(Component.literal("Support Sodium"), this::openDonationPage));
-        prompt.setFocused(true);
-
-        options.notifications.hasSeenDonationPrompt = true;
-
-        try {
-            options.writeChanges();
-        } catch (IOException e) {
-            SodiumClientMod.logger()
-                    .error("Failed to update config file", e);
-        }
-    }
-
     public void setPage(OptionPage page) {
         this.currentPage = page;
 
@@ -143,10 +72,6 @@ public class SodiumOptionsGUI extends Screen implements ScreenPromptable {
         super.init();
 
         this.rebuildGUI();
-
-        if (this.prompt != null) {
-            this.prompt.init();
-        }
 
         // Jump to the modern screen unless SHIFT+S is pressed. We're keeping a neutered copy of the old screen around
         // so injecting new pages still works on old mods. Mods will be required to migrate to the API at the next
@@ -178,36 +103,10 @@ public class SodiumOptionsGUI extends Screen implements ScreenPromptable {
         this.undoButton = new FlatButtonWidget(new Dim2i(this.width - 211, this.height - 30, 65, 20), Component.translatable("sodium.options.buttons.undo"), this::undoChanges);
         this.applyButton = new FlatButtonWidget(new Dim2i(this.width - 142, this.height - 30, 65, 20), Component.translatable("sodium.options.buttons.apply"), this::applyChanges);
         this.closeButton = new FlatButtonWidget(new Dim2i(this.width - 73, this.height - 30, 65, 20), Component.translatable("gui.done"), this::onClose);
-        this.donateButton = new FlatButtonWidget(new Dim2i(this.width - 128, 6, 100, 20), Component.translatable("sodium.options.buttons.donate"), this::openDonationPage);
-        this.hideDonateButton = new FlatButtonWidget(new Dim2i(this.width - 26, 6, 20, 20), Component.literal("x"), this::hideDonationButton);
-
-        if (SodiumClientMod.options().notifications.hasClearedDonationButton || SodiumClientMod.options().notifications.forceDisableDonationPrompts) {
-            this.setDonationButtonVisibility(false);
-        }
 
         this.addRenderableWidget(this.undoButton);
         this.addRenderableWidget(this.applyButton);
         this.addRenderableWidget(this.closeButton);
-        this.addRenderableWidget(this.donateButton);
-        this.addRenderableWidget(this.hideDonateButton);
-    }
-
-    private void setDonationButtonVisibility(boolean value) {
-        this.donateButton.setVisible(value);
-        this.hideDonateButton.setVisible(value);
-    }
-
-    private void hideDonationButton() {
-        SodiumGameOptions options = SodiumClientMod.options();
-        options.notifications.hasClearedDonationButton = true;
-
-        try {
-            options.writeChanges();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to save configuration", e);
-        }
-
-        this.setDonationButtonVisibility(false);
     }
 
     private void rebuildGUIPages() {
@@ -255,14 +154,10 @@ public class SodiumOptionsGUI extends Screen implements ScreenPromptable {
 
         this.updateControls();
 
-        super.render(drawContext, this.prompt != null ? -1 : mouseX, this.prompt != null ? -1 : mouseY, delta);
+        super.render(drawContext, mouseX, mouseY, delta);
 
         if (this.hoveredElement != null) {
             this.renderOptionTooltip(drawContext, this.hoveredElement);
-        }
-
-        if (this.prompt != null) {
-            this.prompt.render(drawContext, mouseX, mouseY, delta);
         }
     }
 
@@ -384,18 +279,9 @@ public class SodiumOptionsGUI extends Screen implements ScreenPromptable {
                 .forEach(Option::reset);
     }
 
-    private void openDonationPage() {
-        Util.getPlatform()
-                .openUri("https://caffeinemc.net/donate");
-    }
-
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (this.prompt != null && this.prompt.keyPressed(keyCode, scanCode, modifiers)) {
-            return true;
-        }
-
-        if (this.prompt == null && keyCode == GLFW.GLFW_KEY_P && (modifiers & GLFW.GLFW_MOD_SHIFT) != 0) {
+        if (keyCode == GLFW.GLFW_KEY_P && (modifiers & GLFW.GLFW_MOD_SHIFT) != 0) {
             Minecraft.getInstance().setScreen(new VideoSettingsScreen(this.prevScreen, Minecraft.getInstance().options));
 
             return true;
@@ -406,10 +292,6 @@ public class SodiumOptionsGUI extends Screen implements ScreenPromptable {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.prompt != null) {
-            return this.prompt.mouseClicked(mouseX, mouseY, button);
-        }
-
         boolean clicked = super.mouseClicked(mouseX, mouseY, button);
 
         if (!clicked) {
@@ -428,38 +310,5 @@ public class SodiumOptionsGUI extends Screen implements ScreenPromptable {
     @Override
     public void onClose() {
         this.minecraft.setScreen(this.prevScreen);
-    }
-
-    @Override
-    public List<? extends GuiEventListener> children() {
-        return this.prompt == null ? super.children() : this.prompt.getWidgets();
-    }
-
-    @Override
-    public void setPrompt(@Nullable ScreenPrompt prompt) {
-        this.prompt = prompt;
-    }
-
-    @Nullable
-    @Override
-    public ScreenPrompt getPrompt() {
-        return this.prompt;
-    }
-
-    @Override
-    public Dim2i getDimensions() {
-        return new Dim2i(0, 0, this.width, this.height);
-    }
-
-    public static final List<FormattedText> DONATION_PROMPT_MESSAGE;
-
-    static {
-        DONATION_PROMPT_MESSAGE = List.of(
-                FormattedText.composite(Component.literal("Hello!")),
-                FormattedText.composite(Component.literal("It seems that you've been enjoying "), Component.literal("Embeddium").setStyle(Style.EMPTY.withColor(0x27eb92)), Component.literal(", a fork of Sodium for Minecraft.")),
-                FormattedText.composite(Component.literal("Sodium is complex, and requires "), Component.literal("thousands of hours").setStyle(Style.EMPTY.withColor(0xff6e00)), Component.literal(" of development, debugging, and tuning to create the experience that players have come to expect.")),
-                FormattedText.composite(Component.literal("If you'd like to show a token of appreciation, and support the development of Sodium in the process, then consider "), Component.literal("buying them a coffee").setStyle(Style.EMPTY.withColor(0xed49ce)), Component.literal(".")),
-                FormattedText.composite(Component.literal("And thanks again for using the mod! We hope it helps you (and your computer.)"))
-        );
     }
 }

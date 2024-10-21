@@ -3,9 +3,6 @@ package org.embeddedt.embeddium.gui;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.jellysquid.mods.sodium.client.SodiumClientMod;
-import me.jellysquid.mods.sodium.client.data.fingerprint.HashedFingerprint;
-import me.jellysquid.mods.sodium.client.gui.SodiumGameOptions;
-import me.jellysquid.mods.sodium.client.gui.SodiumOptionsGUI;
 import me.jellysquid.mods.sodium.client.gui.console.Console;
 import me.jellysquid.mods.sodium.client.gui.console.message.MessageLevel;
 import me.jellysquid.mods.sodium.client.gui.options.Option;
@@ -16,7 +13,6 @@ import me.jellysquid.mods.sodium.client.gui.options.storage.OptionStorage;
 import me.jellysquid.mods.sodium.client.gui.widgets.FlatButtonWidget;
 import me.jellysquid.mods.sodium.client.util.Dim2i;
 import net.caffeinemc.mods.sodium.api.util.ColorARGB;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -27,21 +23,15 @@ import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.client.gui.options.OptionIdentifier;
 import org.embeddedt.embeddium.gui.frame.AbstractFrame;
 import org.embeddedt.embeddium.gui.frame.BasicFrame;
-import org.embeddedt.embeddium.gui.frame.ScrollableFrame;
 import org.embeddedt.embeddium.gui.frame.components.SearchTextFieldComponent;
 import org.embeddedt.embeddium.gui.frame.components.SearchTextFieldModel;
 import org.embeddedt.embeddium.gui.frame.tab.Tab;
 import org.embeddedt.embeddium.gui.frame.tab.TabFrame;
-import org.embeddedt.embeddium.gui.screen.PromptScreen;
 import org.embeddedt.embeddium.gui.theme.DefaultColors;
 import org.embeddedt.embeddium.render.ShaderModBridge;
 import org.embeddedt.embeddium.util.PlatformUtil;
-import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
-import java.io.IOException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -61,7 +51,6 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
     private final List<OptionPage> pages = new ArrayList<>();
     private AbstractFrame frame;
     private FlatButtonWidget applyButton, closeButton, undoButton;
-    private FlatButtonWidget donateButton, hideDonateButton;
 
     private Dim2i logoDim;
 
@@ -79,62 +68,6 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         this.searchTextModel = new SearchTextFieldModel(this.pages, this);
         registerTextures();
     }
-
-    private void checkPromptTimers() {
-        // Don't show the donation prompt in situations where we know it causes problems.
-        if (PlatformUtil.isDevelopmentEnvironment()) {
-            return;
-        }
-
-        var options = SodiumClientMod.options();
-
-        // If the user has disabled the nags forcefully (by config), or has already seen the prompt, don't show it again.
-        if (options.notifications.forceDisableDonationPrompts || options.notifications.hasSeenDonationPrompt) {
-            return;
-        }
-
-        HashedFingerprint fingerprint = null;
-
-        try {
-            fingerprint = HashedFingerprint.loadFromDisk();
-        } catch (Throwable t) {
-            SodiumClientMod.logger()
-                    .error("Failed to read the fingerprint from disk", t);
-        }
-
-        // If the fingerprint doesn't exist, or failed to be loaded, abort.
-        if (fingerprint == null) {
-            return;
-        }
-
-        // The fingerprint records the installation time. If it's been a while since installation, show the user
-        // a prompt asking for them to consider donating.
-        var now = Instant.now();
-        var threshold = Instant.ofEpochSecond(fingerprint.timestamp())
-                .plus(3, ChronoUnit.DAYS);
-
-        if (now.isAfter(threshold)) {
-            this.openDonationPrompt();
-
-            options.notifications.hasSeenDonationPrompt = true;
-
-            try {
-                SodiumGameOptions.writeToDisk(options);
-            } catch (IOException e) {
-                SodiumClientMod.logger()
-                        .error("Failed to update config file", e);
-            }
-        }
-    }
-
-    private void openDonationPrompt() {
-        //noinspection removal
-        var prompt = new PromptScreen(this, SodiumOptionsGUI.DONATION_PROMPT_MESSAGE, 320, 190,
-                new PromptScreen.Action(Component.literal("Support Sodium"), this::openDonationPage));
-
-        this.minecraft.setScreen(prompt);
-    }
-
 
     private void registerTextures() {
         Minecraft.getInstance().textureManager.register(LOGO_LOCATION, new SimpleTexture(LOGO_LOCATION));
@@ -161,7 +94,6 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         if(firstInit) {
             this.setFocused(this.searchTextField);
             firstInit = false;
-            this.checkPromptTimers();
         }
     }
 
@@ -184,12 +116,6 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         Dim2i applyButtonDim = new Dim2i(tabFrameDim.getLimitX() - 134, tabFrameDim.getLimitY() + 5, 65, 20);
         Dim2i closeButtonDim = new Dim2i(tabFrameDim.getLimitX() - 65, tabFrameDim.getLimitY() + 5, 65, 20);
 
-        Component donationText = Component.translatable("sodium.options.buttons.donate");
-        int donationTextWidth = this.minecraft.font.width(donationText);
-
-        Dim2i donateButtonDim = new Dim2i(tabFrameDim.getLimitX() - 32 - donationTextWidth, tabFrameDim.y() - 26, 10 + donationTextWidth, 20);
-        Dim2i hideDonateButtonDim = new Dim2i(tabFrameDim.getLimitX() - 20, tabFrameDim.y() - 26, 20, 20);
-
         int logoSizeOnScreen = 20;
         this.logoDim = new Dim2i(tabFrameDim.x(), tabFrameDim.getLimitY() + 25 - logoSizeOnScreen, logoSizeOnScreen, logoSizeOnScreen);
 
@@ -197,19 +123,7 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         this.applyButton = new FlatButtonWidget(applyButtonDim, Component.translatable("sodium.options.buttons.apply"), this::applyChanges);
         this.closeButton = new FlatButtonWidget(closeButtonDim, Component.translatable("gui.done"), this::onClose);
 
-        this.donateButton = new FlatButtonWidget(donateButtonDim, donationText, this::openDonationPage);
-        this.hideDonateButton = new FlatButtonWidget(hideDonateButtonDim, Component.literal("x"), this::hideDonationButton);
-
-        if (SodiumClientMod.options().notifications.hasClearedDonationButton) {
-            this.setDonationButtonVisibility(false);
-        }
-
-        Dim2i searchTextFieldDim;
-        if (SodiumClientMod.options().notifications.hasClearedDonationButton) {
-            searchTextFieldDim = new Dim2i(tabFrameDim.x(), tabFrameDim.y() - 26, tabFrameDim.width(), 20);
-        } else {
-            searchTextFieldDim = new Dim2i(tabFrameDim.x(), tabFrameDim.y() - 26, tabFrameDim.width() - (tabFrameDim.getLimitX() - donateButtonDim.x()) - 2, 20);
-        }
+        Dim2i searchTextFieldDim = new Dim2i(tabFrameDim.x(), tabFrameDim.y() - 26, tabFrameDim.width(), 20);
 
         basicFrameBuilder = this.parentBasicFrameBuilder(basicFrameDim, tabFrameDim);
 
@@ -278,8 +192,6 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         return BasicFrame.createBuilder()
                 .setDimension(parentBasicFrameDim)
                 .shouldRenderOutline(false)
-                .addChild(dim -> this.donateButton)
-                .addChild(dim -> this.hideDonateButton)
                 .addChild(parentDim -> this.createTabFrame(tabFrameDim))
                 .addChild(dim -> this.undoButton)
                 .addChild(dim -> this.applyButton)
@@ -328,32 +240,6 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         this.closeButton.setEnabled(!hasChanges);
 
         this.hasPendingChanges = hasChanges;
-    }
-
-    private void setDonationButtonVisibility(boolean value) {
-        this.donateButton.setVisible(value);
-        this.hideDonateButton.setVisible(value);
-    }
-
-    private void hideDonationButton() {
-        SodiumGameOptions options = SodiumClientMod.options();
-        options.notifications.hasClearedDonationButton = true;
-
-        try {
-            SodiumGameOptions.writeToDisk(options);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to save configuration", e);
-        }
-
-        this.setDonationButtonVisibility(false);
-
-
-        this.rebuildUI();
-    }
-
-    private void openDonationPage() {
-        Util.getPlatform()
-                .openUri("https://caffeinemc.net/donate");
     }
 
     private Stream<Option<?>> getAllOptions() {
