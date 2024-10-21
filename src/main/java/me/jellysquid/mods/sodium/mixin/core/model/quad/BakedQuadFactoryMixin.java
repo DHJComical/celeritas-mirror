@@ -38,7 +38,7 @@ public class BakedQuadFactoryMixin {
             if (minUV >= 0 && maxUV <= 16) {
                 // Quad UVs do not extend outside texture boundary, we can trust the given sprite
                 BakedQuadView view = (BakedQuadView)quad;
-                view.setFlags(view.getFlags() | ModelQuadFlags.IS_TRUSTED_SPRITE);
+                view.addFlags(ModelQuadFlags.IS_TRUSTED_SPRITE);
             }
 
         }

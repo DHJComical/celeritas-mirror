@@ -1,6 +1,7 @@
 package me.jellysquid.mods.sodium.client.model.quad.properties;
 
 import me.jellysquid.mods.sodium.client.model.quad.ModelQuadView;
+import net.caffeinemc.mods.sodium.api.util.ColorABGR;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Direction;
 
@@ -31,6 +32,10 @@ public class ModelQuadFlags {
      */
     public static final int IS_TRUSTED_SPRITE = (1 << 4);
     /**
+     * Indicates that this quad can use a more optimal terrain render pass based on its sprite.
+     */
+    public static final int IS_PASS_OPTIMIZABLE = (1 << 5);
+    /**
      * Indicates that the flags are populated for the quad.
      */
     public static final int IS_POPULATED = (1 << 31);
@@ -42,11 +47,15 @@ public class ModelQuadFlags {
         return (flags & mask) != 0;
     }
 
+    public static int getQuadFlags(ModelQuadView quad, Direction face) {
+        return getQuadFlags(quad, face, 0);
+    }
+
     /**
      * Calculates the properties of the given quad. This data is used later by the light pipeline in order to make
      * certain optimizations.
      */
-    public static int getQuadFlags(ModelQuadView quad, Direction face) {
+    public static int getQuadFlags(ModelQuadView quad, Direction face, int existingFlags) {
         float minX = 32.0F;
         float minY = 32.0F;
         float minZ = 32.0F;
@@ -61,7 +70,7 @@ public class ModelQuadFlags {
         }
 
         float lX = Float.NaN, lY = Float.NaN, lZ = Float.NaN;
-        boolean degenerate = false;
+        boolean degenerate = false, nonOpaqueColor = false;
 
         for (int i = 0; i < numVertices; ++i) {
             float x = quad.getX(i);
@@ -81,6 +90,10 @@ public class ModelQuadFlags {
                 lX = x;
                 lY = y;
                 lZ = z;
+            }
+
+            if(ColorABGR.unpackAlpha(quad.getColor(i)) != 255) {
+                nonOpaqueColor = true;
             }
         }
 
@@ -105,7 +118,7 @@ public class ModelQuadFlags {
             case EAST -> maxX > 0.9999F;
         };
 
-        int flags = 0;
+        int flags = existingFlags & ~(IS_PARTIAL | IS_PARALLEL | IS_ALIGNED);
 
         if (partial) {
             flags |= IS_PARTIAL;
@@ -117,6 +130,10 @@ public class ModelQuadFlags {
 
         if (aligned) {
             flags |= IS_ALIGNED;
+        }
+
+        if (!nonOpaqueColor && (flags & IS_TRUSTED_SPRITE) != 0) {
+            flags |= IS_PASS_OPTIMIZABLE;
         }
 
         flags |= IS_POPULATED;
