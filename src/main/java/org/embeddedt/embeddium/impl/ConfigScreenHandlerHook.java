@@ -12,6 +12,7 @@ import org.embeddedt.embeddium.api.EmbeddiumConstants;
 @Mod.EventBusSubscriber(modid = EmbeddiumConstants.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ConfigScreenHandlerHook {
     @SubscribeEvent
+    @SuppressWarnings("removal")
     public static void onModConstruct(FMLConstructModEvent event) {
         ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new SodiumOptionsGUI(screen)));
     }
