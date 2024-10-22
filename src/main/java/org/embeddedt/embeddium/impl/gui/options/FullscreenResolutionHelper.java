@@ -2,10 +2,9 @@ package org.embeddedt.embeddium.impl.gui.options;
 
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.Window;
-import me.jellysquid.mods.sodium.client.gui.SodiumGameOptionPages;
-import me.jellysquid.mods.sodium.client.gui.options.OptionImpl;
-import me.jellysquid.mods.sodium.client.gui.options.control.ControlValueFormatter;
-import me.jellysquid.mods.sodium.client.gui.options.control.SliderControl;
+import org.embeddedt.embeddium.impl.gui.SodiumGameOptionPages;
+import org.embeddedt.embeddium.impl.gui.options.control.ControlValueFormatter;
+import org.embeddedt.embeddium.impl.gui.options.control.SliderControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.fml.ModList;

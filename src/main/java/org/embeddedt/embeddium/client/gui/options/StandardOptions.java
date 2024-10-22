@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.client.gui.options;
 
-import me.jellysquid.mods.sodium.client.SodiumClientMod;
+import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.resources.ResourceLocation;
 
 public final class StandardOptions {

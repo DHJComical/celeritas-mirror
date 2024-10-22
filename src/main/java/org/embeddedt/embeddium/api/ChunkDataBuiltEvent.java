@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.api;
 
-import me.jellysquid.mods.sodium.client.render.chunk.data.BuiltSectionInfo;
+import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionInfo;
 import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
 import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;

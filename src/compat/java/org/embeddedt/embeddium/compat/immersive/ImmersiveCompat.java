@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.compat.immersive;
 
-import me.jellysquid.mods.sodium.client.SodiumClientMod;
+import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

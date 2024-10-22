@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.gametest.tests;
 
-import me.jellysquid.mods.sodium.client.render.chunk.compile.pipeline.BlockOcclusionCache;
+import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockOcclusionCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

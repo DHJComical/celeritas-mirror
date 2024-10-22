@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl;
 
-import me.jellysquid.mods.sodium.client.gui.SodiumOptionsGUI;
+import org.embeddedt.embeddium.impl.gui.SodiumOptionsGUI;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

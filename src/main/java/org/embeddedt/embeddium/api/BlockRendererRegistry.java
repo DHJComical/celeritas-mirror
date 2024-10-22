@@ -1,8 +1,7 @@
 package org.embeddedt.embeddium.api;
 
-import me.jellysquid.mods.sodium.client.render.chunk.compile.pipeline.BlockRenderContext;
+import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
 import net.minecraft.util.RandomSource;
-import net.minecraftforge.client.model.data.ModelData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

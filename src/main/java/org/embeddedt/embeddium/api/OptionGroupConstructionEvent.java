@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.api;
 
-import me.jellysquid.mods.sodium.client.gui.options.Option;
+import org.embeddedt.embeddium.impl.gui.options.Option;
 import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
 import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;
 import org.embeddedt.embeddium.client.gui.options.OptionIdentifier;
