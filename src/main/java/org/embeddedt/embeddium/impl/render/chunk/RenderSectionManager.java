@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMaps;
@@ -12,6 +14,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobResult;
@@ -136,15 +139,38 @@ public class RenderSectionManager {
 
     private static RenderPassConfiguration createRenderPassConfiguration(ChunkVertexType vertexType) {
         // First, build the main passes
-        TerrainRenderPass solidPass = new TerrainRenderPass(RenderType.solid(), false, false);
-        TerrainRenderPass cutoutPass = new TerrainRenderPass(RenderType.cutoutMipped(), false, true);
-        TerrainRenderPass translucentPass = new TerrainRenderPass(RenderType.translucent(), true, false);
+        TerrainRenderPass solidPass, cutoutMippedPass, translucentPass;
 
-        // Build the materials for these passes
-        Material solidMaterial = new Material(solidPass, AlphaCutoffParameter.ZERO, true);
-        Material cutoutMaterial = new Material(cutoutPass, AlphaCutoffParameter.ONE_TENTH, false);
-        Material cutoutMippedMaterial = new Material(cutoutPass, AlphaCutoffParameter.ONE_TENTH, true);
-        Material translucentMaterial = new Material(translucentPass, AlphaCutoffParameter.ZERO, true);
+        solidPass = new TerrainRenderPass(RenderType.solid(), false, false);
+        cutoutMippedPass = new TerrainRenderPass(RenderType.cutoutMipped(), false, true);
+        translucentPass = new TerrainRenderPass(RenderType.translucent(), true, false);
+
+        ImmutableListMultimap.Builder<RenderType, TerrainRenderPass> vanillaRenderStages = ImmutableListMultimap.builder();
+
+        // Build the materials for the vanilla render passes
+        Material solidMaterial, cutoutMaterial, cutoutMippedMaterial, translucentMaterial, tripwireMaterial;
+        solidMaterial = new Material(solidPass, AlphaCutoffParameter.ZERO, true);
+        translucentMaterial = new Material(translucentPass, AlphaCutoffParameter.ZERO, true);
+        cutoutMippedMaterial = new Material(cutoutMippedPass, AlphaCutoffParameter.ONE_TENTH, true);
+
+        vanillaRenderStages.put(RenderType.solid(), solidPass);
+        vanillaRenderStages.put(RenderType.translucent(), translucentPass);
+
+        if(SodiumClientMod.options().performance.useRenderPassConsolidation) {
+            cutoutMaterial = new Material(cutoutMippedPass, AlphaCutoffParameter.ONE_TENTH, false);
+            tripwireMaterial = cutoutMippedMaterial;
+            // Render cutout immediately after solid geometry
+            vanillaRenderStages.put(RenderType.solid(), cutoutMippedPass);
+        } else {
+            TerrainRenderPass cutoutPass, tripwirePass;
+            cutoutPass = new TerrainRenderPass(RenderType.cutout(), false, true);
+            tripwirePass = new TerrainRenderPass(RenderType.tripwire(), false, true);
+            cutoutMaterial = new Material(cutoutPass, AlphaCutoffParameter.ONE_TENTH, false);
+            tripwireMaterial = new Material(tripwirePass, AlphaCutoffParameter.ONE_TENTH, false);
+            vanillaRenderStages.put(RenderType.cutout(), cutoutPass);
+            vanillaRenderStages.put(RenderType.cutoutMipped(), cutoutMippedPass);
+            vanillaRenderStages.put(RenderType.tripwire(), tripwirePass);
+        }
 
         // Now build the material map
         int maximumId = RenderType.chunkBufferLayers().stream().mapToInt(RenderType::getChunkLayerId).max().orElseThrow();
@@ -154,7 +180,7 @@ public class RenderSectionManager {
         renderTypeToMaterialMap[RenderType.cutout().getChunkLayerId()] = cutoutMaterial;
         renderTypeToMaterialMap[RenderType.cutoutMipped().getChunkLayerId()] = cutoutMippedMaterial;
         renderTypeToMaterialMap[RenderType.translucent().getChunkLayerId()] = translucentMaterial;
-        renderTypeToMaterialMap[RenderType.tripwire().getChunkLayerId()] = cutoutMippedMaterial;
+        renderTypeToMaterialMap[RenderType.tripwire().getChunkLayerId()] = tripwireMaterial;
 
         for(RenderType type : RenderType.chunkBufferLayers()) {
             int id = type.getChunkLayerId();
@@ -166,15 +192,13 @@ public class RenderSectionManager {
             }
         }
 
-        var vanillaRenderStages = Map.of(
-                RenderType.solid(), List.of(solidPass, cutoutPass),
-                RenderType.translucent(), List.of(translucentPass)
-        );
+        var vanillaRenderStageMap = vanillaRenderStages.build();
+        var allPasses = vanillaRenderStageMap.values().stream().distinct().toList();
 
         return new RenderPassConfiguration(vertexType,
-                List.of(solidPass, cutoutPass, translucentPass),
+                allPasses,
                 List.of(renderTypeToMaterialMap),
-                vanillaRenderStages,
+                vanillaRenderStageMap.asMap(),
                 solidMaterial,
                 cutoutMippedMaterial,
                 translucentMaterial);

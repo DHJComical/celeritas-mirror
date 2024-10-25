@@ -245,12 +245,11 @@ public class SodiumWorldRenderer {
     public void drawChunkLayer(RenderType renderLayer, PoseStack matrixStack, double x, double y, double z) {
         ChunkRenderMatrices matrices = ChunkRenderMatrices.from(matrixStack);
 
-        List<TerrainRenderPass> passes = this.renderSectionManager.getRenderPassConfiguration().vanillaRenderStages().get(renderLayer);
+        Collection<TerrainRenderPass> passes = this.renderSectionManager.getRenderPassConfiguration().vanillaRenderStages().get(renderLayer);
 
-        if (passes != null) {
-            //noinspection ForLoopReplaceableByForEach
-            for (int i = 0; i < passes.size(); i++) {
-                this.renderSectionManager.renderLayer(matrices, passes.get(i), x, y, z);
+        if (passes != null && !passes.isEmpty()) {
+            for (var pass : passes) {
+                this.renderSectionManager.renderLayer(matrices, pass, x, y, z);
             }
         }
     }

@@ -21,6 +21,11 @@ import net.minecraft.client.renderer.RenderType;
 @Accessors(fluent = true)
 public class TerrainRenderPass {
     /**
+     * The friendly name of this render pass.
+     */
+    private final String name;
+
+    /**
      * The RenderType that is used to set up/clear GPU pipeline state.
      */
     private final RenderType layer;
@@ -41,6 +46,7 @@ public class TerrainRenderPass {
     @Deprecated
     public TerrainRenderPass(RenderType layer, boolean useReverseOrder, boolean allowFragmentDiscard) {
         this.layer = layer;
+        this.name = layer.toString();
 
         this.useReverseOrder = useReverseOrder;
         this.fragmentDiscard = allowFragmentDiscard;
