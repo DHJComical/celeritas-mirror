@@ -26,6 +26,7 @@ import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionCuller;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegionManager;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.DefaultTerrainRenderPasses;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
@@ -97,20 +98,24 @@ public class RenderSectionManager {
 
     private final boolean translucencySorting;
 
+    private final RenderPassConfiguration renderPassConfiguration;
+
     public RenderSectionManager(ClientLevel world, int renderDistance, CommandList commandList) {
         ChunkVertexType vertexType = SodiumClientMod.canUseVanillaVertices() ? ChunkMeshFormats.VANILLA_LIKE : ChunkMeshFormats.COMPACT;
 
         this.chunkRenderer = new DefaultChunkRenderer(RenderDevice.INSTANCE, vertexType);
 
+        this.renderPassConfiguration = new RenderPassConfiguration(vertexType, List.of(DefaultTerrainRenderPasses.ALL));
+
         this.vertexType = vertexType;
 
         this.world = world;
-        this.builder = new ChunkBuilder(world, vertexType);
+        this.builder = new ChunkBuilder(world, this.renderPassConfiguration);
 
         this.needsUpdate = true;
         this.renderDistance = renderDistance;
 
-        this.regions = new RenderRegionManager(commandList);
+        this.regions = new RenderRegionManager(commandList, this.renderPassConfiguration);
         this.sectionCache = new ClonedChunkSectionCache(this.world);
 
         this.renderLists = SortedRenderLists.empty();

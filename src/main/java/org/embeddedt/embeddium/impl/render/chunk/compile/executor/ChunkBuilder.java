@@ -2,8 +2,10 @@ package org.embeddedt.embeddium.impl.render.chunk.compile.executor;
 
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.compat.forge.ForgeBlockRenderer;
+import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
@@ -40,14 +42,14 @@ public class ChunkBuilder {
 
     private final ChunkBuildContext localContext;
 
-    public ChunkBuilder(ClientLevel world, ChunkVertexType vertexType) {
+    public ChunkBuilder(ClientLevel world, RenderPassConfiguration renderPassConfiguration) {
         GlobalChunkBuildContext.setMainThread();
         ForgeBlockRenderer.init();
 
         int count = getThreadCount();
 
         for (int i = 0; i < count; i++) {
-            ChunkBuildContext context = new ChunkBuildContext(world, vertexType);
+            ChunkBuildContext context = new ChunkBuildContext(world, renderPassConfiguration);
             WorkerRunnable worker = new WorkerRunnable(context);
 
             Thread thread = new WorkerThread(worker, "Chunk Render Task Executor #" + i, context);
@@ -59,7 +61,7 @@ public class ChunkBuilder {
 
         LOGGER.info("Started {} worker threads", this.threads.size());
 
-        this.localContext = new ChunkBuildContext(world, vertexType);
+        this.localContext = new ChunkBuildContext(world, renderPassConfiguration);
     }
 
     /**

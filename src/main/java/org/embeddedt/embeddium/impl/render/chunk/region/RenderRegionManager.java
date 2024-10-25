@@ -10,10 +10,10 @@ import org.embeddedt.embeddium.impl.gl.arena.staging.MappedStagingBuffer;
 import org.embeddedt.embeddium.impl.gl.arena.staging.StagingBuffer;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
-import org.embeddedt.embeddium.impl.render.chunk.terrain.DefaultTerrainRenderPasses;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,8 +24,11 @@ public class RenderRegionManager {
 
     private final StagingBuffer stagingBuffer;
 
-    public RenderRegionManager(CommandList commandList) {
+    private final RenderPassConfiguration renderPassConfiguration;
+
+    public RenderRegionManager(CommandList commandList, RenderPassConfiguration renderPassConfiguration) {
         this.stagingBuffer = createStagingBuffer(commandList);
+        this.renderPassConfiguration = renderPassConfiguration;
     }
 
     public void update() {
@@ -59,7 +62,7 @@ public class RenderRegionManager {
         var uploads = new ArrayList<PendingSectionUpload>();
 
         for (ChunkBuildOutput result : results) {
-            for (TerrainRenderPass pass : DefaultTerrainRenderPasses.ALL) {
+            for (TerrainRenderPass pass : renderPassConfiguration.renderPasses()) {
                 var storage = region.getStorage(pass);
 
                 if (storage != null) {
@@ -107,7 +110,7 @@ public class RenderRegionManager {
         var uploads = new ArrayList<PendingResortUpload>();
 
         for (ChunkBuildOutput result : results) {
-            for (TerrainRenderPass pass : DefaultTerrainRenderPasses.ALL) {
+            for (TerrainRenderPass pass : renderPassConfiguration.renderPasses()) {
                 BuiltSectionMeshParts mesh = result.getMesh(pass);
 
                 if(mesh == null) {

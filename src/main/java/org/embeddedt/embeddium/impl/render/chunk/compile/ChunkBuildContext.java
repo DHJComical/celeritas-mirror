@@ -1,6 +1,8 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -8,6 +10,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderCac
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 import java.util.Collections;
+import java.util.List;
 
 public class ChunkBuildContext {
     public final ChunkBuildBuffers buffers;
@@ -15,8 +18,8 @@ public class ChunkBuildContext {
     private final ObjectOpenHashSet<TextureAtlasSprite> additionalCapturedSprites;
     private boolean captureAdditionalSprites;
 
-    public ChunkBuildContext(ClientLevel world, ChunkVertexType vertexType) {
-        this.buffers = new ChunkBuildBuffers(vertexType);
+    public ChunkBuildContext(ClientLevel world, RenderPassConfiguration renderPassConfiguration) {
+        this.buffers = new ChunkBuildBuffers(renderPassConfiguration);
         this.cache = new BlockRenderCache(Minecraft.getInstance(), world);
         this.additionalCapturedSprites = new ObjectOpenHashSet<>();
     }

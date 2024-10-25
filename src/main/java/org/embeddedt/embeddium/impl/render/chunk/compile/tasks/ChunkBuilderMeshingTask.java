@@ -10,7 +10,6 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderCac
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionInfo;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
-import org.embeddedt.embeddium.impl.render.chunk.terrain.DefaultTerrainRenderPasses;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
@@ -175,7 +174,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
         Map<TerrainRenderPass, BuiltSectionMeshParts> meshes = new Reference2ReferenceOpenHashMap<>();
 
-        for (TerrainRenderPass pass : DefaultTerrainRenderPasses.ALL) {
+        for (TerrainRenderPass pass : buffers.getRenderPassConfiguration().renderPasses()) {
             BuiltSectionMeshParts mesh = buffers.createMesh(pass);
 
             if (mesh != null) {
