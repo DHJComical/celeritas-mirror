@@ -160,7 +160,7 @@ public class RenderSectionManager {
             int id = type.getChunkLayerId();
             if(id >= 0) {
                 if(renderTypeToMaterialMap[id] == null) {
-                    SodiumClientMod.logger().warn("RenderType " + type + " is not recognized by Embeddium. Treating it as cutout_mipped.");
+                    SodiumClientMod.logger().warn("RenderType {} is not recognized by Embeddium. Treating it as cutout_mipped.", type);
                     renderTypeToMaterialMap[id] = cutoutMippedMaterial;
                 }
             }
