@@ -1,5 +1,6 @@
 import net.minecraftforge.gradle.common.tasks.DownloadAssets
 import net.minecraftforge.gradle.common.util.RunConfig
+import org.embeddedt.embeddium.gradle.BlacksmithDownloader
 import org.embeddedt.embeddium.gradle.versioning.ProjectVersioner
 import org.w3c.dom.Element
 
@@ -108,7 +109,9 @@ minecraft {
             }
         }
 
-        val client = create("client")
+        val client = create("client") {
+            jvmArgs.add("-javaagent:${BlacksmithDownloader.getBlacksmithJar(project).absolutePath}")
+        }
 
 
         fun configureGameTestRun(run: RunConfig) {
