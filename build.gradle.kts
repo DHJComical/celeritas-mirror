@@ -1,6 +1,7 @@
 import net.minecraftforge.gradle.common.tasks.DownloadAssets
 import net.minecraftforge.gradle.common.util.RunConfig
 import org.embeddedt.embeddium.gradle.BlacksmithDownloader
+import org.embeddedt.embeddium.gradle.DiscordNotifier
 import org.embeddedt.embeddium.gradle.versioning.ProjectVersioner
 import org.w3c.dom.Element
 
@@ -277,6 +278,7 @@ publishing {
     }
 }
 
+/*
 publishMods {
     file = tasks.jarJar.get().archiveFile
     changelog = "https://github.com/embeddedt/embeddium/wiki/Changelog"
@@ -312,6 +314,16 @@ publishMods {
     }
 
     displayName = "[${"minecraft_version"()}] Embeddium ${"mod_version"()}"
+}
+
+ */
+
+tasks.create("publishSnapshotToDiscord") {
+    outputs.upToDateWhen { false }
+    doLast {
+        DiscordNotifier.publishEmbeddiumJar(project, tasks.jarJar.get().archiveFile.get().asFile)
+    }
+    dependsOn("reobfJarJar")
 }
 
 fun getModVersion(): String {

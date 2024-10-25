@@ -4,6 +4,9 @@ name: build-snapshot
 
 on: [ push ]
 
+env:
+  DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
