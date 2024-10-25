@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.render.chunk.compile;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import lombok.Getter;
+import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.impl.gl.util.VertexRange;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
@@ -49,6 +50,10 @@ public class ChunkBuildBuffers {
         for (var builder : this.builders.values()) {
             builder.begin(renderData, sectionIndex);
         }
+    }
+
+    public ChunkModelBuilder get(RenderType type) {
+        return this.builders.get(this.renderPassConfiguration.getMaterialForRenderType(type).pass);
     }
 
     public ChunkModelBuilder get(Material material) {

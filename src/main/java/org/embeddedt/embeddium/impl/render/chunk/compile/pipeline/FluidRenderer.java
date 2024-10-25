@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import org.embeddedt.embeddium.impl.compat.ccl.SinkingVertexBuilder;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
@@ -15,7 +16,6 @@ import org.embeddedt.embeddium.impl.model.color.ColorProvider;
 import org.embeddedt.embeddium.impl.model.color.DefaultColorProviders;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
-import org.embeddedt.embeddium.impl.render.chunk.terrain.material.DefaultMaterials;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
@@ -169,7 +169,7 @@ public class FluidRenderer {
     }
 
     public void render(WorldSlice world, FluidState fluidState, BlockPos blockPos, BlockPos offset, ChunkBuildBuffers buffers) {
-        var material = DefaultMaterials.forFluidState(fluidState);
+        var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(ItemBlockRenderTypes.getRenderLayer(fluidState));
         var meshBuilder = buffers.get(material);
 
         // Embeddium: Delegate to vanilla liquid renderer if fluid has this tag.

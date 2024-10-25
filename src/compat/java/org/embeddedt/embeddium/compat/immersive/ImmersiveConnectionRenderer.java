@@ -11,7 +11,6 @@ import com.google.common.cache.LoadingCache;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
-import org.embeddedt.embeddium.impl.render.chunk.terrain.material.DefaultMaterials;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.builder.ChunkMeshBufferBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
@@ -74,8 +73,6 @@ public class ImmersiveConnectionRenderer implements ResourceManagerReloadListene
         SEGMENT_CACHE.invalidateAll();
     }
 
-    private static final Material MATERIAL = DefaultMaterials.SOLID;
-
     public static void renderConnectionsInSection(
             ChunkBuildBuffers buffers, BlockAndTintGetter region, SectionPos section
     ) {
@@ -85,14 +82,15 @@ public class ImmersiveConnectionRenderer implements ResourceManagerReloadListene
             return;
         }
         RenderType renderType = RenderType.solid();
-        ChunkModelBuilder builder = buffers.get(DefaultMaterials.forRenderLayer(renderType));
+        var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(renderType);
+        ChunkModelBuilder builder = buffers.get(material);
         int originX = section.minBlockX();
         int originY = section.minBlockY();
         int originZ = section.minBlockZ();
         for (WireCollisionData.ConnectionSegments connection : connectionParts) {
             ConnectionPoint connectionOrigin = connection.connection().getEndA();
             renderSegments(
-                    builder, connection, region,
+                    builder, material, connection, region,
                     connectionOrigin.getX() - originX,
                     connectionOrigin.getY() - originY,
                     connectionOrigin.getZ() - originZ
@@ -101,7 +99,8 @@ public class ImmersiveConnectionRenderer implements ResourceManagerReloadListene
     }
 
     public static void renderSegments(
-            ChunkModelBuilder out, WireCollisionData.ConnectionSegments toRender,
+            ChunkModelBuilder out, Material material,
+            WireCollisionData.ConnectionSegments toRender,
             BlockAndTintGetter level, int offX, int offY, int offZ
     ) {
         Connection connection = toRender.connection();
@@ -119,7 +118,7 @@ public class ImmersiveConnectionRenderer implements ResourceManagerReloadListene
                 lastLight = getLight(connection, renderedSegment.offsetStart, level);
             }
             int nextLight = getLight(connection, renderedSegment.offsetEnd, level);
-            renderedSegment.render(lastLight, nextLight, offX, offY, offZ, out);
+            renderedSegment.render(lastLight, nextLight, offX, offY, offZ, out, material);
             lastLight = nextLight;
         }
     }
@@ -191,7 +190,7 @@ public class ImmersiveConnectionRenderer implements ResourceManagerReloadListene
         static final ThreadLocal<ChunkVertexEncoder.Vertex[]> vertexHolder = ThreadLocal.withInitial(() -> new ChunkVertexEncoder.Vertex[1]);
 
         void write(
-                ChunkMeshBufferBuilder vertexSink, int offX, int offY, int offZ, int lightStart, int lightEnd
+                ChunkMeshBufferBuilder vertexSink, Material material, int offX, int offY, int offZ, int lightStart, int lightEnd
         ) {
             ChunkVertexEncoder.Vertex sodiumVertex = new ChunkVertexEncoder.Vertex();
             sodiumVertex.x = offX + posX;
@@ -203,35 +202,35 @@ public class ImmersiveConnectionRenderer implements ResourceManagerReloadListene
             sodiumVertex.light = lightForStart ? lightStart : lightEnd;
             ChunkVertexEncoder.Vertex[] array = vertexHolder.get();
             array[0] = sodiumVertex;
-            vertexSink.push(array, MATERIAL);
+            vertexSink.push(array, material);
         }
     }
 
     private record Quad(Vertex v0, Vertex v1, Vertex v2, Vertex v3) {
         void write(
-                ChunkModelBuilder out, int offX, int offY, int offZ, int lightStart, int lightEnd
+                ChunkModelBuilder out, Material material, int offX, int offY, int offZ, int lightStart, int lightEnd
         ) {
             var vertexSink = out.getVertexBuffer(ModelQuadFacing.UNASSIGNED);
             int quadStart = vertexSink.count();
             // clockwise
-            v0.write(vertexSink, offX, offY, offZ, lightStart, lightEnd);
-            v1.write(vertexSink, offX, offY, offZ, lightStart, lightEnd);
-            v2.write(vertexSink, offX, offY, offZ, lightStart, lightEnd);
-            v3.write(vertexSink, offX, offY, offZ, lightStart, lightEnd);
+            v0.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
+            v1.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
+            v2.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
+            v3.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
             // counter-clockwise
-            v0.write(vertexSink, offX, offY, offZ, lightStart, lightEnd);
-            v3.write(vertexSink, offX, offY, offZ, lightStart, lightEnd);
-            v2.write(vertexSink, offX, offY, offZ, lightStart, lightEnd);
-            v1.write(vertexSink, offX, offY, offZ, lightStart, lightEnd);
+            v0.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
+            v3.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
+            v2.write(vertexSink ,material, offX, offY, offZ, lightStart, lightEnd);
+            v1.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
         }
     }
 
     private record RenderedSegment(Quad quadA, Quad quadB, Vec3i offsetStart, Vec3i offsetEnd) {
         public void render(
-                int lightStart, int lightEnd, int offX, int offY, int offZ, ChunkModelBuilder out
+                int lightStart, int lightEnd, int offX, int offY, int offZ, ChunkModelBuilder out, Material material
         ) {
-            quadA.write(out, offX, offY, offZ, lightStart, lightEnd);
-            quadB.write(out, offX, offY, offZ, lightStart, lightEnd);
+            quadA.write(out, material, offX, offY, offZ, lightStart, lightEnd);
+            quadB.write(out, material, offX, offY, offZ, lightStart, lightEnd);
         }
     }
 }

@@ -16,7 +16,6 @@ import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadOrientation;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
-import org.embeddedt.embeddium.impl.render.chunk.terrain.material.DefaultMaterials;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.util.DirectionUtil;
@@ -106,7 +105,7 @@ public class BlockRenderer {
      * @param buffers the buffer to output geometry to
      */
     public void renderModel(BlockRenderContext ctx, ChunkBuildBuffers buffers) {
-        var material = DefaultMaterials.forRenderLayer(ctx.renderLayer());
+        var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(ctx.renderLayer());
         var meshBuilder = buffers.get(material);
 
         ColorProvider<BlockState> colorizer = this.colorProviderRegistry.getColorProvider(ctx.state().getBlock());
@@ -218,7 +217,8 @@ public class BlockRenderer {
     }
 
     private ChunkModelBuilder chooseOptimalBuilder(Material defaultMaterial, ChunkBuildBuffers buffers, ChunkModelBuilder defaultBuilder, BakedQuadView quad) {
-        if (defaultMaterial == DefaultMaterials.SOLID || !this.useRenderPassOptimization || (quad.getFlags() & ModelQuadFlags.IS_PASS_OPTIMIZABLE) == 0 || quad.getSprite() == null) {
+        var renderPassConfiguration = buffers.getRenderPassConfiguration();
+        if (defaultMaterial == renderPassConfiguration.defaultSolidMaterial() || !this.useRenderPassOptimization || (quad.getFlags() & ModelQuadFlags.IS_PASS_OPTIMIZABLE) == 0 || quad.getSprite() == null) {
             // No improvement possible
             return defaultBuilder;
         }
@@ -227,10 +227,10 @@ public class BlockRenderer {
 
         if (level == SpriteTransparencyLevel.OPAQUE) {
             // Can use solid with no visual difference
-            return buffers.get(DefaultMaterials.SOLID);
-        } else if (level == SpriteTransparencyLevel.TRANSPARENT && defaultMaterial == DefaultMaterials.TRANSLUCENT) {
+            return buffers.get(renderPassConfiguration.defaultSolidMaterial());
+        } else if (level == SpriteTransparencyLevel.TRANSPARENT && defaultMaterial == renderPassConfiguration.defaultTranslucentMaterial()) {
             // Can use cutout_mipped with no visual difference
-            return buffers.get(DefaultMaterials.CUTOUT_MIPPED);
+            return buffers.get(renderPassConfiguration.defaultCutoutMippedMaterial());
         } else {
             // Have to use default
             return defaultBuilder;

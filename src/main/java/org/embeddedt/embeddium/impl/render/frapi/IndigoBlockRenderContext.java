@@ -6,7 +6,6 @@ import org.embeddedt.embeddium.impl.compat.ccl.SinkingVertexBuilder;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockOcclusionCache;
-import org.embeddedt.embeddium.impl.render.chunk.terrain.material.DefaultMaterials;
 import net.fabricmc.fabric.impl.client.indigo.renderer.aocalc.AoCalculator;
 import net.fabricmc.fabric.impl.client.indigo.renderer.render.BlockRenderContext;
 import net.fabricmc.fabric.impl.client.indigo.renderer.render.BlockRenderInfo;
@@ -173,7 +172,7 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
             if(sinkingVertexBuilder == null || sinkingVertexBuilder.isEmpty()) {
                 continue;
             }
-            var material = DefaultMaterials.forRenderLayer(RenderType.chunkBufferLayers().get(i));
+            var material = buffers.getRenderPassConfiguration().getMaterialByChunkLayerId(i);
             var builder = buffers.get(material);
             sinkingVertexBuilder.flush(builder, material, origin);
         }

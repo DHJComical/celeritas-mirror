@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.impl.chunk;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.compat.ccl.SinkingVertexBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
-import org.embeddedt.embeddium.impl.render.chunk.terrain.material.DefaultMaterials;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -42,9 +41,11 @@ public class MeshAppenderRenderer {
             appender.render(context);
         }
 
+        var renderPassConfig = buffers.getRenderPassConfiguration();
+
         for (var it = builders.reference2ReferenceEntrySet().fastIterator(); it.hasNext(); ) {
             var entry = it.next();
-            var material = DefaultMaterials.forRenderLayer(entry.getKey());
+            var material = renderPassConfig.getMaterialForRenderType(entry.getKey());
 
             entry.getValue().flush(buffers.get(material), material, ZERO);
         }

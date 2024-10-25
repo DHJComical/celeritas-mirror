@@ -5,6 +5,8 @@ import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMaps;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.*;
+import lombok.Getter;
+import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -26,8 +28,9 @@ import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionCuller;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegionManager;
-import org.embeddedt.embeddium.impl.render.chunk.terrain.DefaultTerrainRenderPasses;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.texture.SpriteUtil;
@@ -98,6 +101,7 @@ public class RenderSectionManager {
 
     private final boolean translucencySorting;
 
+    @Getter
     private final RenderPassConfiguration renderPassConfiguration;
 
     public RenderSectionManager(ClientLevel world, int renderDistance, CommandList commandList) {
@@ -105,7 +109,7 @@ public class RenderSectionManager {
 
         this.chunkRenderer = new DefaultChunkRenderer(RenderDevice.INSTANCE, vertexType);
 
-        this.renderPassConfiguration = new RenderPassConfiguration(vertexType, List.of(DefaultTerrainRenderPasses.ALL));
+        this.renderPassConfiguration = createRenderPassConfiguration(vertexType);
 
         this.vertexType = vertexType;
 
@@ -128,6 +132,52 @@ public class RenderSectionManager {
         }
 
         this.translucencySorting = SodiumClientMod.canApplyTranslucencySorting();
+    }
+
+    private static RenderPassConfiguration createRenderPassConfiguration(ChunkVertexType vertexType) {
+        // First, build the main passes
+        TerrainRenderPass solidPass = new TerrainRenderPass(RenderType.solid(), false, false);
+        TerrainRenderPass cutoutPass = new TerrainRenderPass(RenderType.cutoutMipped(), false, true);
+        TerrainRenderPass translucentPass = new TerrainRenderPass(RenderType.translucent(), true, false);
+
+        // Build the materials for these passes
+        Material solidMaterial = new Material(solidPass, AlphaCutoffParameter.ZERO, true);
+        Material cutoutMaterial = new Material(cutoutPass, AlphaCutoffParameter.ONE_TENTH, false);
+        Material cutoutMippedMaterial = new Material(cutoutPass, AlphaCutoffParameter.ONE_TENTH, true);
+        Material translucentMaterial = new Material(translucentPass, AlphaCutoffParameter.ZERO, true);
+
+        // Now build the material map
+        int maximumId = RenderType.chunkBufferLayers().stream().mapToInt(RenderType::getChunkLayerId).max().orElseThrow();
+        Material[] renderTypeToMaterialMap = new Material[maximumId + 1];
+
+        renderTypeToMaterialMap[RenderType.solid().getChunkLayerId()] = solidMaterial;
+        renderTypeToMaterialMap[RenderType.cutout().getChunkLayerId()] = cutoutMaterial;
+        renderTypeToMaterialMap[RenderType.cutoutMipped().getChunkLayerId()] = cutoutMippedMaterial;
+        renderTypeToMaterialMap[RenderType.translucent().getChunkLayerId()] = translucentMaterial;
+        renderTypeToMaterialMap[RenderType.tripwire().getChunkLayerId()] = cutoutMippedMaterial;
+
+        for(RenderType type : RenderType.chunkBufferLayers()) {
+            int id = type.getChunkLayerId();
+            if(id >= 0) {
+                if(renderTypeToMaterialMap[id] == null) {
+                    SodiumClientMod.logger().warn("RenderType " + type + " is not recognized by Embeddium. Treating it as cutout_mipped.");
+                    renderTypeToMaterialMap[id] = cutoutMippedMaterial;
+                }
+            }
+        }
+
+        var vanillaRenderStages = Map.of(
+                RenderType.solid(), List.of(solidPass, cutoutPass),
+                RenderType.translucent(), List.of(translucentPass)
+        );
+
+        return new RenderPassConfiguration(vertexType,
+                List.of(solidPass, cutoutPass, translucentPass),
+                List.of(renderTypeToMaterialMap),
+                vanillaRenderStages,
+                solidMaterial,
+                cutoutMippedMaterial,
+                translucentMaterial);
     }
 
     public void runAsyncTasks() {
