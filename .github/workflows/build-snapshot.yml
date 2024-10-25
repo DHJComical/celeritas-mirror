@@ -22,7 +22,7 @@ jobs:
           distribution: 'temurin'
           java-version: 17
       - name: Build artifacts
-        run: ./gradlew --no-daemon reobfJar
+        run: ./gradlew --no-daemon publishSnapshotToDiscord
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
