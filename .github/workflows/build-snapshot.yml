@@ -23,8 +23,3 @@ jobs:
           java-version: 17
       - name: Build artifacts
         run: ./gradlew --no-daemon publishSnapshotToDiscord
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Embeddium
-          path: build/libs
