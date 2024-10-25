@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk;
 
-import net.caffeinemc.mods.sodium.api.util.ColorABGR;
-import net.caffeinemc.mods.sodium.api.util.ColorMixer;
+import org.embeddedt.embeddium.api.util.ColorABGR;
+import org.embeddedt.embeddium.api.util.ColorMixer;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 
 public interface ChunkColorWriter {

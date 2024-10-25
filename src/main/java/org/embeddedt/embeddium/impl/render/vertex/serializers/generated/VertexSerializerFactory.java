@@ -1,8 +1,8 @@
 package org.embeddedt.embeddium.impl.render.vertex.serializers.generated;
 
-import net.caffeinemc.mods.sodium.api.vertex.attributes.CommonVertexAttribute;
-import net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription;
-import net.caffeinemc.mods.sodium.api.vertex.serializer.VertexSerializer;
+import org.embeddedt.embeddium.api.vertex.attributes.CommonVertexAttribute;
+import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
+import org.embeddedt.embeddium.api.vertex.serializer.VertexSerializer;
 import org.lwjgl.system.MemoryUtil;
 import org.objectweb.asm.*;
 import java.lang.invoke.MethodHandles;

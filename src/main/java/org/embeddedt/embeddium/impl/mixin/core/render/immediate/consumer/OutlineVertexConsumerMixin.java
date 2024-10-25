@@ -2,11 +2,11 @@ package org.embeddedt.embeddium.impl.mixin.core.render.immediate.consumer;
 
 import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.caffeinemc.mods.sodium.api.util.ColorABGR;
-import net.caffeinemc.mods.sodium.api.vertex.attributes.CommonVertexAttribute;
-import net.caffeinemc.mods.sodium.api.vertex.attributes.common.ColorAttribute;
-import net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription;
-import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
+import org.embeddedt.embeddium.api.util.ColorABGR;
+import org.embeddedt.embeddium.api.vertex.attributes.CommonVertexAttribute;
+import org.embeddedt.embeddium.api.vertex.attributes.common.ColorAttribute;
+import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
+import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import org.lwjgl.system.MemoryStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

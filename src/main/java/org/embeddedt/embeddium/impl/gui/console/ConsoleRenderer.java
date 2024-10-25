@@ -2,8 +2,8 @@ package org.embeddedt.embeddium.impl.gui.console;
 
 import org.embeddedt.embeddium.impl.gui.console.message.Message;
 import org.embeddedt.embeddium.impl.gui.console.message.MessageLevel;
-import net.caffeinemc.mods.sodium.api.util.ColorARGB;
-import net.caffeinemc.mods.sodium.api.util.ColorU8;
+import org.embeddedt.embeddium.api.util.ColorARGB;
+import org.embeddedt.embeddium.api.util.ColorU8;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.GuiGraphics;

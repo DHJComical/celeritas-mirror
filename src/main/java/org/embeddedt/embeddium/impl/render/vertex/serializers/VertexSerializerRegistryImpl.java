@@ -3,9 +3,9 @@ package org.embeddedt.embeddium.impl.render.vertex.serializers;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.render.vertex.serializers.generated.VertexSerializerFactory;
-import net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription;
-import net.caffeinemc.mods.sodium.api.vertex.serializer.VertexSerializer;
-import net.caffeinemc.mods.sodium.api.vertex.serializer.VertexSerializerRegistry;
+import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
+import org.embeddedt.embeddium.api.vertex.serializer.VertexSerializer;
+import org.embeddedt.embeddium.api.vertex.serializer.VertexSerializerRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

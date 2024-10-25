@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.lwjgl.system.MemoryStack;
 
 @Deprecated
-public interface VertexBufferWriter extends net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter {
+public interface VertexBufferWriter extends org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter {
     @Deprecated
     static VertexBufferWriter of(VertexConsumer consumer) {
         return (VertexBufferWriter) consumer;
@@ -28,7 +28,7 @@ public interface VertexBufferWriter extends net.caffeinemc.mods.sodium.api.verte
     @Deprecated
     void push(MemoryStack stack, long ptr, int count, VertexFormatDescription format);
 
-    default void push(MemoryStack stack, long ptr, int count, net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription format) {
+    default void push(MemoryStack stack, long ptr, int count, org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription format) {
         push(stack, ptr, count, VertexFormatDescription.translateModern(format));
     }
 

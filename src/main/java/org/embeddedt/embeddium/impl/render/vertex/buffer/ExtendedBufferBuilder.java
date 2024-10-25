@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.render.vertex.buffer;
 
-import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
-import net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription;
+import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
+import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
 
 import java.nio.ByteBuffer;
 

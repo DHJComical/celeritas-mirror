@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.mixin.features.textures.animations.upload;
 
 import org.embeddedt.embeddium.impl.util.NativeImageHelper;
 import org.embeddedt.embeddium.impl.mixin.features.textures.SpriteContentsInvoker;
-import net.caffeinemc.mods.sodium.api.util.ColorMixer;
+import org.embeddedt.embeddium.api.util.ColorMixer;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import org.lwjgl.system.MemoryUtil;
 import org.spongepowered.asm.mixin.*;

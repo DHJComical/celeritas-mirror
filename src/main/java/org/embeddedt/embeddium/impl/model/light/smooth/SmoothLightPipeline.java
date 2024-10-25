@@ -6,7 +6,7 @@ import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.embeddedt.embeddium.impl.model.light.data.QuadLightData;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
-import net.caffeinemc.mods.sodium.api.util.NormI8;
+import org.embeddedt.embeddium.api.util.NormI8;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;

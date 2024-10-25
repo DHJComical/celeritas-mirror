@@ -1,8 +1,8 @@
 package org.embeddedt.embeddium.impl.render.vertex;
 
 import org.embeddedt.embeddium.impl.mixin.core.render.VertexFormatAccessor;
-import net.caffeinemc.mods.sodium.api.vertex.attributes.CommonVertexAttribute;
-import net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription;
+import org.embeddedt.embeddium.api.vertex.attributes.CommonVertexAttribute;
+import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 

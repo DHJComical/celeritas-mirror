@@ -15,7 +15,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.material.DefaultMateria
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.builder.ChunkMeshBufferBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
-import net.caffeinemc.mods.sodium.api.util.ColorARGB;
+import org.embeddedt.embeddium.api.util.ColorARGB;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderType;

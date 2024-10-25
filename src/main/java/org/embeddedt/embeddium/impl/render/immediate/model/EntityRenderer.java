@@ -2,9 +2,9 @@ package org.embeddedt.embeddium.impl.render.immediate.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.render.matrix_stack.CachingPoseStack;
-import net.caffeinemc.mods.sodium.api.math.MatrixHelper;
-import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
-import net.caffeinemc.mods.sodium.api.vertex.format.common.ModelVertex;
+import org.embeddedt.embeddium.api.math.MatrixHelper;
+import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
+import org.embeddedt.embeddium.api.vertex.format.common.ModelVertex;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.core.Direction;
 import org.apache.commons.lang3.ArrayUtils;

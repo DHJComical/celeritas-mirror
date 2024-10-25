@@ -60,9 +60,9 @@ public class VertexFormatDescription {
                 .collect(Collectors.joining(","));
     }
 
-    private static final IdentityHashMap<net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription, VertexFormatDescription> DESCRIPTION_MAP = new IdentityHashMap<>();
+    private static final IdentityHashMap<org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription, VertexFormatDescription> DESCRIPTION_MAP = new IdentityHashMap<>();
 
-    public static VertexFormatDescription translateModern(net.caffeinemc.mods.sodium.api.vertex.format.VertexFormatDescription dsc) {
+    public static VertexFormatDescription translateModern(org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription dsc) {
         if(dsc instanceof VertexFormatDescriptionImpl impl) {
             synchronized (DESCRIPTION_MAP) {
                 VertexFormatDescription legacyDsc = DESCRIPTION_MAP.get(impl);

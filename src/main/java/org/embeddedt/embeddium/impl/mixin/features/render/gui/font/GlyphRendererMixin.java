@@ -1,11 +1,11 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.gui.font;
 
-import net.caffeinemc.mods.sodium.api.vertex.format.common.GlyphVertex;
+import org.embeddedt.embeddium.api.vertex.format.common.GlyphVertex;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
-import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
-import net.caffeinemc.mods.sodium.api.util.ColorABGR;
+import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
+import org.embeddedt.embeddium.api.util.ColorABGR;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.caffeinemc.mods.sodium.api.math.MatrixHelper;
+import org.embeddedt.embeddium.api.math.MatrixHelper;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.spongepowered.asm.mixin.*;

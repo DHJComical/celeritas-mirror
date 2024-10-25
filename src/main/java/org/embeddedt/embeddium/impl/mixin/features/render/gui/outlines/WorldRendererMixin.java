@@ -1,18 +1,17 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.gui.outlines;
 
-import net.caffeinemc.mods.sodium.api.vertex.format.common.LineVertex;
+import org.embeddedt.embeddium.api.vertex.format.common.LineVertex;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.caffeinemc.mods.sodium.api.vertex.buffer.VertexBufferWriter;
-import net.caffeinemc.mods.sodium.api.util.NormI8;
+import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
+import org.embeddedt.embeddium.api.util.NormI8;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.caffeinemc.mods.sodium.api.util.ColorABGR;
+import org.embeddedt.embeddium.api.util.ColorABGR;
 import org.joml.Math;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

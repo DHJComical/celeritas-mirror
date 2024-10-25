@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.util.color;
 
-import net.caffeinemc.mods.sodium.api.util.ColorARGB;
+import org.embeddedt.embeddium.api.util.ColorARGB;
 import net.minecraft.util.Mth;
 
 public class BoxBlur {

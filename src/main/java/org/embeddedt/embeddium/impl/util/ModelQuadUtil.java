@@ -2,8 +2,8 @@ package org.embeddedt.embeddium.impl.util;
 
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
-import net.caffeinemc.mods.sodium.api.util.ColorARGB;
-import net.caffeinemc.mods.sodium.api.util.NormI8;
+import org.embeddedt.embeddium.api.util.ColorARGB;
+import org.embeddedt.embeddium.api.util.NormI8;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 

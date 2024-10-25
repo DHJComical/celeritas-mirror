@@ -12,7 +12,7 @@ import org.embeddedt.embeddium.impl.gui.options.OptionPage;
 import org.embeddedt.embeddium.impl.gui.options.storage.OptionStorage;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-import net.caffeinemc.mods.sodium.api.util.ColorARGB;
+import org.embeddedt.embeddium.api.util.ColorARGB;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;

@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.immediate.matrix_stack;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.caffeinemc.mods.sodium.api.math.MatrixHelper;
+import org.embeddedt.embeddium.api.math.MatrixHelper;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
