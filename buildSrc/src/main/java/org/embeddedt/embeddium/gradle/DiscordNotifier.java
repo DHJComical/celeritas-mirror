@@ -36,7 +36,7 @@ public class DiscordNotifier {
     }
 
     private static String getLastCommitInfo() {
-        InputStream is = executeCommand("git", "log", "-1", "--pretty=\"format:%H   %B\"");
+        InputStream is = executeCommand("git", "log", "-1", "--pretty=format:%H   %B");
         try {
             byte[] bs = is.readAllBytes();
             is.close();
