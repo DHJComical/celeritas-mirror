@@ -9,8 +9,6 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncode
 import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.embeddedt.embeddium.impl.render.frapi.SpriteFinderCache;
 import org.joml.Vector3fc;
 
@@ -26,7 +24,6 @@ import java.util.Arrays;
  *
  * @author KitsuneAlex, embeddedt
  */
-@OnlyIn(Dist.CLIENT)
 public final class SinkingVertexBuilder implements VertexConsumer {
     private static final int VERTEX_SIZE_BYTES = 32;
     private static final int INITIAL_CAPACITY = 16384; // Seems to generally be enough for your average subchunk

@@ -1,10 +1,8 @@
 package org.embeddedt.embeddium.impl.mixin;
 
-import net.minecraftforge.fml.loading.FMLLoader;
-import net.minecraftforge.fml.loading.LoadingModList;
-import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 
 import java.io.*;
 import java.util.HashMap;
@@ -18,8 +16,6 @@ import static org.embeddedt.embeddium.impl.SodiumClientMod.MODNAME;
 @SuppressWarnings("CanBeFinal")
 public class MixinConfig {
     private static final Logger LOGGER = LogManager.getLogger(MODNAME + "Config");
-
-    private static final String JSON_KEY_SODIUM_OPTIONS = "sodium:options";
 
     private final Map<String, MixinOption> options = new HashMap<>();
 
@@ -90,10 +86,10 @@ public class MixinConfig {
 
         Pattern replacePattern = Pattern.compile("[^\\w]");
 
-        if (FMLLoader.getLoadingModList().getErrors().isEmpty()) {
-            for (ModInfo modInfo : FMLLoader.getLoadingModList().getMods()) {
+        if (EarlyLoaderServices.INSTANCE.isLoadingNormally()) {
+            for (String modId : EarlyLoaderServices.INSTANCE.getLoadedModIds()) {
                 // Convert anything but alphabets and numbers to _
-                String sanitizedModId = replacePattern.matcher(modInfo.getModId()).replaceAll("_");
+                String sanitizedModId = replacePattern.matcher(modId).replaceAll("_");
                 this.addMixinRule("modcompat." + sanitizedModId, true);
             }
         }
@@ -102,7 +98,7 @@ public class MixinConfig {
     }
 
     private static boolean isModLoaded(String modId) {
-        return LoadingModList.get().getModFileById(modId) != null;
+        return EarlyLoaderServices.INSTANCE.isModLoaded(modId);
     }
 
     private void applyBuiltInCompatOverrides() {
@@ -157,24 +153,7 @@ public class MixinConfig {
     }
 
     private void applyModOverrides() {
-        // Example of how to put overrides into the mods.toml file:
-        // ...
-        // [[mods]]
-        // modId="examplemod"
-        // [mods."sodium:options"]
-        // "features.chunk_rendering"=false
-        // ...
-        for (var meta : LoadingModList.get().getMods()) {
-            meta.getConfigElement(JSON_KEY_SODIUM_OPTIONS).ifPresent(overridesObj -> {
-                if (overridesObj instanceof Map overrides && overrides.keySet().stream().allMatch(key -> key instanceof String)) {
-                    overrides.forEach((key, value) -> {
-                        this.applyModOverride(meta.getModId(), (String)key, value);
-                    });
-                } else {
-                    LOGGER.warn("Mod '{}' contains invalid " + MODNAME + " option overrides, ignoring", meta.getModId());
-                }
-            });
-        }
+        EarlyLoaderServices.INSTANCE.readModMixinConfigOverrides(override -> this.applyModOverride(override.modId(), override.key(), override.value()));
     }
 
     private void applyModOverride(String modid, String name, Object value) {

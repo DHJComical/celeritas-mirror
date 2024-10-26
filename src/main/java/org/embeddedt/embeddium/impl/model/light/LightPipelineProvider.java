@@ -1,10 +1,9 @@
 package org.embeddedt.embeddium.impl.model.light;
 
+import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.embeddedt.embeddium.impl.model.light.flat.FlatLightPipeline;
 import org.embeddedt.embeddium.impl.model.light.smooth.SmoothLightPipeline;
-import net.minecraftforge.common.ForgeConfig;
-import org.embeddedt.embeddium.impl.render.chunk.light.ForgeLightPipeline;
 
 import java.util.EnumMap;
 
@@ -20,9 +19,9 @@ public class LightPipelineProvider {
 
     public LightPipelineProvider(LightDataAccess cache) {
         this.lightData = cache;
-        if (ForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get()) {
-            this.lighters.put(LightMode.SMOOTH, ForgeLightPipeline.smooth(cache));
-            this.lighters.put(LightMode.FLAT, ForgeLightPipeline.flat(cache));
+        if (LoaderServices.INSTANCE.hasCustomLightPipeline()) {
+            this.lighters.put(LightMode.SMOOTH, LoaderServices.INSTANCE.createCustomLightPipeline(LightMode.SMOOTH, cache));
+            this.lighters.put(LightMode.FLAT, LoaderServices.INSTANCE.createCustomLightPipeline(LightMode.FLAT, cache));
         } else {
             this.lighters.put(LightMode.SMOOTH, new SmoothLightPipeline(cache));
             this.lighters.put(LightMode.FLAT, new FlatLightPipeline(cache));

@@ -5,7 +5,6 @@ import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import org.embeddedt.embeddium.api.OptionPageConstructionEvent;
-import org.embeddedt.embeddium.client.gui.options.OptionIdGenerator;
 import org.embeddedt.embeddium.client.gui.options.OptionIdentifier;
 import org.embeddedt.embeddium.client.gui.options.StandardOptions;
 
@@ -20,7 +19,7 @@ public class OptionPage {
     private final ImmutableList<Option<?>> options;
 
     private static OptionIdentifier<Void> tryMakeId(Component name) {
-        OptionIdentifier<Void> id;
+        OptionIdentifier<Void> id = null;
         if(name.getContents() instanceof TranslatableContents translatableContents) {
             String key = translatableContents.getKey();
             if(name.getSiblings().isEmpty()) {
@@ -30,20 +29,14 @@ public class OptionPage {
                     case "sodium.options.pages.quality" -> StandardOptions.Pages.QUALITY;
                     case "sodium.options.pages.advanced" -> StandardOptions.Pages.ADVANCED;
                     case "sodium.options.pages.performance" -> StandardOptions.Pages.PERFORMANCE;
-                    default -> OptionIdGenerator.generateId(key);
+                    default -> null;
                 };
-            } else {
-                id = OptionIdGenerator.generateId(key);
             }
-        } else {
-            id = OptionIdGenerator.generateId(name.getString());
         }
         if(id != null) {
-            SodiumClientMod.logger().debug("Guessed ID for legacy OptionPage '{}': {}", name.getString(), id);
             return id;
         } else {
-            SodiumClientMod.logger().warn("Id must be specified in OptionPage '{}'", name.getString());
-            return DEFAULT_ID;
+            throw new IllegalStateException("ID must be provided for option page");
         }
     }
 

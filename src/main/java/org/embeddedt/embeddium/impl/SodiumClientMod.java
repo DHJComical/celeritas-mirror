@@ -15,8 +15,6 @@ import net.minecraftforge.network.NetworkConstants;
 
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
-import org.embeddedt.embeddium.impl.taint.incompats.IncompatibleModManager;
-import org.embeddedt.embeddium.impl.taint.scanning.TaintDetector;
 import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +39,6 @@ public class SodiumClientMod {
             return;
         }
 
-        TaintDetector.init();
-
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
         if(!FMLLoader.isProduction()) {
             MinecraftForge.EVENT_BUS.addListener((RegisterClientCommandsEvent event) -> DevCommands.register(event.getDispatcher()));
@@ -50,7 +46,6 @@ public class SodiumClientMod {
     }
 
     public void onClientSetup(final FMLClientSetupEvent event) {
-        IncompatibleModManager.checkMods(event);
         FlawlessFrames.onClientInitialization();
     }
 

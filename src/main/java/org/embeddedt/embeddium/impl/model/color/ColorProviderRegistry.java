@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.model.color;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
+import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.model.color.interop.BlockColorsExtended;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.BiomeColors;
@@ -12,7 +13,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 
 /**
  * The color provider registry holds the map of {@link ColorProvider}s that are currently in use by the renderer. Most
@@ -51,9 +51,8 @@ public class ColorProviderRegistry {
         // default getTintColor implementation on water.
         // Note: any injections must not assume the provided state matches the in-world state at that BlockPos, because
         // per-vertex biome blending does not uphold that invariant.
-        var waterExtensions = IClientFluidTypeExtensions.of(Fluids.WATER);
         var waterState = Fluids.WATER.defaultFluidState();
-        DefaultColorProviders.VertexBlendedBiomeColorAdapter.VanillaBiomeColor waterGetter = (getter, pos) -> waterExtensions.getTintColor(waterState, getter, pos);
+        DefaultColorProviders.VertexBlendedBiomeColorAdapter.VanillaBiomeColor waterGetter = (getter, pos) -> LoaderServices.INSTANCE.getFluidTintColor(getter, waterState, pos);
 
         this.registerBlocks(new DefaultColorProviders.VertexBlendedBiomeColorAdapter<>(waterGetter),
                 Blocks.WATER, Blocks.BUBBLE_COLUMN);

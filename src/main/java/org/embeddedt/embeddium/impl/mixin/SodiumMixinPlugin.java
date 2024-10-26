@@ -1,15 +1,11 @@
 package org.embeddedt.embeddium.impl.mixin;
 
 import org.embeddedt.embeddium.impl.SodiumPreLaunch;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.loading.FMLLoader;
-import net.minecraftforge.fml.loading.moddiscovery.ModFile;
-import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.asm.AnnotationProcessingEngine;
 import org.embeddedt.embeddium.impl.config.ConfigMigrator;
-import org.embeddedt.embeddium_integrity.MixinTaintDetector;
+import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -44,8 +40,6 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
                 this.config.getOptionCount(), this.config.getOptionOverrideCount());
 
         SodiumPreLaunch.onPreLaunch();
-
-        MixinTaintDetector.initialize();
     }
 
     @Override
@@ -106,24 +100,15 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
-        if (FMLLoader.getDist() != Dist.CLIENT) {
+        if (!EarlyLoaderServices.INSTANCE.getDistribution().isClient()) {
             return null;
         }
 
-        ModFileInfo modFileInfo = FMLLoader.getLoadingModList().getModFileById("embeddium");
-
-        if (modFileInfo == null) {
-            // Probably a load error
-            logger.error("Could not find embeddium mod, there is likely a dependency error. Skipping mixin application.");
-            return null;
-        }
-
-        ModFile modFile = modFileInfo.getFile();
         Set<Path> rootPaths = new HashSet<>();
         // This allows us to see it from multiple sourcesets if need be
         for(String basePackage : new String[] { "core", "modcompat" }) {
-            Path mixinPackagePath = modFile.findResource("org", "embeddedt", "embeddium", "impl", "mixin", basePackage);
-            if(Files.exists(mixinPackagePath)) {
+            Path mixinPackagePath = EarlyLoaderServices.INSTANCE.findEarlyMixinFolder("org/embeddedt/embeddium/impl/mixin/" + basePackage);
+            if(mixinPackagePath != null) {
                 rootPaths.add(mixinPackagePath.getParent().toAbsolutePath());
             }
         }

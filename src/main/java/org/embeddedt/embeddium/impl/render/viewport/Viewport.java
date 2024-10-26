@@ -1,10 +1,10 @@
 package org.embeddedt.embeddium.impl.render.viewport;
 
+import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.common.extensions.IForgeBlockEntity;
 import org.joml.Vector3d;
 
 public final class Viewport {
@@ -28,7 +28,7 @@ public final class Viewport {
     }
 
     public boolean isBoxVisible(AABB box) {
-        if (box.equals(IForgeBlockEntity.INFINITE_EXTENT_AABB)) {
+        if (!LoaderServices.INSTANCE.isCullableAABB(box)) {
             return true;
         }
 
