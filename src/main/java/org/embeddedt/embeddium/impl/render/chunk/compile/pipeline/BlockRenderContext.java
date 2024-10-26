@@ -1,11 +1,11 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
 import org.embeddedt.embeddium.impl.render.matrix_stack.CachingPoseStack;
@@ -18,8 +18,7 @@ import org.joml.Vector3fc;
  * being freshly constructed for each block to avoid allocations.
  */
 public class BlockRenderContext {
-    private final WorldSlice world;
-    private final BlockAndTintGetter localSlice;
+    private final EmbeddiumBlockAndTintGetter localSlice;
 
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
@@ -37,7 +36,6 @@ public class BlockRenderContext {
 
 
     public BlockRenderContext(WorldSlice world) {
-        this.world = world;
         this.localSlice = WorldSliceLocalGenerator.generate(world);
         ((CachingPoseStack)this.stack).embeddium$setCachingEnabled(true);
     }
@@ -63,16 +61,9 @@ public class BlockRenderContext {
     }
 
     /**
-     * @return The world which the block is being rendered from
-     */
-    public WorldSlice world() {
-        return this.world;
-    }
-
-    /**
      * @return The world which the block is being rendered from. Guaranteed to be a new object for each subchunk.
      */
-    public BlockAndTintGetter localSlice() {
+    public EmbeddiumBlockAndTintGetter localSlice() {
         return this.localSlice;
     }
 

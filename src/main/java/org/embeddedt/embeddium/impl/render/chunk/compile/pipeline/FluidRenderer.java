@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.compat.ccl.SinkingVertexBuilder;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
@@ -18,7 +19,6 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
-import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.util.DirectionUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -149,7 +149,7 @@ public class FluidRenderer {
         return Math.abs(a - b) <= ALIGNED_EQUALS_EPSILON;
     }
 
-    private void renderVanilla(WorldSlice world, FluidState fluidState, BlockPos blockPos, ChunkModelBuilder buffers, Material material) {
+    private void renderVanilla(EmbeddiumBlockAndTintGetter world, FluidState fluidState, BlockPos blockPos, ChunkModelBuilder buffers, Material material) {
         // Call vanilla fluid renderer and capture the results
         var context = Objects.requireNonNull(GlobalChunkBuildContext.get());
         context.setCaptureAdditionalSprites(true);
@@ -168,7 +168,7 @@ public class FluidRenderer {
         context.setCaptureAdditionalSprites(false);
     }
 
-    public void render(WorldSlice world, FluidState fluidState, BlockPos blockPos, BlockPos offset, ChunkBuildBuffers buffers) {
+    public void render(EmbeddiumBlockAndTintGetter world, FluidState fluidState, BlockPos blockPos, BlockPos offset, ChunkBuildBuffers buffers) {
         var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(ItemBlockRenderTypes.getRenderLayer(fluidState));
         var meshBuilder = buffers.get(material);
 
@@ -468,7 +468,7 @@ public class FluidRenderer {
         return DefaultColorProviders.getFluidProvider();
     }
 
-    private void updateQuad(ModelQuadView quad, WorldSlice world, BlockPos pos, LightPipeline lighter, Direction dir, float brightness,
+    private void updateQuad(ModelQuadView quad, EmbeddiumBlockAndTintGetter world, BlockPos pos, LightPipeline lighter, Direction dir, float brightness,
                             ColorProvider<FluidState> colorProvider, FluidState fluidState) {
         QuadLightData light = this.quadLightData;
         lighter.calculate(quad, pos, light, null, dir, false);

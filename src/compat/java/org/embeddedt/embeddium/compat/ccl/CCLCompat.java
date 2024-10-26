@@ -34,7 +34,7 @@ public class CCLCompat {
      */
     private static BlockRendererRegistry.Renderer createBridge(ICCBlockRenderer r) {
         return ccRendererToSodium.computeIfAbsent(r, ccRenderer -> (ctx, random, consumer) -> {
-            ccRenderer.renderBlock(ctx.state(), ctx.pos(), ctx.world(), STACK_THREAD_LOCAL.get(), consumer, random, ctx.modelData(), ctx.renderLayer());
+            ccRenderer.renderBlock(ctx.state(), ctx.pos(), ctx.localSlice(), STACK_THREAD_LOCAL.get(), consumer, random, ctx.modelData(), ctx.renderLayer());
             return BlockRendererRegistry.RenderResult.OVERRIDE;
         });
     }
@@ -45,7 +45,7 @@ public class CCLCompat {
             BlockRendererRegistry.instance().registerRenderPopulator((resultList, ctx) -> {
                 if(!customGlobalRenderers.isEmpty()) {
                     for(ICCBlockRenderer r : customGlobalRenderers) {
-                        if(r.canHandleBlock(ctx.world(), ctx.pos(), ctx.state(), ctx.renderLayer())) {
+                        if(r.canHandleBlock(ctx.localSlice(), ctx.pos(), ctx.state(), ctx.renderLayer())) {
                             resultList.add(createBridge(r));
                         }
                     }
@@ -54,7 +54,7 @@ public class CCLCompat {
                     Block block = ctx.state().getBlock();
                     var holder = ForgeRegistries.BLOCKS.getDelegateOrThrow(block);
                     var renderer = customBlockRenderers.get(holder);
-                    if (renderer != null && renderer.canHandleBlock(ctx.world(), ctx.pos(), ctx.state(), ctx.renderLayer())) {
+                    if (renderer != null && renderer.canHandleBlock(ctx.localSlice(), ctx.pos(), ctx.state(), ctx.renderLayer())) {
                         resultList.add(createBridge(renderer));
                     }
                 }
@@ -62,7 +62,7 @@ public class CCLCompat {
                     Fluid fluid = ctx.state().getFluidState().getType();
                     var holder = ForgeRegistries.FLUIDS.getDelegateOrThrow(fluid);
                     var renderer = customFluidRenderers.get(holder);
-                    if (renderer != null && renderer.canHandleBlock(ctx.world(), ctx.pos(), ctx.state(), ctx.renderLayer())) {
+                    if (renderer != null && renderer.canHandleBlock(ctx.localSlice(), ctx.pos(), ctx.state(), ctx.renderLayer())) {
                         resultList.add(createBridge(renderer));
                     }
                 }

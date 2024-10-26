@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.world;
 
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
+import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorCache;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorSource;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorView;
@@ -52,7 +53,7 @@ import java.util.Objects;
  * <p>Object pooling should be used to avoid huge allocations as this class contains many large arrays.</p>
  */
 @OptionalInterface({ FabricBlockView.class, RenderAttachedBlockView.class })
-public class WorldSlice implements BlockAndTintGetter, BiomeColorView, FabricBlockView, RenderAttachedBlockView {
+public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView, FabricBlockView, RenderAttachedBlockView {
     private static final LightLayer[] LIGHT_TYPES = LightLayer.values();
 
     // The number of blocks in a section.

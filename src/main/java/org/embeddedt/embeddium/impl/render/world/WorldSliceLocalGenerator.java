@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.world;
 
 import com.google.common.base.Suppliers;
+import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import net.minecraft.world.level.BlockAndTintGetter;
 import org.objectweb.asm.*;
@@ -57,7 +58,7 @@ public class WorldSliceLocalGenerator {
         try {
             WORLD_SLICE_LOCAL_CONSTRUCTOR = MethodHandles.publicLookup()
                     .findConstructor(WORLD_SLICE_LOCAL_CLASS, MethodType.methodType(void.class, WorldSlice.class))
-                    .asType(MethodType.methodType(BlockAndTintGetter.class, WorldSlice.class));
+                    .asType(MethodType.methodType(EmbeddiumBlockAndTintGetter.class, WorldSlice.class));
         } catch (NoSuchMethodException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
@@ -73,9 +74,9 @@ public class WorldSliceLocalGenerator {
      * @return a unique BlockAndTintGetter guaranteed to be reference-unequal with any other one returned by this
      * method, that points to the given WorldSlice
      */
-    public static BlockAndTintGetter generate(WorldSlice originalSlice) {
+    public static EmbeddiumBlockAndTintGetter generate(WorldSlice originalSlice) {
         try {
-            return (BlockAndTintGetter)WORLD_SLICE_LOCAL_CONSTRUCTOR.invokeExact(originalSlice);
+            return (EmbeddiumBlockAndTintGetter)WORLD_SLICE_LOCAL_CONSTRUCTOR.invokeExact(originalSlice);
         } catch(Throwable e) {
             throw new RuntimeException("Exception creating WorldSlice wrapper", e);
         }

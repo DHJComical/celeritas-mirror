@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.model.color;
 
+import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
-import org.embeddedt.embeddium.impl.world.WorldSlice;
 import net.minecraft.core.BlockPos;
 
 /**
@@ -21,5 +21,5 @@ public interface ColorProvider<T> {
      * @param quad   The quad geometry which should be colorized
      * @param output The output array of vertex colors (in ABGR format)
      */
-    void getColors(WorldSlice view, BlockPos pos, T state, ModelQuadView quad, int[] output);
+    void getColors(EmbeddiumBlockAndTintGetter view, BlockPos pos, T state, ModelQuadView quad, int[] output);
 }

@@ -277,7 +277,7 @@ public class BlockRenderer {
         final int[] vertexColors = this.quadColors;
 
         if (colorProvider != null && quad.hasColor()) {
-            colorProvider.getColors(ctx.world(), ctx.pos(), ctx.state(), quad, vertexColors);
+            colorProvider.getColors(ctx.localSlice(), ctx.pos(), ctx.state(), quad, vertexColors);
             // Force full alpha on all colors
             for(int i = 0; i < vertexColors.length; i++) {
                 vertexColors[i] |= 0xFF000000;

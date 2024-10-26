@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.model.color;
 
+import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
 import org.embeddedt.embeddium.impl.model.quad.blender.BlendedColorProvider;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
@@ -43,7 +44,7 @@ public class DefaultColorProviders {
         }
 
         @Override
-        protected int getColor(WorldSlice world, BlockPos pos) {
+        protected int getColor(EmbeddiumBlockAndTintGetter world, BlockPos pos) {
             return vanillaGetter.getAverageColor(world, pos);
         }
     }
@@ -56,14 +57,14 @@ public class DefaultColorProviders {
         }
 
         @Override
-        public void getColors(WorldSlice view, BlockPos pos, BlockState state, ModelQuadView quad, int[] output) {
+        public void getColors(EmbeddiumBlockAndTintGetter view, BlockPos pos, BlockState state, ModelQuadView quad, int[] output) {
             Arrays.fill(output, ColorARGB.toABGR(this.provider.getColor(state, view, pos, quad.getColorIndex())));
         }
     }
 
     private static class ForgeFluidAdapter implements ColorProvider<FluidState> {
         @Override
-        public void getColors(WorldSlice view, BlockPos pos, FluidState state, ModelQuadView quad, int[] output) {
+        public void getColors(EmbeddiumBlockAndTintGetter view, BlockPos pos, FluidState state, ModelQuadView quad, int[] output) {
             if (view == null || state == null) {
                 Arrays.fill(output, -1);
                 return;
