@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.render.chunk.terrain;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
@@ -16,13 +17,12 @@ import net.minecraft.client.renderer.RenderType;
  * Geometry that shares the same terrain render pass may still be able to specify some more dynamic properties. See {@link Material}
  * for more information.
  */
-@Builder
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Accessors(fluent = true)
 public class TerrainRenderPass {
     /**
      * The friendly name of this render pass.
      */
+    @Getter
     private final String name;
 
     /**
@@ -43,16 +43,17 @@ public class TerrainRenderPass {
      */
     private final boolean useTranslucencySorting;
 
-    @Deprecated
-    public TerrainRenderPass(RenderType layer, boolean useReverseOrder, boolean allowFragmentDiscard) {
+    @Builder
+    public TerrainRenderPass(String name, RenderType layer, boolean useReverseOrder, boolean fragmentDiscard, boolean useTranslucencySorting) {
+        if(name == null || name.length() == 0) {
+            throw new IllegalArgumentException("Name not specified for terrain pass");
+        }
+        this.name = name;
         this.layer = layer;
-        this.name = layer.toString();
-
         this.useReverseOrder = useReverseOrder;
-        this.fragmentDiscard = allowFragmentDiscard;
-        this.useTranslucencySorting = useReverseOrder;
+        this.fragmentDiscard = fragmentDiscard;
+        this.useTranslucencySorting = useTranslucencySorting;
     }
-
 
     public boolean isReverseOrder() {
         return this.useReverseOrder;

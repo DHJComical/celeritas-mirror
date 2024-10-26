@@ -107,6 +107,8 @@ public class RenderSectionManager {
     @Getter
     private final RenderPassConfiguration renderPassConfiguration;
 
+    private final Set<TerrainRenderPass> disabledRenderPasses;
+
     public RenderSectionManager(ClientLevel world, int renderDistance, CommandList commandList) {
         ChunkVertexType vertexType = SodiumClientMod.canUseVanillaVertices() ? ChunkMeshFormats.VANILLA_LIKE : ChunkMeshFormats.COMPACT;
 
@@ -134,6 +136,8 @@ public class RenderSectionManager {
             this.rebuildLists.put(type, new ArrayDeque<>());
         }
 
+        this.disabledRenderPasses = new ReferenceArraySet<>();
+
         this.translucencySorting = SodiumClientMod.canApplyTranslucencySorting();
     }
 
@@ -141,9 +145,25 @@ public class RenderSectionManager {
         // First, build the main passes
         TerrainRenderPass solidPass, cutoutMippedPass, translucentPass;
 
-        solidPass = new TerrainRenderPass(RenderType.solid(), false, false);
-        cutoutMippedPass = new TerrainRenderPass(RenderType.cutoutMipped(), false, true);
-        translucentPass = new TerrainRenderPass(RenderType.translucent(), true, false);
+        solidPass = TerrainRenderPass.builder()
+                .layer(RenderType.solid())
+                .name("solid")
+                .fragmentDiscard(false)
+                .useReverseOrder(false)
+                .build();
+        cutoutMippedPass = TerrainRenderPass.builder()
+                .layer(RenderType.cutoutMipped())
+                .name("cutout_mipped")
+                .fragmentDiscard(true)
+                .useReverseOrder(false)
+                .build();
+        translucentPass = TerrainRenderPass.builder()
+                .layer(RenderType.translucent())
+                .name("translucent")
+                .fragmentDiscard(false)
+                .useReverseOrder(true)
+                .useTranslucencySorting(true)
+                .build();
 
         ImmutableListMultimap.Builder<RenderType, TerrainRenderPass> vanillaRenderStages = ImmutableListMultimap.builder();
 
@@ -163,8 +183,21 @@ public class RenderSectionManager {
             vanillaRenderStages.put(RenderType.solid(), cutoutMippedPass);
         } else {
             TerrainRenderPass cutoutPass, tripwirePass;
-            cutoutPass = new TerrainRenderPass(RenderType.cutout(), false, true);
-            tripwirePass = new TerrainRenderPass(RenderType.tripwire(), false, true);
+
+            cutoutPass = TerrainRenderPass.builder()
+                    .layer(RenderType.cutout())
+                    .name("cutout")
+                    .fragmentDiscard(true)
+                    .useReverseOrder(false)
+                    .build();
+
+            tripwirePass = TerrainRenderPass.builder()
+                    .layer(RenderType.tripwire())
+                    .name("tripwire")
+                    .fragmentDiscard(true)
+                    .useReverseOrder(false)
+                    .build();
+
             cutoutMaterial = new Material(cutoutPass, AlphaCutoffParameter.ONE_TENTH, false);
             tripwireMaterial = new Material(tripwirePass, AlphaCutoffParameter.ONE_TENTH, false);
             vanillaRenderStages.put(RenderType.cutout(), cutoutPass);
@@ -395,6 +428,10 @@ public class RenderSectionManager {
     }
 
     public void renderLayer(ChunkRenderMatrices matrices, TerrainRenderPass pass, double x, double y, double z) {
+        if (disabledRenderPasses.contains(pass)) {
+            return;
+        }
+
         RenderDevice device = RenderDevice.INSTANCE;
         CommandList commandList = device.createCommandList();
 
@@ -883,6 +920,14 @@ public class RenderSectionManager {
 
     public Collection<RenderSection> getSectionsWithGlobalEntities() {
         return ReferenceSets.unmodifiable(this.sectionsWithGlobalEntities);
+    }
+
+    public void toggleRenderingForTerrainPass(TerrainRenderPass pass) {
+        if(this.disabledRenderPasses.contains(pass)) {
+            this.disabledRenderPasses.remove(pass);
+        } else {
+            this.disabledRenderPasses.add(pass);
+        }
     }
 
     public ChunkVertexType getVertexType() {

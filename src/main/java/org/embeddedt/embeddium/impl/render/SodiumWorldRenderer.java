@@ -7,11 +7,13 @@ import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import lombok.Getter;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.model.quad.blender.BlendedColorProvider;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
+import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
@@ -65,6 +67,7 @@ public class SodiumWorldRenderer {
 
     private Viewport currentViewport;
 
+    @Getter
     private RenderSectionManager renderSectionManager;
 
     /**
@@ -607,6 +610,10 @@ public class SodiumWorldRenderer {
         // C: visible/total D: distance
         // TODO: add dirty and queued counts
         return String.format("C: %d/%d D: %d", this.renderSectionManager.getVisibleChunkCount(), this.renderSectionManager.getTotalSections(), this.renderDistance);
+    }
+
+    public RenderPassConfiguration getRenderPassConfiguration() {
+        return this.renderSectionManager.getRenderPassConfiguration();
     }
 
     /**

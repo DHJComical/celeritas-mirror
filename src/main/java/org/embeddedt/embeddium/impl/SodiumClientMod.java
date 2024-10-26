@@ -1,5 +1,8 @@
 package org.embeddedt.embeddium.impl;
 
+import net.minecraftforge.client.event.RegisterClientCommandsEvent;
+import net.minecraftforge.common.MinecraftForge;
+import org.embeddedt.embeddium.impl.commands.DevCommands;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModList;
@@ -41,6 +44,9 @@ public class SodiumClientMod {
         TaintDetector.init();
 
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
+        if(!FMLLoader.isProduction()) {
+            MinecraftForge.EVENT_BUS.addListener((RegisterClientCommandsEvent event) -> DevCommands.register(event.getDispatcher()));
+        }
     }
 
     public void onClientSetup(final FMLClientSetupEvent event) {
