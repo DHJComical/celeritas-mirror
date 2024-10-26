@@ -7,18 +7,10 @@ version="${version}"
 displayName="Embeddium"
 logoFile="icon.png"
 description='''
-Embeddium is a fork of Rubidium, a fork of Sodium with patches for Forge
+Embeddium is a FOSS performance mod for (Neo)Forge based on Sodium 0.5.11
 '''
 credits="embeddedt, NanoLive, CaffeineMC"
 authors="embeddedt"
-
-[[mods]]
-modId = "rubidium"
-version = "0.7.1"
-displayName = "Rubidium (Embeddium)"
-description = '''
-Stub, to allow mods detecting Rubidium to function as expected.
-'''
 
 # Enforce new enough Oculus
 [[dependencies.embeddium]]
