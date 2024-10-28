@@ -114,22 +114,10 @@ minecraft {
             jvmArgs.add("-javaagent:${BlacksmithDownloader.getBlacksmithJar(project).absolutePath}")
         }
 
-
-        fun configureGameTestRun(run: RunConfig) {
-            run.parent(client)
-            run.property("forge.enableGameTest", "true")
-            run.mods.named("embeddium") {
-                sources(sourceSets["gameTest"])
-            }
-        }
-
-        create("gameTestClient") {
-            configureGameTestRun(this)
-        }
-
-        create("gameTestCiClient") {
-            configureGameTestRun(this)
-            property("embeddium.runAutomatedTests", "true")
+        create("fastClient") {
+            parent(client)
+            jvmArgs.add("-javaagent:${BlacksmithDownloader.getBlacksmithJar(project).absolutePath}")
+            jvmArgs.add("-XX:TieredStopAtLevel=1")
         }
     }
 }
@@ -169,6 +157,10 @@ dependencies {
     compatCompileOnly(fg.deobf("curse.maven:codechickenlib-242818:${"codechicken_fileid"()}"))
     compatCompileOnly(fg.deobf("curse.maven:immersiveengineering-231951:${"ie_fileid"()}"))
     compatCompileOnly(fg.deobf("com.brandon3055.brandonscore:BrandonsCore:1.20.1-3.2.1.302:universal"))
+
+    runtimeOnly(fg.deobf("curse.maven:modernfix-790626:5676014"))
+    runtimeOnly(fg.deobf("curse.maven:radium-570017:5706069"))
+    runtimeOnly(fg.deobf("curse.maven:immediatelyfast-686911:5838235"))
 
     // Fabric API
     compileOnly("net.fabricmc.fabric-api:fabric-api:${"fabric_version"()}")
