@@ -54,22 +54,18 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     private final ChunkRenderContext renderContext;
 
     private final int buildTime;
+    private final Vec3 camera;
 
     private final Map<BlockPos, ModelData> modelDataMap;
 
-    private Vec3 camera = Vec3.ZERO;
 
-    public ChunkBuilderMeshingTask(RenderSection render, ChunkRenderContext renderContext, int time) {
+    public ChunkBuilderMeshingTask(RenderSection render, ChunkRenderContext renderContext, int time, Vec3 camera) {
         this.render = render;
         this.renderContext = renderContext;
         this.buildTime = time;
+        this.camera = camera;
 
         this.modelDataMap = ModelDataSnapshotter.getModelDataForSection(Minecraft.getInstance().level, this.renderContext.getOrigin());
-    }
-
-    public ChunkBuilderMeshingTask withCameraPosition(Vec3 camera) {
-        this.camera = camera;
-        return this;
     }
 
     @Override

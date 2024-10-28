@@ -646,7 +646,7 @@ public class RenderSectionManager {
             return null;
         }
 
-        return new ChunkBuilderMeshingTask(render, context, frame).withCameraPosition(this.cameraPosition);
+        return new ChunkBuilderMeshingTask(render, context, frame, this.cameraPosition);
     }
 
     public ChunkBuilderSortTask createSortTask(RenderSection render, int frame) {
