@@ -12,6 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.lwjgl.system.MemoryStack;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -40,6 +41,14 @@ public abstract class BillboardParticleMixin extends Particle {
         super(world, x, y, z);
     }
 
+    //? if >=1.20.2 {
+    /*@Shadow
+    public abstract SingleQuadParticle.FacingCameraMode getFacingCameraMode();
+    @Shadow
+    @Final
+    private Quaternionf rotation;
+    *///?}
+
     /**
      * @reason Optimize function
      * @author JellySquid
@@ -60,6 +69,7 @@ public abstract class BillboardParticleMixin extends Particle {
         float y = (float) (Mth.lerp(tickDelta, this.yo, this.y) - vec3d.y());
         float z = (float) (Mth.lerp(tickDelta, this.zo, this.z) - vec3d.z());
 
+        //? if <1.20.2 {
         Quaternionf quaternion;
 
         if (this.roll == 0.0F) {
@@ -70,6 +80,14 @@ public abstract class BillboardParticleMixin extends Particle {
             quaternion = new Quaternionf(camera.rotation());
             quaternion.rotateZ(angle);
         }
+        //?} else {
+        /*Quaternionf quaternion = this.rotation;
+        this.getFacingCameraMode().setRotation(quaternion, camera, tickDelta);
+        if (this.roll != 0.0F) {
+            float angle = Mth.lerp(tickDelta, this.oRoll, this.roll);
+            quaternion.rotateZ(angle);
+        }
+        *///?}
 
         float size = this.getQuadSize(tickDelta);
         int light = this.getLightColor(tickDelta);

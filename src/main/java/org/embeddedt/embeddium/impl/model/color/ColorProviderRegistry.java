@@ -40,8 +40,13 @@ public class ColorProviderRegistry {
     // TODO: Allow mods to install their own color resolvers here
     private void installOverrides() {
         this.registerBlocks(new DefaultColorProviders.VertexBlendedBiomeColorAdapter<>(BiomeColors::getAverageGrassColor),
-                Blocks.GRASS_BLOCK, Blocks.FERN, Blocks.GRASS, Blocks.POTTED_FERN,
-                Blocks.PINK_PETALS, Blocks.SUGAR_CANE, Blocks.LARGE_FERN, Blocks.TALL_GRASS);
+                Blocks.GRASS_BLOCK, Blocks.FERN,
+                //? if <1.20.4 {
+                Blocks.GRASS,
+                //?} else {
+                /*Blocks.SHORT_GRASS,
+                *///?}
+                Blocks.POTTED_FERN, Blocks.PINK_PETALS, Blocks.SUGAR_CANE, Blocks.LARGE_FERN, Blocks.TALL_GRASS);
 
         this.registerBlocks(new DefaultColorProviders.VertexBlendedBiomeColorAdapter<>(BiomeColors::getAverageFoliageColor),
                 Blocks.OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.ACACIA_LEAVES,
