@@ -13,6 +13,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+//? if >=1.21 {
+/*import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
+*///?} else
 import net.minecraft.client.gui.screens.VideoSettingsScreen;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -282,7 +285,7 @@ public class SodiumOptionsGUI extends Screen {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_P && (modifiers & GLFW.GLFW_MOD_SHIFT) != 0) {
-            Minecraft.getInstance().setScreen(new VideoSettingsScreen(this.prevScreen, Minecraft.getInstance().options));
+            Minecraft.getInstance().setScreen(new VideoSettingsScreen(this.prevScreen, /*? if >=1.21 {*/ /*Minecraft.getInstance(), *//*?}*/ Minecraft.getInstance().options));
 
             return true;
         }

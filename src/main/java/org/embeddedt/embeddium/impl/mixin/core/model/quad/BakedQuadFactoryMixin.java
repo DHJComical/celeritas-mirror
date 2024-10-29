@@ -26,7 +26,10 @@ public class BakedQuadFactoryMixin {
     @ModifyReturnValue(method = "bakeQuad", at = @At("RETURN"))
     private BakedQuad setMaterialClassification(BakedQuad quad, @Local(ordinal = 0, argsOnly = true) BlockElementFace face, @Local(ordinal = 0, argsOnly = true) TextureAtlasSprite sprite) {
         if (sprite.getClass() == TextureAtlasSprite.class && sprite.contents().getClass() == SpriteContents.class) {
+            //? if <1.21
             float[] uvs = face.uv.uvs;
+            //? if >=1.21
+            /*float[] uvs = face.uv().uvs;*/
             float minUV = Float.MAX_VALUE, maxUV = Float.MIN_VALUE;
 
             for (float uv : uvs) {

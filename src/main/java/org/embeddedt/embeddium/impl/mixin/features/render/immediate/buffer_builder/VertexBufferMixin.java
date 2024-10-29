@@ -9,7 +9,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 // High priority so replacement happens before other mods increase the sampler count, so that we see the updated value
+//? if <1.21
 @Mixin(value = VertexBuffer.class, priority = 500)
+//? if >=1.21
+/*@Mixin(value = ShaderInstance.class, priority = 500)*/
 public class VertexBufferMixin {
     private static final int DEFAULT_NUM_SAMPLERS = 12;
     private static String[] SAMPLER_IDS = embeddium$makeSamplerIds(DEFAULT_NUM_SAMPLERS);
@@ -26,8 +29,14 @@ public class VertexBufferMixin {
      * @author embeddedt
      * @reason Avoid regenerating the sampler ID strings every time a buffer is drawn
      */
+    //? if <1.21 {
     @ModifyExpressionValue(method = "_drawWithShader", at = @At(value = "CONSTANT", args = "intValue=" + DEFAULT_NUM_SAMPLERS, ordinal = 0))
     private int setSamplersManually(int numSamplers, Matrix4f mat1, Matrix4f mat2, ShaderInstance shader) {
+    //?} else {
+    /*@ModifyExpressionValue(method = "setDefaultUniforms", at = @At(value = "CONSTANT", args = "intValue=" + DEFAULT_NUM_SAMPLERS, ordinal = 0))
+    private int setSamplersManually(int numSamplers) {
+    *///?}
+        ShaderInstance shader = (ShaderInstance)(Object)this;
         String[] samplerIds = SAMPLER_IDS;
         if (samplerIds.length < numSamplers) {
             samplerIds = embeddium$makeSamplerIds(numSamplers);

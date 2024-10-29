@@ -10,4 +10,8 @@ public record ChunkRenderMatrices(Matrix4fc projection, Matrix4fc modelView) {
         PoseStack.Pose entry = stack.last();
         return new ChunkRenderMatrices(new Matrix4f(RenderSystem.getProjectionMatrix()), new Matrix4f(entry.pose()));
     }
+
+    public static ChunkRenderMatrices from(Matrix4f pose) {
+        return new ChunkRenderMatrices(new Matrix4f(RenderSystem.getProjectionMatrix()), pose);
+    }
 }

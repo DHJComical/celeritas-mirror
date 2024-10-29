@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.vertex;
 
+//? if <1.21
 import org.embeddedt.embeddium.impl.mixin.core.render.VertexFormatAccessor;
 import org.embeddedt.embeddium.api.vertex.attributes.CommonVertexAttribute;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
@@ -38,7 +39,7 @@ public class VertexFormatDescriptionImpl implements VertexFormatDescription {
         for (int elementIndex = 0; elementIndex < elementList.size(); elementIndex++) {
             var element = elementList.get(elementIndex);
             var commonType = CommonVertexAttribute.getCommonType(element);
-            if (element.getUsage() != VertexFormatElement.Usage.PADDING && (commonType == null || !attributeSet.add(commonType))) {
+            if (/*? if <1.21 {*/ element.getUsage() != VertexFormatElement.Usage.PADDING && /*?}*/ (commonType == null || !attributeSet.add(commonType))) {
                 return false;
             }
         }
@@ -52,6 +53,7 @@ public class VertexFormatDescriptionImpl implements VertexFormatDescription {
         Arrays.fill(commonElementOffsets, -1);
 
         var elementList = format.getElements();
+        //? if <1.21
         var elementOffsets = ((VertexFormatAccessor) format).getOffsets();
 
         for (int elementIndex = 0; elementIndex < elementList.size(); elementIndex++) {
@@ -59,7 +61,10 @@ public class VertexFormatDescriptionImpl implements VertexFormatDescription {
             var commonType = CommonVertexAttribute.getCommonType(element);
 
             if (commonType != null) {
+                //? if <1.21
                 commonElementOffsets[commonType.ordinal()] = elementOffsets.getInt(elementIndex);
+                //? if >=1.21
+                /*commonElementOffsets[commonType.ordinal()] = format.getOffset(element);*/
             }
         }
 

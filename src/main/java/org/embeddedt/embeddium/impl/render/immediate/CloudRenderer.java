@@ -4,12 +4,8 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexBuffer;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.*;
+import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.api.util.ColorABGR;
 import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.api.util.ColorMixer;
@@ -33,6 +29,7 @@ import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.api.render.clouds.ModifyCloudRenderingEvent;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL30C;
@@ -42,7 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class CloudRenderer {
-    private static final ResourceLocation CLOUDS_TEXTURE_ID = new ResourceLocation("textures/environment/clouds.png");
+    private static final ResourceLocation CLOUDS_TEXTURE_ID = ResourceLocationUtil.make("textures/environment/clouds.png");
 
     private static final int CLOUD_COLOR_NEG_Y = ColorABGR.pack(0.7F, 0.7F, 0.7F, 1.0f);
     private static final int CLOUD_COLOR_POS_Y = ColorABGR.pack(1.0f, 1.0f, 1.0f, 1.0f);
@@ -87,6 +84,7 @@ public class CloudRenderer {
     private float cloudSizeX, cloudSizeZ, fogDistanceMultiplier;
     private int cloudDistanceMinimum, cloudDistanceMaximum;
     private CloudStatus cloudRenderMode;
+    private boolean hasCloudGeometry;
 
     public CloudRenderer(ResourceProvider factory) {
         this.reloadTextures(factory);
@@ -98,7 +96,7 @@ public class CloudRenderer {
         return event.getCloudRenderDistance();
     }
 
-    public void render(@Nullable ClientLevel world, LocalPlayer player, PoseStack matrices, Matrix4f projectionMatrix, float ticks, float tickDelta, double cameraX, double cameraY, double cameraZ) {
+    public void render(@Nullable ClientLevel world, LocalPlayer player, Matrix4f modelViewMatrix, Matrix4f projectionMatrix, float ticks, float tickDelta, double cameraX, double cameraY, double cameraZ) {
         if (world == null) {
             return;
         }
@@ -125,8 +123,12 @@ public class CloudRenderer {
         int centerCellZ = (int) (Math.floor(cloudCenterZ / this.cloudSizeZ));
 
         if (this.vertexBuffer == null || this.prevCenterCellX != centerCellX || this.prevCenterCellY != centerCellZ || this.cachedRenderDistance != renderDistance || cloudRenderMode != Minecraft.getInstance().options.getCloudsType()) {
+            //? if <1.21 {
             BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
             bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            //?} else {
+            /*BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            *///?}
 
             this.cloudRenderMode = Minecraft.getInstance().options.getCloudsType();
 
@@ -137,13 +139,30 @@ public class CloudRenderer {
             }
 
             this.vertexBuffer.bind();
+            //? if <1.21 {
             this.vertexBuffer.upload(bufferBuilder.end());
+            this.hasCloudGeometry = true;
+            //?} else {
+            /*MeshData meshData = bufferBuilder.build();
+
+            if(meshData != null) {
+                this.vertexBuffer.upload(meshData);
+                this.hasCloudGeometry = true;
+            } else {
+                this.hasCloudGeometry = false;
+            }
+            *///?}
 
             VertexBuffer.unbind();
 
             this.prevCenterCellX = centerCellX;
             this.prevCenterCellY = centerCellZ;
             this.cachedRenderDistance = renderDistance;
+        }
+
+        // Skip render path if there is no cloud geometry
+        if (!this.hasCloudGeometry) {
+            return;
         }
 
         float previousEnd = RenderSystem.getShaderFogEnd();
@@ -175,36 +194,48 @@ public class CloudRenderer {
 
         RenderSystem.setShaderColor((float) color.x, (float) color.y, (float) color.z, 0.8f);
 
-        matrices.pushPose();
-
-        Matrix4f modelViewMatrix = matrices.last().pose();
+        modelViewMatrix = new Matrix4f(modelViewMatrix);
         modelViewMatrix.translate(-translateX, cloudHeight - (float) cameraY + 0.33F, -translateZ);
 
         // PASS 1: Set up depth buffer
+        //? if <1.21 {
         RenderSystem.disableBlend();
         RenderSystem.depthMask(true);
         RenderSystem.colorMask(false, false, false, false);
+        //?} else {
+        /*RenderType.cloudsDepthOnly().setupRenderState();
+        *///?}
 
         this.vertexBuffer.drawWithShader(modelViewMatrix, projectionMatrix, this.shader);
+        //? if >=1.21
+        /*RenderType.cloudsDepthOnly().clearRenderState();*/
+
 
         // PASS 2: Render geometry
+        //? if <1.21 {
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
         RenderSystem.depthMask(false);
         RenderSystem.enableDepthTest();
         RenderSystem.depthFunc(GL30C.GL_EQUAL);
         RenderSystem.colorMask(true, true, true, true);
+        //?} else {
+        /*RenderType.clouds().setupRenderState();
+        *///?}
 
         this.vertexBuffer.drawWithShader(modelViewMatrix, projectionMatrix, this.shader);
 
-        matrices.popPose();
+        //? if >=1.21
+        /*RenderType.clouds().clearRenderState();*/
 
         VertexBuffer.unbind();
 
+        //? if <1.21 {
         RenderSystem.disableBlend();
         RenderSystem.depthFunc(GL30C.GL_LEQUAL);
 
         RenderSystem.enableCull();
+        //?}
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         RenderSystem.setShaderFogEnd(previousEnd);

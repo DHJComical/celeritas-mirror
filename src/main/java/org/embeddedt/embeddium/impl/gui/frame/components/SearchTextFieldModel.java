@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.gui.frame.components;
 
 import com.google.common.base.Predicates;
+import net.minecraft.util.StringUtil;
 import org.embeddedt.embeddium.impl.gui.options.Option;
 import org.embeddedt.embeddium.impl.gui.options.OptionPage;
 import org.embeddedt.embeddium.impl.gui.options.control.CyclingControl;
@@ -56,7 +57,10 @@ public class SearchTextFieldModel {
         int i = Math.min(this.selectionStart, this.selectionEnd);
         int j = Math.max(this.selectionStart, this.selectionEnd);
         int k = this.maxLength - this.text.length() - (i - j);
+        //? if <1.21
         String string = SharedConstants.filterText(text);
+        //? if >=1.21
+        /*String string = StringUtil.filterText(text);*/
         int l = string.length();
         if (k < l) {
             string = string.substring(0, k);

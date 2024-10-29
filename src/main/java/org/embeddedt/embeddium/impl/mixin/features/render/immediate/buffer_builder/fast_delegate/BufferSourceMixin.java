@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.immediate.buffer_builder.fast_delegate;
 
+//? if <1.21 {
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -45,3 +46,5 @@ public class BufferSourceMixin {
         }
     }
 }
+
+//?}

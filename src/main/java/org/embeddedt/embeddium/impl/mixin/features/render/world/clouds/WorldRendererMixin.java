@@ -32,7 +32,7 @@ public class WorldRendererMixin {
      * @reason Optimize cloud rendering
      */
     @Inject(method = "renderClouds", at = @At(value = "INVOKE", target = "Ljava/lang/Float;isNaN(F)Z", ordinal = 0), cancellable = true)
-    public void renderCloudsFast(PoseStack matrices, Matrix4f projectionMatrix, float tickDelta, double x, double y, double z, CallbackInfo ci) {
+    public void renderCloudsFast(PoseStack matrices, /*? if >=1.21 {*/ /*Matrix4f modelViewMatrix, *//*?}*/ Matrix4f projectionMatrix, float tickDelta, double x, double y, double z, CallbackInfo ci) {
         if (this.cloudRenderer == null) {
             this.cloudRenderer = new CloudRenderer(this.minecraft.getResourceManager());
         }
@@ -40,7 +40,9 @@ public class WorldRendererMixin {
         boolean renderFasterClouds = true; //!Screen.hasAltDown()
 
         if (renderFasterClouds) {
-            this.cloudRenderer.render(this.level, this.minecraft.player, matrices, projectionMatrix, this.ticks, tickDelta, x, y, z);
+            //? if <1.21
+            Matrix4f modelViewMatrix = matrices.last().pose();
+            this.cloudRenderer.render(this.level, this.minecraft.player, modelViewMatrix, projectionMatrix, this.ticks, tickDelta, x, y, z);
             ci.cancel();
         }
     }

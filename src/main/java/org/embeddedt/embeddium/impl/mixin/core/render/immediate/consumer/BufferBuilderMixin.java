@@ -1,8 +1,11 @@
 package org.embeddedt.embeddium.impl.mixin.core.render.immediate.consumer;
 
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+//? if <1.21 {
 import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
 import org.embeddedt.embeddium.impl.render.vertex.buffer.ExtendedBufferBuilder;
 import org.embeddedt.embeddium.impl.render.vertex.buffer.SodiumBufferBuilder;
+//?}
 import org.embeddedt.embeddium.api.memory.MemoryIntrinsics;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatRegistry;
@@ -11,6 +14,7 @@ import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.objectweb.asm.Opcodes;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -22,12 +26,13 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import java.nio.ByteBuffer;
 
 @Mixin(BufferBuilder.class)
-public abstract class BufferBuilderMixin extends DefaultedVertexConsumer implements VertexBufferWriter, ExtendedBufferBuilder {
-    @Shadow
-    private ByteBuffer buffer;
-
+public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVertexConsumer /*?}*/ implements VertexBufferWriter /*? if <1.21 {*/ , ExtendedBufferBuilder /*?}*/ {
     @Shadow
     private int vertices;
+
+    //? if <1.21 {
+    @Shadow
+    private ByteBuffer buffer;
 
     @Shadow
     private int nextElementByte;
@@ -46,11 +51,11 @@ public abstract class BufferBuilderMixin extends DefaultedVertexConsumer impleme
     private SodiumBufferBuilder fastDelegate;
 
     @Inject(method = "switchFormat",
-        at = @At(
-            value = "FIELD",
-            target = "Lcom/mojang/blaze3d/vertex/BufferBuilder;format:Lcom/mojang/blaze3d/vertex/VertexFormat;",
-            opcode = Opcodes.PUTFIELD
-        )
+            at = @At(
+                    value = "FIELD",
+                    target = "Lcom/mojang/blaze3d/vertex/BufferBuilder;format:Lcom/mojang/blaze3d/vertex/VertexFormat;",
+                    opcode = Opcodes.PUTFIELD
+            )
     )
     private void onFormatChanged(VertexFormat format, CallbackInfo ci) {
         this.format = VertexFormatRegistry.instance()
@@ -65,6 +70,27 @@ public abstract class BufferBuilderMixin extends DefaultedVertexConsumer impleme
             this.fastDelegate.reset();
         }
     }
+    //?} else {
+    /*@Shadow
+    @Final
+    private ByteBufferBuilder buffer;
+
+    @Shadow
+    private long vertexPointer;
+
+    @Unique
+    private VertexFormatDescription format;
+
+    @Shadow
+    @Final
+    private int vertexSize;
+
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void onFormatChanged(ByteBufferBuilder buffer, VertexFormat.Mode mode, VertexFormat format, CallbackInfo ci) {
+        this.format = VertexFormatRegistry.instance().get(format);
+    }
+
+    *///?}
 
     @Override
     public boolean canUseIntrinsics() {
@@ -73,6 +99,7 @@ public abstract class BufferBuilderMixin extends DefaultedVertexConsumer impleme
 
     @Override
     public void push(MemoryStack stack, long src, int count, VertexFormatDescription format) {
+        //? if <1.21 {
         var length = count * this.stride;
 
         // Ensure that there is always space for 1 more vertex; see BufferBuilder.next()
@@ -81,6 +108,12 @@ public abstract class BufferBuilderMixin extends DefaultedVertexConsumer impleme
         // The buffer may change in the even, so we need to make sure that the
         // pointer is retrieved *after* the resize
         var dst = MemoryUtil.memAddress(this.buffer, this.nextElementByte);
+        //?} else {
+        /*var length = count * this.vertexSize;
+
+        // Ensure that there is space for the data we're about to push
+        long dst = this.buffer.reserve(length);
+        *///?}
 
         if (format == this.format) {
             // The layout is the same, so we can just perform a memory copy
@@ -92,7 +125,11 @@ public abstract class BufferBuilderMixin extends DefaultedVertexConsumer impleme
         }
 
         this.vertices += count;
+        //? if <1.21 {
         this.nextElementByte += length;
+        //?} else {
+        /*this.vertexPointer = dst;
+        *///?}
     }
 
     @Unique
@@ -101,6 +138,8 @@ public abstract class BufferBuilderMixin extends DefaultedVertexConsumer impleme
                 .get(format, this.format)
                 .serialize(src, dst, count);
     }
+
+    //? if <1.21 {
 
     // Begin ExtendedBufferBuilder impls
 
@@ -158,4 +197,6 @@ public abstract class BufferBuilderMixin extends DefaultedVertexConsumer impleme
     public boolean sodium$usingFixedColor() {
         return this.defaultColorSet;
     }
+
+    //?}
 }

@@ -24,3 +24,4 @@ accessible method net/minecraft/client/renderer/FogRenderer getPriorityFogFuncti
 accessible field com/mojang/blaze3d/vertex/VertexFormat offsets Lit/unimi/dsi/fastutil/ints/IntList;
 
 accessible method net/minecraft/client/renderer/SectionBufferBuilderPool <init> (Ljava/util/List;)V
+accessible field com/mojang/blaze3d/vertex/PoseStack$Pose trustedNormals Z

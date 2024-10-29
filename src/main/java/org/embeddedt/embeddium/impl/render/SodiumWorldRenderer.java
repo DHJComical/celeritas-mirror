@@ -44,6 +44,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -245,8 +246,8 @@ public class SodiumWorldRenderer {
     /**
      * Performs a render pass for the given {@link RenderType} and draws all visible chunks for it.
      */
-    public void drawChunkLayer(RenderType renderLayer, PoseStack matrixStack, double x, double y, double z) {
-        ChunkRenderMatrices matrices = ChunkRenderMatrices.from(matrixStack);
+    public void drawChunkLayer(RenderType renderLayer, Matrix4f pose, double x, double y, double z) {
+        ChunkRenderMatrices matrices = ChunkRenderMatrices.from(pose);
 
         Collection<TerrainRenderPass> passes = this.renderSectionManager.getRenderPassConfiguration().vanillaRenderStages().get(renderLayer);
 
@@ -393,7 +394,7 @@ public class SodiumWorldRenderer {
         }
     }
 
-    public void renderBlockEntities(PoseStack matrices,
+    public void renderBlockEntities(Matrix4f pose,
                                     RenderBuffers bufferBuilders,
                                     Long2ObjectMap<SortedSet<BlockDestructionProgress>> blockBreakingProgressions,
                                     Camera camera,
@@ -409,8 +410,10 @@ public class SodiumWorldRenderer {
 
         this.blockEntityRequestedOutline = false;
 
-        this.renderBlockEntities(matrices, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer);
-        this.renderGlobalBlockEntities(matrices, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer);
+        final PoseStack poseStack = new PoseStack();
+
+        this.renderBlockEntities(poseStack, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer);
+        this.renderGlobalBlockEntities(poseStack, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer);
     }
 
     private void renderBlockEntities(PoseStack matrices,
@@ -522,8 +525,10 @@ public class SodiumWorldRenderer {
                         .getBuffer(ModelBakery.DESTROY_TYPES.get(stage));
 
                 PoseStack.Pose entry = matrices.last();
-                VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder,
-                        entry.pose(), entry.normal(), 1.0f);
+                //? if <1.21
+                VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry.pose(), entry.normal(), 1.0f);
+                //? if >=1.21
+                /*VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry, 1.0f);*/
 
                 consumer = (layer) -> layer.affectsCrumbling() ? VertexMultiConsumer.create(transformer, immediate.getBuffer(layer)) : immediate.getBuffer(layer);
             }

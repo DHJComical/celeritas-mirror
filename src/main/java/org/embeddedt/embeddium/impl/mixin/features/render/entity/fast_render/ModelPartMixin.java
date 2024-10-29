@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.entity.fast_render;
 
+import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.impl.model.ModelCuboidAccessor;
 import org.embeddedt.embeddium.impl.render.immediate.model.EntityRenderer;
 import org.embeddedt.embeddium.impl.render.immediate.model.ModelCuboid;
@@ -74,13 +75,18 @@ public class ModelPartMixin implements ModelPartData {
                 .toArray(ModelPart[]::new);
     }
 
-    @Redirect(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V"))
+    //? if <1.21
+    private static final String RENDER = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V";
+    //? if >=1.21
+    /*private static final String RENDER = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V";*/
+
+    @Redirect(method = RENDER, at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V"))
     private void enableCachingBeforePush(PoseStack stack) {
         ((CachingPoseStack)stack).embeddium$setCachingEnabled(true);
         stack.pushPose();
     }
 
-    @Redirect(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"))
+    @Redirect(method = RENDER, at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"))
     private void disableCachingAfterPop(PoseStack stack) {
         stack.popPose();
         ((CachingPoseStack)stack).embeddium$setCachingEnabled(false);
@@ -92,7 +98,12 @@ public class ModelPartMixin implements ModelPartData {
      * had to be neutered to accommodate mods injecting custom logic here and/or mutating the models at runtime.
      */
     @Inject(method = "compile", at = @At("HEAD"), cancellable = true)
-    private void onRender(PoseStack.Pose matrixPose, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha, CallbackInfo ci) {
+    private void onRender(PoseStack.Pose matrixPose, VertexConsumer vertices, int light, int overlay,
+                          //? if <1.21
+                          float red, float green, float blue, float alpha,
+                          //? if >=1.21
+                          /*int color,*/
+                          CallbackInfo ci) {
         VertexBufferWriter writer = VertexBufferWriter.tryOf(vertices);
 
         if (writer == null) {
@@ -104,7 +115,10 @@ public class ModelPartMixin implements ModelPartData {
         EntityRenderer.prepareNormals(matrixPose);
 
         var cubes = this.cubes;
+        //? if <1.21
         int packedColor = ColorABGR.pack(red, green, blue, alpha);
+        //? if >=1.21
+        /*int packedColor = ColorARGB.toABGR(color);*/
 
         //noinspection ForLoopReplaceableByForEach
         for(int i = 0; i < cubes.size(); i++) {
@@ -114,7 +128,12 @@ public class ModelPartMixin implements ModelPartData {
                 EntityRenderer.renderCuboidFast(matrixPose, writer, simpleCuboid, light, overlay, packedColor);
             } else {
                 // Must use slow path as this cube can't be converted to a simple cuboid
-                cube.compile(matrixPose, vertices, light, overlay, red, green, blue, alpha);
+                cube.compile(matrixPose, vertices, light, overlay,
+                        //? if <1.21
+                        red, green, blue, alpha
+                        //? if >=1.21
+                        /*color*/
+                );
             }
         }
     }

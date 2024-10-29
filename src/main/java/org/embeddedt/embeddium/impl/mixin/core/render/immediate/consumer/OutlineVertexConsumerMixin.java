@@ -1,8 +1,10 @@
 package org.embeddedt.embeddium.impl.mixin.core.render.immediate.consumer;
 
+//? if <1.21
 import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.embeddedt.embeddium.api.util.ColorABGR;
+import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.api.vertex.attributes.CommonVertexAttribute;
 import org.embeddedt.embeddium.api.vertex.attributes.common.ColorAttribute;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
@@ -17,13 +19,19 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(targets = "net/minecraft/client/renderer/OutlineBufferSource$EntityOutlineGenerator")
-public abstract class OutlineVertexConsumerMixin extends DefaultedVertexConsumer implements VertexBufferWriter {
+public abstract class OutlineVertexConsumerMixin /*? if <1.21 {*/ extends DefaultedVertexConsumer /*?}*/ implements VertexBufferWriter {
     @Shadow
     @Final
     private VertexConsumer delegate;
 
     @Unique
     private boolean isFullWriter;
+
+    //? if >=1.21 {
+    /*@Shadow
+    @Final
+    private int color;
+    *///?}
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(CallbackInfo ci) {
@@ -37,8 +45,12 @@ public abstract class OutlineVertexConsumerMixin extends DefaultedVertexConsumer
 
     @Override
     public void push(MemoryStack stack, long ptr, int count, VertexFormatDescription format) {
-        transform(ptr, count, format,
-                ColorABGR.pack(this.defaultR, this.defaultG, this.defaultB, this.defaultA));
+        int color;
+        //? if <1.21 {
+        color = ColorABGR.pack(this.defaultR, this.defaultG, this.defaultB, this.defaultA);
+        //?} else
+        /*color = ColorARGB.toABGR(this.color);*/
+        transform(ptr, count, format, color);
 
         VertexBufferWriter.of(this.delegate)
                 .push(stack, ptr, count, format);

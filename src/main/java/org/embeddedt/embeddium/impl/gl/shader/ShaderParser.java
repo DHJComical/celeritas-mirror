@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.resources.ResourceLocation;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 public class ShaderParser {
     public static String parseShader(String src, ShaderConstants constants) {
@@ -48,7 +49,7 @@ public class ShaderParser {
         String namespace = matcher.group("namespace");
         String path = matcher.group("path");
 
-        ResourceLocation identifier = new ResourceLocation(namespace, path);
+        ResourceLocation identifier = ResourceLocationUtil.make(namespace, path);
         String source = ShaderLoader.getShaderSource(identifier);
 
         return ShaderParser.parseShader(source);

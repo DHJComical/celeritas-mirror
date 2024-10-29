@@ -3,20 +3,21 @@ package org.embeddedt.embeddium.api.options.structure;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.resources.ResourceLocation;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 public final class StandardOptions {
     public static class Group {
-        public static final ResourceLocation RENDERING = new ResourceLocation("minecraft", "rendering");
-        public static final ResourceLocation WINDOW = new ResourceLocation("minecraft", "window");
-        public static final ResourceLocation INDICATORS = new ResourceLocation("minecraft", "indicators");
-        public static final ResourceLocation GRAPHICS = new ResourceLocation("minecraft", "graphics");
-        public static final ResourceLocation MIPMAPS = new ResourceLocation("minecraft", "mipmaps");
-        public static final ResourceLocation DETAILS = new ResourceLocation("minecraft", "details");
-        public static final ResourceLocation CHUNK_UPDATES = new ResourceLocation(SodiumClientMod.MODID, "chunk_updates");
-        public static final ResourceLocation RENDERING_CULLING = new ResourceLocation(SodiumClientMod.MODID, "rendering_culling");
-        public static final ResourceLocation CPU_SAVING = new ResourceLocation(SodiumClientMod.MODID, "cpu_saving");
-        public static final ResourceLocation SORTING = new ResourceLocation(SodiumClientMod.MODID, "sorting");
-        public static final ResourceLocation LIGHTING = new ResourceLocation(SodiumClientMod.MODID, "lighting");
+        public static final ResourceLocation RENDERING = ResourceLocationUtil.make("minecraft", "rendering");
+        public static final ResourceLocation WINDOW = ResourceLocationUtil.make("minecraft", "window");
+        public static final ResourceLocation INDICATORS = ResourceLocationUtil.make("minecraft", "indicators");
+        public static final ResourceLocation GRAPHICS = ResourceLocationUtil.make("minecraft", "graphics");
+        public static final ResourceLocation MIPMAPS = ResourceLocationUtil.make("minecraft", "mipmaps");
+        public static final ResourceLocation DETAILS = ResourceLocationUtil.make("minecraft", "details");
+        public static final ResourceLocation CHUNK_UPDATES = ResourceLocationUtil.make(SodiumClientMod.MODID, "chunk_updates");
+        public static final ResourceLocation RENDERING_CULLING = ResourceLocationUtil.make(SodiumClientMod.MODID, "rendering_culling");
+        public static final ResourceLocation CPU_SAVING = ResourceLocationUtil.make(SodiumClientMod.MODID, "cpu_saving");
+        public static final ResourceLocation SORTING = ResourceLocationUtil.make(SodiumClientMod.MODID, "sorting");
+        public static final ResourceLocation LIGHTING = ResourceLocationUtil.make(SodiumClientMod.MODID, "lighting");
     }
 
     public static class Pages {
@@ -27,41 +28,41 @@ public final class StandardOptions {
     }
 
     public static class Option {
-        public static final ResourceLocation RENDER_DISTANCE = new ResourceLocation("minecraft", "render_distance");
-        public static final ResourceLocation SIMULATION_DISTANCE = new ResourceLocation("minecraft", "simulation_distance");
-        public static final ResourceLocation BRIGHTNESS = new ResourceLocation("minecraft", "brightness");
-        public static final ResourceLocation GUI_SCALE = new ResourceLocation("minecraft", "gui_scale");
-        public static final ResourceLocation FULLSCREEN = new ResourceLocation("minecraft", "fullscreen");
-        public static final ResourceLocation FULLSCREEN_RESOLUTION = new ResourceLocation("minecraft", "fullscreen_resolution");
-        public static final ResourceLocation VSYNC = new ResourceLocation("minecraft", "vsync");
-        public static final ResourceLocation MAX_FRAMERATE = new ResourceLocation("minecraft", "max_frame_rate");
-        public static final ResourceLocation VIEW_BOBBING = new ResourceLocation("minecraft", "view_bobbing");
-        public static final ResourceLocation ATTACK_INDICATOR = new ResourceLocation("minecraft", "attack_indicator");
-        public static final ResourceLocation AUTOSAVE_INDICATOR = new ResourceLocation("minecraft", "autosave_indicator");
-        public static final ResourceLocation GRAPHICS_MODE = new ResourceLocation("minecraft", "graphics_mode");
-        public static final ResourceLocation CLOUDS = new ResourceLocation("minecraft", "clouds");
-        public static final ResourceLocation WEATHER = new ResourceLocation("minecraft", "weather");
-        public static final ResourceLocation LEAVES = new ResourceLocation("minecraft", "leaves");
-        public static final ResourceLocation PARTICLES = new ResourceLocation("minecraft", "particles");
-        public static final ResourceLocation SMOOTH_LIGHT = new ResourceLocation("minecraft", "smooth_lighting");
-        public static final ResourceLocation BIOME_BLEND = new ResourceLocation("minecraft", "biome_blend");
-        public static final ResourceLocation ENTITY_DISTANCE = new ResourceLocation("minecraft", "entity_distance");
-        public static final ResourceLocation ENTITY_SHADOWS = new ResourceLocation("minecraft", "entity_shadows");
-        public static final ResourceLocation VIGNETTE = new ResourceLocation("minecraft", "vignette");
-        public static final ResourceLocation MIPMAP_LEVEL = new ResourceLocation("minecraft", "mipmap_levels");
-        public static final ResourceLocation CHUNK_UPDATE_THREADS = new ResourceLocation(SodiumClientMod.MODID, "chunk_update_threads");
-        public static final ResourceLocation DEFFER_CHUNK_UPDATES = new ResourceLocation(SodiumClientMod.MODID, "defer_chunk_updates");
-        public static final ResourceLocation BLOCK_FACE_CULLING = new ResourceLocation(SodiumClientMod.MODID, "block_face_culling");
-        public static final ResourceLocation COMPACT_VERTEX_FORMAT = new ResourceLocation(SodiumClientMod.MODID, "compact_vertex_format");
-        public static final ResourceLocation FOG_OCCLUSION = new ResourceLocation(SodiumClientMod.MODID, "fog_occlusion");
-        public static final ResourceLocation ENTITY_CULLING = new ResourceLocation(SodiumClientMod.MODID, "entity_culling");
-        public static final ResourceLocation ANIMATE_VISIBLE_TEXTURES = new ResourceLocation(SodiumClientMod.MODID, "animate_only_visible_textures");
-        public static final ResourceLocation NO_ERROR_CONTEXT = new ResourceLocation(SodiumClientMod.MODID, "no_error_context");
-        public static final ResourceLocation PERSISTENT_MAPPING = new ResourceLocation(SodiumClientMod.MODID, "persistent_mapping");
-        public static final ResourceLocation CPU_FRAMES_AHEAD = new ResourceLocation(SodiumClientMod.MODID, "cpu_render_ahead_limit");
-        public static final ResourceLocation TRANSLUCENT_FACE_SORTING = new ResourceLocation(SodiumClientMod.MODID, "translucent_face_sorting");
-        public static final ResourceLocation USE_QUAD_NORMALS_FOR_LIGHTING = new ResourceLocation(SodiumClientMod.MODID, "use_quad_normals_for_lighting");
-        public static final ResourceLocation RENDER_PASS_OPTIMIZATION = new ResourceLocation(SodiumClientMod.MODID, "render_pass_optimization");
-        public static final ResourceLocation RENDER_PASS_CONSOLIDATION = new ResourceLocation(SodiumClientMod.MODID, "render_pass_consolidation");
+        public static final ResourceLocation RENDER_DISTANCE = ResourceLocationUtil.make("minecraft", "render_distance");
+        public static final ResourceLocation SIMULATION_DISTANCE = ResourceLocationUtil.make("minecraft", "simulation_distance");
+        public static final ResourceLocation BRIGHTNESS = ResourceLocationUtil.make("minecraft", "brightness");
+        public static final ResourceLocation GUI_SCALE = ResourceLocationUtil.make("minecraft", "gui_scale");
+        public static final ResourceLocation FULLSCREEN = ResourceLocationUtil.make("minecraft", "fullscreen");
+        public static final ResourceLocation FULLSCREEN_RESOLUTION = ResourceLocationUtil.make("minecraft", "fullscreen_resolution");
+        public static final ResourceLocation VSYNC = ResourceLocationUtil.make("minecraft", "vsync");
+        public static final ResourceLocation MAX_FRAMERATE = ResourceLocationUtil.make("minecraft", "max_frame_rate");
+        public static final ResourceLocation VIEW_BOBBING = ResourceLocationUtil.make("minecraft", "view_bobbing");
+        public static final ResourceLocation ATTACK_INDICATOR = ResourceLocationUtil.make("minecraft", "attack_indicator");
+        public static final ResourceLocation AUTOSAVE_INDICATOR = ResourceLocationUtil.make("minecraft", "autosave_indicator");
+        public static final ResourceLocation GRAPHICS_MODE = ResourceLocationUtil.make("minecraft", "graphics_mode");
+        public static final ResourceLocation CLOUDS = ResourceLocationUtil.make("minecraft", "clouds");
+        public static final ResourceLocation WEATHER = ResourceLocationUtil.make("minecraft", "weather");
+        public static final ResourceLocation LEAVES = ResourceLocationUtil.make("minecraft", "leaves");
+        public static final ResourceLocation PARTICLES = ResourceLocationUtil.make("minecraft", "particles");
+        public static final ResourceLocation SMOOTH_LIGHT = ResourceLocationUtil.make("minecraft", "smooth_lighting");
+        public static final ResourceLocation BIOME_BLEND = ResourceLocationUtil.make("minecraft", "biome_blend");
+        public static final ResourceLocation ENTITY_DISTANCE = ResourceLocationUtil.make("minecraft", "entity_distance");
+        public static final ResourceLocation ENTITY_SHADOWS = ResourceLocationUtil.make("minecraft", "entity_shadows");
+        public static final ResourceLocation VIGNETTE = ResourceLocationUtil.make("minecraft", "vignette");
+        public static final ResourceLocation MIPMAP_LEVEL = ResourceLocationUtil.make("minecraft", "mipmap_levels");
+        public static final ResourceLocation CHUNK_UPDATE_THREADS = ResourceLocationUtil.make(SodiumClientMod.MODID, "chunk_update_threads");
+        public static final ResourceLocation DEFFER_CHUNK_UPDATES = ResourceLocationUtil.make(SodiumClientMod.MODID, "defer_chunk_updates");
+        public static final ResourceLocation BLOCK_FACE_CULLING = ResourceLocationUtil.make(SodiumClientMod.MODID, "block_face_culling");
+        public static final ResourceLocation COMPACT_VERTEX_FORMAT = ResourceLocationUtil.make(SodiumClientMod.MODID, "compact_vertex_format");
+        public static final ResourceLocation FOG_OCCLUSION = ResourceLocationUtil.make(SodiumClientMod.MODID, "fog_occlusion");
+        public static final ResourceLocation ENTITY_CULLING = ResourceLocationUtil.make(SodiumClientMod.MODID, "entity_culling");
+        public static final ResourceLocation ANIMATE_VISIBLE_TEXTURES = ResourceLocationUtil.make(SodiumClientMod.MODID, "animate_only_visible_textures");
+        public static final ResourceLocation NO_ERROR_CONTEXT = ResourceLocationUtil.make(SodiumClientMod.MODID, "no_error_context");
+        public static final ResourceLocation PERSISTENT_MAPPING = ResourceLocationUtil.make(SodiumClientMod.MODID, "persistent_mapping");
+        public static final ResourceLocation CPU_FRAMES_AHEAD = ResourceLocationUtil.make(SodiumClientMod.MODID, "cpu_render_ahead_limit");
+        public static final ResourceLocation TRANSLUCENT_FACE_SORTING = ResourceLocationUtil.make(SodiumClientMod.MODID, "translucent_face_sorting");
+        public static final ResourceLocation USE_QUAD_NORMALS_FOR_LIGHTING = ResourceLocationUtil.make(SodiumClientMod.MODID, "use_quad_normals_for_lighting");
+        public static final ResourceLocation RENDER_PASS_OPTIMIZATION = ResourceLocationUtil.make(SodiumClientMod.MODID, "render_pass_optimization");
+        public static final ResourceLocation RENDER_PASS_CONSOLIDATION = ResourceLocationUtil.make(SodiumClientMod.MODID, "render_pass_consolidation");
     }
 }

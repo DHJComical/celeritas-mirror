@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.mixin.core.render.world;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.*;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;
@@ -130,11 +131,14 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      * @author JellySquid
      */
     @Overwrite
-    private void /*? if <1.20.2 {*/ renderChunkLayer /*?} else {*/ /*renderSectionLayer *//*?}*/(RenderType renderLayer, PoseStack matrices, double x, double y, double z, Matrix4f matrix) {
+    private void /*? if <1.20.2 {*/ renderChunkLayer /*?} else {*/ /*renderSectionLayer *//*?}*/(RenderType renderLayer, /*? if <1.21 {*/ PoseStack matrices, /*?}*/ double x, double y, double z, /*? if >=1.21 {*/ /*Matrix4f pose, *//*?}*/ Matrix4f matrix) {
         RenderDevice.enterManagedCode();
 
+        //? if <1.21
+        Matrix4f pose = matrices.last().pose();
+
         try {
-            this.renderer.drawChunkLayer(renderLayer, matrices, x, y, z);
+            this.renderer.drawChunkLayer(renderLayer, pose, x, y, z);
         } finally {
             RenderDevice.exitManagedCode();
         }
@@ -232,8 +236,13 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     }
 
     @Inject(method = "renderLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;globalBlockEntities:Ljava/util/Set;", shift = At.Shift.BEFORE, ordinal = 0))
-    private void onRenderBlockEntities(PoseStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {
-        this.renderer.renderBlockEntities(matrices, this.renderBuffers, this.destructionProgress, camera, tickDelta);
+    private void onRenderBlockEntities(/*? if <1.21 {*/ PoseStack matrices, float tickDelta, long limitTime, /*?} else {*/ /*DeltaTracker tracker, *//*?}*/ boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightmapTextureManager, /*? if >=1.21 {*/ /*Matrix4f pose, *//*?}*/ Matrix4f positionMatrix, CallbackInfo ci) {
+        //? if >=1.21
+        /*float tickDelta = tracker.getGameTimeDeltaPartialTick(false);*/
+        //? if <1.21
+        Matrix4f pose = matrices.last().pose();
+
+        this.renderer.renderBlockEntities(pose, this.renderBuffers, this.destructionProgress, camera, tickDelta);
     }
 
     /**

@@ -30,6 +30,13 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
     @Final
     private int totalWeight;
 
+    private static BakedModel getData(WeightedEntry.Wrapper<BakedModel> wrapper) {
+        //? if >=1.21
+        /*return wrapper.data();*/
+        //? if <1.21
+        return wrapper.getData();
+    }
+
     /**
      * @author JellySquid
      * @reason Avoid excessive object allocations
@@ -39,7 +46,7 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) random.nextLong()) % this.totalWeight);
 
         if (quad != null) {
-            return quad.getData()
+            return getData(quad)
                     .getQuads(state, face, random/*? if forgelike {*/, modelData, renderLayer/*?}*/);
         }
 
@@ -56,7 +63,7 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) rand.nextLong()) % this.totalWeight);
 
         if (quad != null) {
-            return quad.getData().getRenderTypes(state, rand, data);
+            return getData(quad).getRenderTypes(state, rand, data);
         }
 
         return ChunkRenderTypeSet.none();
@@ -86,8 +93,12 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
     public @Nullable BakedModel embeddium$getInnerModel(RandomSource rand) {
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) rand.nextLong()) % this.totalWeight);
 
-        if (quad != null && quad.getData().getClass() == SimpleBakedModel.class) {
-            return quad.getData();
+        if (quad == null) {
+            return null;
+        }
+
+        if (getData(quad).getClass() == SimpleBakedModel.class) {
+            return getData(quad);
         }
 
         return null;

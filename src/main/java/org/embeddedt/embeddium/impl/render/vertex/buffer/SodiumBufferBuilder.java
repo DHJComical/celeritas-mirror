@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.render.vertex.buffer;
 
+//? if <1.21 {
+
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.embeddedt.embeddium.api.util.ColorABGR;
@@ -337,3 +339,5 @@ public class SodiumBufferBuilder implements VertexConsumer, VertexBufferWriter {
                 (v & 0xFFFF) << 16;
     }
 }
+
+//?}

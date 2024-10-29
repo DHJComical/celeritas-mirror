@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.gui.frame.components;
 
+import net.minecraft.util.StringUtil;
 import org.embeddedt.embeddium.impl.gui.options.OptionPage;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
@@ -130,7 +131,10 @@ public class SearchTextFieldComponent extends AbstractWidget {
         if (!this.isActive()) {
             return false;
         }
+        //? if <1.21
         if (SharedConstants.isAllowedChatCharacter(chr)) {
+        //? if >=1.21
+        /*if (StringUtil.isAllowedChatCharacter(chr)) {*/
             if (this.model.editable) {
                 this.model.write(Character.toString(chr));
             }

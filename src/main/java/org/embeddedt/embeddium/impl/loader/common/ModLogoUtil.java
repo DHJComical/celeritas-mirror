@@ -11,6 +11,7 @@ import net.minecraftforge.resource.PathPackResources;
 import net.minecraftforge.resource.ResourcePackLoader;
 //?}
 import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +52,7 @@ public class ModLogoUtil {
                 logo.close();
                 throw new IOException("Logo for " + modId + " is not square");
             }
-            ResourceLocation texture = new ResourceLocation(SodiumClientMod.MODID, "logo/" + modId);
+            ResourceLocation texture = ResourceLocationUtil.make(SodiumClientMod.MODID, "logo/" + modId);
             Minecraft.getInstance().getTextureManager().register(texture, new DynamicTexture(logo));
             return texture;
         } else {

@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.features.gui.hooks.console;
 
-
+//? if >=1.21
+/*import net.minecraft.client.DeltaTracker;*/
 import org.embeddedt.embeddium.impl.gui.console.ConsoleHooks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -29,7 +30,12 @@ public class GameRendererMixin {
     private static boolean HAS_RENDERED_OVERLAY_ONCE = false;
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;flush()V", shift = At.Shift.AFTER))
-    private void onRender(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
+    private void onRender(
+            //? if <1.21
+            float tickDelta, long startTime,
+            //? if >=1.21
+            /*DeltaTracker deltaTracker,*/
+            boolean tick, CallbackInfo ci) {
         // Do not start updating the console overlay until the font renderer is ready
         // This prevents the console from using tofu boxes for everything during early startup
         if (Minecraft.getInstance().getOverlay() != null) {

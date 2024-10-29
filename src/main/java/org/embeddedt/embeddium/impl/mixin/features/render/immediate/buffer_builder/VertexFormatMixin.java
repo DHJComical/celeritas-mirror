@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.immediate.buffer_builder;
 
+//? if <1.21 {
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -54,3 +55,5 @@ public class VertexFormatMixin implements ExtendedVertexFormat {
         return this.embeddium$extendedElements;
     }
 }
+
+//?}

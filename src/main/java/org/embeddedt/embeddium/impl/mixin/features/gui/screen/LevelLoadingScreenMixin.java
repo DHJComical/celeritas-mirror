@@ -11,6 +11,9 @@ import org.embeddedt.embeddium.api.util.ColorARGB;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.server.level.progress.StoringChunkProgressListener;
+//? if >=1.21 {
+/*import net.minecraft.world.level.chunk.status.ChunkStatus;
+*///?} else
 import net.minecraft.world.level.chunk.ChunkStatus;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;

@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Gui.class)
 public class InGameHudMixin {
-    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;useFancyGraphics()Z"))
+    @Redirect(method = /*? if <1.21 {*/ "render" /*?} else {*/ /*"renderCameraOverlays" *//*?}*/, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;useFancyGraphics()Z"))
     private boolean redirectFancyGraphicsVignette() {
         return SodiumClientMod.options().quality.enableVignette;
     }

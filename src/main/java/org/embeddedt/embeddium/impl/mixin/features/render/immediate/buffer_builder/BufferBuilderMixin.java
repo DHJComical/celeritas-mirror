@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.immediate.buffer_builder;
 
+//? if <1.21 {
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferVertexConsumer;
 import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
@@ -58,3 +59,5 @@ public abstract class BufferBuilderMixin extends DefaultedVertexConsumer impleme
         }
     }
 }
+
+//?}

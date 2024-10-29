@@ -140,7 +140,10 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
         }
 
         @Override
+        //? if <1.21
         public VertexConsumer vertex(double x, double y, double z) {
+        //? if >=1.21
+        /*public VertexConsumer addVertex(float x, float y, float z) {*/
             int index = flushLastVertex();
             var vertex = this.vertices[index];
             vertex.x = xOff + (float)x;
@@ -151,13 +154,19 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
         }
 
         @Override
+        //? if <1.21
         public VertexConsumer color(int r, int g, int b, int a) {
+        //? if >=1.21
+        /*public VertexConsumer setColor(int r, int g, int b, int a) {*/
             currentVertexObj.color = ((a & 255) << 24) | ((b & 255) << 16) | ((g & 255) << 8) | (r & 255);
             return this;
         }
 
         @Override
+        //? if <1.21
         public VertexConsumer uv(float u, float v) {
+        //? if >=1.21
+        /*public VertexConsumer setUv(float u, float v) {*/
             var vertex = currentVertexObj;
             vertex.u = u;
             vertex.v = v;
@@ -165,20 +174,31 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
         }
 
         @Override
+        //? if <1.21
         public VertexConsumer overlayCoords(int p_350815_, int p_350629_) {
+        //? if >=1.21
+        /*public VertexConsumer setUv1(int p_350815_, int p_350629_) {*/
             return this;
         }
 
         @Override
+        //? if <1.21
         public VertexConsumer uv2(int p_350859_, int p_351004_) {
+        //? if >=1.21
+        /*public VertexConsumer setUv2(int p_350859_, int p_351004_) {*/
             currentVertexObj.light = (p_351004_ << 16) | (p_350859_ & 0xFFFF);
             return this;
         }
 
         @Override
+        //? if <1.21
         public VertexConsumer normal(float p_350429_, float p_350286_, float p_350836_) {
+        //? if >=1.21
+        /*public VertexConsumer setNormal(float p_350429_, float p_350286_, float p_350836_) {*/
             return this;
         }
+
+        //? if <1.21 {
 
         @Override
         public void defaultColor(int r, int g, int b, int a) {
@@ -195,5 +215,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
         public void endVertex() {
             // NO-OP: since on 1.21 this doesn't exist, everything is implemented in such a way that it doesn't matter
         }
+
+        //?}
     }
 }

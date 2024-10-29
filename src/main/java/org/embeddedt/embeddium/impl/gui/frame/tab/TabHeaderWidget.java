@@ -8,11 +8,12 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 import java.util.Objects;
 
 public class TabHeaderWidget extends FlatButtonWidget {
-    private static final ResourceLocation FALLBACK_LOCATION = new ResourceLocation("textures/misc/unknown_pack.png");
+    private static final ResourceLocation FALLBACK_LOCATION = ResourceLocationUtil.make("textures/misc/unknown_pack.png");
 
     private final ResourceLocation logoTexture;
 

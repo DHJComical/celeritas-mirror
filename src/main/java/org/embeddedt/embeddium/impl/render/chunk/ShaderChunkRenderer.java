@@ -13,6 +13,8 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshAttribute;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import net.minecraft.resources.ResourceLocation;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
+
 import java.util.Map;
 
 public abstract class ShaderChunkRenderer implements ChunkRenderer {
@@ -45,13 +47,13 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         ShaderConstants constants = options.constants();
 
         GlShader vertShader = ShaderLoader.loadShader(ShaderType.VERTEX,
-                new ResourceLocation("sodium", path + ".vsh"), constants);
+                ResourceLocationUtil.make("sodium", path + ".vsh"), constants);
         
         GlShader fragShader = ShaderLoader.loadShader(ShaderType.FRAGMENT,
-                new ResourceLocation("sodium", path + ".fsh"), constants);
+                ResourceLocationUtil.make("sodium", path + ".fsh"), constants);
 
         try {
-            return GlProgram.builder(new ResourceLocation("sodium", "chunk_shader"))
+            return GlProgram.builder(ResourceLocationUtil.make("sodium", "chunk_shader"))
                     .attachShader(vertShader)
                     .attachShader(fragShader)
                     .bindAttribute("a_PosId", ChunkShaderBindingPoints.ATTRIBUTE_POSITION_ID)
