@@ -1,29 +1,33 @@
-modLoader="javafml"
-loaderVersion="[47,)"
-license="LGPL-3.0-only"
+modLoader = "javafml"
+loaderVersion = "*"
+license = "$license"
+issueTrackerURL = "$issue_tracker_url"
+
 [[mods]]
-modId="embeddium"
-version="${version}"
-displayName="Embeddium"
 logoFile="icon.png"
-description='''
-Embeddium is a FOSS performance mod for (Neo)Forge based on Sodium 0.5.11
-'''
-credits="embeddedt, NanoLive, CaffeineMC"
-authors="embeddedt"
+modId = "$mod_id"
+version = "$mod_version"
+displayName = "$mod_display_name"
+authors = '${String.join(", ",authors)}'
+credits = '${String.join(", ",contributors)}'
+displayURL = "$homepage_url"
+description = "$mod_description"
 
-# Enforce new enough Oculus
-[[dependencies.embeddium]]
-modId = "oculus"
-mandatory = false
-versionRange = "(1.6.15,)"
-ordering = "BEFORE"
-side = "CLIENT"
+[[dependencies.${mod_id}]]
+modId = "${forgeid}"
+mandatory = true
+type="required"
+versionRange = "*"
+ordering = "NONE"
+side = "BOTH"
 
-# The new config screen supersedes TexTrue's Embeddium Options
-[[dependencies.embeddium]]
-modId = "textrues_embeddium_options"
-mandatory = false
-versionRange = "[0.0.0-NOT-COMPATIBLE]"
-ordering = "BEFORE"
-side = "CLIENT"
+[[dependencies.${mod_id}]]
+modId = "minecraft"
+mandatory = true
+type="required"
+versionRange = "${minecraft}"
+ordering = "NONE"
+side = "BOTH"
+
+[modproperties.${mod_id}]
+catalogueImageIcon="icon.png"

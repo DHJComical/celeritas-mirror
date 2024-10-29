@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.frapi;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+//? if ffapi {
+/*import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.fabric.impl.client.indigo.renderer.mesh.MutableQuadViewImpl;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
@@ -25,9 +26,9 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
-/**
+/^*
  * Adaptation of Indigo's {@link BlockRenderContext} that delegates back to the Sodium renderer.
- */
+ ^/
 public class IndigoBlockRenderContext extends BlockRenderContext implements FRAPIRenderHandler {
     private org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext currentContext;
     private ChunkBuildBuffers currentBuffers;
@@ -160,3 +161,5 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
         }
     }
 }
+// }
+*/

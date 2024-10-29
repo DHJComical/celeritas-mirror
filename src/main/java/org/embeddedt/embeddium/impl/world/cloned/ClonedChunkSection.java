@@ -5,7 +5,8 @@ import it.unimi.dsi.fastutil.ints.Int2ReferenceMaps;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.world.ReadableContainerExtended;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
-import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;
+//? if ffapi
+/*import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;*/
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
@@ -48,13 +49,17 @@ public class ClonedChunkSection {
     private long lastUsedTimestamp = Long.MAX_VALUE;
 
     static {
-        boolean hasRenderData;
+        //? if ffapi {
+        /*boolean hasRenderData;
         try {
             hasRenderData = RenderDataBlockEntity.class.isAssignableFrom(BlockEntity.class);
         } catch(Throwable e) {
             hasRenderData = false;
         }
         HAS_FABRIC_RENDER_DATA = hasRenderData;
+        *///?} else {
+        HAS_FABRIC_RENDER_DATA = false;
+        //?}
     }
 
     public ClonedChunkSection(Level world, LevelChunk chunk, @Nullable LevelChunkSection section, SectionPos pos) {
@@ -198,7 +203,7 @@ public class ClonedChunkSection {
         // were iterating over any data in that chunk.
         // See https://github.com/CaffeineMC/sodium-fabric/issues/942 for more info.
         for (var entry : Int2ReferenceMaps.fastIterable(blockEntities)) {
-            Object data = ((RenderDataBlockEntity)entry.getValue()).getRenderData();
+            Object data = /*? if ffapi {*/ /*((RenderDataBlockEntity)entry.getValue()).getRenderData() *//*?} else {*/ null /*?}*/;
 
             if (data != null) {
                 if (blockEntityRenderDataMap == null) {

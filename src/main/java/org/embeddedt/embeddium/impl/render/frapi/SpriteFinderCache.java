@@ -1,7 +1,8 @@
 package org.embeddedt.embeddium.impl.render.frapi;
 
 import org.embeddedt.embeddium.impl.SodiumClientMod;
-import net.fabricmc.fabric.api.renderer.v1.model.SpriteFinder;
+//? if ffapi
+/*import net.fabricmc.fabric.api.renderer.v1.model.SpriteFinder;*/
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -54,7 +55,8 @@ public class SpriteFinderCache {
                 protected void apply(Object pObject, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
                     var modelManager = Minecraft.getInstance().getModelManager();
                     Finder finder = NULL_FINDER;
-                    var fabricFinder = SpriteFinder.get(modelManager.getAtlas(InventoryMenu.BLOCK_ATLAS));
+                    //? if ffapi {
+                    /*var fabricFinder = SpriteFinder.get(modelManager.getAtlas(InventoryMenu.BLOCK_ATLAS));
                     try {
                         MethodType bootstrapType = MethodType.methodType(Finder.class, SpriteFinder.class);
                         MethodType invocationType = MethodType.methodType(TextureAtlasSprite.class, float.class, float.class);
@@ -66,6 +68,7 @@ public class SpriteFinderCache {
                     } catch(Throwable e) {
                         e.printStackTrace();
                     }
+                    *///?}
                     blockAtlasSpriteFinder = finder;
                 }
             };

@@ -9,8 +9,10 @@ import org.embeddedt.embeddium.impl.world.biome.BiomeSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
 import org.embeddedt.embeddium.impl.world.cloned.ClonedChunkSection;
 import org.embeddedt.embeddium.impl.world.cloned.ClonedChunkSectionCache;
-import net.fabricmc.fabric.api.blockview.v2.FabricBlockView;
+//? if ffapi {
+/*import net.fabricmc.fabric.api.blockview.v2.FabricBlockView;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
+*///?}
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -52,8 +54,11 @@ import java.util.Objects;
  *
  * <p>Object pooling should be used to avoid huge allocations as this class contains many large arrays.</p>
  */
-@OptionalInterface({ FabricBlockView.class, RenderAttachedBlockView.class })
-public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView, FabricBlockView, RenderAttachedBlockView {
+//? if ffapi {
+/*@OptionalInterface({ FabricBlockView.class, RenderAttachedBlockView.class })
+*///?}
+public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
+        /*? if ffapi {*/ /*, FabricBlockView, RenderAttachedBlockView *//*?}*/ {
     private static final LightLayer[] LIGHT_TYPES = LightLayer.values();
 
     // The number of blocks in a section.
@@ -379,7 +384,9 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView, 
         return this.world.getModelDataManager();
     }
 
-    @Override
+    //? if ffapi {
+
+    /*@Override
     public Holder<Biome> getBiomeFabric(BlockPos pos) {
         return this.biomeSlice.getBiome(pos.getX(), pos.getY(), pos.getZ());
     }
@@ -407,6 +414,8 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView, 
 
         return blockEntityRenderDataMap.get(getLocalBlockIndex(relX & 15, relY & 15, relZ & 15));
     }
+
+    *///?}
 
     public static int getLocalBlockIndex(int x, int y, int z) {
         return (y << LOCAL_XYZ_BITS << LOCAL_XYZ_BITS) | (z << LOCAL_XYZ_BITS) | x;

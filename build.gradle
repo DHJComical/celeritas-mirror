@@ -68,7 +68,7 @@ def versionedProperty(String name) {
 stonecutter.const("fabric", loader == FABRIC)
 stonecutter.const("forge", loader == FORGE)
 stonecutter.const("neoforge", loader == NEOFORGE)
-stonecutter.const("ffapi", versionedProperty("ffapi") != null)
+stonecutter.const("ffapi", versionedProperty("ffapi") != null || loader == FABRIC)
 
 loom {
     File file = project.buildDir.toPath().resolve("chiseledSrc/main/resources/${E.p.mod_id}.accesswidener").toFile()
@@ -91,13 +91,14 @@ if (loader == FORGE) {
 
 dependencies {
     minecraft "net.minecraft:minecraft:$rootProject.properties.minecraft"
-    if (rootProject.properties.parchment_version) {
-        mappings loom.layered {
-            officialMojangMappings()
+
+    mappings loom.layered {
+        officialMojangMappings {
+            nameSyntheticMembers = true
+        }
+        if (rootProject.properties.parchment_version) {
             parchment("org.parchmentmc.data:parchment-${rootProject.properties.parchment_version}@zip")
         }
-    } else {
-        mappings loom.officialMojangMappings()
     }
 
     compileOnly("org.projectlombok:lombok:1.18.30")
@@ -136,9 +137,9 @@ dependencies {
             forge "net.minecraftforge:forge:${versionedProperty("forge")}"
 
             if (rootProject.properties.mixinextras) {
-                implementation include("io.github.llamalad7:mixinextras-$loader.friendlyName:$rootProject.properties.mixinextras")
-                compileOnly("io.github.llamalad7:mixinextras-common:$rootProject.properties.mixinextras")
-                forgeRuntimeLibrary "io.github.llamalad7:mixinextras-$loader.friendlyName:$rootProject.properties.mixinextras"
+                implementation(include("io.github.llamalad7:mixinextras-$loader.friendlyName:$rootProject.properties.mixinextras"))
+                compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:$rootProject.properties.mixinextras"))
+                //forgeRuntimeLibrary "io.github.llamalad7:mixinextras-$loader.friendlyName:$rootProject.properties.mixinextras"
             }
         } else if (loader == NEOFORGE) {
             neoForge "net.neoforged:neoforge:${versionedProperty("neoforge")}"
