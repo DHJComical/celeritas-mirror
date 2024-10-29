@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.gui.options;
 import org.embeddedt.embeddium.impl.gui.options.control.Control;
 import org.embeddedt.embeddium.impl.gui.options.storage.OptionStorage;
 import net.minecraft.network.chat.Component;
-import org.embeddedt.embeddium.client.gui.options.OptionIdentifier;
+import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;

@@ -1,5 +1,6 @@
-package org.embeddedt.embeddium.client.gui.options;
+package org.embeddedt.embeddium.api.options.structure;
 
+import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.resources.ResourceLocation;
 

@@ -5,8 +5,8 @@ import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import org.embeddedt.embeddium.api.OptionPageConstructionEvent;
-import org.embeddedt.embeddium.client.gui.options.OptionIdentifier;
-import org.embeddedt.embeddium.client.gui.options.StandardOptions;
+import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.embeddedt.embeddium.api.options.structure.StandardOptions;
 
 import java.util.List;
 

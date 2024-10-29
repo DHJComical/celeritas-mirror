@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.api;
 import org.embeddedt.embeddium.impl.gui.options.Option;
 import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
 import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;
-import org.embeddedt.embeddium.client.gui.options.OptionIdentifier;
+import org.embeddedt.embeddium.api.options.OptionIdentifier;
 
 import java.util.List;
 

@@ -8,7 +8,7 @@ import org.embeddedt.embeddium.impl.gui.options.control.SliderControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.fml.ModList;
-import org.embeddedt.embeddium.client.gui.options.StandardOptions;
+import org.embeddedt.embeddium.api.options.structure.StandardOptions;
 
 import java.util.Optional;
 

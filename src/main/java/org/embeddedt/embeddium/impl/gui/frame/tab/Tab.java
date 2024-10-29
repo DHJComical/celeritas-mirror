@@ -5,7 +5,7 @@ import org.embeddedt.embeddium.impl.gui.options.OptionPage;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import org.embeddedt.embeddium.client.gui.options.OptionIdentifier;
+import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.frame.AbstractFrame;
 import org.embeddedt.embeddium.impl.gui.frame.OptionPageFrame;
 import org.embeddedt.embeddium.impl.gui.frame.ScrollableFrame;

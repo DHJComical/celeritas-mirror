@@ -17,7 +17,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import org.apache.commons.lang3.Validate;
-import org.embeddedt.embeddium.client.gui.options.OptionIdentifier;
+import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.theme.DefaultColors;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.jetbrains.annotations.Nullable;

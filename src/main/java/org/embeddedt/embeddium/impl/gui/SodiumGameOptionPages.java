@@ -21,7 +21,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.*;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.ForgeConfig;
-import org.embeddedt.embeddium.client.gui.options.StandardOptions;
+import org.embeddedt.embeddium.api.options.structure.StandardOptions;
 import org.embeddedt.embeddium.impl.gui.options.FullscreenResolutionHelper;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.lwjgl.opengl.GL;

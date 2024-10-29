@@ -7,7 +7,7 @@ import org.embeddedt.embeddium.impl.gui.options.storage.OptionStorage;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.Validate;
-import org.embeddedt.embeddium.client.gui.options.OptionIdentifier;
+import org.embeddedt.embeddium.api.options.OptionIdentifier;
 
 import java.util.Collection;
 import java.util.Collections;

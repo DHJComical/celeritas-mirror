@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.api.OptionGroupConstructionEvent;
-import org.embeddedt.embeddium.client.gui.options.OptionIdentifier;
+import org.embeddedt.embeddium.api.options.OptionIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;

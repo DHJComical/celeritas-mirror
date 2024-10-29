@@ -15,7 +15,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.VideoSettingsScreen;
 import net.minecraft.network.chat.Component;
-import org.embeddedt.embeddium.client.gui.options.OptionIdentifier;
+import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.frame.AbstractFrame;
 import org.embeddedt.embeddium.impl.gui.frame.BasicFrame;
 import org.embeddedt.embeddium.impl.gui.frame.components.SearchTextFieldComponent;
