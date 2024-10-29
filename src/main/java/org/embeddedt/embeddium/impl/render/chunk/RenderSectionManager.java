@@ -206,22 +206,18 @@ public class RenderSectionManager {
         }
 
         // Now build the material map
-        int maximumId = RenderType.chunkBufferLayers().stream().mapToInt(RenderType::getChunkLayerId).max().orElseThrow();
-        Material[] renderTypeToMaterialMap = new Material[maximumId + 1];
+        Map<RenderType, Material> renderTypeToMaterialMap = new Reference2ReferenceOpenHashMap<>(RenderType.chunkBufferLayers().size(), Reference2ReferenceOpenHashMap.VERY_FAST_LOAD_FACTOR);
 
-        renderTypeToMaterialMap[RenderType.solid().getChunkLayerId()] = solidMaterial;
-        renderTypeToMaterialMap[RenderType.cutout().getChunkLayerId()] = cutoutMaterial;
-        renderTypeToMaterialMap[RenderType.cutoutMipped().getChunkLayerId()] = cutoutMippedMaterial;
-        renderTypeToMaterialMap[RenderType.translucent().getChunkLayerId()] = translucentMaterial;
-        renderTypeToMaterialMap[RenderType.tripwire().getChunkLayerId()] = tripwireMaterial;
+        renderTypeToMaterialMap.put(RenderType.solid(), solidMaterial);
+        renderTypeToMaterialMap.put(RenderType.cutout(), cutoutMaterial);
+        renderTypeToMaterialMap.put(RenderType.cutoutMipped(), cutoutMippedMaterial);
+        renderTypeToMaterialMap.put(RenderType.translucent(), translucentMaterial);
+        renderTypeToMaterialMap.put(RenderType.tripwire(), tripwireMaterial);
 
         for(RenderType type : RenderType.chunkBufferLayers()) {
-            int id = type.getChunkLayerId();
-            if(id >= 0) {
-                if(renderTypeToMaterialMap[id] == null) {
-                    SodiumClientMod.logger().warn("RenderType {} is not recognized by Embeddium. Treating it as cutout_mipped.", type);
-                    renderTypeToMaterialMap[id] = cutoutMippedMaterial;
-                }
+            if(!renderTypeToMaterialMap.containsKey(type)) {
+                SodiumClientMod.logger().warn("RenderType {} is not recognized by Embeddium. Treating it as cutout_mipped.", type);
+                renderTypeToMaterialMap.put(type, cutoutMippedMaterial);
             }
         }
 
@@ -230,7 +226,7 @@ public class RenderSectionManager {
 
         return new RenderPassConfiguration(vertexType,
                 allPasses,
-                List.of(renderTypeToMaterialMap),
+                renderTypeToMaterialMap,
                 vanillaRenderStageMap.asMap(),
                 solidMaterial,
                 cutoutMippedMaterial,
