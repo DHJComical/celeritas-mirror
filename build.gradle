@@ -24,6 +24,7 @@ def packageJar = tasks.create("packageJar", Copy.class) {
 }
 
 project.ext["loom.platform"] = loader.friendlyName
+project.ext["cur_mc_ver"] = ModLoader.getMinecraftVersion(project)
 
 repositories {
     mavenCentral()
@@ -59,7 +60,7 @@ repositories {
 apply plugin: 'dev.architectury.loom'
 apply plugin: 'embeddium-fabric-remapper'
 
-ext.mc_version_prop_suffix = rootProject.properties.minecraft.toString().replace('.', '_')
+ext.mc_version_prop_suffix = ext.cur_mc_ver.toString().replace('.', '_')
 
 def versionedProperty(String name) {
     return rootProject.properties[name + "_" + ext.mc_version_prop_suffix]
@@ -91,14 +92,14 @@ if (loader == FORGE) {
 }
 
 dependencies {
-    minecraft "net.minecraft:minecraft:$rootProject.properties.minecraft"
+    minecraft "net.minecraft:minecraft:${ModLoader.getMinecraftVersion(project)}"
 
     mappings loom.layered {
         officialMojangMappings {
             nameSyntheticMembers = true
         }
-        if (rootProject.properties.parchment_version) {
-            parchment("org.parchmentmc.data:parchment-${rootProject.properties.parchment_version}@zip")
+        if (versionedProperty("parchment_version") != null) {
+            parchment("org.parchmentmc.data:parchment-${versionedProperty("parchment_version")}@zip")
         }
     }
 
@@ -114,10 +115,10 @@ dependencies {
             if (rootProject.properties.include_fabric_api_modules == "true") {
                 throw new RuntimeException("You can't include the entirety of Fabric API!")
             }
-            modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.properties["fabric_api_version_" + rootProject.properties.minecraft.toString().replace('.', '_')]}"
+            modApi "net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabric_api_version")}"
         } else {
             for (String module in rootProject.properties.fabric_api_modules.split(",") as String[]) {
-                var dep = fabricApi.module(module, rootProject.properties["fabric_api_version_" + rootProject.properties.minecraft.toString().replace('.', '_')])
+                var dep = fabricApi.module(module, versionedProperty("fabric_api_version"))
                 modApi dep
                 if (rootProject.properties.include_fabric_api_modules == "true") {
                     include(dep)
@@ -150,7 +151,7 @@ jar {
 }
 
 processResources {
-    def dep = rootProject.properties.minecraft_dependency.toString()
+    def dep = versionedProperty("minecraft_dependency")
     if (loader == FORGE || loader == NEOFORGE) {
         dep = SemverUtils.convertSemverPredicateToMavenPredicate(dep)
     }
