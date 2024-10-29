@@ -1,8 +1,6 @@
 package org.embeddedt.embeddium.impl.gui;
 
 import com.google.common.collect.Multimap;
-import com.mojang.blaze3d.systems.RenderSystem;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.gui.console.Console;
 import org.embeddedt.embeddium.impl.gui.console.message.MessageLevel;
 import org.embeddedt.embeddium.impl.gui.options.Option;
@@ -12,14 +10,11 @@ import org.embeddedt.embeddium.impl.gui.options.OptionPage;
 import org.embeddedt.embeddium.impl.gui.options.storage.OptionStorage;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-import org.embeddedt.embeddium.api.util.ColorARGB;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.VideoSettingsScreen;
-import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.client.gui.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.frame.AbstractFrame;
 import org.embeddedt.embeddium.impl.gui.frame.BasicFrame;
@@ -27,7 +22,6 @@ import org.embeddedt.embeddium.impl.gui.frame.components.SearchTextFieldComponen
 import org.embeddedt.embeddium.impl.gui.frame.components.SearchTextFieldModel;
 import org.embeddedt.embeddium.impl.gui.frame.tab.Tab;
 import org.embeddedt.embeddium.impl.gui.frame.tab.TabFrame;
-import org.embeddedt.embeddium.impl.gui.theme.DefaultColors;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.lwjgl.glfw.GLFW;
@@ -40,9 +34,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 public class EmbeddiumVideoOptionsScreen extends Screen {
-    private static final ResourceLocation LOGO_LOCATION = new ResourceLocation(SodiumClientMod.MODID, "textures/embeddium/gui/logo_transparent.png");
-    private static final int LOGO_SIZE = 256;
-
     private static final AtomicReference<Component> tabFrameSelectedTab = new AtomicReference<>(null);
     private final AtomicReference<Integer> tabFrameScrollBarOffset = new AtomicReference<>(0);
     private final AtomicReference<Integer> optionPageScrollBarOffset = new AtomicReference<>(0);
@@ -51,8 +42,6 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
     private final List<OptionPage> pages = new ArrayList<>();
     private AbstractFrame frame;
     private FlatButtonWidget applyButton, closeButton, undoButton;
-
-    private Dim2i logoDim;
 
     private boolean hasPendingChanges;
 
@@ -70,7 +59,6 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
     }
 
     private void registerTextures() {
-        Minecraft.getInstance().textureManager.register(LOGO_LOCATION, new SimpleTexture(LOGO_LOCATION));
     }
 
 
@@ -116,8 +104,6 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         Dim2i applyButtonDim = new Dim2i(tabFrameDim.getLimitX() - 134, tabFrameDim.getLimitY() + 5, 65, 20);
         Dim2i closeButtonDim = new Dim2i(tabFrameDim.getLimitX() - 65, tabFrameDim.getLimitY() + 5, 65, 20);
 
-        int logoSizeOnScreen = 20;
-        this.logoDim = new Dim2i(tabFrameDim.x(), tabFrameDim.getLimitY() + 25 - logoSizeOnScreen, logoSizeOnScreen, logoSizeOnScreen);
 
         this.undoButton = new FlatButtonWidget(undoButtonDim, Component.translatable("sodium.options.buttons.undo"), this::undoChanges);
         this.applyButton = new FlatButtonWidget(applyButtonDim, Component.translatable("sodium.options.buttons.apply"), this::applyChanges);
@@ -196,24 +182,6 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
                 .addChild(dim -> this.undoButton)
                 .addChild(dim -> this.applyButton)
                 .addChild(dim -> this.closeButton);
-    }
-
-    @Override
-    public void renderBackground(GuiGraphics gfx) {
-        super.renderBackground(gfx);
-
-        // Render watermarks
-        gfx.setColor(ColorARGB.unpackRed(DefaultColors.ELEMENT_ACTIVATED) / 255f, ColorARGB.unpackGreen(DefaultColors.ELEMENT_ACTIVATED) / 255f, ColorARGB.unpackBlue(DefaultColors.ELEMENT_ACTIVATED) / 255f, 0.8F);
-        RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.enableBlend();
-        RenderSystem.blendFunc(770, 1);
-        gfx.blit(LOGO_LOCATION, this.logoDim.x(), this.logoDim.y(), this.logoDim.width(), this.logoDim.height(), 0.0F, 0.0F, LOGO_SIZE, LOGO_SIZE, LOGO_SIZE, LOGO_SIZE);
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableBlend();
-        RenderSystem.depthMask(true);
-        RenderSystem.enableDepthTest();
-        gfx.setColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override
