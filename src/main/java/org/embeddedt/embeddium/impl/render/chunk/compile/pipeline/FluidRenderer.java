@@ -2,7 +2,6 @@ package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
-import org.embeddedt.embeddium.impl.compat.ccl.SinkingVertexBuilder;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
 import org.embeddedt.embeddium.impl.model.light.LightPipelineProvider;
@@ -70,8 +69,6 @@ public class FluidRenderer {
     private final ColorProviderRegistry colorProviderRegistry;
 
     private final EmbeddiumFluidSpriteCache fluidSpriteCache = new EmbeddiumFluidSpriteCache();
-
-    private final SinkingVertexBuilder fluidVertexBuilder = new SinkingVertexBuilder();
 
     private final ChunkColorWriter colorEncoder = ChunkColorWriter.get();
 
@@ -153,9 +150,9 @@ public class FluidRenderer {
         // Call vanilla fluid renderer and capture the results
         var context = Objects.requireNonNull(GlobalChunkBuildContext.get());
         context.setCaptureAdditionalSprites(true);
-        fluidVertexBuilder.reset();
-        Minecraft.getInstance().getBlockRenderer().renderLiquid(blockPos, world, fluidVertexBuilder, world.getBlockState(blockPos), fluidState);
-        fluidVertexBuilder.flush(buffers, material, 0, 0, 0);
+        try(var consumer = buffers.asVertexConsumer(material)) {
+            Minecraft.getInstance().getBlockRenderer().renderLiquid(blockPos, world, consumer, world.getBlockState(blockPos), fluidState);
+        }
 
         var sprites = context.getAdditionalCapturedSprites();
 

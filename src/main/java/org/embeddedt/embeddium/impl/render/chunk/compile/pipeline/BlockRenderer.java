@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
-import org.embeddedt.embeddium.impl.compat.ccl.SinkingVertexBuilder;
 import org.embeddedt.embeddium.impl.model.color.ColorProvider;
 import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
@@ -81,8 +80,6 @@ public class BlockRenderer {
      */
     private final List<BlockRendererRegistry.Renderer> customRenderers = new ObjectArrayList<>();
 
-    private final SinkingVertexBuilder sinkingVertexBuilder = new SinkingVertexBuilder();
-
     private final FRAPIRenderHandler fabricModelRenderingHandler;
 
     private final ChunkColorWriter colorEncoder = ChunkColorWriter.get();
@@ -126,11 +123,12 @@ public class BlockRenderer {
 
         if(!customRenderers.isEmpty()) {
             for (BlockRendererRegistry.Renderer customRenderer : customRenderers) {
-                sinkingVertexBuilder.reset();
-                BlockRendererRegistry.RenderResult result = customRenderer.renderBlock(ctx, random, sinkingVertexBuilder);
-                sinkingVertexBuilder.flush(meshBuilder, material, ctx.origin());
-                if (result == BlockRendererRegistry.RenderResult.OVERRIDE) {
-                    return;
+                try(var consumer = meshBuilder.asVertexConsumer(material)) {
+                    consumer.embeddium$setOffset(ctx.origin());
+                    BlockRendererRegistry.RenderResult result = customRenderer.renderBlock(ctx, random, consumer);
+                    if (result == BlockRendererRegistry.RenderResult.OVERRIDE) {
+                        return;
+                    }
                 }
             }
         }
@@ -138,8 +136,7 @@ public class BlockRenderer {
         // Delegate FRAPI models to their pipeline
         if (FRAPIModelUtils.isFRAPIModel(ctx.model())) {
             this.fabricModelRenderingHandler.reset();
-            this.fabricModelRenderingHandler.renderEmbeddium(ctx, ctx.stack(), random);
-            this.fabricModelRenderingHandler.flush(buffers, ctx.origin());
+            this.fabricModelRenderingHandler.renderEmbeddium(ctx, buffers, ctx.stack(), random);
             return;
         }
 
