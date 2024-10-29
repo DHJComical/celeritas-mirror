@@ -1,5 +1,8 @@
 package org.embeddedt.embeddium.impl.loader.common;
 
+//? if fabric
+/*import org.embeddedt.embeddium.impl.loader.fabric.FabricEarlyLoaderServices;*/
+//? if forgelike
 import org.embeddedt.embeddium.impl.loader.forge.FMLEarlyLoaderServices;
 
 import java.nio.file.Path;
@@ -7,7 +10,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public interface EarlyLoaderServices {
-    EarlyLoaderServices INSTANCE = new FMLEarlyLoaderServices();
+    EarlyLoaderServices INSTANCE = /*? if forgelike {*/ new FMLEarlyLoaderServices() /*?} else {*/ /*new FabricEarlyLoaderServices() *//*?}*/;
 
     Path findEarlyMixinFolder(String path);
 

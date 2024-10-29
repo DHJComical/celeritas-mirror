@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.api.eventbus;
 
+//? if forge
 import net.minecraftforge.common.MinecraftForge;
 
 import java.util.List;
@@ -42,7 +43,11 @@ public class EventHandlerRegistrar<T extends EmbeddiumEvent> {
     }
 
     private static <T extends EmbeddiumEvent> boolean postPlatformSpecificEvent(T event) {
+        //? if forge {
         return MinecraftForge.EVENT_BUS.post(event);
+        //?} else {
+        /*return false;
+        *///?}
     }
 
     @FunctionalInterface

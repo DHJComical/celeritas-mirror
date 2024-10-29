@@ -23,6 +23,7 @@ import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.NativeBuffer;
+import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -43,7 +44,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.fml.loading.FMLLoader;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -52,7 +52,7 @@ import java.util.function.Consumer;
  * Provides an extension to vanilla's {@link LevelRenderer}.
  */
 public class SodiumWorldRenderer {
-    private static final boolean ENABLE_BLOCKENTITY_CULLING = FMLLoader.getLoadingModList().getModFileById("valkyrienskies") == null;
+    private static final boolean ENABLE_BLOCKENTITY_CULLING = PlatformUtil.modPresent("valkyrienskies");
 
     private final Minecraft client;
 
@@ -446,12 +446,16 @@ public class SodiumWorldRenderer {
                 }
 
                 for (BlockEntity blockEntity : blockEntities) {
+                    //? if forge {
                     if(ENABLE_BLOCKENTITY_CULLING && !currentViewport.isBoxVisible(blockEntity.getRenderBoundingBox()))
                         continue;
+                    //?}
 
+                    //? if forgelike {
                     if (blockEntity.hasCustomOutlineRendering(this.client.player)) {
                         this.blockEntityRequestedOutline = true;
                     }
+                    //?}
 
                     renderBlockEntity(matrices, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer, blockEntity);
                 }
@@ -476,12 +480,16 @@ public class SodiumWorldRenderer {
             }
 
             for (var blockEntity : blockEntities) {
+                //? if forge {
                 if(ENABLE_BLOCKENTITY_CULLING && !currentViewport.isBoxVisible(blockEntity.getRenderBoundingBox()))
                     continue;
+                //?}
 
+                //? if forgelike {
                 if (blockEntity.hasCustomOutlineRendering(this.client.player)) {
                     this.blockEntityRequestedOutline = true;
                 }
+                //?}
 
                 renderBlockEntity(matrices, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer, blockEntity);
             }

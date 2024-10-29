@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.render.frapi;
 
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 //? if ffapi
 /*import net.fabricmc.fabric.api.renderer.v1.model.SpriteFinder;*/
@@ -9,10 +11,12 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.inventory.InventoryMenu;
+//? if forge {
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+//?}
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.*;
@@ -20,6 +24,7 @@ import java.lang.invoke.*;
 /**
  * Provides a mechanism for retrieving sprites by location on the atlas.
  */
+//? if forge
 @Mod.EventBusSubscriber(modid = SodiumClientMod.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class SpriteFinderCache {
     private static final Finder NULL_FINDER = (u, v) -> null;
@@ -42,8 +47,12 @@ public class SpriteFinderCache {
         TextureAtlasSprite findNearestSprite(float u, float v);
     }
 
+    //? if forgelike {
     @SubscribeEvent
     public static void onReload(RegisterClientReloadListenersEvent event) {
+    //?} else {
+    /*public static void registerListener() {
+    *///?}
         if(SPRITE_FINDER_HANDLE != null) {
             var listener = new SimplePreparableReloadListener<>() {
                 @Override
@@ -72,7 +81,10 @@ public class SpriteFinderCache {
                     blockAtlasSpriteFinder = finder;
                 }
             };
+            //? if forgelike
             event.registerReloadListener(listener);
+            //? if fabric
+            /*((ReloadableResourceManager)Minecraft.getInstance().getResourceManager()).registerReloadListener(listener);*/
         }
     }
 

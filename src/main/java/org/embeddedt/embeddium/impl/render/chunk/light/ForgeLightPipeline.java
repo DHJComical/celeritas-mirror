@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.light;
 
+//? if forgelike {
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
@@ -146,3 +147,4 @@ public class ForgeLightPipeline implements LightPipeline {
         }
     }
 }
+//?}

@@ -9,8 +9,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.world.level.block.state.BlockState;
+//? if forge {
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
+//?}
 import org.embeddedt.embeddium.impl.model.UnwrappableBakedModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,17 +35,18 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
      * @reason Avoid excessive object allocations
      */
     @Overwrite(remap = false)
-    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, RandomSource random, ModelData modelData, RenderType renderLayer) {
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, RandomSource random/*? if forgelike {*/, ModelData modelData, RenderType renderLayer/*?}*/) {
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) random.nextLong()) % this.totalWeight);
 
         if (quad != null) {
             return quad.getData()
-                    .getQuads(state, face, random, modelData, renderLayer);
+                    .getQuads(state, face, random/*? if forgelike {*/, modelData, renderLayer/*?}*/);
         }
 
         return Collections.emptyList();
     }
 
+    //? if forgelike {
     /**
      * @author embeddedt
      * @reason Avoid excessive object allocations
@@ -58,6 +61,7 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
 
         return ChunkRenderTypeSet.none();
     }
+    //?}
 
     @Unique
     private static <T extends WeightedEntry> T getAt(List<T> pool, int totalWeight) {

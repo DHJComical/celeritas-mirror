@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.loader.forge;
 
+//? if forgelike {
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.FluidState;
@@ -34,3 +35,4 @@ public final class ForgeLoaderServices implements LoaderServices {
         return !box.equals(IForgeBlockEntity.INFINITE_EXTENT_AABB);
     }
 }
+//?}

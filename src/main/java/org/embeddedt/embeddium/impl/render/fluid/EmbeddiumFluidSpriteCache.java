@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.fluid;
 
+//? if forgelike {
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -35,3 +36,4 @@ public class EmbeddiumFluidSpriteCache {
         return sprites;
     }
 }
+//?}

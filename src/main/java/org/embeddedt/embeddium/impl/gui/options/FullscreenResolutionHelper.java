@@ -7,7 +7,6 @@ import org.embeddedt.embeddium.impl.gui.options.control.ControlValueFormatter;
 import org.embeddedt.embeddium.impl.gui.options.control.SliderControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.fml.ModList;
 import org.embeddedt.embeddium.api.options.structure.StandardOptions;
 
 import java.util.Optional;
@@ -17,7 +16,7 @@ import java.util.Optional;
  */
 public class FullscreenResolutionHelper {
     public static boolean isFullscreenResAlreadyAdded() {
-        return ModList.get().isLoaded("embeddium_extra") || ModList.get().isLoaded("rubidium_extra");
+        return false;
     }
 
     public static OptionImpl<?, ?> createFullScreenResolutionOption() {

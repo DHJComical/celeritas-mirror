@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.tasks;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBufferSorter;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
@@ -30,9 +31,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
+//? if forge
 import net.minecraftforge.client.model.data.ModelData;
 import org.embeddedt.embeddium.api.ChunkDataBuiltEvent;
 import org.embeddedt.embeddium.impl.chunk.MeshAppenderRenderer;
+//? if forgelike
 import org.embeddedt.embeddium.impl.model.ModelDataSnapshotter;
 import org.embeddedt.embeddium.impl.model.UnwrappableBakedModel;
 
@@ -56,6 +59,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     private final int buildTime;
     private final Vec3 camera;
 
+    //? if forge
     private final Map<BlockPos, ModelData> modelDataMap;
 
 
@@ -65,6 +69,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         this.buildTime = time;
         this.camera = camera;
 
+        //? if forge
         this.modelDataMap = ModelDataSnapshotter.getModelDataForSection(Minecraft.getInstance().level, this.renderContext.getOrigin());
     }
 
@@ -116,6 +121,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         if (blockState.getRenderShape() == RenderShape.MODEL) {
                             BakedModel model = cache.getBlockModels()
                                 .getBlockModel(blockState);
+                            //? if forge
                             ModelData modelData = model.getModelData(context.localSlice(), blockPos, blockState, modelDataMap.getOrDefault(blockPos, ModelData.EMPTY));
 
                             long seed = blockState.getSeed(blockPos);
@@ -127,11 +133,17 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
                             random.setSeed(seed);
 
+                            //? if forgelike {
                             for (RenderType layer : model.getRenderTypes(blockState, random, modelData)) {
                                 context.update(blockPos, modelOffset, blockState, model, seed, modelData, layer);
                                 cache.getBlockRenderer()
                                         .renderModel(context, buffers);
                             }
+                            //?} else {
+                            /*context.update(blockPos, modelOffset, blockState, model, seed, ItemBlockRenderTypes.getChunkRenderType(blockState));
+                            cache.getBlockRenderer()
+                                    .renderModel(context, buffers);
+                            *///?}
                         }
 
                         FluidState fluidState = blockState.getFluidState();

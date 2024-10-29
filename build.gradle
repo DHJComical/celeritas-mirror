@@ -68,6 +68,7 @@ def versionedProperty(String name) {
 stonecutter.const("fabric", loader == FABRIC)
 stonecutter.const("forge", loader == FORGE)
 stonecutter.const("neoforge", loader == NEOFORGE)
+stonecutter.const("forgelike", loader == NEOFORGE || loader == FORGE)
 stonecutter.const("ffapi", versionedProperty("ffapi") != null || loader == FABRIC)
 
 loom {
@@ -106,15 +107,8 @@ dependencies {
 
     if (loader == FABRIC) {
         modImplementation "net.fabricmc:fabric-loader:$rootProject.properties.fabricloader"
-        modCompileOnly "com.terraformersmc:modmenu:$rootProject.properties.modmenu", {
-            // Don't transitively pull in Mod Menu's Fabric deps
-            exclude module: "net.fabricmc"
-            exclude module: "net.fabricmc.fabric-api"
-        }
-        modLocalRuntime "com.terraformersmc:modmenu:$rootProject.properties.modmenu", {
-            // Don't transitively pull in Mod Menu's Fabric deps
-            exclude module: "net.fabricmc"
-            exclude module: "net.fabricmc.fabric-api"
+        modCompileOnly "com.terraformersmc:modmenu:$project.properties.modmenu", {
+            transitive = false
         }
         if (rootProject.properties.fabric_api_modules == "*") {
             if (rootProject.properties.include_fabric_api_modules == "true") {
@@ -209,12 +203,12 @@ processResources {
                 def parse = new JsonSlurper().parse(file)
                 def fModulesString = rootProject.properties.fabric_api_modules
                 if (fModulesString == "*") {
-                    parse.depends["fabric-api"] = ">=" + rootProject.properties.fabric_api_version
+                    parse.depends["fabric-api"] = ">=" + versionedProperty("fabric_api_version")
                 } else {
                     def fModules = fModulesString.split(",")
                     for (String s in fModules) {
                         // ^ means until the next major
-                        parse.depends[s] = "^" + fabricApi.module(s, rootProject.properties.fabric_api_version).getVersion()
+                        parse.depends[s] = "^" + fabricApi.module(s, versionedProperty("fabric_api_version")).getVersion()
                     }
                 }
                 file.text = JsonOutput.prettyPrint(JsonOutput.toJson(parse))

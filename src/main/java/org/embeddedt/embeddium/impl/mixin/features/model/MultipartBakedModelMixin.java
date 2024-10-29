@@ -10,9 +10,11 @@ import net.minecraft.client.resources.model.SimpleBakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
+//? if forge {
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.MultipartModelData;
+//?}
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,6 +38,7 @@ public class MultipartBakedModelMixin {
     @Final
     private List<Pair<Predicate<BlockState>, BakedModel>> selectors;
 
+    //? if forgelike {
     @Unique
     private boolean embeddium$hasCustomRenderTypes;
 
@@ -72,6 +75,8 @@ public class MultipartBakedModelMixin {
         }
         this.embeddium$hasCustomRenderTypes = hasRenderTypes;
     }
+
+    //?}
 
     @Unique
     private BakedModel[] getModelComponents(BlockState state) {
@@ -124,7 +129,7 @@ public class MultipartBakedModelMixin {
      * @reason Avoid expensive allocations and replace bitfield indirection
      */
     @Overwrite(remap = false)
-    public List<BakedQuad> getQuads(BlockState state, Direction face, RandomSource random, ModelData modelData, RenderType renderLayer) {
+    public List<BakedQuad> getQuads(BlockState state, Direction face, RandomSource random/*? if forgelike {*/, ModelData modelData, RenderType renderLayer /*?}*/) {
         if (state == null) {
             return Collections.emptyList();
         }
@@ -134,6 +139,7 @@ public class MultipartBakedModelMixin {
         ArrayList<BakedQuad> quads = null;
         long seed = random.nextLong();
 
+        //? if forgelike
         boolean checkSubmodelTypes = this.embeddium$hasCustomRenderTypes;
 
         for (BakedModel model : models) {
@@ -145,20 +151,23 @@ public class MultipartBakedModelMixin {
             // The original implementation accidentally handled these as a result of doing the filtering in getQuads.
             // We consider this a worthwhile tradeoff, because the API contract for chunk meshing requires iterating over
             // the return value of getRenderTypes(). To date, only Windowlogged is known to be broken by this change.
+            //? if forgelike
             if (!checkSubmodelTypes || renderLayer == null || model.getRenderTypes(state, random, modelData).contains(renderLayer)) {
-                List<BakedQuad> submodelQuads = model.getQuads(state, face, random, MultipartModelData.resolve(modelData, model), renderLayer);
+                List<BakedQuad> submodelQuads = model.getQuads(state, face, random/*? if forgelike {*/, MultipartModelData.resolve(modelData, model), renderLayer/*?}*/);
                 if(models.length == 1) {
                     // Nobody else will return quads, so no need to make a wrapper list
                     return submodelQuads;
                 } else {
                     quads = addAllQuads(quads, submodelQuads);
                 }
+            //? if forgelike
             }
         }
 
         return quads != null ? quads : Collections.emptyList();
     }
 
+    //? if forgelike {
     /**
      * @author embeddedt
      * @reason faster, less allocation
@@ -190,4 +199,5 @@ public class MultipartBakedModelMixin {
 
         return ChunkRenderTypeSet.union(sets);
     }
+    //?}
 }

@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
+//? if forge
 import net.minecraftforge.client.model.data.ModelData;
 import org.embeddedt.embeddium.impl.render.matrix_stack.CachingPoseStack;
 import org.embeddedt.embeddium.impl.render.world.WorldSliceLocalGenerator;
@@ -31,6 +32,7 @@ public class BlockRenderContext {
 
     private long seed;
 
+    //? if forge
     private ModelData modelData;
     private RenderType renderLayer;
 
@@ -40,7 +42,7 @@ public class BlockRenderContext {
         ((CachingPoseStack)this.stack).embeddium$setCachingEnabled(true);
     }
 
-    public void update(BlockPos pos, BlockPos origin, BlockState state, BakedModel model, long seed, ModelData modelData, RenderType renderLayer) {
+    public void update(BlockPos pos, BlockPos origin, BlockState state, BakedModel model, long seed, /*? if forgelike {*/ ModelData modelData, /*?}*/ RenderType renderLayer) {
         this.pos.set(pos);
         this.origin.set(origin.getX(), origin.getY(), origin.getZ());
 
@@ -49,6 +51,7 @@ public class BlockRenderContext {
 
         this.seed = seed;
 
+        //? if forgelike
         this.modelData = modelData;
         this.renderLayer = renderLayer;
     }
@@ -102,12 +105,14 @@ public class BlockRenderContext {
         return this.seed;
     }
 
+    //? if forgelike {
     /**
      * @return The additional data for model instance
      */
     public ModelData modelData() {
         return this.modelData;
     }
+    //?}
 
     /**
      * @return The render layer for model rendering

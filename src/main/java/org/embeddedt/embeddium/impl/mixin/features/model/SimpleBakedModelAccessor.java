@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
+//? if forgelike {
 import net.minecraft.client.resources.model.SimpleBakedModel;
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,3 +11,4 @@ public interface SimpleBakedModelAccessor {
     @Accessor(remap = false)
     ChunkRenderTypeSet getBlockRenderTypes();
 }
+//?}

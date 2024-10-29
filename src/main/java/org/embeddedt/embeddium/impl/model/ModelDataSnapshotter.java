@@ -5,12 +5,14 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+//? if forge
 import net.minecraftforge.client.model.data.ModelData;
 
 import java.util.Collections;
 import java.util.Map;
 
 public class ModelDataSnapshotter {
+    //? if forge {
     /**
      * Retrieve all needed model data for the given subchunk.
      * @param world the client world to retrieve data for
@@ -46,4 +48,5 @@ public class ModelDataSnapshotter {
 
         return ourMap.isEmpty() ? Collections.emptyMap() : ourMap;
     }
+    //?}
 }

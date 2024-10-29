@@ -96,11 +96,15 @@ public class SmoothLightPipeline implements LightPipeline {
             this.applyNonParallelFace(neighborInfo, quad, pos, lightFace, out);
         }
 
+        //? if forgelike {
         if((flags & ModelQuadFlags.IS_VANILLA_SHADED) != 0 || !this.useQuadNormalsForShading) {
             this.applySidedBrightness(out, lightFace, shade);
         } else {
             this.applySidedBrightnessFromNormals(out, quad, shade);
         }
+        //?} else {
+        /*this.applySidedBrightness(out, lightFace, shade);
+        *///?}
     }
 
     @Override
@@ -241,6 +245,7 @@ public class SmoothLightPipeline implements LightPipeline {
         }
     }
 
+    //? if forgelike {
     private void applySidedBrightnessFromNormals(QuadLightData out, ModelQuadView quad, boolean shade) {
         // TODO: consider calculating for vertex if mods actually change normals per-vertex
         int normal = quad.getModFaceNormal();
@@ -251,6 +256,7 @@ public class SmoothLightPipeline implements LightPipeline {
             br[i] *= brightness;
         }
     }
+    //?}
 
     /**
      * Returns the cached data for a given facing or calculates it if it hasn't been cached.

@@ -20,7 +20,6 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.*;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.common.ForgeConfig;
 import org.embeddedt.embeddium.api.options.structure.StandardOptions;
 import org.embeddedt.embeddium.impl.gui.options.FullscreenResolutionHelper;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
@@ -297,6 +296,7 @@ public class SodiumGameOptionPages {
                         .setControl(TickBoxControl::new)
                         .setImpact(OptionImpact.LOW)
                         .setBinding((opts, value) -> opts.quality.useQuadNormalsForShading = value, opts -> opts.quality.useQuadNormalsForShading)
+                        //? if forge
                         .setEnabled(!ForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get())
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())

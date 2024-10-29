@@ -173,7 +173,7 @@ public class BlockRenderer {
         var random = this.random;
         random.setSeed(ctx.seed());
 
-        return ctx.model().getQuads(ctx.state(), face, random, ctx.modelData(), ctx.renderLayer());
+        return ctx.model().getQuads(ctx.state(), face, random/*? if forgelike {*/, ctx.modelData(), ctx.renderLayer()/*?}*/);
     }
 
     private boolean isFaceVisible(BlockRenderContext ctx, Direction face) {
@@ -183,9 +183,11 @@ public class BlockRenderer {
     private static int computeLightFlagMask(BakedQuad quad) {
         int flag = 0;
 
+        //? if forgelike {
         if (quad.hasAmbientOcclusion()) {
             flag |= 1;
         }
+        //?}
 
         if (quad.isShade()) {
             flag |= 2;
@@ -325,8 +327,8 @@ public class BlockRenderer {
     }
 
     private LightMode getLightingMode(BlockState state, BakedModel model, BlockAndTintGetter world, BlockPos pos, RenderType renderLayer) {
-        if (this.useAmbientOcclusion && model.useAmbientOcclusion(state, renderLayer)
-                && (((EmbeddiumBakedModelExtension)model).useAmbientOcclusionWithLightEmission(state, renderLayer) || state.getLightEmission(world, pos) == 0)) {
+        if (this.useAmbientOcclusion && model.useAmbientOcclusion(/*? if forgelike {*/state, renderLayer/*?}*/)
+                && (((EmbeddiumBakedModelExtension)model).useAmbientOcclusionWithLightEmission(state, renderLayer) || state.getLightEmission(/*? if forgelike {*/world, pos/*?}*/) == 0)) {
             return LightMode.SMOOTH;
         } else {
             return LightMode.FLAT;

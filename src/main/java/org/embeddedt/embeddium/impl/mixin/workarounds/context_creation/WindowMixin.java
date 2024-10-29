@@ -6,6 +6,7 @@ import org.embeddedt.embeddium.impl.compatibility.checks.LateDriverScanner;
 import org.embeddedt.embeddium.impl.compatibility.workarounds.Workarounds;
 import org.embeddedt.embeddium.impl.compatibility.workarounds.nvidia.NvidiaWorkarounds;
 import net.minecraft.Util;
+//? if forge
 import net.minecraftforge.fml.loading.ImmediateWindowHandler;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
@@ -40,8 +41,19 @@ public class WindowMixin {
     private long wglPrevContext = MemoryUtil.NULL;
 
 
+    //? if forge {
     @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/fml/loading/ImmediateWindowHandler;setupMinecraftWindow(Ljava/util/function/IntSupplier;Ljava/util/function/IntSupplier;Ljava/util/function/Supplier;Ljava/util/function/LongSupplier;)J", remap = false))
     private long wrapGlfwCreateWindow(IntSupplier width, IntSupplier height, Supplier<String> title, LongSupplier monitor) {
+        return wrapGlfwCreateWindow(width, height, title, monitor, () -> 0L);
+    }
+    //?} else if fabric {
+    /*@Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwCreateWindow(IILjava/lang/CharSequence;JJ)J", remap = false))
+    private long wrapGlfwCreateWindow(int width, int height, CharSequence title, long monitor, long share) {
+        return wrapGlfwCreateWindow(() -> width, () -> height, title::toString, () -> monitor, () -> share);
+    }
+    *///?}
+
+    private long wrapGlfwCreateWindow(IntSupplier width, IntSupplier height, Supplier<String> title, LongSupplier monitor, LongSupplier share) {
         final boolean applyNvidiaWorkarounds = Workarounds.isWorkaroundEnabled(Workarounds.Reference.NVIDIA_THREADED_OPTIMIZATIONS);
 
         if (applyNvidiaWorkarounds) {
@@ -58,7 +70,10 @@ public class WindowMixin {
         }
 
         try {
+            //? if forgelike
             return ImmediateWindowHandler.setupMinecraftWindow(width, height, title, monitor);
+            //? if fabric
+            /*return GLFW.glfwCreateWindow(width.getAsInt(), height.getAsInt(), title.get(), monitor.getAsLong(), share.getAsLong());*/
         } finally {
             if (applyNvidiaWorkarounds) {
                 NvidiaWorkarounds.uninstall();

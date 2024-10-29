@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
+//? if forge {
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraftforge.client.model.data.ModelData;
@@ -31,3 +32,4 @@ public class ModelDataBuilderMixin {
         }
     }
 }
+//?}

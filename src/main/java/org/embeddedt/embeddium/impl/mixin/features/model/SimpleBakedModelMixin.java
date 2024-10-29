@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
+//? if forgelike {
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.SimpleBakedModel;
@@ -31,3 +32,4 @@ public abstract class SimpleBakedModelMixin implements IForgeBakedModel {
         return this.getQuads(state, side, rand);
     }
 }
+//?}

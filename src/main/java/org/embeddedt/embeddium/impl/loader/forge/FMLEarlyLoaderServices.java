@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.loader.forge;
 
+//? if forgelike {
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.LoadingModList;
 import net.minecraftforge.fml.loading.moddiscovery.ModFile;
@@ -75,3 +76,4 @@ public class FMLEarlyLoaderServices implements EarlyLoaderServices {
         }
     }
 }
+//?}

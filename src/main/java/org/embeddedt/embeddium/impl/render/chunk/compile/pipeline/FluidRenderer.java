@@ -1,6 +1,8 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 
+import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.tags.FluidTags;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
@@ -37,6 +39,7 @@ import org.apache.commons.lang3.mutable.MutableFloat;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.embeddedt.embeddium.impl.render.chunk.compile.GlobalChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
+//? if forgelike
 import org.embeddedt.embeddium.impl.render.fluid.EmbeddiumFluidSpriteCache;
 import org.embeddedt.embeddium.impl.tags.EmbeddiumTags;
 
@@ -68,6 +71,7 @@ public class FluidRenderer {
     private final ChunkVertexEncoder.Vertex[] vertices = ChunkVertexEncoder.Vertex.uninitializedQuad();
     private final ColorProviderRegistry colorProviderRegistry;
 
+    //? if forgelike
     private final EmbeddiumFluidSpriteCache fluidSpriteCache = new EmbeddiumFluidSpriteCache();
 
     private final ChunkColorWriter colorEncoder = ChunkColorWriter.get();
@@ -168,6 +172,12 @@ public class FluidRenderer {
     public void render(EmbeddiumBlockAndTintGetter world, FluidState fluidState, BlockPos blockPos, BlockPos offset, ChunkBuildBuffers buffers) {
         var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(ItemBlockRenderTypes.getRenderLayer(fluidState));
         var meshBuilder = buffers.get(material);
+        Fluid fluid = fluidState.getType();
+
+        //? if fabric
+        /*var fabricFluidHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid);*/
+
+        // TODO support custom fabric fluid rendering
 
         // Embeddium: Delegate to vanilla liquid renderer if fluid has this tag.
         if(fluidState.getType().is(EmbeddiumTags.RENDERS_WITH_VANILLA)) {
@@ -178,8 +188,6 @@ public class FluidRenderer {
         int posX = blockPos.getX();
         int posY = blockPos.getY();
         int posZ = blockPos.getZ();
-
-        Fluid fluid = fluidState.getType();
 
         // Each variable represents whether fluid rendering should be skipped on this side
         boolean sfUp = this.isFluidOccluded(world, posX, posY, posZ, Direction.UP, fluid);
@@ -196,11 +204,18 @@ public class FluidRenderer {
 
         // LVT name kept for 1.20.1 in case a mixin captures it, the meaning of this variable is now "does the fluid
         // support AO"
+        //? if forgelike {
         boolean isWater = fluid.getFluidType().getLightLevel(fluidState, world, blockPos) == 0;
+        //?} else
+        /*boolean isWater = fluid.is(FluidTags.WATER);*/
 
         final ColorProvider<FluidState> colorProvider = this.getColorProvider(fluid);
 
-        TextureAtlasSprite[] sprites = fluidSpriteCache.getSprites(world, blockPos, fluidState);
+        TextureAtlasSprite[] sprites;
+        //? if forgelike {
+        sprites = fluidSpriteCache.getSprites(world, blockPos, fluidState);
+        //?} else
+        /*sprites = fabricFluidHandler.getFluidSprites(world, blockPos, fluidState);*/
 
         float fluidHeight = this.fluidHeight(world, fluid, blockPos, Direction.UP);
         float northWestHeight, southWestHeight, southEastHeight, northEastHeight;
@@ -421,7 +436,12 @@ public class FluidRenderer {
                     BlockPos adjPos = this.scratchPos.set(adjX, adjY, adjZ);
                     BlockState adjBlock = world.getBlockState(adjPos);
 
-                    if (sprites[2] != null && adjBlock.shouldDisplayFluidOverlay(world, adjPos, fluidState)) {
+                    if (sprites[2] != null &&
+                            /*? if forgelike {*/
+                            adjBlock.shouldDisplayFluidOverlay(world, adjPos, fluidState)
+                            /*?} else {*/
+                            /*FluidRenderHandlerRegistry.INSTANCE.isBlockTransparent(adjBlock.getBlock())
+                            *//*?}*/) {
                         sprite = sprites[2];
                         isOverlay = true;
                     }

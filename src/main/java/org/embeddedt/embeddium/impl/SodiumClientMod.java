@@ -1,9 +1,9 @@
 package org.embeddedt.embeddium.impl;
 
+//? if forge {
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.common.MinecraftForge;
-import org.embeddedt.embeddium.impl.commands.DevCommands;
-import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
+
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -12,17 +12,27 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.network.NetworkConstants;
+//?}
+
+//? if fabric {
+/*import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
+*///?}
 
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
+import org.embeddedt.embeddium.impl.commands.DevCommands;
+import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+//? if forge
 @Mod(SodiumClientMod.MODID)
-public class SodiumClientMod {
+public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer *//*?}*/
+{
     public static final String MODID = EmbeddiumConstants.MODID;
     public static final String MODNAME = EmbeddiumConstants.MODNAME;
 
@@ -31,6 +41,7 @@ public class SodiumClientMod {
 
     private static String MOD_VERSION;
 
+    //? if forgelike {
     public SodiumClientMod() {
         MOD_VERSION = ModList.get().getModContainerById(MODID).get().getModInfo().getVersion().toString();
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
@@ -48,6 +59,14 @@ public class SodiumClientMod {
     public void onClientSetup(final FMLClientSetupEvent event) {
         FlawlessFrames.onClientInitialization();
     }
+    
+    //?} else if fabric {
+    /*@Override
+    public void onInitializeClient() {
+        MOD_VERSION = FabricLoader.getInstance().getModContainer(MODID).orElseThrow().getMetadata().getVersion().toString();
+        FlawlessFrames.onClientInitialization();
+    }
+    *///?}
 
     public static SodiumGameOptions options() {
         if (CONFIG == null) {

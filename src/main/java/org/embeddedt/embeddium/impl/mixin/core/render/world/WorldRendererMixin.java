@@ -54,10 +54,12 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     @Final
     private Minecraft minecraft;
 
+    //? if forgelike {
     @Shadow(remap = false)
     public Frustum getFrustum() {
         return null;
     }
+    //?}
 
     @Unique
     private SodiumWorldRenderer renderer;

@@ -37,7 +37,7 @@ public class BlockOcclusionCache {
 
         BlockState adjState = view.getBlockState(adjPos);
 
-        if (selfState.skipRendering(adjState, facing) || (adjState.hidesNeighborFace(view, adjPos, selfState, facing.getOpposite()) && selfState.supportsExternalFaceHiding())) {
+        if (selfState.skipRendering(adjState, facing) /*? if forgelike {*/|| (adjState.hidesNeighborFace(view, adjPos, selfState, facing.getOpposite()) && selfState.supportsExternalFaceHiding())/*?}*/) {
             // Explicitly asked to skip rendering this face
             return false;
         } else if (adjState.canOcclude()) {

@@ -56,17 +56,20 @@ public class FlatLightPipeline implements LightPipeline {
         }
 
         Arrays.fill(out.lm, lightmap);
+        //? if forgelike
         if((quad.getFlags() & ModelQuadFlags.IS_VANILLA_SHADED) != 0 || !this.useQuadNormalsForShading) {
             Arrays.fill(out.br, this.lightCache.getWorld().getShade(lightFace, shade));
-        } else {
+        /*? if forgelike {*/ } else {
             this.applySidedBrightnessFromNormals(quad, out, shade);
-        }
+        } /*?}*/
     }
 
+    //? if forgelike {
     private void applySidedBrightnessFromNormals(ModelQuadView quad, QuadLightData out, boolean shade) {
         int normal = quad.getModFaceNormal();
         Arrays.fill(out.br, this.lightCache.getWorld().getShade(NormI8.unpackX(normal), NormI8.unpackY(normal), NormI8.unpackZ(normal), shade));
     }
+    //?}
 
     /**
      * When vanilla computes an offset lightmap with flat lighting, it passes the original BlockState but the
