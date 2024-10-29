@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.gradle.fabric.remapper;
 
+import bs.ModLoader;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -60,7 +61,7 @@ public class RemapperPlugin implements Plugin<Project> {
         Attribute<String> artifactType = Attribute.of("artifactType", String.class);
 
         var intermediaryConfig = project.getConfigurations().create("embeddiumFabricIntermediary");
-        var minecraftVersion = (String)project.getProperties().get("minecraft");
+        var minecraftVersion = ModLoader.getMinecraftVersion(project);
 
         project.getDependencies().add(intermediaryConfig.getName(), "net.fabricmc:intermediary:" + minecraftVersion + ":v2");
 
