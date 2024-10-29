@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.mixin.core.render.world;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import net.minecraft.client.renderer.*;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
@@ -10,11 +11,6 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.RenderBuffers;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -44,8 +40,18 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     @Final
     private Long2ObjectMap<SortedSet<BlockDestructionProgress>> destructionProgress;
 
+    //? if <1.20.2 {
     @Shadow
     private boolean needsFullRenderChunkUpdate;
+
+    @Shadow
+    @Final
+    private AtomicBoolean needsFrustumUpdate;
+    //?} else {
+    /*@Shadow
+    @Final
+    private SectionOcclusionGraph sectionOcclusionGraph;
+    *///?}
 
     @Shadow
     private int ticks;
@@ -68,10 +74,6 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     private int frame;
 
     @Shadow public abstract boolean shouldShowEntityOutlines();
-
-    @Shadow
-    @Final
-    private AtomicBoolean needsFrustumUpdate;
 
     @Override
     public SodiumWorldRenderer sodium$getWorldRenderer() {
@@ -105,7 +107,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      * @author JellySquid
      */
     @Overwrite
-    public int countRenderedChunks() {
+    public int /*? if <1.20.2 {*/ countRenderedChunks /*?} else {*/ /*countRenderedSections *//*?}*/() {
         return this.renderer.getVisibleChunkCount();
     }
 
@@ -114,7 +116,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      * @author JellySquid
      */
     @Overwrite
-    public boolean hasRenderedAllChunks() {
+    public boolean /*? if <1.20.2 {*/ hasRenderedAllChunks /*?} else {*/ /*hasRenderedAllSections *//*?}*/() {
         return this.renderer.isTerrainRenderComplete();
     }
 
@@ -128,7 +130,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      * @author JellySquid
      */
     @Overwrite
-    private void renderChunkLayer(RenderType renderLayer, PoseStack matrices, double x, double y, double z, Matrix4f matrix) {
+    private void /*? if <1.20.2 {*/ renderChunkLayer /*?} else {*/ /*renderSectionLayer *//*?}*/(RenderType renderLayer, PoseStack matrices, double x, double y, double z, Matrix4f matrix) {
         RenderDevice.enterManagedCode();
 
         try {
@@ -154,7 +156,10 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         var viewport = ((ViewportProvider) frustum).sodium$createViewport();
 
         // Detect mods setting the vanilla update flags themselves
+        //? if <1.20.2 {
         if (this.needsFullRenderChunkUpdate || this.needsFrustumUpdate.compareAndSet(true, false)) {
+        //?} else
+        /*if (this.sectionOcclusionGraph.consumeFrustumUpdate()) {*/
             this.renderer.scheduleTerrainUpdate();
         }
 
@@ -166,6 +171,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
             RenderDevice.exitManagedCode();
         }
 
+        //? if <1.20.2
         this.needsFullRenderChunkUpdate = false; // We set this because third-party mods may use it (to loop themselves), even if Vanilla does not.
     }
 
@@ -210,7 +216,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      * @author JellySquid
      */
     @Overwrite
-    public boolean isChunkCompiled(BlockPos pos) {
+    public boolean /*? if <1.20.2 {*/ isChunkCompiled /*?} else {*/ /*isSectionCompiled *//*?}*/(BlockPos pos) {
         return this.renderer.isSectionReady(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
     }
 
@@ -246,7 +252,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      * @author JellySquid
      */
     @Overwrite
-    public String getChunkStatistics() {
+    public String /*? if <1.20.2 {*/ getChunkStatistics /*?} else {*/ /*getSectionStatistics *//*?}*/() {
         return this.renderer.getChunksDebugString();
     }
 }

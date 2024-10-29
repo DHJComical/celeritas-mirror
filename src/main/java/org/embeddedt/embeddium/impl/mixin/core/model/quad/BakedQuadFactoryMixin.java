@@ -45,6 +45,7 @@ public class BakedQuadFactoryMixin {
         return quad;
     }
 
+    //? if forgelike && <1.20.2 {
     /**
      * Backport of NeoForge PR <a href="https://github.com/neoforged/NeoForge/pull/207">#207</a>. The Forge patch
      * here reduces UV precision for no reason and has not been needed since at least 1.14. Vanilla already
@@ -56,4 +57,5 @@ public class BakedQuadFactoryMixin {
         vertices[i + 4] = Float.floatToRawIntBits(sprite.getU(element.getU(cornerIndex)));
         vertices[i + 4 + 1] = Float.floatToRawIntBits(sprite.getV(element.getV(cornerIndex)));
     }
+    //?}
 }

@@ -186,7 +186,10 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+        //? if <1.20.2 {
         this.renderBackground(drawContext);
+        //?} else
+        /*this.renderBackground(drawContext, mouseX, mouseY, delta);*/
         this.updateControls();
         this.frame.render(drawContext, mouseX, mouseY, delta);
     }

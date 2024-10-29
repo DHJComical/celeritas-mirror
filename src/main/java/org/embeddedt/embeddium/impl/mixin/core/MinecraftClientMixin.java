@@ -83,6 +83,7 @@ public class MinecraftClientMixin {
         this.fences.enqueue(fence);
     }
 
+    //? if <1.20.2 {
     /**
      * Check for problematic core shader resource packs after the initial game launch.
      */
@@ -90,6 +91,15 @@ public class MinecraftClientMixin {
     private void postInit(RealmsClient realms, ReloadInstance reload, GameConfig.QuickPlayData quickPlay, CallbackInfo ci) {
         ResourcePackScanner.checkIfCoreShaderLoaded(this.resourceManager);
     }
+    //?} else {
+    /*/^*
+     * Check for problematic core shader resource packs after the initial game launch.
+     ^/
+    @Inject(method = "buildInitialScreens", at = @At("TAIL"))
+    private void postInit(CallbackInfoReturnable<Runnable> cir) {
+        ResourcePackScanner.checkIfCoreShaderLoaded(this.resourceManager);
+    }
+    *///?}
 
     /**
      * Check for problematic core shader resource packs after every resource reload.

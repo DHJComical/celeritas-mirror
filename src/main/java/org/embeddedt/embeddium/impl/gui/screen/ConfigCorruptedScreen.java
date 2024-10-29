@@ -55,7 +55,10 @@ public class ConfigCorruptedScreen extends Screen {
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+        //? if <1.20.2 {
         this.renderBackground(drawContext);
+        //?} else
+        /*this.renderBackground(drawContext, mouseX, mouseY, delta);*/
 
         super.render(drawContext, mouseX, mouseY, delta);
 

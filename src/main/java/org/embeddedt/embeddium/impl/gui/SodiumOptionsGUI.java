@@ -147,7 +147,10 @@ public class SodiumOptionsGUI extends Screen {
 
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+        //? if <1.20.2 {
         super.renderBackground(drawContext);
+        //?} else
+        /*super.renderBackground(drawContext, mouseX, mouseY, delta);*/
 
         this.updateControls();
 

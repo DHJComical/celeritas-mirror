@@ -269,11 +269,16 @@ public class FluidRenderer {
             if (velocity.x == 0.0D && velocity.z == 0.0D) {
                 sprite = sprites[0];
                 facing = ModelQuadFacing.POS_Y;
-                u1 = sprite.getU(0.0D);
-                v1 = sprite.getV(0.0D);
+                u1 = sprite.getU(0);
+                v1 = sprite.getV(0);
                 u2 = u1;
+                //? if <1.20.2 {
                 v2 = sprite.getV(16.0D);
                 u3 = sprite.getU(16.0D);
+                //?} else {
+                /*v2 = sprite.getV(1.0F);
+                u3 = sprite.getU(1.0F);
+                *///?}
                 v3 = v2;
                 u4 = u3;
                 v4 = v1;
@@ -283,6 +288,7 @@ public class FluidRenderer {
                 float dir = (float) Mth.atan2(velocity.z, velocity.x) - (1.5707964f);
                 float sin = Mth.sin(dir) * 0.25F;
                 float cos = Mth.cos(dir) * 0.25F;
+                //? if <1.20.2 {
                 u1 = sprite.getU(8.0F + (-cos - sin) * 16.0F);
                 v1 = sprite.getV(8.0F + (-cos + sin) * 16.0F);
                 u2 = sprite.getU(8.0F + (-cos + sin) * 16.0F);
@@ -291,13 +297,27 @@ public class FluidRenderer {
                 v3 = sprite.getV(8.0F + (cos - sin) * 16.0F);
                 u4 = sprite.getU(8.0F + (cos - sin) * 16.0F);
                 v4 = sprite.getV(8.0F + (-cos - sin) * 16.0F);
+                //?} else {
+                /*u1 = sprite.getU(0.5F + (-cos - sin));
+                v1 = sprite.getV(0.5F + -cos + sin);
+                u2 = sprite.getU(0.5F + -cos + sin);
+                v2 = sprite.getV(0.5F + cos + sin);
+                u3 = sprite.getU(0.5F + cos + sin);
+                v3 = sprite.getV(0.5F + (cos - sin));
+                u4 = sprite.getU(0.5F + (cos - sin));
+                v4 = sprite.getV(0.5F + (-cos - sin));
+                *///?}
             }
 
             float uAvg = (u1 + u2 + u3 + u4) / 4.0F;
             float vAvg = (v1 + v2 + v3 + v4) / 4.0F;
+            //? if <1.20.2 {
             float s1 = (float) sprites[0].contents().width() / (sprites[0].getU1() - sprites[0].getU0());
             float s2 = (float) sprites[0].contents().height() / (sprites[0].getV1() - sprites[0].getV0());
             float s3 = 4.0F / Math.max(s2, s1);
+            //?} else {
+            /*float s3 = sprites[0].uvShrinkRatio();
+            *///?}
 
             u1 = Mth.lerp(s3, u1, uAvg);
             u2 = Mth.lerp(s3, u2, uAvg);
@@ -448,11 +468,19 @@ public class FluidRenderer {
                     }
                 }
 
+                //? if <1.20.2 {
                 float u1 = sprite.getU(0.0D);
                 float u2 = sprite.getU(8.0D);
                 float v1 = sprite.getV((1.0F - c1) * 16.0F * 0.5F);
                 float v2 = sprite.getV((1.0F - c2) * 16.0F * 0.5F);
                 float v3 = sprite.getV(8.0D);
+                //?} else {
+                /*float u1 = sprite.getU(0.0F);
+                float u2 = sprite.getU(0.5F);
+                float v1 = sprite.getV((1.0F - c1) * 0.5F);
+                float v2 = sprite.getV((1.0F - c2) * 0.5F);
+                float v3 = sprite.getV(0.5F);
+                *///?}
 
                 quad.setSprite(sprite);
 
