@@ -20,6 +20,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.BlockDestructionProgress;
+//? if forge
 import net.minecraftforge.client.ForgeHooksClient;
 import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
 import org.joml.Matrix4f;
@@ -135,9 +136,11 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         }
 
         // TODO: Avoid setting up and clearing the state a second time
+        //? if forge {
         renderLayer.setupRenderState();
         ForgeHooksClient.dispatchRenderStage(renderLayer, ((LevelRenderer)(Object)this), matrices, matrix, this.ticks, this.minecraft.gameRenderer.getMainCamera(), this.getFrustum());
         renderLayer.clearRenderState();
+        //? }
     }
 
     /**

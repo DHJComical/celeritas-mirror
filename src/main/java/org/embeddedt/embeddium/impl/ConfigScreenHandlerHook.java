@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl;
 
+//? if forge {
 import org.embeddedt.embeddium.impl.gui.SodiumOptionsGUI;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ConfigScreenHandler;
@@ -17,3 +18,4 @@ public class ConfigScreenHandlerHook {
         ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new SodiumOptionsGUI(screen)));
     }
 }
+//? }
