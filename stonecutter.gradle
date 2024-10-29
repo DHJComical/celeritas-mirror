@@ -1,0 +1,12 @@
+plugins {
+    id "dev.kikugie.stonecutter"
+    id "dev.architectury.loom" version "$architectury_loom_version" apply false
+}
+
+plugins.apply "dev.kikugie.stonecutter"
+stonecutter.active "1.20.1-forge" /* [SC] DO NOT EDIT */
+
+stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) {
+    group = "project"
+    ofTask("build")
+}

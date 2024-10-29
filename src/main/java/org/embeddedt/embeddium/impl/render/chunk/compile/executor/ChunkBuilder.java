@@ -1,7 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.executor;
 
 import org.embeddedt.embeddium.impl.SodiumClientMod;
-import org.embeddedt.embeddium.impl.compat.forge.ForgeBlockRenderer;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
@@ -44,7 +43,6 @@ public class ChunkBuilder {
 
     public ChunkBuilder(ClientLevel world, RenderPassConfiguration renderPassConfiguration) {
         GlobalChunkBuildContext.setMainThread();
-        ForgeBlockRenderer.init();
 
         int count = getThreadCount();
 
