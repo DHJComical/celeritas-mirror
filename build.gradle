@@ -18,32 +18,26 @@ plugins {
     id("embeddium-fabric-remapper")
 }
 
-operator fun String.invoke(): String {
-    return (rootProject.properties[this] as String?)!!
-}
-
-tasks.withType<JavaCompile> {
+tasks.withType(JavaCompile).configureEach {
     sourceCompatibility = JavaVersion.VERSION_17.majorVersion
     targetCompatibility = JavaVersion.VERSION_17.majorVersion
     options.encoding = "UTF-8"
 }
 
 version = getModVersion()
-group = "maven_group"()
+group = maven_group
 println("Embeddium: $version")
 
 base {
-    archivesName = "archives_base_name"()
+    archivesName = archives_base_name
 }
 
 // Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
 // java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
-val extraSourceSets = arrayOf("legacy", "compat")
+def extraSourceSets = ["legacy", "compat"]
 
 sourceSets {
-    val main = getByName("main")
-
     create("gameTest") {
         java {
             compileClasspath += main.compileClasspath
@@ -52,8 +46,7 @@ sourceSets {
     }
 
     extraSourceSets.forEach {
-        val sourceset = create(it)
-        sourceset.apply {
+        create(it) {
             java {
                 compileClasspath += main.compileClasspath
                 compileClasspath += main.output
@@ -64,30 +57,32 @@ sourceSets {
 
 repositories {
     mavenCentral()
-    maven("https://maven.minecraftforge.net/")
-    maven("https://maven.fabricmc.net")
-    maven("https://maven.tterrag.com/")
-    maven("https://maven.blamejared.com")
-    maven("https://api.modrinth.com/maven") {
+    maven { url = "https://maven.minecraftforge.net/" }
+    maven { url = "https://maven.fabricmc.net" }
+    maven { url = "https://maven.tterrag.com/" }
+    maven { url = "https://maven.blamejared.com" }
+    maven {
+        url = "https://api.modrinth.com/maven"
         content {
             includeGroup("maven.modrinth")
         }
     }
-    maven("https://cursemaven.com") {
+    maven {
+        url = "https://cursemaven.com"
         content {
             includeGroup("curse.maven")
         }
     }
-    maven("https://maven.covers1624.net/")
+    maven { url = "https://maven.covers1624.net/" }
 }
 
 jarJar.enable()
 
 minecraft {
     if(rootProject.properties.containsKey("parchment_version")) {
-        mappings("parchment", "parchment_version"())
+        mappings("parchment", parchment_version)
     } else {
-        mappings("official", "minecraft_version"())
+        mappings("official", minecraft_version)
     }
     copyIdeResources = true
     accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
@@ -102,7 +97,7 @@ minecraft {
 
             mods {
                 create("embeddium") {
-                    sources(sourceSets["main"])
+                    sources(sourceSets.main)
                     extraSourceSets.forEach {
                         sources(sourceSets[it])
                     }
@@ -110,7 +105,7 @@ minecraft {
             }
         }
 
-        val client = create("client") {
+        def client = create("client") {
             jvmArgs.add("-javaagent:${BlacksmithDownloader.getBlacksmithJar(project).absolutePath}")
         }
 
@@ -123,39 +118,26 @@ minecraft {
 }
 
 configurations {
-    val runtimeOnlyNonPublishable = create("runtimeOnlyNonPublishable") {
+    def runtimeOnlyNonPublishable = create("runtimeOnlyNonPublishable") {
         description = "Runtime only dependencies that are not published alongside the jar"
-        isCanBeConsumed = false
-        isCanBeResolved = false
+        canBeConsumed = false
+        canBeResolved = false
     }
-    runtimeClasspath.get().extendsFrom(runtimeOnlyNonPublishable)
-}
-
-val extraModsDir = "extra-mods-${"minecraft_version"()}"
-
-repositories {
-    flatDir {
-        name = "extra-mods"
-        dirs(file(extraModsDir))
-    }
+    runtimeClasspath.extendsFrom(runtimeOnlyNonPublishable)
 }
 
 mixin {
     // MixinGradle Settings
-    add(sourceSets["main"], "embeddium-refmap.json")
+    add(sourceSets.main, "embeddium-refmap.json")
     config("embeddium.mixins.json")
 }
 
-fun DependencyHandlerScope.compatCompileOnly(dependency: Dependency) {
-    "compatCompileOnly"(dependency)
-}
-
 dependencies {
-    minecraft("net.minecraftforge:forge:${"minecraft_version"()}-${"forge_version"()}")
+    minecraft("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
 
     // Mods
-    compatCompileOnly(fg.deobf("curse.maven:codechickenlib-242818:${"codechicken_fileid"()}"))
-    compatCompileOnly(fg.deobf("curse.maven:immersiveengineering-231951:${"ie_fileid"()}"))
+    compatCompileOnly(fg.deobf("curse.maven:codechickenlib-242818:${codechicken_fileid}"))
+    compatCompileOnly(fg.deobf("curse.maven:immersiveengineering-231951:${ie_fileid}"))
     compatCompileOnly(fg.deobf("com.brandon3055.brandonscore:BrandonsCore:1.20.1-3.2.1.302:universal"))
 
     runtimeOnly(fg.deobf("curse.maven:modernfix-790626:5676014"))
@@ -163,8 +145,8 @@ dependencies {
     runtimeOnly(fg.deobf("curse.maven:immediatelyfast-686911:5838235"))
 
     // Fabric API
-    compileOnly("net.fabricmc.fabric-api:fabric-api:${"fabric_version"()}")
-    compileOnly("net.fabricmc:fabric-loader:${"fabric_loader_version"()}")
+    compileOnly("net.fabricmc.fabric-api:fabric-api:${fabric_version}")
+    compileOnly("net.fabricmc:fabric-loader:${fabric_loader_version}")
 
     annotationProcessor("net.fabricmc:sponge-mixin:0.12.5+mixin.0.8.5")
 
@@ -175,35 +157,23 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 
     implementation(jarJar("io.github.llamalad7:mixinextras-forge:0.3.5")) {
-        jarJar.ranged(this, "[0.3.5,)")
-    }
-
-    // runtime remapping at home
-    fileTree(extraModsDir) {
-        include("*.jar") 
-    }.files.forEach { extraModJar ->
-        val basename = extraModJar.name.substring(0, extraModJar.name.length - ".jar".length)
-        val versionSep = basename.lastIndexOf('-')
-        assert(versionSep != -1)
-        val artifactId = basename.substring(0, versionSep)
-        val version = basename.substring(versionSep + 1)
-        runtimeOnly(fg.deobf("extra-mods:$artifactId:$version"))
+        jarJar.ranged(it, "[0.3.5,)")
     }
 }
 
 tasks.processResources {
-    inputs.property("version", "version"())
+    inputs.property("version", version)
 
     filesMatching("META-INF/mods.toml") {
-        expand("version" to "version"())
+        expand("version" to version)
     }
 }
 
-tasks.withType<JavaCompile> {
+tasks.withType(JavaCompile) {
     options.release = 17
 }
 
-tasks.named<DownloadAssets>("downloadAssets") {
+tasks.named("downloadAssets", DownloadAssets) {
     // Try to work around asset download failures
     concurrentDownloads = 1
 }
@@ -213,7 +183,7 @@ java {
     withSourcesJar()
 }
 
-tasks.named<Jar>("jar").configure {
+tasks.named("jar", Jar).configure {
     archiveClassifier = "slim"
 }
 
@@ -230,7 +200,7 @@ tasks.jarJar {
     archiveClassifier = ""
 }
 
-tasks.named<Jar>("sourcesJar").configure {
+tasks.named("sourcesJar", Jar).configure {
     extraSourceSets.forEach {
         from(sourceSets[it].allJava)
     }
@@ -241,74 +211,17 @@ publishing {
         dependsOn(tasks.build)
     }
     publications {
-        this.create<MavenPublication>("mavenJava") {
+        create("mavenJava", MavenPublication) {
             artifact(tasks.named("jarJar"))
             artifact(tasks.named("sourcesJar"))
-            fg.component(this)
-            pom {
-                withXml {
-                    // Workaround for NG only checking for net.minecraftforge group
-                    val root = this.asElement()
-
-                    val depsParent = (root.getElementsByTagName("dependencies").item(0) as Element)
-                    val allDeps = depsParent.getElementsByTagName("dependency")
-
-                    (0..allDeps.length).map { allDeps.item(it) }.filterIsInstance<Element>().filter {
-                        val artifactId = it.getElementsByTagName("artifactId").item(0).textContent
-                        val groupId = it.getElementsByTagName("groupId").item(0).textContent
-                        (artifactId == "forge") && (groupId == "net.neoforged")
-                    }.forEach {
-                        depsParent.removeChild(it)
-                    }
-                }
-            }
+            fg.component(it)
         }
     }
 
     repositories {
-        maven("file://${System.getenv("local_maven")}")
+        maven { url = "file://${System.getenv("local_maven")}" }
     }
 }
-
-/*
-publishMods {
-    file = tasks.jarJar.get().archiveFile
-    changelog = "https://github.com/embeddedt/embeddium/wiki/Changelog"
-    type = STABLE
-    modLoaders.add("forge")
-    modLoaders.add("neoforge")
-
-    curseforge {
-        projectId = "908741"
-        accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
-        minecraftVersions.add("minecraft_version"())
-
-        incompatible {
-            slug = "rubidium"
-        }
-
-        incompatible {
-            slug = "textrues-embeddium-options"
-        }
-    }
-    modrinth {
-        projectId = "sk9rgfiA"
-        accessToken = providers.environmentVariable("MODRINTH_TOKEN")
-        minecraftVersions.add("minecraft_version"())
-
-        incompatible {
-            slug = "rubidium"
-        }
-
-        incompatible {
-            slug = "textrues-embeddium-options"
-        }
-    }
-
-    displayName = "[${"minecraft_version"()}] Embeddium ${"mod_version"()}"
-}
-
- */
 
 tasks.create("publishSnapshotToDiscord") {
     outputs.upToDateWhen { false }
@@ -318,6 +231,6 @@ tasks.create("publishSnapshotToDiscord") {
     dependsOn("reobfJarJar")
 }
 
-fun getModVersion(): String {
+def getModVersion() {
     return ProjectVersioner.computeVersion(project.projectDir, project.properties)
 }

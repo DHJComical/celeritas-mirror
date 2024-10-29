@@ -1,5 +1,5 @@
 plugins {
-    `java-gradle-plugin` // so we can assign and ID to our plugin
+    id 'java-gradle-plugin' // so we can assign and ID to our plugin
 }
 
 dependencies {
@@ -16,7 +16,7 @@ dependencies {
 
 repositories {
     mavenCentral()
-    maven("https://maven.fabricmc.net/")
+    maven { url = "https://maven.fabricmc.net/" }
 }
 
 gradlePlugin {

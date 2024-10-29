@@ -1,0 +1,11 @@
+pluginManagement {
+    repositories {
+        maven { url = "https://maven.minecraftforge.net" }
+        maven { url = "https://repo.spongepowered.org/repository/maven-public/" }
+        maven { url = "https://maven.parchmentmc.org" }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = "embeddium-${minecraft_version}"
