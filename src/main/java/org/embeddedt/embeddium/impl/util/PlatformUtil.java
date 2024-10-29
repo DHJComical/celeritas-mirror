@@ -8,6 +8,7 @@ import java.nio.file.Path;
 //? if forge {
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLLoader;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.nio.file.Path;
 

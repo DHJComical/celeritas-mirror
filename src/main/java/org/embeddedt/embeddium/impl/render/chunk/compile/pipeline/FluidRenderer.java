@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 
-import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
+//? if fabric
+/*import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;*/
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.tags.FluidTags;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;

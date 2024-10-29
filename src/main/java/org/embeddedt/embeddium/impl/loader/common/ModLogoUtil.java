@@ -30,7 +30,7 @@ public class ModLogoUtil {
                     .orElse(ResourcePackLoader.getPackFor("forge").
                             orElseThrow(()->new RuntimeException("Can't find forge, WHAT!")));
             try {
-                texture = handleIoSupplier(resourcePack.getRootResource(logoFile.get()));
+                texture = handleIoSupplier(modId, resourcePack.getRootResource(logoFile.get()));
             } catch(IOException e) {
                 erroredLogos.add(modId);
                 SodiumClientMod.logger().error("Exception reading logo for " + modId, e);

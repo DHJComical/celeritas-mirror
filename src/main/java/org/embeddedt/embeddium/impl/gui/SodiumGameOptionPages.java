@@ -3,6 +3,8 @@ package org.embeddedt.embeddium.impl.gui;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.Window;
+//? if forge
+import net.minecraftforge.common.ForgeConfig;
 import org.embeddedt.embeddium.impl.compat.modernui.MuiGuiScaleHook;
 import org.embeddedt.embeddium.impl.compatibility.workarounds.Workarounds;
 import org.embeddedt.embeddium.impl.gl.arena.staging.MappedStagingBuffer;
