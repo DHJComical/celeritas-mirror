@@ -140,7 +140,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         renderLayer.setupRenderState();
         ForgeHooksClient.dispatchRenderStage(renderLayer, ((LevelRenderer)(Object)this), matrices, matrix, this.ticks, this.minecraft.gameRenderer.getMainCamera(), this.getFrustum());
         renderLayer.clearRenderState();
-        //? }
+        //?}
     }
 
     /**

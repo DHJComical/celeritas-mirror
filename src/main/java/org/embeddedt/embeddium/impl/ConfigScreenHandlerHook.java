@@ -18,4 +18,4 @@ public class ConfigScreenHandlerHook {
         ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new SodiumOptionsGUI(screen)));
     }
 }
-//? }
+//?}
