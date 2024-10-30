@@ -46,7 +46,7 @@ public interface VertexConsumerMixin {
         return this.normal(xt, yt, zt);
     }
     //?} else {
-    /*/^@Shadow
+    /*/^/^@Shadow
     VertexConsumer setNormal(float x, float y, float z);
 
     @Shadow
@@ -88,7 +88,7 @@ public interface VertexConsumerMixin {
     }
     *///?}
 }
-//?} else {
+*///?} else {
 /*import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;

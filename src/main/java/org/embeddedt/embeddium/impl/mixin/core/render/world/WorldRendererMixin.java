@@ -26,6 +26,7 @@ import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
 import org.joml.Matrix4f;
 //?} else
 /*import com.mojang.math.Matrix4f;*/
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -66,12 +67,10 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     @Final
     private Minecraft minecraft;
 
-    //? if forgelike {
-    @Shadow(remap = false)
-    public Frustum getFrustum() {
-        return null;
+    @Unique
+    private Frustum embeddium$getCurrentFrustum() {
+        return this.capturedFrustum != null ? this.capturedFrustum : this.cullingFrustum;
     }
-    //?}
 
     @Unique
     private SodiumWorldRenderer renderer;
@@ -80,6 +79,13 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     private int frame;
 
     @Shadow public abstract boolean shouldShowEntityOutlines();
+
+    @Shadow
+    @Nullable
+    private Frustum capturedFrustum;
+
+    @Shadow
+    private Frustum cullingFrustum;
 
     @Override
     public SodiumWorldRenderer sodium$getWorldRenderer() {
@@ -156,7 +162,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         renderLayer.setupRenderState();
         ForgeHooksClient.dispatchRenderStage(renderLayer, ((LevelRenderer)(Object)this),
                 /*? if <1.20.6 {*/ matrices /*?} else {*/ /*pose *//*?}*/,
-                matrix, this.ticks, this.minecraft.gameRenderer.getMainCamera(), this.getFrustum());
+                matrix, this.ticks, this.minecraft.gameRenderer.getMainCamera(), this.embeddium$getCurrentFrustum());
         renderLayer.clearRenderState();
         //?}
     }

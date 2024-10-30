@@ -2,13 +2,16 @@ package org.embeddedt.embeddium.impl.mixin.features.render.gui.debug;
 
 //? if forge && <1.20.6 {
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+//? if >=1.20
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import org.embeddedt.embeddium.impl.gui.BatchedF3Renderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -34,6 +37,7 @@ public abstract class ForgeGuiMixin extends Gui {
      * @reason Use the vanilla code to render lines, which fills all backgrounds first before drawing text, so that
      * batching works correctly. Also, ensure the lines are rendered in a managed context.
      */
+    //? if >=1.20 {
     @Inject(method = "renderHUDText", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/eventbus/api/IEventBus;post(Lnet/minecraftforge/eventbus/api/Event;)Z", shift = At.Shift.AFTER, remap = false), remap = false)
     private void renderLinesVanilla(int width, int height, GuiGraphics guiGraphics, CallbackInfo ci, @Local(ordinal = 0) ArrayList<String> listL, @Local(ordinal = 1) ArrayList<String> listR) {
         DebugScreenOverlayAccessor accessor = (DebugScreenOverlayAccessor)embeddium$debugOverlay;
@@ -45,5 +49,16 @@ public abstract class ForgeGuiMixin extends Gui {
         listL.clear();
         listR.clear();
     }
+    //?} else {
+    /*@Inject(method = "renderHUDText", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/eventbus/api/IEventBus;post(Lnet/minecraftforge/eventbus/api/Event;)Z", shift = At.Shift.AFTER), cancellable = true, remap = false)
+    private void embeddium$renderTextFast(int width, int height, PoseStack poseStack, CallbackInfo ci, @Local(ordinal = 0) ArrayList<String> listL, @Local(ordinal = 1) ArrayList<String> listR) {
+        ci.cancel();
+
+        BatchedF3Renderer.renderList(poseStack, listL, false);
+        BatchedF3Renderer.renderList(poseStack, listR, true);
+
+        minecraft.getProfiler().pop();
+    }
+    *///?}
 }
 //?}

@@ -26,8 +26,13 @@ import net.neoforged.neoforge.client.model.lighting.FlatQuadLighter;
 import net.neoforged.neoforge.client.model.lighting.QuadLighter;
 import net.neoforged.neoforge.client.model.lighting.SmoothQuadLighter;
 *///?}
+//? if >=1.20 {
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+//?} else {
+/*import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
+*///?}
 
 /**
  * Implements an Embeddium-compatible frontend for the Forge light pipeline.

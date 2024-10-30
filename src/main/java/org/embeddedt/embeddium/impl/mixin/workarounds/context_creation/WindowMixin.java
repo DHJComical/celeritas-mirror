@@ -1,16 +1,8 @@
 package org.embeddedt.embeddium.impl.mixin.workarounds.context_creation;
 
-import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.compatibility.checks.ModuleScanner;
 import org.embeddedt.embeddium.impl.compatibility.checks.LateDriverScanner;
-import org.embeddedt.embeddium.impl.compatibility.workarounds.Workarounds;
-import org.embeddedt.embeddium.impl.compatibility.workarounds.nvidia.NvidiaWorkarounds;
 import net.minecraft.Util;
-//? if forge
-import net.minecraftforge.fml.loading.ImmediateWindowHandler;
-//? if neoforge
-/*import net.neoforged.fml.loading.ImmediateWindowHandler;*/
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 import org.lwjgl.opengl.WGL;
@@ -25,11 +17,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Objects;
-import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
-
 import com.mojang.blaze3d.platform.Window;
 
 
@@ -41,47 +28,6 @@ public class WindowMixin {
 
     @Unique
     private long wglPrevContext = MemoryUtil.NULL;
-
-
-    //? if forge {
-    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/fml/loading/ImmediateWindowHandler;setupMinecraftWindow(Ljava/util/function/IntSupplier;Ljava/util/function/IntSupplier;Ljava/util/function/Supplier;Ljava/util/function/LongSupplier;)J", remap = false))
-    private long wrapGlfwCreateWindow(IntSupplier width, IntSupplier height, Supplier<String> title, LongSupplier monitor) {
-        return wrapGlfwCreateWindow(width, height, title, monitor, () -> 0L);
-    }
-    //?} else if fabric {
-    /*@Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwCreateWindow(IILjava/lang/CharSequence;JJ)J", remap = false))
-    private long wrapGlfwCreateWindow(int width, int height, CharSequence title, long monitor, long share) {
-        return wrapGlfwCreateWindow(() -> width, () -> height, title::toString, () -> monitor, () -> share);
-    }
-    *///?}
-
-    private long wrapGlfwCreateWindow(IntSupplier width, IntSupplier height, Supplier<String> title, LongSupplier monitor, LongSupplier share) {
-        final boolean applyNvidiaWorkarounds = Workarounds.isWorkaroundEnabled(Workarounds.Reference.NVIDIA_THREADED_OPTIMIZATIONS);
-
-        if (applyNvidiaWorkarounds) {
-            NvidiaWorkarounds.install();
-        }
-
-        /**
-         * @author Asek3
-         * Was taken from mixin.core due to impossibility of injecting into constructors on Forge
-         */
-        if (SodiumClientMod.options().performance.useNoErrorGLContext &&
-                !Workarounds.isWorkaroundEnabled(Workarounds.Reference.NO_ERROR_CONTEXT_UNSUPPORTED)) {
-            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_NO_ERROR, GLFW.GLFW_TRUE);
-        }
-
-        try {
-            //? if forgelike
-            return ImmediateWindowHandler.setupMinecraftWindow(width, height, title, monitor);
-            //? if fabric
-            /*return GLFW.glfwCreateWindow(width.getAsInt(), height.getAsInt(), title.get(), monitor.getAsLong(), share.getAsLong());*/
-        } finally {
-            if (applyNvidiaWorkarounds) {
-                NvidiaWorkarounds.uninstall();
-            }
-        }
-    }
 
     @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL;createCapabilities()Lorg/lwjgl/opengl/GLCapabilities;", remap = false))
     private GLCapabilities postWindowCreated() {

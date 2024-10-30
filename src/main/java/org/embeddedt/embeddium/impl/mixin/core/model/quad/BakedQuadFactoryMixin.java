@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.block.model.FaceBakery;
 //? if >=1.20
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -55,8 +54,13 @@ public class BakedQuadFactoryMixin {
      * here reduces UV precision for no reason and has not been needed since at least 1.14. Vanilla already
      * adjusts the UV offsets itself.
      */
-    @Inject(method = "fillVertex([IILorg/joml/Vector3f;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;)V", at = @At("RETURN"))
-    private void undoForgeUVExpansion(int[] vertices, int cornerIndex, Vector3f position, TextureAtlasSprite sprite, BlockFaceUV element, CallbackInfo ci) {
+    @Inject(method =
+            //? if >=1.20 {
+            "fillVertex([IILorg/joml/Vector3f;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;)V"
+            //?} else
+            /*"fillVertex"*/
+            , at = @At("RETURN"))
+    private void undoForgeUVExpansion(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) int[] vertices, @Local(ordinal = 0, argsOnly = true) int cornerIndex, @Local(ordinal = 0, argsOnly = true) TextureAtlasSprite sprite, @Local(ordinal = 0, argsOnly = true) BlockFaceUV element) {
         int i = cornerIndex * 8;
         vertices[i + 4] = Float.floatToRawIntBits(sprite.getU(element.getU(cornerIndex)));
         vertices[i + 4 + 1] = Float.floatToRawIntBits(sprite.getV(element.getV(cornerIndex)));
