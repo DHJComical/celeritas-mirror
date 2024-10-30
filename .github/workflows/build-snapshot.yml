@@ -21,5 +21,15 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 21
+      - name: Initialize caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/loom-cache
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-build-snapshot-
       - name: Build artifacts
         run: ./gradlew chiseledPackage && ./gradlew publishPackagesToDiscord
