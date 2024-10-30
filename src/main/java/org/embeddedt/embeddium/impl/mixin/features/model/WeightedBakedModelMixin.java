@@ -50,7 +50,7 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
      * @author JellySquid
      * @reason Avoid excessive object allocations
      */
-    @Overwrite(remap = false)
+    @Overwrite(/*? if forgelike {*/, remap = false/*?}*/)
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, RandomSource random/*? if forgelike {*/, ModelData modelData, RenderType renderLayer/*?}*/) {
         //? if <1.21.2
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) random.nextLong()) % this.totalWeight);

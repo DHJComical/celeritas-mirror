@@ -156,7 +156,7 @@ public class MultipartBakedModelMixin {
      * @author JellySquid
      * @reason Avoid expensive allocations and replace bitfield indirection
      */
-    @Overwrite(remap = false)
+    @Overwrite(/*? if forgelike {*/, remap = false/*?}*/)
     public List<BakedQuad> getQuads(BlockState state, Direction face, RandomSource random/*? if forgelike {*/, ModelData modelData, RenderType renderLayer /*?}*/) {
         if (state == null) {
             return Collections.emptyList();
