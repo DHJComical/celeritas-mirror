@@ -53,7 +53,10 @@ public class FMLEarlyLoaderServices implements EarlyLoaderServices {
 
     @Override
     public boolean isLoadingNormally() {
-        return !FMLLoader.getLoadingModList().hasErrors();
+        //? if neoforge
+        /*return !FMLLoader.getLoadingModList().hasErrors();*/
+        //? if forge
+        return FMLLoader.getLoadingModList().getErrors().isEmpty();
     }
 
     public List<String> getLoadedModIds() {

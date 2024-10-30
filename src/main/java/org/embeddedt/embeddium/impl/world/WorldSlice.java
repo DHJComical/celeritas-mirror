@@ -1,8 +1,12 @@
 package org.embeddedt.embeddium.impl.world;
 
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
-import net.neoforged.neoforge.client.model.data.ModelData;
+//? if forge
+import net.minecraftforge.client.model.data.ModelData;
+//? if neoforge
+/*import net.neoforged.neoforge.client.model.data.ModelData;*/
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
+import org.embeddedt.embeddium.impl.model.ModelDataSnapshotter;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorCache;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorSource;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorView;
@@ -108,6 +112,9 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     // (Local Section -> Block Entity Render Data) table.
     private final @Nullable Int2ReferenceMap<Object>[] blockEntityRenderDataArrays;
 
+    // (Local Section -> Model Data) table.
+    private final ModelDataSnapshotter.Getter[] modelDataGetters;
+
     // The starting point from which this slice captures blocks
     private int originX, originY, originZ;
     
@@ -167,6 +174,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
 
         this.blockEntityArrays = new Int2ReferenceMap[SECTION_ARRAY_SIZE];
         this.blockEntityRenderDataArrays = new Int2ReferenceMap[SECTION_ARRAY_SIZE];
+        this.modelDataGetters = new ModelDataSnapshotter.Getter[SECTION_ARRAY_SIZE];
 
         this.biomeSlice = new BiomeSlice();
         this.biomeColors = new BiomeColorCache(this.biomeSlice, Minecraft.getInstance().options.biomeBlendRadius().get());
@@ -210,6 +218,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
 
         this.blockEntityArrays[sectionIndex] = section.getBlockEntityMap();
         this.blockEntityRenderDataArrays[sectionIndex] = section.getBlockEntityRenderDataMap();
+        this.modelDataGetters[sectionIndex] = section.getModelDataGetter();
     }
 
     private void unpackBlockData(BlockState[] blockArray, ChunkRenderContext context, ClonedChunkSection section) {
@@ -394,9 +403,32 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     /*@Override*/
     //? if forgelike {
     public ModelData getModelData(BlockPos pos) {
-        throw new UnsupportedOperationException("TODO");
+        int relX = pos.getX() - this.originX;
+        int relY = pos.getY() - this.originY;
+        int relZ = pos.getZ() - this.originZ;
+
+        if (!isInside(relX, relY, relZ)) {
+            return ModelData.EMPTY;
+        }
+
+        var modelDataGetter = this.modelDataGetters[getLocalSectionIndex(relX >> 4, relY >> 4, relZ >> 4)];
+
+        return modelDataGetter.getModelData(pos);
     }
     //?}
+
+    public ModelDataSnapshotter.Getter getModelDataGetter(int chunkX, int chunkY, int chunkZ) {
+        int relSX = chunkX - (this.originX >> 4);
+        int relSY = chunkY - (this.originY >> 4);
+        int relSZ = chunkZ - (this.originZ >> 4);
+
+        if (relSX < 0 || relSY < 0 || relSZ < 0
+                || relSX >= SECTION_ARRAY_LENGTH || relSY >= SECTION_ARRAY_LENGTH || relSZ >= SECTION_ARRAY_LENGTH) {
+            throw new IllegalStateException("Requesting model data for out-of-range chunk");
+        }
+
+        return this.modelDataGetters[getLocalSectionIndex(relSX, relSY, relSZ)];
+    }
 
     //? if forgelike {
     @Override

@@ -3,6 +3,8 @@ package org.embeddedt.embeddium.impl.world.cloned;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMaps;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceOpenHashMap;
+import lombok.Getter;
+import org.embeddedt.embeddium.impl.model.ModelDataSnapshotter;
 import org.embeddedt.embeddium.impl.world.ReadableContainerExtended;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 //? if ffapi
@@ -39,6 +41,8 @@ public class ClonedChunkSection {
 
     private final @Nullable Int2ReferenceMap<BlockEntity> blockEntityMap;
     private final @Nullable Int2ReferenceMap<Object> blockEntityRenderDataMap;
+    @Getter
+    private final ModelDataSnapshotter.Getter modelDataGetter;
 
     private final @Nullable DataLayer[] lightDataArrays;
 
@@ -95,6 +99,8 @@ public class ClonedChunkSection {
         this.blockEntityRenderDataMap = blockEntityRenderDataMap;
 
         this.lightDataArrays = copyLightData(world, pos);
+
+        this.modelDataGetter = ModelDataSnapshotter.getModelDataForSection(world, pos);
     }
 
     /**

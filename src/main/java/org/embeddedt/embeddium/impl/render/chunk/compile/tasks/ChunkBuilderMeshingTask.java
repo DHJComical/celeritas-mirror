@@ -59,18 +59,12 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     private final int buildTime;
     private final Vec3 camera;
 
-    //? if forge
-    private final Map<BlockPos, ModelData> modelDataMap;
-
 
     public ChunkBuilderMeshingTask(RenderSection render, ChunkRenderContext renderContext, int time, Vec3 camera) {
         this.render = render;
         this.renderContext = renderContext;
         this.buildTime = time;
         this.camera = camera;
-
-        //? if forge
-        this.modelDataMap = ModelDataSnapshotter.getModelDataForSection(Minecraft.getInstance().level, this.renderContext.getOrigin());
     }
 
     @Override
@@ -100,6 +94,9 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
         BlockRenderContext context = new BlockRenderContext(slice);
 
+        //? if forgelike
+        ModelDataSnapshotter.Getter modelDataGetter = slice.getModelDataGetter(this.render.getChunkX(), this.render.getChunkY(), this.render.getChunkZ());
+
         try {
             for (int y = minY; y < maxY; y++) {
                 if (cancellationToken.isCancelled()) {
@@ -122,7 +119,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             BakedModel model = cache.getBlockModels()
                                 .getBlockModel(blockState);
                             //? if forge
-                            ModelData modelData = model.getModelData(context.localSlice(), blockPos, blockState, modelDataMap.getOrDefault(blockPos, ModelData.EMPTY));
+                            ModelData modelData = model.getModelData(context.localSlice(), blockPos, blockState, modelDataGetter.getModelData(blockPos));
 
                             long seed = blockState.getSeed(blockPos);
                             random.setSeed(seed);
