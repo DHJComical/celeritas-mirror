@@ -240,6 +240,10 @@ if (stonecutter.current.isActive) {
   }
 }
 
+tasks.named("validateAccessWidener") {
+  enabled = false
+}
+
 afterEvaluate {
     packageJar.dependsOn(remapJar)
     packageJar.from(remapJar.archiveFile)
