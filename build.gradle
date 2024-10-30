@@ -2,6 +2,7 @@ import bs.ModLoader
 import bs.SemverUtils
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import org.embeddedt.embeddium.gradle.DiscordNotifier
 
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -234,14 +235,20 @@ if (loader == FORGE) {
 }
 
 if (stonecutter.current.isActive) {
-  tasks.register("runActive") {
-    group = "project"
-    dependsOn("runClient")
-  }
-  tasks.register("packageActive") {
-    group = "project"
-    dependsOn("packageJar")
-  }
+    tasks.register("runActive") {
+        group = "project"
+        dependsOn("runClient")
+    }
+    tasks.register("packageActive") {
+        group = "project"
+        dependsOn("packageJar")
+    }
+    tasks.register("publishPackagesToDiscord") {
+        outputs.upToDateWhen { false }
+        doLast {
+            DiscordNotifier.publishEmbeddiumJar(project)
+        }
+    }
 }
 
 tasks.named("validateAccessWidener") {

@@ -10,6 +10,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class DiscordNotifier {
     private static final String URL;
@@ -51,18 +54,28 @@ public class DiscordNotifier {
         return executeCommand("git", "archive", "--format=zip", "HEAD");
     }
 
-    public static void publishEmbeddiumJar(Project project, File file) {
+    public static void publishEmbeddiumJar(Project project) {
         if(URL != null) {
+            List<File> jars;
+            File libsDir = new File(project.getRootDir(), "build/libs/" + project.getVersion().toString());
+            if (libsDir.isDirectory()) {
+                jars = Arrays.stream(libsDir.listFiles()).filter(File::isFile).toList();
+            } else {
+                throw new IllegalStateException("Cannot find " + libsDir.toString());
+            }
             try(WebhookClient client = WebhookClient.withUrl(URL)) {
-                WebhookMessage message = new WebhookMessageBuilder()
+                var builder = new WebhookMessageBuilder()
                         .setUsername("Embeddium Test Builds") // use this username
                         .setAvatarUrl("https://raw.githubusercontent.com/FiniteReality/embeddium/master/src/main/resources/icon.png") // use this avatar
-                        .setContent(getLastCommitInfo())
-                        .addFile(file)
+                        .setContent(getLastCommitInfo());
+                jars.forEach(builder::addFile);
+                var message = builder
                         .addFile("embeddium-" + project.getVersion() + "-sources.zip", getSourceTarball())
                         .build();
                 client.onThread(TEST_BUILD_THREAD).send(message);
             }
+        } else {
+            throw new IllegalStateException("No webhook found");
         }
     }
 }
