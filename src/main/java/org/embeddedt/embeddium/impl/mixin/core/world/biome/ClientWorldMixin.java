@@ -29,10 +29,11 @@ public class ClientWorldMixin implements BiomeSeedProvider {
                              Holder<DimensionType> dimensionTypeEntry,
                              int loadDistance,
                              int simulationDistance,
-                             Supplier<ProfilerFiller> profiler,
+                             /*? if <1.21.2 {*/ Supplier<ProfilerFiller> profiler, /*?}*/
                              LevelRenderer worldRenderer,
                              boolean debugWorld,
                              long seed,
+                             /*? if >=1.21.2 {*/ /*int number, *//*?}*/
                              CallbackInfo ci) {
         this.biomeSeed = seed;
     }

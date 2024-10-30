@@ -34,9 +34,37 @@ public class MultipartBakedModelMixin {
     @Unique
     private final StampedLock lock = new StampedLock();
 
+    //? if <1.21.2 {
     @Shadow
     @Final
     private List<Pair<Predicate<BlockState>, BakedModel>> selectors;
+
+    @Unique
+    private static Predicate<BlockState> embeddium$getCond(Pair<Predicate<BlockState>, BakedModel> selector) {
+        return selector.getLeft();
+    }
+
+    @Unique
+    private static BakedModel embeddium$getModel(Pair<Predicate<BlockState>, BakedModel> selector) {
+        return selector.getRight();
+    }
+    //?} else {
+    /*@Shadow
+    @Final
+    private List<MultiPartBakedModel.Selector> selectors;
+
+    @Unique
+    private static Predicate<BlockState> embeddium$getCond(MultiPartBakedModel.Selector selector) {
+        return selector.condition();
+    }
+
+    @Unique
+    private static BakedModel embeddium$getModel(MultiPartBakedModel.Selector selector) {
+        return selector.model();
+    }
+    *///?}
+
+
 
     //? if forgelike {
     @Unique
@@ -60,7 +88,7 @@ public class MultipartBakedModelMixin {
     private void checkSubModelRenderTypes(CallbackInfo ci) {
         boolean hasRenderTypes = false;
         for (var pair : selectors) {
-            var model = pair.getRight();
+            var model = embeddium$getModel(pair);
             // Check for the exact class in case someone extends SimpleBakedModel
             if (model.getClass() == SimpleBakedModel.class) {
                 // SimpleBakedModel delegates to ItemBlockRenderTypes unless there is an explicit override
@@ -94,9 +122,9 @@ public class MultipartBakedModelMixin {
             try {
                 List<BakedModel> modelList = new ArrayList<>(this.selectors.size());
 
-                for (Pair<Predicate<BlockState>, BakedModel> pair : this.selectors) {
-                    if (pair.getLeft().test(state)) {
-                        modelList.add(pair.getRight());
+                for (var pair : this.selectors) {
+                    if (embeddium$getCond(pair).test(state)) {
+                        modelList.add(embeddium$getModel(pair));
                     }
                 }
 

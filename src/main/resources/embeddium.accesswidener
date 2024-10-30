@@ -25,3 +25,4 @@ accessible field com/mojang/blaze3d/vertex/VertexFormat offsets Lit/unimi/dsi/fa
 
 accessible method net/minecraft/client/renderer/SectionBufferBuilderPool <init> (Ljava/util/List;)V
 accessible field com/mojang/blaze3d/vertex/PoseStack$Pose trustedNormals Z
+accessible method net/minecraft/client/renderer/entity/EntityRenderer getBoundingBoxForCulling (Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/phys/AABB;

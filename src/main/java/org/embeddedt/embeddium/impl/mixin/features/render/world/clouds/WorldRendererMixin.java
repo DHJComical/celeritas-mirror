@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.world.clouds;
 
+//? if <1.21.2 {
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.render.immediate.CloudRenderer;
 import net.minecraft.client.Minecraft;
@@ -72,3 +73,4 @@ public class WorldRendererMixin {
         }
     }
 }
+//?}

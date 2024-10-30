@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import lombok.Getter;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
@@ -24,6 +25,8 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
+import org.embeddedt.embeddium.impl.util.ProfilerUtil;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -177,7 +180,7 @@ public class SodiumWorldRenderer {
             this.reload();
         }
 
-        ProfilerFiller profiler = this.client.getProfiler();
+        ProfilerFiller profiler = ProfilerUtil.get();
         profiler.push("camera_setup");
 
         LocalPlayer player = this.client.player;
@@ -189,7 +192,11 @@ public class SodiumWorldRenderer {
         Vec3 pos = camera.getPosition();
         float pitch = camera.getXRot();
         float yaw = camera.getYRot();
+        //? if >=1.21.2 {
+        /*float fogDistance = RenderSystem.getShaderFog().end();
+        *///?} else {
         float fogDistance = RenderSystem.getShaderFogEnd();
+        //?}
 
         boolean dirty = pos.x != this.lastCameraX || pos.y != this.lastCameraY || pos.z != this.lastCameraZ ||
                 pitch != this.lastCameraPitch || yaw != this.lastCameraYaw || fogDistance != this.lastFogDistance;
@@ -564,7 +571,7 @@ public class SodiumWorldRenderer {
      * Returns whether or not the entity intersects with any visible chunks in the graph.
      * @return True if the entity is visible, otherwise false
      */
-    public boolean isEntityVisible(Entity entity) {
+    public boolean isEntityVisible(Entity entity, EntityRenderer renderer) {
         if (!this.useEntityCulling) {
             return true;
         }
@@ -574,7 +581,10 @@ public class SodiumWorldRenderer {
             return true;
         }
 
+        //? if <1.21.2
         AABB box = entity.getBoundingBoxForCulling();
+        //? if >=1.21.2
+        /*AABB box = renderer.getBoundingBoxForCulling(entity);*/
 
 
         if (isInfiniteExtentsBox(box)) {
@@ -594,7 +604,7 @@ public class SodiumWorldRenderer {
     public boolean isBoxVisible(double x1, double y1, double z1, double x2, double y2, double z2) {
         // Boxes outside the valid world height will never map to a rendered chunk
         // Always render these boxes or they'll be culled incorrectly!
-        if (y2 < this.world.getMinBuildHeight() + 0.5D || y1 > this.world.getMaxBuildHeight() - 0.5D) {
+        if (y2 < WorldUtil.getMinBuildHeight(this.world) + 0.5D || y1 > WorldUtil.getMaxBuildHeight(this.world) - 0.5D) {
             return true;
         }
 

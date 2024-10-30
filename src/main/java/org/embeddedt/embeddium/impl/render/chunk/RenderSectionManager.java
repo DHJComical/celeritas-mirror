@@ -40,6 +40,7 @@ import org.embeddedt.embeddium.impl.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.MathUtil;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.util.iterator.ByteIterator;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
@@ -356,7 +357,7 @@ public class RenderSectionManager {
         BlockPos origin = camera.getBlockPosition();
 
         if (spectator && this.world.getBlockState(origin)
-                .isSolidRender(this.world, origin))
+                .isSolidRender(/*? if <1.21.2 {*/this.world, origin/*?}*/))
         {
             useOcclusionCulling = false;
         } else {
@@ -739,13 +740,20 @@ public class RenderSectionManager {
     }
 
     private float getEffectiveRenderDistance() {
+        //? if <1.21.2 {
         var color = RenderSystem.getShaderFogColor();
+        var alpha = color[3];
         var distance = RenderSystem.getShaderFogEnd();
+        //?} else {
+        /*var fogParams = RenderSystem.getShaderFog();
+        var alpha = fogParams.alpha();
+        var distance = fogParams.end();
+        *///?}
 
         var renderDistance = this.getRenderDistance();
 
         // The fog must be fully opaque in order to skip rendering of chunks behind it
-        if (!Mth.equal(color[3], 1.0f)) {
+        if (!Mth.equal(alpha, 1.0f)) {
             return renderDistance;
         }
 
@@ -903,13 +911,13 @@ public class RenderSectionManager {
     }
 
     public void onChunkAdded(int x, int z) {
-        for (int y = this.world.getMinSection(); y < this.world.getMaxSection(); y++) {
+        for (int y = WorldUtil.getMinSection(this.world); y < WorldUtil.getMaxSection(this.world); y++) {
             this.onSectionAdded(x, y, z);
         }
     }
 
     public void onChunkRemoved(int x, int z) {
-        for (int y = this.world.getMinSection(); y < this.world.getMaxSection(); y++) {
+        for (int y = WorldUtil.getMinSection(this.world); y < WorldUtil.getMaxSection(this.world); y++) {
             this.onSectionRemoved(x, y, z);
         }
     }

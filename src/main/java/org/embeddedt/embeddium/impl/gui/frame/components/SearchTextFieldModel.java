@@ -95,7 +95,10 @@ public class SearchTextFieldModel {
             }
         }
 
+        //? if <1.21.2
         Minecraft.getInstance().tell(() -> this.mainScreen.rebuildUI());
+        //? if >=1.21.2
+        /*Minecraft.getInstance().schedule(() -> this.mainScreen.rebuildUI());*/
     }
 
     void erase(int offset) {

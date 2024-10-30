@@ -1,12 +1,12 @@
 package org.embeddedt.embeddium.impl.mixin.features.textures.mipmaps;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import org.embeddedt.embeddium.api.util.ColorABGR;
 import org.embeddedt.embeddium.impl.util.NativeImageHelper;
 import org.embeddedt.embeddium.impl.util.color.ColorSRGB;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevelHolder;
 import org.lwjgl.system.MemoryUtil;
@@ -86,7 +86,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
             long pPixel = ppPixel + (pixelIndex * 4);
 
             int color = MemoryUtil.memGetInt(pPixel);
-            int alpha = FastColor.ABGR32.alpha(color);
+            int alpha = ColorABGR.unpackAlpha(color);
 
             // Ignore all fully-transparent pixels for the purposes of computing an average color.
             if (alpha > 0) {
@@ -100,9 +100,9 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
                     float weight = (float) alpha;
 
                     // Make sure to convert to linear space so that we don't lose brightness.
-                    r += ColorSRGB.srgbToLinear(FastColor.ABGR32.red(color)) * weight;
-                    g += ColorSRGB.srgbToLinear(FastColor.ABGR32.green(color)) * weight;
-                    b += ColorSRGB.srgbToLinear(FastColor.ABGR32.blue(color)) * weight;
+                    r += ColorSRGB.srgbToLinear(ColorABGR.unpackRed(color)) * weight;
+                    g += ColorSRGB.srgbToLinear(ColorABGR.unpackGreen(color)) * weight;
+                    b += ColorSRGB.srgbToLinear(ColorABGR.unpackBlue(color)) * weight;
 
                     totalWeight += weight;
                 }
@@ -130,7 +130,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
             long pPixel = ppPixel + (pixelIndex * 4);
 
             int color = MemoryUtil.memGetInt(pPixel);
-            int alpha = FastColor.ABGR32.alpha(color);
+            int alpha = ColorABGR.unpackAlpha(color);
 
             // Replace the color values of pixels which are fully transparent, since they have no color data.
             if (alpha == 0) {

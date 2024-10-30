@@ -37,6 +37,7 @@ public final class StandardOptions {
         public static final ResourceLocation VSYNC = ResourceLocationUtil.make("minecraft", "vsync");
         public static final ResourceLocation MAX_FRAMERATE = ResourceLocationUtil.make("minecraft", "max_frame_rate");
         public static final ResourceLocation VIEW_BOBBING = ResourceLocationUtil.make("minecraft", "view_bobbing");
+        public static final ResourceLocation INACTIVITY_FPS_LIMIT = ResourceLocationUtil.make("minecraft", "inactivity_fps_limit");
         public static final ResourceLocation ATTACK_INDICATOR = ResourceLocationUtil.make("minecraft", "attack_indicator");
         public static final ResourceLocation AUTOSAVE_INDICATOR = ResourceLocationUtil.make("minecraft", "autosave_indicator");
         public static final ResourceLocation GRAPHICS_MODE = ResourceLocationUtil.make("minecraft", "graphics_mode");

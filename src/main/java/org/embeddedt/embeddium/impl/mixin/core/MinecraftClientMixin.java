@@ -10,6 +10,7 @@ import net.minecraft.server.packs.resources.ReloadInstance;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.embeddedt.embeddium.impl.compatibility.checks.ResourcePackScanner;
+import org.embeddedt.embeddium.impl.util.ProfilerUtil;
 import org.lwjgl.opengl.GL32C;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -43,7 +44,7 @@ public class MinecraftClientMixin {
      */
     @Inject(method = "runTick", at = @At("HEAD"))
     private void preRender(boolean tick, CallbackInfo ci) {
-        ProfilerFiller profiler = Minecraft.getInstance().getProfiler();
+        ProfilerFiller profiler = ProfilerUtil.get();
         profiler.push("wait_for_gpu");
 
         while (this.fences.size() > SodiumClientMod.options().advanced.cpuRenderAheadLimit) {

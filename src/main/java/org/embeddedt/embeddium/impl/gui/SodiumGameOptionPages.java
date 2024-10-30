@@ -21,6 +21,8 @@ import org.embeddedt.embeddium.impl.gui.options.storage.SodiumOptionsStorage;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.*;
+//? if >=1.21.2
+/*import net.minecraft.server.level.ParticleStatus;*/
 import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.api.options.structure.StandardOptions;
 import org.embeddedt.embeddium.impl.gui.options.FullscreenResolutionHelper;
@@ -29,6 +31,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SodiumGameOptionPages {
@@ -123,9 +126,23 @@ public class SodiumGameOptionPages {
                         .setControl(option -> new SliderControl(option, 10, 260, 10, ControlValueFormatter.fpsLimit()))
                         .setBinding((opts, value) -> {
                             opts.framerateLimit().set(value);
+                            //? if <1.21.2
                             Minecraft.getInstance().getWindow().setFramerateLimit(value);
+                            //? if >=1.21.2
+                            /*Minecraft.getInstance().getFramerateLimitTracker().setFramerateLimit(value);*/
                         }, opts -> opts.framerateLimit().get())
                         .build())
+                //? if >=1.21.2 {
+                /*.add(OptionImpl.createBuilder(InactivityFpsLimit.class, vanillaOpts)
+                        .setId(StandardOptions.Option.INACTIVITY_FPS_LIMIT)
+                        .setName(Component.translatable("options.inactivityFpsLimit"))
+                        .setTooltip(Component.translatable("embeddium.options.inactivity_fps_limit.tooltip"))
+                        .setControl(option -> new CyclingControl<>(option, InactivityFpsLimit.class, Arrays.stream(InactivityFpsLimit.values()).map(InactivityFpsLimit::getKey).map(Component::translatable).toArray(Component[]::new)))
+                        .setBinding((opts, value) -> {
+                            opts.inactivityFpsLimit().set(value);
+                        }, opts -> opts.inactivityFpsLimit().get())
+                        .build())
+                *///?}
                 .build());
 
         groups.add(OptionGroup.createBuilder()
@@ -187,7 +204,7 @@ public class SodiumGameOptionPages {
                             if (Minecraft.useShaderTransparency()) {
                                 RenderTarget framebuffer = Minecraft.getInstance().levelRenderer.getCloudsTarget();
                                 if (framebuffer != null) {
-                                    framebuffer.clear(Minecraft.ON_OSX);
+                                    framebuffer.clear(/*? if <1.21.2 {*/Minecraft.ON_OSX/*?}*/);
                                 }
                             }
                         }, opts -> opts.cloudStatus().get())

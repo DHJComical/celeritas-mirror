@@ -7,6 +7,8 @@ import net.minecraft.client.resources.model.SimpleBakedModel;
 import net.minecraft.client.resources.model.WeightedBakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+//? if >=1.21.2
+/*import net.minecraft.util.random.SimpleWeightedRandomList;*/
 import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.world.level.block.state.BlockState;
 //? if forge {
@@ -14,6 +16,7 @@ import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
 //?}
 import org.embeddedt.embeddium.impl.model.UnwrappableBakedModel;
+import org.embeddedt.embeddium.impl.util.collections.WeightedRandomListExtended;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
@@ -22,6 +25,7 @@ import java.util.*;
 
 @Mixin(WeightedBakedModel.class)
 public class WeightedBakedModelMixin implements UnwrappableBakedModel {
+    //? if <1.21.2 {
     @Shadow
     @Final
     private List<WeightedEntry.Wrapper<BakedModel>> list;
@@ -29,6 +33,11 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
     @Shadow
     @Final
     private int totalWeight;
+    //?} else {
+    /*@Shadow
+    @Final
+    private SimpleWeightedRandomList<BakedModel> list;
+    *///?}
 
     private static BakedModel getData(WeightedEntry.Wrapper<BakedModel> wrapper) {
         //? if >=1.21
@@ -43,7 +52,10 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
      */
     @Overwrite(remap = false)
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, RandomSource random/*? if forgelike {*/, ModelData modelData, RenderType renderLayer/*?}*/) {
+        //? if <1.21.2
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) random.nextLong()) % this.totalWeight);
+        //? if >=1.21.2
+        /*WeightedEntry.Wrapper<BakedModel> quad = ((WeightedRandomListExtended<WeightedEntry.Wrapper<BakedModel>>)this.list).embeddium$getRandomItem(random);*/
 
         if (quad != null) {
             return getData(quad)
@@ -91,7 +103,10 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
 
     @Override
     public @Nullable BakedModel embeddium$getInnerModel(RandomSource rand) {
+        //? if <1.21.2
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) rand.nextLong()) % this.totalWeight);
+        //? if >=1.21.2
+        /*WeightedEntry.Wrapper<BakedModel> quad = ((WeightedRandomListExtended<WeightedEntry.Wrapper<BakedModel>>)this.list).embeddium$getRandomItem(rand);*/
 
         if (quad == null) {
             return null;

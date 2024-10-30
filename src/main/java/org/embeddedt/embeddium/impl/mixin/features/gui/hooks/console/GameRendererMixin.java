@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderBuffers;
+import org.embeddedt.embeddium.impl.util.ProfilerUtil;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -44,8 +45,8 @@ public class GameRendererMixin {
             }
         }
 
-        this.minecraft.getProfiler()
-                .push("sodium_console_overlay");
+        var profiler = ProfilerUtil.get();
+        profiler.push("sodium_console_overlay");
 
         GuiGraphics drawContext = new GuiGraphics(this.minecraft, this.renderBuffers.bufferSource());
 
@@ -53,8 +54,7 @@ public class GameRendererMixin {
 
         drawContext.flush();
 
-        this.minecraft.getProfiler()
-                .pop();
+        profiler.pop();
 
         HAS_RENDERED_OVERLAY_ONCE = true;
     }

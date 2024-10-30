@@ -235,6 +235,11 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         }
     }
 
+    /**
+     * @author embeddedt
+     * @reason take over block entity rendering
+     */
+    //? if <1.21.2 {
     @Inject(method = "renderLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;globalBlockEntities:Ljava/util/Set;", shift = At.Shift.BEFORE, ordinal = 0))
     private void onRenderBlockEntities(/*? if <1.21 {*/ PoseStack matrices, float tickDelta, long limitTime, /*?} else {*/ /*DeltaTracker tracker, *//*?}*/ boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightmapTextureManager, /*? if >=1.21 {*/ /*Matrix4f pose, *//*?}*/ Matrix4f positionMatrix, CallbackInfo ci) {
         //? if >=1.21
@@ -244,7 +249,14 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
 
         this.renderer.renderBlockEntities(pose, this.renderBuffers, this.destructionProgress, camera, tickDelta);
     }
+    //?} else {
+    /*@Overwrite
+    private void renderBlockEntities(PoseStack stack, MultiBufferSource.BufferSource bufferSource, MultiBufferSource.BufferSource bufferSource2, Camera camera, float partialTick) {
+        this.renderer.renderBlockEntities(stack.last().pose(), this.renderBuffers, this.destructionProgress, camera, partialTick);
+    }
+    *///?}
 
+    //? if <1.21.2 {
     /**
      * Target the flag that selects whether or not to enable the entity outline shader, and enable it if
      * we rendered a block entity that requested it.
@@ -255,6 +267,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     private boolean changeEntityOutlineFlag(boolean bl) {
         return bl || (this.renderer.didBlockEntityRequestOutline() && this.shouldShowEntityOutlines());
     }
+    //?}
 
     /**
      * @reason Replace the debug string

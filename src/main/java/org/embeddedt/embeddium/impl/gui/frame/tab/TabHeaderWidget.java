@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.gui.frame.tab;
 
+import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.loader.common.ModLogoUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
@@ -47,6 +48,6 @@ public class TabHeaderWidget extends FlatButtonWidget {
         ResourceLocation icon = Objects.requireNonNullElse(this.logoTexture, FALLBACK_LOCATION);
         int fontHeight = Minecraft.getInstance().font.lineHeight;
         int imgY = this.dim.getCenterY() - (fontHeight / 2);
-        drawContext.blit(icon, this.dim.x() + 5, imgY, 0.0f, 0.0f, fontHeight, fontHeight, fontHeight, fontHeight);
+        drawContext.blit(/*? if >=1.21.2 {*/ /*RenderType::guiTextured, *//*?}*/ icon, this.dim.x() + 5, imgY, 0.0f, 0.0f, fontHeight, fontHeight, fontHeight, fontHeight);
     }
 }

@@ -365,10 +365,17 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         return this.world.getHeight();
     }
 
+    //? if <1.21.2 {
     @Override
     public int getMinBuildHeight() {
         return this.world.getMinBuildHeight();
     }
+    //?} else {
+    /*@Override
+    public int getMinY() {
+        return this.world.getMinY();
+    }
+    *///?}
 
     @Override
     public int getColor(BiomeColorSource source, int x, int y, int z) {

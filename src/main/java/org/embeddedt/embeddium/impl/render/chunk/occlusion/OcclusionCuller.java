@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.util.collections.DoubleBufferedQueue;
 import org.embeddedt.embeddium.impl.util.collections.ReadQueue;
 import org.embeddedt.embeddium.impl.util.collections.WriteQueue;
@@ -202,14 +203,14 @@ public class OcclusionCuller {
     {
         var origin = viewport.getChunkCoord();
 
-        if (origin.getY() < this.world.getMinSection()) {
+        if (origin.getY() < WorldUtil.getMinSection(this.world)) {
             // below the world
             this.initOutsideWorldHeight(queue, viewport, searchDistance, frame,
-                    this.world.getMinSection(), GraphDirectionSet.of(GraphDirection.DOWN));
-        } else if (origin.getY() >= this.world.getMaxSection()) {
+                    WorldUtil.getMinSection(this.world), GraphDirectionSet.of(GraphDirection.DOWN));
+        } else if (origin.getY() >= WorldUtil.getMaxSection(this.world)) {
             // above the world
             this.initOutsideWorldHeight(queue, viewport, searchDistance, frame,
-                    this.world.getMaxSection() - 1, GraphDirectionSet.of(GraphDirection.UP));
+                    WorldUtil.getMaxSection(this.world) - 1, GraphDirectionSet.of(GraphDirection.UP));
         } else if(this.getRenderSection(origin.getX(), origin.getY(), origin.getZ()) == null) {
             // inside the world height-wise, but in an unloaded section
             this.initOutsideWorldHeight(queue, viewport, searchDistance, frame,

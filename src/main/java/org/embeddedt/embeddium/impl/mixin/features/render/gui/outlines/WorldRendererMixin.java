@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
 public class WorldRendererMixin {
+    //? if <1.21 {
     /**
      * @author JellySquid
      * @reason Use intrinsics where possible to speed up vertex writing
@@ -103,6 +104,8 @@ public class WorldRendererMixin {
         writeLineVertices(writer, v5x, v5y, v5z, color, NormI8.pack(normal.m20(), normal.m21(), normal.m22()));
         writeLineVertices(writer, v8x, v8y, v8z, color, NormI8.pack(normal.m20(), normal.m21(), normal.m22()));
     }
+
+    //?}
 
     @Unique
     private static void writeLineVertices(VertexBufferWriter writer, float x, float y, float z, int color, int normal) {

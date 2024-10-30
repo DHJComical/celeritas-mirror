@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.gui.font;
 
+import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.api.vertex.format.common.GlyphVertex;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
@@ -52,13 +53,19 @@ public class GlyphRendererMixin {
      * @author JellySquid
      */
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+    //? if <1.21.2 {
     private void renderFast(boolean italic, float x, float y, Matrix4f matrix, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha, int light, CallbackInfo ci) {
-        if(drawFast(italic, x, y, matrix, vertexConsumer, red, green, blue, alpha, light)) {
+        int packedColor = ColorABGR.pack(red, green, blue, alpha);
+    //?} else {
+    /*private void renderFast(boolean italic, float x, float y, Matrix4f matrix, VertexConsumer vertexConsumer, int color, int light, CallbackInfo ci) {
+        int packedColor = ColorARGB.toABGR(color);
+    *///?}
+        if(drawFast(italic, x, y, matrix, vertexConsumer, packedColor, light)) {
             ci.cancel();
         }
     }
 
-    private boolean drawFast(boolean italic, float x, float y, Matrix4f matrix, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha, int light) {
+    private boolean drawFast(boolean italic, float x, float y, Matrix4f matrix, VertexConsumer vertexConsumer, int color, int light) {
         var writer = VertexBufferWriter.tryOf(vertexConsumer);
 
         if (writer == null)
@@ -73,8 +80,6 @@ public class GlyphRendererMixin {
         float h2 = y + y2;
         float w1 = italic ? 1.0F - 0.25F * y1 : 0.0F;
         float w2 = italic ? 1.0F - 0.25F * y2 : 0.0F;
-
-        int color = ColorABGR.pack(red, green, blue, alpha);
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             long buffer = stack.nmalloc(4 * GlyphVertex.STRIDE);

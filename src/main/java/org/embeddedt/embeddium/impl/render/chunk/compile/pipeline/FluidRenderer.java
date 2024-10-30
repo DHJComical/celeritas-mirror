@@ -111,7 +111,7 @@ public class FluidRenderer {
             return false;
         }
 
-        VoxelShape sideShape = blockState.getFaceOcclusionShape(world, pos, dir);
+        VoxelShape sideShape = blockState.getFaceOcclusionShape(/*? if <1.21.2 {*/world, pos,/*?}*/ dir);
         if (sideShape == Shapes.block()) {
             // The face fills the 1x1 area, so the fluid is occluded
             return true;
@@ -129,7 +129,7 @@ public class FluidRenderer {
         BlockState blockState = world.getBlockState(pos);
 
         if (blockState.canOcclude()) {
-            VoxelShape shape = blockState.getOcclusionShape(world, pos);
+            VoxelShape shape = blockState.getOcclusionShape(/*? if <1.21.2 {*/world, pos/*?}*/);
 
             // Hoist these checks to avoid allocating the shape below
             if (shape == Shapes.block()) {

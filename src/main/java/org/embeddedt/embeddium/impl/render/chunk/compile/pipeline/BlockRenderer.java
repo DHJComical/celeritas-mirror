@@ -117,7 +117,7 @@ public class BlockRenderer {
         Vec3 renderOffset;
         
         if (ctx.state().hasOffsetFunction()) {
-            renderOffset = ctx.state().getOffset(ctx.localSlice(), ctx.pos());
+            renderOffset = ctx.state().getOffset(/*? if <1.21.2 {*/ctx.localSlice(),/*?}*/ ctx.pos());
         } else {
             renderOffset = Vec3.ZERO;
         }

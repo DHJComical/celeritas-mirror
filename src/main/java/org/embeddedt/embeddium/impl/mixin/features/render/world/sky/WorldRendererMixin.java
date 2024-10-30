@@ -1,7 +1,9 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.world.sky;
 
+import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.level.material.FogType;
@@ -31,6 +33,7 @@ public class WorldRendererMixin {
      * <p>When updating Sodium to new releases of the game, please check for new
      * ways the fog can be reduced in {@link FogRenderer#setupFog(Camera, FogRenderer.FogMode, float, boolean, float)} ()}.</p>
      */
+    //? if <1.21.2 {
     @Inject(method = "renderSky", at = @At("HEAD"), cancellable = true)
     private void preRenderSky(
             //? if <1.21
@@ -38,6 +41,10 @@ public class WorldRendererMixin {
             //? if >=1.21
             /*Matrix4f frustumMatrix,*/
             Matrix4f projectionMatrix, float tickDelta, Camera camera, boolean bl, Runnable runnable, CallbackInfo ci) {
+    //?} else {
+    /*@Inject(method = "addSkyPass", at = @At("HEAD"), cancellable = true)
+    private void preRenderSky(FrameGraphBuilder frameGraphBuilder, Camera camera, float f, FogParameters fogParameters, CallbackInfo ci) {
+    *///?}
         // Cancels sky rendering when the camera is submersed underwater.
         // This prevents the sky from being visible through chunks culled by Sodium's fog occlusion.
         // Fixes https://bugs.mojang.com/browse/MC-152504.
