@@ -1,11 +1,21 @@
 package org.embeddedt.embeddium.impl.loader.forge;
 
-//? if forgelike {
+//? if forge {
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.LoadingModList;
 import net.minecraftforge.fml.loading.moddiscovery.ModFile;
 import net.minecraftforge.fml.loading.moddiscovery.ModFileInfo;
 import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
+//?} else if neoforge {
+/*import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.fml.loading.LoadingModList;
+import net.neoforged.fml.loading.moddiscovery.ModFile;
+import net.neoforged.fml.loading.moddiscovery.ModFileInfo;
+import net.neoforged.fml.loading.moddiscovery.ModInfo;
+*///?}
+
+//? if forgelike {
+
 import org.embeddedt.embeddium.impl.loader.common.Distribution;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 
@@ -43,7 +53,7 @@ public class FMLEarlyLoaderServices implements EarlyLoaderServices {
 
     @Override
     public boolean isLoadingNormally() {
-        return FMLLoader.getLoadingModList().getErrors().isEmpty();
+        return !FMLLoader.getLoadingModList().hasErrors();
     }
 
     public List<String> getLoadedModIds() {

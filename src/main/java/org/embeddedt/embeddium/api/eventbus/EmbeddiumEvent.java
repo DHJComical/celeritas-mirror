@@ -2,6 +2,10 @@ package org.embeddedt.embeddium.api.eventbus;
 
 //? if forge
 import net.minecraftforge.eventbus.api.Event;
+//? if neoforge {
+/*import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.ICancellableEvent;
+*///?}
 
 /**
  * The base class which all Embeddium-posted events are derived from.
@@ -10,11 +14,11 @@ import net.minecraftforge.eventbus.api.Event;
  * <p></p>
  * On Fabric, it extends nothing.
  */
-public abstract class EmbeddiumEvent /*? if forgelike {*/ extends Event /*?}*/ {
+public abstract class EmbeddiumEvent /*? if forgelike {*/ extends Event /*?}*/ /*? if neoforge {*/ /*implements ICancellableEvent *//*?}*/ {
     /**
      * Subclasses must override and return true if they want the event to be canceled.
      */
-    //? if forgelike
+    //? if forge
     @Override
     public boolean isCancelable() {
         return false;
@@ -23,11 +27,16 @@ public abstract class EmbeddiumEvent /*? if forgelike {*/ extends Event /*?}*/ {
     //? if forgelike {
     @Override
     public boolean isCanceled() {
-        return super.isCanceled();
+        return
+                //? if neoforge
+                /*ICancellableEvent.*/
+                super.isCanceled();
     }
 
     @Override
     public void setCanceled(boolean cancel) {
+        //? if neoforge
+        /*ICancellableEvent.*/
         super.setCanceled(cancel);
     }
     //?} else {

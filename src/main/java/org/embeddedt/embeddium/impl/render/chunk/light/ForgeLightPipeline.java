@@ -13,11 +13,19 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockAndTintGetter;
+//? if forge {
 import net.minecraftforge.client.model.IQuadTransformer;
 import net.minecraftforge.client.model.lighting.FlatQuadLighter;
 import net.minecraftforge.client.model.lighting.QuadLighter;
 import net.minecraftforge.client.model.lighting.SmoothQuadLighter;
 import net.minecraftforge.client.textures.UnitTextureAtlasSprite;
+//?}
+//? if neoforge {
+/*import net.neoforged.neoforge.client.model.IQuadTransformer;
+import net.neoforged.neoforge.client.model.lighting.FlatQuadLighter;
+import net.neoforged.neoforge.client.model.lighting.QuadLighter;
+import net.neoforged.neoforge.client.model.lighting.SmoothQuadLighter;
+*///?}
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
@@ -27,10 +35,12 @@ import org.joml.Matrix4f;
 public class ForgeLightPipeline implements LightPipeline {
     private final QuadLighter forgeLighter;
     private final BlockAndTintGetter level;
-    private final LightDataConsumer consumer = new LightDataConsumer();
     private final int[] mutableQuadVertexData = new int[32];
+    //? if forge {
+    private final LightDataConsumer consumer = new LightDataConsumer();
     private final BakedQuad mutableQuadWithoutShade = new BakedQuad(mutableQuadVertexData, -1, Direction.UP, UnitTextureAtlasSprite.INSTANCE, false);
     private final BakedQuad mutableQuadWithShade = new BakedQuad(mutableQuadVertexData, -1, Direction.UP, UnitTextureAtlasSprite.INSTANCE, true);
+    //?}
     private static final PoseStack.Pose EMPTY = new PoseStack.Pose(new Matrix4f(), new Matrix3f());
 
     private long cachedPos = Long.MIN_VALUE;
@@ -67,12 +77,16 @@ public class ForgeLightPipeline implements LightPipeline {
             // Do not tell Forge about the packed light, so that it doesn't use it in the lightmap calculation
             vData[vertexBase + IQuadTransformer.UV2] = 0;
         }
+        //? if forge {
         return hasShade ? this.mutableQuadWithShade : this.mutableQuadWithoutShade;
+        //?} else
+        /*return null;*/
     }
 
     @Override
     public void calculate(ModelQuadView quad, BlockPos pos, QuadLightData out, Direction cullFace, Direction lightFace, boolean shade) {
         this.computeLightData(pos);
+        //? if forge {
         BakedQuad forgeQuad;
         if(quad instanceof BakedQuad) {
             forgeQuad = generateForgeQuad(quad, ((BakedQuad)quad).isShade());
@@ -82,6 +96,12 @@ public class ForgeLightPipeline implements LightPipeline {
         forgeLighter.process(consumer, EMPTY, forgeQuad, OverlayTexture.NO_OVERLAY);
         System.arraycopy(consumer.lm, 0, out.lm, 0, 4);
         System.arraycopy(consumer.brightness, 0, out.br, 0, 4);
+        //?} else {
+        /*generateForgeQuad(quad, shade);
+        forgeLighter.computeLightingForQuad(mutableQuadVertexData, shade);
+        System.arraycopy(forgeLighter.getComputedLightmap(), 0, out.lm, 0, 4);
+        System.arraycopy(forgeLighter.getComputedBrightness(), 0, out.br, 0, 4);
+        *///?}
     }
 
     @Override
@@ -89,6 +109,7 @@ public class ForgeLightPipeline implements LightPipeline {
         this.cachedPos = Long.MIN_VALUE;
     }
 
+    //? if forge {
     static class LightDataConsumer implements VertexConsumer {
         float[] brightness;
         int[] lm;
@@ -180,5 +201,6 @@ public class ForgeLightPipeline implements LightPipeline {
         }
         *///?}
     }
+    //?}
 }
 //?}

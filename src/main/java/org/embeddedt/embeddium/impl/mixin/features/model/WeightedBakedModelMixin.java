@@ -15,6 +15,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
 //?}
+//? if neoforge {
+/*import net.neoforged.neoforge.client.ChunkRenderTypeSet;
+import net.neoforged.neoforge.client.model.data.ModelData;
+*///?}
 import org.embeddedt.embeddium.impl.model.UnwrappableBakedModel;
 import org.embeddedt.embeddium.impl.util.collections.WeightedRandomListExtended;
 import org.jetbrains.annotations.NotNull;

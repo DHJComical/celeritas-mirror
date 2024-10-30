@@ -8,6 +8,8 @@ import org.embeddedt.embeddium.impl.compatibility.workarounds.nvidia.NvidiaWorka
 import net.minecraft.Util;
 //? if forge
 import net.minecraftforge.fml.loading.ImmediateWindowHandler;
+//? if neoforge
+/*import net.neoforged.fml.loading.ImmediateWindowHandler;*/
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;

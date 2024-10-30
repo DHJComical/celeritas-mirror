@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.world;
 
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorCache;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorSource;
@@ -382,12 +383,22 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         return this.biomeColors.getColor(source, x, y, z);
     }
 
-    //? if forgelike {
+    //? if forge {
     @Override
     public @Nullable ModelDataManager getModelDataManager() {
         return this.world.getModelDataManager();
     }
+    //?}
 
+    //? if neoforge
+    /*@Override*/
+    //? if forgelike {
+    public ModelData getModelData(BlockPos pos) {
+        throw new UnsupportedOperationException("TODO");
+    }
+    //?}
+
+    //? if forgelike {
     @Override
     public float getShade(float normalX, float normalY, float normalZ, boolean shade) {
         return this.world.getShade(normalX, normalY, normalZ, shade);

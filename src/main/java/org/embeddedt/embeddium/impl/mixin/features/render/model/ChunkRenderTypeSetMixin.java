@@ -1,10 +1,14 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.model;
 
+//? if forge
+import net.minecraftforge.client.ChunkRenderTypeSet;
+//? if neoforge
+/*import net.neoforged.neoforge.client.ChunkRenderTypeSet;*/
+
 //? if forgelike {
 import com.google.common.collect.ImmutableList;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraftforge.client.ChunkRenderTypeSet;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;

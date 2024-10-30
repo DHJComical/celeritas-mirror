@@ -37,9 +37,9 @@ repositories {
         url = "https://maven.neoforged.net/releases"
     }
     // For NeoForge PRs
-    if (rootProject.properties.neoforge_pr) {
+    if (versionedProperty("neoforge_pr") != null) {
         maven {
-            url "https://prmaven.neoforged.net/NeoForge/pr$rootProject.properties.neoforge_pr"
+            url "https://prmaven.neoforged.net/NeoForge/pr${versionedProperty("neoforge_pr")}"
             content {
                 includeModule("net.neoforged", "neoforge")
             }
@@ -63,7 +63,7 @@ apply plugin: 'embeddium-fabric-remapper'
 ext.mc_version_prop_suffix = ext.cur_mc_ver.toString().replace('.', '_')
 
 def versionedProperty(String name) {
-    return rootProject.properties[name + "_" + ext.mc_version_prop_suffix]
+    return rootProject.properties[name + "_" + ModLoader.getMinecraftVersion(project).replace('.', '_')]
 }
 
 stonecutter.const("fabric", loader == FABRIC)

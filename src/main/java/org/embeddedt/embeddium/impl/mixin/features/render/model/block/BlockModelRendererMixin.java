@@ -18,6 +18,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 //? if forge
 import net.minecraftforge.client.model.data.ModelData;
+//? if neoforge
+/*import net.neoforged.neoforge.client.model.data.ModelData;*/
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;

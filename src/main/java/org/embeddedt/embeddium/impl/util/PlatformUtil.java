@@ -10,8 +10,6 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
 
-import java.nio.file.Path;
-
 public class PlatformUtil {
     public static boolean isLoadValid() {
         return FMLLoader.getLoadingModList().getErrors().isEmpty();
@@ -53,6 +51,32 @@ public class PlatformUtil {
 
     public static Path getConfigDir() {
         return FabricLoader.getInstance().getConfigDir();
+    }
+}
+*///?} else if neoforge {
+/*import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLLoader;
+import net.neoforged.fml.loading.FMLPaths;
+
+public class PlatformUtil {
+    public static boolean isLoadValid() {
+        return !FMLLoader.getLoadingModList().hasErrors();
+    }
+
+    public static boolean modPresent(String modid) {
+        return FMLLoader.getLoadingModList().getModFileById(modid) != null;
+    }
+
+    public static String getModName(String modId) {
+        return ModList.get().getModContainerById(modId).map(container -> container.getModInfo().getDisplayName()).orElse(modId);
+    }
+
+    public static boolean isDevelopmentEnvironment() {
+        return !FMLLoader.isProduction();
+    }
+
+    public static Path getConfigDir() {
+        return FMLPaths.CONFIGDIR.get();
     }
 }
 *///?}

@@ -4,6 +4,8 @@ package org.embeddedt.embeddium.impl;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.common.MinecraftForge;
 
+import net.minecraftforge.eventbus.api.IEventBus;
+
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -20,6 +22,16 @@ import net.minecraftforge.network.NetworkConstants;
 import net.fabricmc.loader.api.FabricLoader;
 *///?}
 
+//? if neoforge {
+/*import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.loading.FMLLoader;
+*///?}
+
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
@@ -30,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-//? if forge
+//? if forgelike
 @Mod(SodiumClientMod.MODID)
 public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer *//*?}*/
 {
@@ -43,7 +55,7 @@ public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer
     private static String MOD_VERSION;
 
     //? if forgelike {
-    public SodiumClientMod() {
+    public SodiumClientMod(/*? if neoforge {*/ /*IEventBus modEventBus *//*?}*/) {
         MOD_VERSION = ModList.get().getModContainerById(MODID).get().getModInfo().getVersion().toString();
         //? if forge && <1.20.2
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
@@ -52,9 +64,16 @@ public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer
             return;
         }
 
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onClientSetup);
+        //? if forge {
+        IEventBus mainEventBus = MinecraftForge.EVENT_BUS;
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        //?} else {
+        /*IEventBus mainEventBus = NeoForge.EVENT_BUS;
+        *///?}
+
+        modEventBus.addListener(this::onClientSetup);
         if(!FMLLoader.isProduction()) {
-            MinecraftForge.EVENT_BUS.addListener((RegisterClientCommandsEvent event) -> DevCommands.register(event.getDispatcher()));
+            mainEventBus.addListener((RegisterClientCommandsEvent event) -> DevCommands.register(event.getDispatcher()));
         }
     }
 

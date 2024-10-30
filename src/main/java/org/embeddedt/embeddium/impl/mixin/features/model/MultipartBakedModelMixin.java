@@ -7,14 +7,22 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.MultiPartBakedModel;
 import net.minecraft.client.resources.model.SimpleBakedModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 //? if forge {
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.MultipartModelData;
 //?}
+//? if neoforge {
+/*import net.neoforged.neoforge.client.ChunkRenderTypeSet;
+import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.MultipartModelData;
+*///?}
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -228,4 +236,29 @@ public class MultipartBakedModelMixin {
         return ChunkRenderTypeSet.union(sets);
     }
     //?}
+
+    //? if neoforge {
+    /*/^*
+     * @author embeddedt
+     * @reason use our selector system, avoid creating multipart model data if no submodels use it
+     ^/
+    @Overwrite(remap = false)
+    public ModelData getModelData(BlockAndTintGetter world, BlockPos pos, BlockState state, ModelData tileModelData) {
+        BakedModel[] models = getModelComponents(state);
+
+        Map<BakedModel, ModelData> dataMap = null;
+
+        for(BakedModel model : models) {
+            ModelData data = model.getModelData(world, pos, state, tileModelData);
+            if(data != tileModelData) {
+                if(dataMap == null) {
+                    dataMap = new Reference2ReferenceOpenHashMap<>();
+                }
+                dataMap.put(model, data);
+            }
+        }
+
+        return dataMap == null ? tileModelData : tileModelData.derive().with(MultipartModelDataAccessor.getProperty(), dataMap).build();
+    }
+    *///?}
 }

@@ -17,6 +17,10 @@ import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 //?}
+//? if neoforge {
+/*import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+*///?}
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.*;

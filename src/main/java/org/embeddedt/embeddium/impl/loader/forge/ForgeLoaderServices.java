@@ -1,13 +1,20 @@
 package org.embeddedt.embeddium.impl.loader.forge;
 
+//? if forge {
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.minecraftforge.common.ForgeConfig;
+import net.minecraftforge.common.extensions.IForgeBlockEntity;
+//?} else if neoforge {
+/*import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+import net.neoforged.neoforge.common.NeoForgeConfig;
+*///?}
+
 //? if forgelike {
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.common.ForgeConfig;
-import net.minecraftforge.common.extensions.IForgeBlockEntity;
+
 import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
@@ -17,7 +24,10 @@ import org.embeddedt.embeddium.impl.render.chunk.light.ForgeLightPipeline;
 public final class ForgeLoaderServices implements LoaderServices {
     @Override
     public boolean hasCustomLightPipeline() {
+        //? if forge
         return ForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get();
+        //? if neoforge
+        /*return NeoForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get();*/
     }
 
     @Override
@@ -32,7 +42,10 @@ public final class ForgeLoaderServices implements LoaderServices {
 
     @Override
     public boolean isCullableAABB(AABB box) {
+        //? if forge
         return !box.equals(IForgeBlockEntity.INFINITE_EXTENT_AABB);
+        //? if neoforge
+        /*return !box.equals(AABB.INFINITE);*/
     }
 }
 //?}

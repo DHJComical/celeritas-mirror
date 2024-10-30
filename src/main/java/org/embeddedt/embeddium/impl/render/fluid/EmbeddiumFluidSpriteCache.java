@@ -1,5 +1,10 @@
 package org.embeddedt.embeddium.impl.render.fluid;
 
+//? if forge
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+//? if neoforge
+/*import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;*/
+
 //? if forgelike {
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
@@ -9,7 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
+
 
 public class EmbeddiumFluidSpriteCache {
     // Cache the sprites array to avoid reallocating it on every call

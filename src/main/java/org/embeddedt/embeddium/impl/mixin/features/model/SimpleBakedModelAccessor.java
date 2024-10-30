@@ -1,8 +1,12 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
+//? if forge
+import net.minecraftforge.client.ChunkRenderTypeSet;
+//? if neoforge
+/*import net.neoforged.neoforge.client.ChunkRenderTypeSet;*/
+
 //? if forgelike {
 import net.minecraft.client.resources.model.SimpleBakedModel;
-import net.minecraftforge.client.ChunkRenderTypeSet;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
