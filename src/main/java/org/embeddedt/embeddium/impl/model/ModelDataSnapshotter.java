@@ -14,7 +14,6 @@ import net.neoforged.neoforge.client.model.data.ModelDataManager;
 import java.util.Map;
 
 public class ModelDataSnapshotter {
-    @FunctionalInterface
     public interface Getter {
         //? if forgelike {
         Getter EMPTY = pos -> ModelData.EMPTY;
