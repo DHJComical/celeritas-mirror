@@ -1,6 +1,8 @@
 package org.embeddedt.embeddium.impl.gui;
 
 import com.google.common.collect.Multimap;
+import com.mojang.blaze3d.vertex.PoseStack;
+import org.embeddedt.embeddium.api.OptionGUIConstructionEvent;
 import org.embeddedt.embeddium.impl.gui.console.Console;
 import org.embeddedt.embeddium.impl.gui.console.message.MessageLevel;
 import org.embeddedt.embeddium.impl.gui.options.Option;
@@ -11,6 +13,9 @@ import org.embeddedt.embeddium.impl.gui.options.storage.OptionStorage;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.client.Minecraft;
+//? if <1.20
+/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;*/
+//? if >=1.20
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 //? if >=1.21 {
@@ -53,10 +58,16 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
 
     private boolean firstInit = true;
 
-    public EmbeddiumVideoOptionsScreen(Screen prev, List<OptionPage> pages) {
+    public EmbeddiumVideoOptionsScreen(Screen prev) {
         super(Component.literal("Embeddium Options"));
         this.prevScreen = prev;
-        this.pages.addAll(pages);
+        this.pages.add(SodiumGameOptionPages.general());
+        this.pages.add(SodiumGameOptionPages.quality());
+        this.pages.add(SodiumGameOptionPages.performance());
+        this.pages.add(SodiumGameOptionPages.advanced());
+
+        OptionGUIConstructionEvent.BUS.post(new OptionGUIConstructionEvent(this.pages));
+
         this.searchTextModel = new SearchTextFieldModel(this.pages, this);
         registerTextures();
     }
@@ -187,14 +198,22 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
                 .addChild(dim -> this.closeButton);
     }
 
+    //$ gui_render_method {
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        //? if <1.20.2 {
+//$}
+        //? if >=1.20 <1.20.2 {
         this.renderBackground(drawContext);
-        //?} else
+        //?} else if >=1.20.2 {
         /*this.renderBackground(drawContext, mouseX, mouseY, delta);*/
+        //?} else {
+        /*this.renderBackground(matrices);
+        *///?}
         this.updateControls();
+        //? if >=1.20
         this.frame.render(drawContext, mouseX, mouseY, delta);
+        //? if <1.20
+        /*this.frame.render(matrices, mouseX, mouseY, delta);*/
     }
 
     private void updateControls() {

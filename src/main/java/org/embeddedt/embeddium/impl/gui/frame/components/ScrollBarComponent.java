@@ -3,8 +3,12 @@ package org.embeddedt.embeddium.impl.gui.frame.components;
 import com.mojang.blaze3d.platform.InputConstants;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
+//? if >=1.20 {
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+//?} else {
+/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
+*///?}
 import net.minecraft.util.Mth;
 
 import java.util.function.Consumer;
@@ -129,10 +133,12 @@ public class ScrollBarComponent extends AbstractWidget {
         this.onSetOffset.accept(this.offset);
     }
 
+    //? if >=1.20 {
     @Override
     public ScreenRectangle getRectangle() {
         return new ScreenRectangle(this.dim.x(), this.dim.y(), this.dim.width(), this.dim.height());
     }
+    //?}
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {

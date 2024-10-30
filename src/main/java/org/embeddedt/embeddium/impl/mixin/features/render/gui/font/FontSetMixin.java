@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.gui.font;
 
+//? if >=1.20 {
+
 import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.FontSet;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
@@ -51,3 +53,5 @@ public abstract class FontSetMixin {
     }
 
 }
+
+//?}

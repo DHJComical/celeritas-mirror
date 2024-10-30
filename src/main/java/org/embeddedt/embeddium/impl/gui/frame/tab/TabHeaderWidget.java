@@ -1,10 +1,12 @@
 package org.embeddedt.embeddium.impl.gui.frame.tab;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.loader.common.ModLogoUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.client.Minecraft;
+//$ guigfx
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -41,10 +43,16 @@ public class TabHeaderWidget extends FlatButtonWidget {
         return false;
     }
 
+    //? if >=1.20 {
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         super.render(drawContext, mouseX, mouseY, delta);
-
+    //?} else {
+    /*@Override
+    public void render(PoseStack pose, int mouseX, int mouseY, float delta) {
+        super.render(pose, mouseX, mouseY, delta);
+        GuiGraphics drawContext = new GuiGraphics(pose);
+    *///?}
         ResourceLocation icon = Objects.requireNonNullElse(this.logoTexture, FALLBACK_LOCATION);
         int fontHeight = Minecraft.getInstance().font.lineHeight;
         int imgY = this.dim.getCenterY() - (fontHeight / 2);

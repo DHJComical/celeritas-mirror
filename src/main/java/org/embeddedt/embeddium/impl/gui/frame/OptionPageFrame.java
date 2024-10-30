@@ -10,9 +10,12 @@ import org.embeddedt.embeddium.impl.gui.options.control.ControlElement;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ComponentPath;
+//$ guigfx
 import net.minecraft.client.gui.GuiGraphics;
+//? if >=1.20 {
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+//?}
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
@@ -101,8 +104,10 @@ public class OptionPageFrame extends AbstractFrame {
         super.buildFrame();
     }
 
+    //$ gui_render_method {
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+//$}
         ControlElement<?> hoveredElement = this.controlElements.stream()
                 .filter(ControlElement::isHovered)
                 .findFirst()
@@ -188,10 +193,12 @@ public class OptionPageFrame extends AbstractFrame {
         drawContext.pose().popPose();
     }
 
+    //? if >=1.20 {
     @Override
     public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation) {
         return super.nextFocusPath(navigation);
     }
+    //?}
 
     public static class Builder {
         private Dim2i dim;

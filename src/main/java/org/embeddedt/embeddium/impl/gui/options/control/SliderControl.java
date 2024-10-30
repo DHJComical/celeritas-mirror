@@ -1,8 +1,10 @@
 package org.embeddedt.embeddium.impl.gui.options.control;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.gui.options.Option;
 import org.embeddedt.embeddium.impl.util.Dim2i;
+//$ guigfx
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
@@ -73,9 +75,16 @@ public class SliderControl implements Control<Integer> {
             this.sliderHeld = false;
         }
 
+        //? if >=1.20 {
         @Override
         public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
             super.render(drawContext, mouseX, mouseY, delta);
+        //?} else {
+        /*@Override
+        public void render(PoseStack pose, int mouseX, int mouseY, float delta) {
+            super.render(pose, mouseX, mouseY, delta);
+            GuiGraphics drawContext = new GuiGraphics(pose);
+        *///?}
 
             if (this.option.isAvailable() && (this.hovered || this.isFocused())) {
                 this.renderSlider(drawContext);

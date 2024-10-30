@@ -5,13 +5,18 @@ import org.embeddedt.embeddium.impl.gui.options.control.ControlElement;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+//? if >=1.20 {
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.events.ContainerEventHandler;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+//?} else {
+/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
+import org.embeddedt.embeddium.impl.gui.compat.Renderable;
+*///?}
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -57,7 +62,6 @@ public abstract class AbstractFrame extends AbstractWidget implements ContainerE
         }
     }
 
-    @Deprecated
     public void applyScissor(int x, int y, int width, int height, Runnable action) {
         double scale = Minecraft.getInstance().getWindow().getGuiScale();
         RenderSystem.enableScissor((int) (x * scale), (int) (Minecraft.getInstance().getWindow().getHeight() - (y + height) * scale),
@@ -104,6 +108,7 @@ public abstract class AbstractFrame extends AbstractWidget implements ContainerE
         return this.dim.containsCursor(mouseX, mouseY);
     }
 
+    //? if >=1.20 {
     @Override
     public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation) {
         return ContainerEventHandler.super.nextFocusPath(navigation);
@@ -113,6 +118,7 @@ public abstract class AbstractFrame extends AbstractWidget implements ContainerE
     public ScreenRectangle getRectangle() {
         return new ScreenRectangle(this.dim.x(), this.dim.y(), this.dim.width(), this.dim.height());
     }
+    //?}
 
     public Dim2i getDimensions() {
         return this.dim;

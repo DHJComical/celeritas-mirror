@@ -6,11 +6,15 @@ import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
+//? if >=1.20 {
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+//?} else {
+/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
+*///?}
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
@@ -75,7 +79,7 @@ public class SearchTextFieldComponent extends AbstractWidget {
         }
         // Cursor
         if (this.isFocused()) {
-            context.fill(RenderType.guiOverlay(), o, m - 1, o + 1, m + 1 + this.textRenderer.lineHeight, -3092272);
+            context.fill(/*? if >=1.20 {*/RenderType.guiOverlay(),/*?}*/ o, m - 1, o + 1, m + 1 + this.textRenderer.lineHeight, -3092272);
         }
         // Highlighted text
         if (k != j) {
@@ -118,7 +122,7 @@ public class SearchTextFieldComponent extends AbstractWidget {
         if (x1 > this.dim.x() + this.dim.width()) {
             x1 = this.dim.x() + this.dim.width();
         }
-        context.fill(RenderType.guiTextHighlight(), x1, y1, x2, y2, -16776961);
+        context.fill(/*? if >=1.20 {*/RenderType.guiTextHighlight(),/*?}*/ x1, y1, x2, y2, -16776961);
     }
     
 
@@ -235,6 +239,7 @@ public class SearchTextFieldComponent extends AbstractWidget {
         return this.dim.width() - 12;
     }
 
+    //? if >=1.20 {
     @Override
     public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation) {
         if (!this.model.visible)
@@ -246,4 +251,5 @@ public class SearchTextFieldComponent extends AbstractWidget {
     public ScreenRectangle getRectangle() {
         return new ScreenRectangle(this.dim.x(), this.dim.y(), this.dim.width(), this.dim.height());
     }
+    //?}
 }

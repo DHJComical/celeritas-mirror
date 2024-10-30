@@ -1,14 +1,19 @@
 package org.embeddedt.embeddium.impl.gui.options.control;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.gui.options.Option;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.ComponentPath;
+//? if >=1.20 {
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+//?} else {
+/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
+*///?}
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +30,12 @@ public class ControlElement<T> extends AbstractWidget {
     }
 
     @Override
+    //? if >=1.20
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    //? if <1.20 {
+    /*public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+        GuiGraphics drawContext = new GuiGraphics(matrices);
+    *///?}
         String name = this.option.getName().getString();
         String label;
 
@@ -61,6 +71,7 @@ public class ControlElement<T> extends AbstractWidget {
         return this.dim;
     }
 
+    //? if >=1.20 {
     @Override
     public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation) {
         if (!this.option.isAvailable())
@@ -72,6 +83,7 @@ public class ControlElement<T> extends AbstractWidget {
     public ScreenRectangle getRectangle() {
         return new ScreenRectangle(this.dim.x(), this.dim.y(), this.dim.width(), this.dim.height());
     }
+    //?}
 
     @Override
     public boolean isMouseOver(double x, double y) {

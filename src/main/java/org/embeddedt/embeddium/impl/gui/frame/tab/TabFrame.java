@@ -3,9 +3,11 @@ package org.embeddedt.embeddium.impl.gui.frame.tab;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
+//$ guigfx
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.Validate;
@@ -162,7 +164,7 @@ public class TabFrame extends AbstractFrame {
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    public void render(/*? if >=1.20 {*/ GuiGraphics /*?} else {*/ /*PoseStack *//*?}*/ drawContext, int mouseX, int mouseY, float delta) {
         for (AbstractWidget widget : this.children) {
             if (widget != this.selectedFrame) {
                 widget.render(drawContext, mouseX, mouseY, delta);

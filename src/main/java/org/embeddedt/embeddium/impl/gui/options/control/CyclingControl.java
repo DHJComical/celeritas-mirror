@@ -1,11 +1,12 @@
 package org.embeddedt.embeddium.impl.gui.options.control;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.gui.options.Option;
 import org.embeddedt.embeddium.impl.gui.options.TextProvider;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.ChatFormatting;
+//$ guigfx
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.Validate;
@@ -90,9 +91,16 @@ public class CyclingControl<T extends Enum<T>> implements Control<T> {
             }
         }
 
+        //? if >=1.20 {
         @Override
         public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
             super.render(drawContext, mouseX, mouseY, delta);
+        //?} else {
+        /*@Override
+        public void render(PoseStack pose, int mouseX, int mouseY, float delta) {
+            super.render(pose, mouseX, mouseY, delta);
+            GuiGraphics drawContext = new GuiGraphics(pose);
+        *///?}
 
             Enum<T> value = this.option.getValue();
             Component name = this.names[value.ordinal()];
@@ -121,7 +129,7 @@ public class CyclingControl<T extends Enum<T>> implements Control<T> {
         public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
             if (!isFocused()) return false;
 
-            if (CommonInputs.selected(keyCode)) {
+            if (keySelected(keyCode)) {
                 cycleControl(Screen.hasShiftDown());
                 return true;
             }

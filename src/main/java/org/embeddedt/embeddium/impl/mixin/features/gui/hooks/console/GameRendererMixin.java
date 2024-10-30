@@ -4,6 +4,7 @@ package org.embeddedt.embeddium.impl.mixin.features.gui.hooks.console;
 /*import net.minecraft.client.DeltaTracker;*/
 import org.embeddedt.embeddium.impl.gui.console.ConsoleHooks;
 import net.minecraft.client.Minecraft;
+//$ guigfx
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderBuffers;
@@ -30,7 +31,12 @@ public class GameRendererMixin {
     @Unique
     private static boolean HAS_RENDERED_OVERLAY_ONCE = false;
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;flush()V", shift = At.Shift.AFTER))
+    @Inject(method = "render", at = @At(value = "INVOKE", target =
+            //? if >=1.20 {
+            "Lnet/minecraft/client/gui/GuiGraphics;flush()V",
+            //?} else
+            /*"Lnet/minecraft/client/gui/Gui;render(Lcom/mojang/blaze3d/vertex/PoseStack;F)V",*/
+            shift = At.Shift.AFTER))
     private void onRender(
             //? if <1.21
             float tickDelta, long startTime,

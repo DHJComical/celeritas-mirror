@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.gui.console;
 
+//$ guigfx
 import net.minecraft.client.gui.GuiGraphics;
 
 public class ConsoleHooks {

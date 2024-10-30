@@ -1,9 +1,10 @@
 package org.embeddedt.embeddium.impl.gui.options.control;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.gui.options.Option;
 import org.embeddedt.embeddium.impl.util.Dim2i;
+//$ guigfx
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.renderer.Rect2i;
 import org.embeddedt.embeddium.impl.gui.theme.DefaultColors;
 
@@ -38,9 +39,16 @@ public class TickBoxControl implements Control<Boolean> {
             this.button = new Rect2i(dim.getLimitX() - 16, dim.getCenterY() - 5, 10, 10);
         }
 
+        //? if >=1.20 {
         @Override
         public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
             super.render(drawContext, mouseX, mouseY, delta);
+        //?} else {
+        /*@Override
+        public void render(PoseStack pose, int mouseX, int mouseY, float delta) {
+            super.render(pose, mouseX, mouseY, delta);
+            GuiGraphics drawContext = new GuiGraphics(pose);
+        *///?}
 
             final int x = this.button.getX();
             final int y = this.button.getY();
@@ -81,7 +89,7 @@ public class TickBoxControl implements Control<Boolean> {
         public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
             if (!isFocused()) return false;
 
-            if (CommonInputs.selected(keyCode)) {
+            if (keySelected(keyCode)) {
                 toggleControl();
                 this.playClickSound();
 

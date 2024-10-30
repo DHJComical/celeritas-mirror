@@ -1,11 +1,14 @@
 package org.embeddedt.embeddium.impl.world.biome;
 
+//? if <1.20
+/*import net.minecraft.data.BuiltinRegistries;*/
 import org.embeddedt.embeddium.impl.world.BiomeSeedProvider;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
+//? if >=1.20
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.LinearCongruentialGenerator;
 import net.minecraft.util.Mth;
@@ -42,6 +45,9 @@ public class BiomeSlice {
     private void copyBiomeData(Level world, ChunkRenderContext context) {
         var defaultValue = world.registryAccess()
                 //? if <1.21.2 {
+                //? if <1.20
+                /*.registryOrThrow(BuiltinRegistries.BIOME.key())*/
+                //? if >=1.20
                 .registryOrThrow(Registries.BIOME)
                 .getHolderOrThrow(Biomes.PLAINS);
                 //?} else if >=1.21.2 {

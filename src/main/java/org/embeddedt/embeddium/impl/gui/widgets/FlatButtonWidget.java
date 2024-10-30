@@ -1,12 +1,18 @@
 package org.embeddedt.embeddium.impl.gui.widgets;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.util.Dim2i;
+//? if >=1.20 {
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+//?} else {
+/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
+import org.embeddedt.embeddium.impl.gui.compat.Renderable;
+*///?}
 import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.impl.gui.theme.DefaultColors;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +48,12 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
     }
 
     @Override
+    //? if >=1.20
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    //? if <1.20 {
+    /*public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+        GuiGraphics drawContext = new GuiGraphics(matrices);
+    *///?}
         if (!this.visible) {
             return;
         }
@@ -66,9 +77,11 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
         if (this.enabled && this.selected) {
             this.drawRect(drawContext, this.dim.x(), this.leftAligned ? this.dim.y() : (this.dim.getLimitY() - 1), this.leftAligned ? (this.dim.x() + 1) : this.dim.getLimitX(), this.dim.getLimitY(), DefaultColors.ELEMENT_ACTIVATED);
         }
+        //? if >=1.20 {
         if (this.enabled && this.isFocused()) {
             this.drawBorder(drawContext, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), -1);
         }
+        //?}
     }
 
     public void setStyle(@NotNull Style style) {
@@ -100,6 +113,7 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
         return false;
     }
 
+    //? if >=1.20 {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (!this.isFocused())
@@ -112,6 +126,7 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
 
         return false;
     }
+    //?}
 
     private void doAction() {
         this.action.run();
@@ -134,6 +149,7 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
         return this.label;
     }
 
+    //? if >=1.20 {
     @Override
     public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation) {
         if (!this.enabled || !this.visible)
@@ -145,6 +161,7 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
     public ScreenRectangle getRectangle() {
         return new ScreenRectangle(this.dim.x(), this.dim.y(), this.dim.width(), this.dim.height());
     }
+    //?}
 
     public Dim2i getDimensions() {
         return this.dim;

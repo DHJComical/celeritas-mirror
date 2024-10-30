@@ -1,10 +1,13 @@
 package org.embeddedt.embeddium.impl.mixin.core.model.colors;
 
 import it.unimi.dsi.fastutil.objects.*;
+//? if <1.20
+/*import net.minecraft.core.Registry;*/
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.model.color.interop.BlockColorsExtended;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
+//? if >=1.20
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,7 +38,12 @@ public class BlockColorsMixin implements BlockColorsExtended {
                     // it means a mod is using custom logic and we need to disable per-vertex coloring
                     if (this.blocksToColor.put(block, provider) != null) {
                         this.overridenBlocks.add(block);
-                        SodiumClientMod.logger().info("Block {} had its color provider replaced and will not use per-vertex coloring", BuiltInRegistries.BLOCK.getKey(block));
+                        SodiumClientMod.logger().info("Block {} had its color provider replaced and will not use per-vertex coloring",
+                                //? if >=1.20
+                                BuiltInRegistries.BLOCK.getKey(block)
+                                //? if <1.20
+                                /*Registry.BLOCK.getKey(block)*/
+                        );
                     }
                 }
             }

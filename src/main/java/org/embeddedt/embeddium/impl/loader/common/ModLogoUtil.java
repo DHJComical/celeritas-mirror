@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.IoSupplier;
 //? if forge {
 import net.minecraftforge.fml.ModList;
 //?}
@@ -13,6 +12,7 @@ import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Optional;
@@ -29,7 +29,7 @@ public class ModLogoUtil {
             Path logoPath = ModList.get().getModFileById(modId).getFile().findResource(logoFile.get());
             try {
                 if(logoPath != null) {
-                    texture = handleIoSupplier(modId, IoSupplier.create(logoPath));
+                    texture = handleIoSupplier(modId, Files.newInputStream(logoPath));
                 }
             } catch(IOException e) {
                 erroredLogos.add(modId);
@@ -44,9 +44,9 @@ public class ModLogoUtil {
     }
     *///?}
 
-    private static ResourceLocation handleIoSupplier(String modId, IoSupplier<InputStream> logoResource) throws IOException {
+    private static ResourceLocation handleIoSupplier(String modId, InputStream logoResource) throws IOException {
         if (logoResource != null) {
-            NativeImage logo = NativeImage.read(logoResource.get());
+            NativeImage logo = NativeImage.read(logoResource);
             if(logo.getWidth() != logo.getHeight()) {
                 logo.close();
                 throw new IOException("Logo for " + modId + " is not square");

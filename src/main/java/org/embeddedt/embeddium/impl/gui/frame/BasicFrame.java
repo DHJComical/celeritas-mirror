@@ -2,7 +2,6 @@ package org.embeddedt.embeddium.impl.gui.frame;
 
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-import net.minecraft.client.gui.GuiGraphics;
 import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
@@ -32,11 +31,6 @@ public class BasicFrame extends AbstractFrame {
         this.functions.forEach(function -> this.children.add(function.apply(dim)));
 
         super.buildFrame();
-    }
-
-    @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        super.render(drawContext, mouseX, mouseY, delta);
     }
 
     public static class Builder {
