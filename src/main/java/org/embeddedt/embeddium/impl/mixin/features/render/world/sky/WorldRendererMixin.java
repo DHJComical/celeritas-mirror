@@ -1,9 +1,11 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.world.sky;
 
-import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
+//? if >=1.21.2 {
+/*import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
+import net.minecraft.client.renderer.FogParameters;
+*///?}
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
-import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.level.material.FogType;

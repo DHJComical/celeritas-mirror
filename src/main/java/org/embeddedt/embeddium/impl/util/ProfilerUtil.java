@@ -1,7 +1,8 @@
 package org.embeddedt.embeddium.impl.util;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.profiling.Profiler;
+//? if >=1.21.2
+/*import net.minecraft.util.profiling.Profiler;*/
 import net.minecraft.util.profiling.ProfilerFiller;
 
 public class ProfilerUtil {

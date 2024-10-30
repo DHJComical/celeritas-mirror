@@ -2,7 +2,8 @@ package org.embeddedt.embeddium.impl.mixin.core.render.world;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import net.minecraft.client.DeltaTracker;
+//? if >=1.21
+/*import net.minecraft.client.DeltaTracker;*/
 import net.minecraft.client.renderer.*;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;

@@ -1,11 +1,12 @@
 package org.embeddedt.embeddium.impl.mixin.core.render.immediate.consumer;
 
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 //? if <1.21 {
 import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
 import org.embeddedt.embeddium.impl.render.vertex.buffer.ExtendedBufferBuilder;
 import org.embeddedt.embeddium.impl.render.vertex.buffer.SodiumBufferBuilder;
-//?}
+//?} else {
+/*import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+*///?}
 import org.embeddedt.embeddium.api.memory.MemoryIntrinsics;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatRegistry;

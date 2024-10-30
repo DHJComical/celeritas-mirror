@@ -31,8 +31,8 @@ public class DrawContextMixin {
     //?} else {
     /*@Inject(method = "blitSprite(Ljava/util/function/Function;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;IIIII)V", at = @At("HEAD"))
     private void preDrawSprite(Function<ResourceLocation, RenderType> function, TextureAtlasSprite sprite, int i, int j, int k, int l, int m, CallbackInfo ci)
+    *///?}
     {
         SpriteUtil.markSpriteActive(sprite);
     }
-    *///?}
 }

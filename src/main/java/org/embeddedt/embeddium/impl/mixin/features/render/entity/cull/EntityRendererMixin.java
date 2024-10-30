@@ -2,9 +2,10 @@ package org.embeddedt.embeddium.impl.mixin.features.render.entity.cull;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
-//? if >=1.21
-/*import net.minecraft.client.renderer.entity.EntityRenderDispatcher;*/
-import net.minecraft.world.entity.Leashable;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+//? if >=1.21 {
+/*import net.minecraft.world.entity.Leashable;
+*///?}
 import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
