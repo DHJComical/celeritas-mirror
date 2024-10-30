@@ -199,12 +199,12 @@ public class EntityRenderer {
     }
 
     public static void prepareNormals(PoseStack.Pose matrices) {
-        CUBE_NORMALS[FACE_NEG_Y] = MatrixHelper.transformNormal(matrices.normal(), Direction.DOWN);
-        CUBE_NORMALS[FACE_POS_Y] = MatrixHelper.transformNormal(matrices.normal(), Direction.UP);
-        CUBE_NORMALS[FACE_NEG_Z] = MatrixHelper.transformNormal(matrices.normal(), Direction.NORTH);
-        CUBE_NORMALS[FACE_POS_Z] = MatrixHelper.transformNormal(matrices.normal(), Direction.SOUTH);
-        CUBE_NORMALS[FACE_POS_X] = MatrixHelper.transformNormal(matrices.normal(), Direction.WEST);
-        CUBE_NORMALS[FACE_NEG_X] = MatrixHelper.transformNormal(matrices.normal(), Direction.EAST);
+        CUBE_NORMALS[FACE_NEG_Y] = MatrixHelper.transformNormal(matrices.normal(), /*? if >=1.21 {*/ /*matrices.trustedNormals, *//*?}*/ Direction.DOWN);
+        CUBE_NORMALS[FACE_POS_Y] = MatrixHelper.transformNormal(matrices.normal(), /*? if >=1.21 {*/ /*matrices.trustedNormals, *//*?}*/ Direction.UP);
+        CUBE_NORMALS[FACE_NEG_Z] = MatrixHelper.transformNormal(matrices.normal(), /*? if >=1.21 {*/ /*matrices.trustedNormals, *//*?}*/ Direction.NORTH);
+        CUBE_NORMALS[FACE_POS_Z] = MatrixHelper.transformNormal(matrices.normal(), /*? if >=1.21 {*/ /*matrices.trustedNormals, *//*?}*/ Direction.SOUTH);
+        CUBE_NORMALS[FACE_POS_X] = MatrixHelper.transformNormal(matrices.normal(), /*? if >=1.21 {*/ /*matrices.trustedNormals, *//*?}*/ Direction.WEST);
+        CUBE_NORMALS[FACE_NEG_X] = MatrixHelper.transformNormal(matrices.normal(), /*? if >=1.21 {*/ /*matrices.trustedNormals, *//*?}*/ Direction.EAST);
 
         // When mirroring is used, the normals for EAST and WEST are swapped.
         CUBE_NORMALS_MIRRORED[FACE_NEG_Y] = CUBE_NORMALS[FACE_NEG_Y];

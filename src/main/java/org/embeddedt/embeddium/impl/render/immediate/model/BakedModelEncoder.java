@@ -31,7 +31,7 @@ public class BakedModelEncoder {
             long ptr = buffer;
 
             // The packed transformed normal vector
-            var normal = MatrixHelper.transformNormal(matNormal, quad.getLightFace());
+            var normal = MatrixHelper.transformNormal(matNormal, /*? if >=1.21 {*/ /*matrices.trustedNormals, *//*?}*/ quad.getLightFace());
 
             for (int i = 0; i < 4; i++) {
                 // The position vector
@@ -70,7 +70,7 @@ public class BakedModelEncoder {
             long ptr = buffer;
 
             // The packed transformed normal vector
-            var normal = MatrixHelper.transformNormal(matNormal, quad.getLightFace());
+            var normal = MatrixHelper.transformNormal(matNormal, /*? if >=1.21 {*/ /*matrices.trustedNormals, *//*?}*/ quad.getLightFace());
 
             for (int i = 0; i < 4; i++) {
                 // The position vector

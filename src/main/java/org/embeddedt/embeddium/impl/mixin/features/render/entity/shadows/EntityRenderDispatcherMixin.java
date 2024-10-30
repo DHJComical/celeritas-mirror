@@ -106,7 +106,7 @@ public class EntityRenderDispatcherMixin {
         var matPosition = matrices.pose();
 
         var color = ColorABGR.withAlpha(SHADOW_COLOR, alpha);
-        var normal = MatrixHelper.transformNormal(matNormal, Direction.UP);
+        var normal = MatrixHelper.transformNormal(matNormal, /*? if >=1.21 {*/ /*matrices.trustedNormals, *//*?}*/  Direction.UP);
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             long buffer = stack.nmalloc(4 * ModelVertex.STRIDE);
