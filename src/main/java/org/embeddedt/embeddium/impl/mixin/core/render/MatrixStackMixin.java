@@ -1,8 +1,13 @@
 package org.embeddedt.embeddium.impl.mixin.core.render;
 
 import org.embeddedt.embeddium.impl.render.matrix_stack.CachingPoseStack;
+//? if >=1.20 {
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+//?} else {
+/*import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
+*///?}
 import org.spongepowered.asm.mixin.*;
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -33,10 +38,13 @@ public abstract class MatrixStackMixin implements CachingPoseStack {
 
         if (this.cacheEnabled > 0 && !this.cache.isEmpty()) {
             entry = this.cache.removeLast();
-            entry.pose()
-                    .set(prev.pose());
-            entry.normal()
-                    .set(prev.normal());
+            //? if >=1.20 {
+            entry.pose().set(prev.pose());
+            entry.normal().set(prev.normal());
+            //?} else {
+            /*entry.pose().load(prev.pose());
+            entry.normal().load(prev.normal());
+            *///?}
         } else {
             entry = new PoseStack.Pose(new Matrix4f(prev.pose()), new Matrix3f(prev.normal()));
         }

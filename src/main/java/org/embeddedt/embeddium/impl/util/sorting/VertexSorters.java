@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.util.sorting;
 
+//? if >=1.20 {
 import com.mojang.blaze3d.vertex.VertexSorting;
 import org.joml.Vector3f;
 
@@ -40,3 +41,4 @@ public class VertexSorters {
         protected abstract float getKey(Vector3f object);
     }
 }
+//?}

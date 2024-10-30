@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.immediate.buffer_builder.sorting;
 
+//? if >=1.20 {
 import com.mojang.blaze3d.vertex.VertexSorting;
 import org.embeddedt.embeddium.impl.util.sorting.VertexSorters;
 import org.joml.Vector3f;
@@ -17,3 +18,4 @@ public interface VertexSorterMixin {
         return VertexSorters.sortByDistance(new Vector3f(x, y, z));
     }
 }
+//?}

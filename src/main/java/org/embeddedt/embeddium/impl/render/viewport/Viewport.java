@@ -24,7 +24,11 @@ public final class Viewport {
                 SectionPos.posToSectionCoord(position.z)
         );
 
-        this.blockCoords = BlockPos.containing(position.x, position.y, position.z);
+        //? if >=1.20 {
+        this.blockCoords = BlockPos.containing
+        //?} else
+        /*this.blockCoords = new BlockPos*/
+                (position.x, position.y, position.z);
     }
 
     public boolean isBoxVisible(AABB box) {

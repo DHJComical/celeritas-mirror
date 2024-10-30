@@ -1,5 +1,9 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.particle;
 
+//? if <1.20 {
+/*import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
+*///?}
 import org.embeddedt.embeddium.api.vertex.format.common.ParticleVertex;
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -84,7 +88,7 @@ public abstract class BillboardParticleMixin extends Particle {
         float z = (float) (Mth.lerp(tickDelta, this.zo, this.z) - vec3d.z());
         //?}
 
-        //? if <1.20.2 {
+        //? if >=1.20 <1.20.2 {
         Quaternionf quaternion;
 
         if (this.roll == 0.0F) {
@@ -95,7 +99,18 @@ public abstract class BillboardParticleMixin extends Particle {
             quaternion = new Quaternionf(camera.rotation());
             quaternion.rotateZ(angle);
         }
-        //?} else if <1.21 {
+        //?} else if <=1.19.2 {
+        /*Quaternion quaternion;
+
+        if (this.roll == 0.0F) {
+            quaternion = camera.rotation();
+        } else {
+            float angle = Mth.lerp(tickDelta, this.oRoll, this.roll);
+
+            quaternion = new Quaternion(camera.rotation());
+            quaternion.mul(Vector3f.ZP.rotation(angle));
+        }
+        *///?} else if >=1.20.2 <1.21 {
         /*Quaternionf quaternion = this.rotation;
         this.getFacingCameraMode().setRotation(quaternion, camera, tickDelta);
         if (this.roll != 0.0F) {
@@ -156,15 +171,25 @@ public abstract class BillboardParticleMixin extends Particle {
     @Unique
     @SuppressWarnings("UnnecessaryLocalVariable")
     private static void writeVertex(long buffer,
+                                    //? if >=1.20 {
                                     Quaternionf rotation,
+                                    //?} else
+                                    /*Quaternion rotation,*/
                                     float posX, float posY,
                                     float originX, float originY, float originZ,
                                     float u, float v, int color, int light, float size) {
         // Quaternion q0 = new Quaternion(rotation);
+        //? if >=1.20 {
         float q0x = rotation.x();
         float q0y = rotation.y();
         float q0z = rotation.z();
         float q0w = rotation.w();
+        //?} else {
+        /*float q0x = rotation.i();
+        float q0y = rotation.j();
+        float q0z = rotation.k();
+        float q0w = rotation.r();
+        *///?}
 
         // q0.hamiltonProduct(x, y, 0.0f, 0.0f)
         float q1x = (q0w * posX) - (q0z * posY);

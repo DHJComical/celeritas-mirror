@@ -4,7 +4,10 @@ import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import org.embeddedt.embeddium.impl.model.EpsilonizableBlockElement;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
+//? if >=1.20
 import org.joml.Vector3f;
+//? if <1.20
+/*import com.mojang.math.Vector3f;*/
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -32,11 +35,17 @@ public class BlockElementMixin implements EpsilonizableBlockElement {
         }
     }
 
+    //? if >=1.20 {
     private static void embeddium$epsilonize(Vector3f v) {
         v.x = embeddium$epsilonize(v.x);
         v.y = embeddium$epsilonize(v.y);
         v.z = embeddium$epsilonize(v.z);
     }
+    //?} else {
+    /*private static void embeddium$epsilonize(Vector3f v) {
+        v.set(embeddium$epsilonize(v.x()), embeddium$epsilonize(v.y()), embeddium$epsilonize(v.z()));
+    }
+    *///?}
 
     private static final float EMBEDDIUM$MINIMUM_EPSILON = 0.008f;
 

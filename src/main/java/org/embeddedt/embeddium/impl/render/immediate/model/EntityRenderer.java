@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.immediate.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import org.embeddedt.embeddium.api.math.Matrix4fExtended;
 import org.embeddedt.embeddium.impl.render.matrix_stack.CachingPoseStack;
 import org.embeddedt.embeddium.api.math.MatrixHelper;
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
@@ -214,6 +215,15 @@ public class EntityRenderer {
         CUBE_NORMALS_MIRRORED[FACE_POS_X] = CUBE_NORMALS[FACE_NEG_X]; // mirrored
         CUBE_NORMALS_MIRRORED[FACE_NEG_X] = CUBE_NORMALS[FACE_POS_X]; // mirrored
     }
+
+    //? if <1.20 {
+    /*private static void buildVertexPosition(Vector3f vector, float x, float y, float z, com.mojang.math.Matrix4f matrix) {
+        var matrixExt = Matrix4fExtended.get(matrix);
+        vector.x = matrixExt.transformVecX(x, y, z);
+        vector.y = matrixExt.transformVecY(x, y, z);
+        vector.z = matrixExt.transformVecZ(x, y, z);
+    }
+    *///?}
 
     private static void buildVertexPosition(Vector3f vector, float x, float y, float z, Matrix4f matrix) {
         vector.x = MatrixHelper.transformPositionX(matrix, x, y, z);

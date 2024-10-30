@@ -39,7 +39,7 @@ import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 import org.embeddedt.embeddium.impl.render.frapi.FRAPIModelUtils;
 import org.embeddedt.embeddium.impl.render.frapi.FRAPIRenderHandler;
-//? if ffapi
+//? if ffapi && >=1.20
 /*import org.embeddedt.embeddium.impl.render.frapi.IndigoBlockRenderContext;*/
 
 import java.util.Arrays;
@@ -93,7 +93,7 @@ public class BlockRenderer {
 
         this.occlusionCache = new BlockOcclusionCache();
         this.useAmbientOcclusion = Minecraft.useAmbientOcclusion();
-        //? if ffapi {
+        //? if ffapi && >=1.20 {
         /*this.fabricModelRenderingHandler = FRAPIRenderHandler.INDIGO_PRESENT ? new IndigoBlockRenderContext(this.occlusionCache, lighters.getLightData()) : null;
         *///?} else {
         this.fabricModelRenderingHandler = null;
@@ -115,12 +115,15 @@ public class BlockRenderer {
         LightMode mode = this.getLightingMode(ctx);
         LightPipeline lighter = this.lighters.getLighter(mode);
         Vec3 renderOffset;
-        
+
+        //? if >=1.20 {
         if (ctx.state().hasOffsetFunction()) {
             renderOffset = ctx.state().getOffset(/*? if <1.21.2 {*/ctx.localSlice(),/*?}*/ ctx.pos());
         } else {
             renderOffset = Vec3.ZERO;
         }
+        //?} else
+        /*renderOffset = ctx.state().getOffset(ctx.localSlice(), ctx.pos());*/
 
         // Process custom renderers
         customRenderers.clear();
@@ -227,7 +230,7 @@ public class BlockRenderer {
             return defaultBuilder;
         }
 
-        SpriteTransparencyLevel level = SpriteTransparencyLevelHolder.getTransparencyLevel(quad.getSprite().contents());
+        SpriteTransparencyLevel level = SpriteTransparencyLevelHolder.getTransparencyLevel(quad.getSprite());
 
         if (level == SpriteTransparencyLevel.OPAQUE) {
             // Can use solid with no visual difference

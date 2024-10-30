@@ -26,3 +26,22 @@ accessible field com/mojang/blaze3d/vertex/VertexFormat offsets Lit/unimi/dsi/fa
 accessible method net/minecraft/client/renderer/SectionBufferBuilderPool <init> (Ljava/util/List;)V
 accessible field com/mojang/blaze3d/vertex/PoseStack$Pose trustedNormals Z
 accessible method net/minecraft/client/renderer/entity/EntityRenderer getBoundingBoxForCulling (Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/phys/AABB;
+
+# 1.19-
+accessible class net/minecraft/client/renderer/texture/TextureAtlasSprite$AnimatedTexture
+accessible class net/minecraft/client/renderer/texture/TextureAtlasSprite$FrameInfo
+accessible class net/minecraft/client/renderer/texture/TextureAtlasSprite$InterpolationData
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite$FrameInfo time I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite$FrameInfo index I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite$AnimatedTexture frames Ljava/util/List;
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite$AnimatedTexture frame I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite$AnimatedTexture subFrame I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite width I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite height I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite$AnimatedTexture frameRowSize I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite mainImage [Lcom/mojang/blaze3d/platform/NativeImage;
+accessible field com/mojang/blaze3d/platform/NativeImage pixels J
+accessible method net/minecraft/client/renderer/texture/TextureAtlasSprite upload (II[Lcom/mojang/blaze3d/platform/NativeImage;)V
+
+accessible method com/mojang/blaze3d/vertex/PoseStack$Pose <init> (Lcom/mojang/math/Matrix4f;Lcom/mojang/math/Matrix3f;)V
+

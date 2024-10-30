@@ -12,7 +12,10 @@ public class SpriteUtil {
             return;
         }
 
+        //? if >=1.20 {
         ((SpriteContentsExtended) sprite.contents()).sodium$setActive(true);
+        //?} else
+        /*((SpriteContentsExtended) sprite).sodium$setActive(true);*/
 
         if(hasAnimation(sprite)) {
             var context = GlobalChunkBuildContext.get();
@@ -24,6 +27,9 @@ public class SpriteUtil {
     }
 
     public static boolean hasAnimation(TextureAtlasSprite sprite) {
+        //? if >=1.20 {
         return ((SpriteContentsExtended) sprite.contents()).sodium$hasAnimation();
+        //?} else
+        /*return ((SpriteContentsExtended) sprite).sodium$hasAnimation();*/
     }
 }

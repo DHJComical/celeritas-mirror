@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 //? if >=1.21
 /*import net.minecraft.client.DeltaTracker;*/
 import net.minecraft.client.renderer.*;
+import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
@@ -21,7 +22,10 @@ import net.minecraft.server.level.BlockDestructionProgress;
 //? if forge
 import net.minecraftforge.client.ForgeHooksClient;
 import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
+//? if >=1.20 {
 import org.joml.Matrix4f;
+//?} else
+/*import com.mojang.math.Matrix4f;*/
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -135,8 +139,11 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     private void /*? if <1.20.2 {*/ renderChunkLayer /*?} else {*/ /*renderSectionLayer *//*?}*/(RenderType renderLayer, /*? if <1.21 {*/ PoseStack matrices, /*?}*/ double x, double y, double z, /*? if >=1.21 {*/ /*Matrix4f pose, *//*?}*/ Matrix4f matrix) {
         RenderDevice.enterManagedCode();
 
-        //? if <1.21
+        //? if >=1.20 <1.21 {
         Matrix4f pose = matrices.last().pose();
+        //?} else if <1.20 {
+        /*org.joml.Matrix4f pose = JomlHelper.copy(matrices.last().pose());
+        *///?}
 
         try {
             this.renderer.drawChunkLayer(renderLayer, pose, x, y, z);
@@ -247,8 +254,11 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     private void onRenderBlockEntities(/*? if <1.21 {*/ PoseStack matrices, float tickDelta, long limitTime, /*?} else {*/ /*DeltaTracker tracker, *//*?}*/ boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightmapTextureManager, /*? if >=1.21 {*/ /*Matrix4f pose, *//*?}*/ Matrix4f positionMatrix, CallbackInfo ci) {
         //? if >=1.21
         /*float tickDelta = tracker.getGameTimeDeltaPartialTick(false);*/
-        //? if <1.21
+        //? if >=1.20 <1.21 {
         Matrix4f pose = matrices.last().pose();
+         //?} else if <1.20 {
+        /*org.joml.Matrix4f pose = JomlHelper.copy(matrices.last().pose());
+        *///?}
 
         this.renderer.renderBlockEntities(pose, this.renderBuffers, this.destructionProgress, camera, tickDelta);
     }

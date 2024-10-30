@@ -111,6 +111,7 @@ public class MatrixHelper {
         return (mat.m02() * x) + ((mat.m12() * y) + ((mat.m22() * z) + mat.m32()));
     }
 
+    //? if >=1.20 {
     /**
      * Rotates the position and normal matrix in ZYX order. The rotation angles are specified in radians. This is
      * functionally identical to rotating the matrix stack by a quaternion representing an ZYX rotation, but is
@@ -128,6 +129,7 @@ public class MatrixHelper {
         matrices.normal()
                 .rotateZYX(angleZ, angleY, angleX);
     }
+    //?}
 
     /**
      * Returns the transformed normal vector for a given unit vector (direction). This is significantly faster
@@ -141,6 +143,24 @@ public class MatrixHelper {
     public static int transformNormal(Matrix3f matrix, Direction direction) {
         return transformNormal(matrix, true, direction);
     }
+
+    //? if <1.20 {
+    /*public static int transformNormal(com.mojang.math.Matrix3f matrix, Direction direction) {
+        return org.embeddedt.embeddium.api.math.Matrix3fExtended.get(matrix).computeNormal(direction);
+    }
+
+    public static float transformPositionX(com.mojang.math.Matrix4f mat, float x, float y, float z) {
+        return Matrix4fExtended.get(mat).transformVecX(x, y, z);
+    }
+
+    public static float transformPositionY(com.mojang.math.Matrix4f mat, float x, float y, float z) {
+        return Matrix4fExtended.get(mat).transformVecY(x, y, z);
+    }
+
+    public static float transformPositionZ(com.mojang.math.Matrix4f mat, float x, float y, float z) {
+        return Matrix4fExtended.get(mat).transformVecZ(x, y, z);
+    }
+    *///?}
 
     /**
      * Returns the transformed normal vector for a given unit vector (direction). This is significantly faster

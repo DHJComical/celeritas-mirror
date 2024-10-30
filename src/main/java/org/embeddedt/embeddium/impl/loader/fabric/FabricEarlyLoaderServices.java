@@ -24,7 +24,11 @@ public class FabricEarlyLoaderServices implements EarlyLoaderServices {
             return pathOpt.get();
         } else {
             try {
-                Path clPath = Path.of(SodiumMixinPlugin.class.getResource("/" + path).toURI());
+                var resource = SodiumMixinPlugin.class.getResource("/" + path);
+                if (resource == null) {
+                    return null;
+                }
+                Path clPath = Path.of(resource.toURI());
                 if(Files.exists(clPath)) {
                     return clPath;
                 }

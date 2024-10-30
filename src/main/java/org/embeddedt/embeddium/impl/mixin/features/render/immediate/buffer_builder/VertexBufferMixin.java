@@ -7,7 +7,10 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 /*import net.minecraft.client.renderer.CompiledShaderProgram;*/
 //? if <1.21.2
 import net.minecraft.client.renderer.ShaderInstance;
+//? if >=1.20 {
 import org.joml.Matrix4f;
+ //?} else
+/*import com.mojang.math.Matrix4f;*/
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 

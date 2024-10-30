@@ -26,6 +26,7 @@ def packageJar = tasks.create("packageJar", Copy.class) {
 
 project.ext["loom.platform"] = loader.friendlyName
 project.ext["cur_mc_ver"] = ModLoader.getMinecraftVersion(project)
+stonecutter.dependency("minecraft", ModLoader.getMinecraftVersion(project))
 
 repositories {
     mavenCentral()
@@ -56,6 +57,17 @@ repositories {
     // For Forge
     maven {
         url = "https://maven.minecraftforge.net/"
+    }
+    // For CurseForge
+    exclusiveContent {
+        forRepository {
+            maven {
+                url "https://cursemaven.com"
+            }
+        }
+        filter {
+            includeGroup "curse.maven"
+        }
     }
 }
 apply plugin: 'dev.architectury.loom'
@@ -102,10 +114,25 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 
+    if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.19.3")) {
+        implementation(include("org.joml:joml:1.10.5"))
+        if(loader == FORGE || loader == NEOFORGE) {
+            forgeRuntimeLibrary("org.joml:joml:1.10.5")
+        }
+    }
+
     if (loader == FABRIC) {
         modImplementation "net.fabricmc:fabric-loader:$rootProject.properties.fabricloader"
         modCompileOnly "com.terraformersmc:modmenu:$project.properties.modmenu", {
             transitive = false
+        }
+        // LazyDFU for older versions
+        if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.19.4")) {
+            if(stonecutter.eval(ModLoader.getMinecraftVersion(project), ">=1.19")) {
+                modLocalRuntime "curse.maven:lazydfu-433518:3821870"
+            } else {
+                modLocalRuntime "curse.maven:lazydfu-433518:3209972"
+            }
         }
         if (rootProject.properties.fabric_api_modules == "*") {
             if (rootProject.properties.include_fabric_api_modules == "true") {
@@ -249,6 +276,17 @@ if (stonecutter.current.isActive) {
             DiscordNotifier.publishEmbeddiumJar(project)
         }
     }
+}
+
+stonecutter.swap("gui_render_method") {
+    stonecutter.compare(stonecutter.current.version, "1.20") >= 0 ? "    @Override\n" +
+            "    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {\n" : "    @Override\n" +
+            "    public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {\n        GuiGraphics drawContext = new GuiGraphics(matrices);"
+}
+
+stonecutter.swap("guigfx") {
+    stonecutter.compare(stonecutter.current.version, "1.20") >= 0 ? "import net.minecraft.client.gui.GuiGraphics;"
+            : "import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;"
 }
 
 tasks.named("validateAccessWidener") {

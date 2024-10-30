@@ -1,13 +1,18 @@
 package org.embeddedt.embeddium.impl.mixin.features.gui.screen;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderType;
+import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.api.vertex.format.common.ColorVertex;
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import org.embeddedt.embeddium.api.util.ColorABGR;
 import org.embeddedt.embeddium.api.util.ColorARGB;
+//? if >=1.20
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.server.level.progress.StoringChunkProgressListener;
@@ -52,9 +57,26 @@ public class LevelLoadingScreenMixin {
      * @author JellySquid
      */
     @Inject(method = "renderChunks", at = @At("HEAD"), cancellable = true)
+    //? if >=1.20 {
     private static void renderChunks(GuiGraphics drawContext, StoringChunkProgressListener tracker, int mapX, int mapY, int mapScale, int mapPadding, CallbackInfo ci) {
         VertexBufferWriter writer = VertexBufferWriter.tryOf(Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(RenderType.gui()));
+        Matrix4f matrix = drawContext.pose().last().pose();
+    //?} else {
+    /*private static void renderChunks(PoseStack matrices, StoringChunkProgressListener tracker, int mapX, int mapY, int mapScale, int mapPadding, CallbackInfo ci) {
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
+        Matrix4f matrix = JomlHelper.copy(matrices.last().pose());
+
+        Tesselator tessellator = Tesselator.getInstance();
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+
+        BufferBuilder bufferBuilder = tessellator.getBuilder();
+        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+
+        var writer = VertexBufferWriter.of(bufferBuilder);
+    *///?}
         if (writer == null) {
             return;
         }
@@ -68,7 +90,6 @@ public class LevelLoadingScreenMixin {
                     .forEach(entry -> STATUS_TO_COLOR_FAST.put(entry.getKey(), ColorARGB.toABGR(entry.getIntValue(), 0xFF)));
         }
 
-        Matrix4f matrix = drawContext.pose().last().pose();
 
         int centerSize = tracker.getFullDiameter();
         int size = tracker.getDiameter();
@@ -113,6 +134,12 @@ public class LevelLoadingScreenMixin {
                 addRect(writer, matrix, tileX, tileY, tileX + mapScale, tileY + mapScale, color);
             }
         }
+
+        //? if <1.20 {
+        /*tessellator.end();
+
+        RenderSystem.disableBlend();
+        *///?}
     }
 
     @Unique

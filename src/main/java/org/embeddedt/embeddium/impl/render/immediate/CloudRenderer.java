@@ -32,7 +32,13 @@ import org.embeddedt.embeddium.api.render.clouds.ModifyCloudRenderingEvent;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
+//? if >=1.20 {
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+//?} else {
+/*import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
+*///?}
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.system.MemoryStack;
 
@@ -136,7 +142,7 @@ public class CloudRenderer {
             this.rebuildGeometry(bufferBuilder, cloudDistance, centerCellX, centerCellZ);
 
             if (this.vertexBuffer == null) {
-                this.vertexBuffer = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
+                this.vertexBuffer = new VertexBuffer(/*? if >=1.20 {*/VertexBuffer.Usage.DYNAMIC /*?}*/);
             }
 
             this.vertexBuffer.bind();
@@ -196,7 +202,10 @@ public class CloudRenderer {
         RenderSystem.setShaderColor((float) color.x, (float) color.y, (float) color.z, 0.8f);
 
         modelViewMatrix = new Matrix4f(modelViewMatrix);
+        //? if >=1.20 {
         modelViewMatrix.translate(-translateX, cloudHeight - (float) cameraY + 0.33F, -translateZ);
+        //?} else
+        /*modelViewMatrix.multiplyWithTranslation(-translateX, cloudHeight - (float) cameraY + 0.33F, -translateZ);*/
 
         // PASS 1: Set up depth buffer
         //? if <1.21 {

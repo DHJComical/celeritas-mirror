@@ -15,7 +15,7 @@ public class DevCommands {
                 .then(literal("toggle_pass").then(argument("pass", TerrainRenderPassArgumentType.type()).executes(context -> {
                     TerrainRenderPass pass = TerrainRenderPassArgumentType.getPass(context, "pass");
                     SodiumWorldRenderer.instance().getRenderSectionManager().toggleRenderingForTerrainPass(pass);
-                    context.getSource().sendSuccess(() -> Component.literal("Toggled rendering of " + pass.name()), true);
+                    context.getSource().sendSuccess(/*? if >=1.20 {*/() -> /*?}*/ Component.literal("Toggled rendering of " + pass.name()), true);
                     return Command.SINGLE_SUCCESS;
                 }))));
     }

@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.render.frapi;
 
-//? if ffapi {
+//? if ffapi && >=1.20 {
 /*import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.fabric.impl.client.indigo.renderer.mesh.MutableQuadViewImpl;

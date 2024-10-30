@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.textures.animations.tracking;
 
+//? if >=1.20 {
 import org.embeddedt.embeddium.impl.render.texture.SpriteContentsExtended;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import org.jetbrains.annotations.Nullable;
@@ -33,3 +34,4 @@ public abstract class SpriteContentsMixin implements SpriteContentsExtended {
         return this.active;
     }
 }
+//?}

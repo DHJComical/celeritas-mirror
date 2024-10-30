@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.entity.shadows;
 
+import org.embeddedt.embeddium.api.math.Matrix4fExtended;
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import org.embeddedt.embeddium.api.vertex.format.common.ModelVertex;
 import net.minecraft.client.renderer.LightTexture;
@@ -35,7 +36,7 @@ public class EntityRenderDispatcherMixin {
      * @reason Reduce vertex assembly overhead for shadow rendering
      */
     @Inject(method = "renderBlockShadow", at = @At("HEAD"), cancellable = true)
-    private static void renderShadowPartFast(PoseStack.Pose entry, VertexConsumer vertices, ChunkAccess chunk, LevelReader world, BlockPos pos, double x, double y, double z, float radius, float opacity, CallbackInfo ci) {
+    private static void renderShadowPartFast(PoseStack.Pose entry, VertexConsumer vertices, /*? if >=1.20 {*/ ChunkAccess chunk, /*?}*/ LevelReader world, BlockPos pos, double x, double y, double z, float radius, float opacity, CallbackInfo ci) {
         var writer = VertexBufferWriter.tryOf(vertices);
 
         if (writer == null)
@@ -103,7 +104,10 @@ public class EntityRenderDispatcherMixin {
         float v2 = (-maxZ * size) + 0.5F;
 
         var matNormal = matrices.normal();
+        //? if >=1.20 {
         var matPosition = matrices.pose();
+        //?} else
+        /*var matPosition = Matrix4fExtended.get(matrices.pose());*/
 
         var color = ColorABGR.withAlpha(SHADOW_COLOR, alpha);
         var normal = MatrixHelper.transformNormal(matNormal, /*? if >=1.21 {*/ /*matrices.trustedNormals, *//*?}*/  Direction.UP);
@@ -129,12 +133,21 @@ public class EntityRenderDispatcherMixin {
         }
     }
 
+    //? if >=1.20 {
     @Unique
     private static void writeShadowVertex(long ptr, Matrix4f matPosition, float x, float y, float z, float u, float v, int color, int normal) {
         // The transformed position vector
         float xt = MatrixHelper.transformPositionX(matPosition, x, y, z);
         float yt = MatrixHelper.transformPositionY(matPosition, x, y, z);
         float zt = MatrixHelper.transformPositionZ(matPosition, x, y, z);
+    //?} else {
+    /*@Unique
+    private static void writeShadowVertex(long ptr, Matrix4fExtended matPosition, float x, float y, float z, float u, float v, int color, int normal) {
+        // The transformed position vector
+        float xt = matPosition.transformVecX(x, y, z);
+        float yt = matPosition.transformVecY(x, y, z);
+        float zt = matPosition.transformVecZ(x, y, z);
+    *///?}
 
         ModelVertex.write(ptr, xt, yt, zt, color, u, v, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, normal);
     }

@@ -56,6 +56,9 @@ public class TabHeaderWidget extends FlatButtonWidget {
         ResourceLocation icon = Objects.requireNonNullElse(this.logoTexture, FALLBACK_LOCATION);
         int fontHeight = Minecraft.getInstance().font.lineHeight;
         int imgY = this.dim.getCenterY() - (fontHeight / 2);
+        // TODO - port to 1.19 and lower
+        /*? if >=1.20 {*/
         drawContext.blit(/*? if >=1.21.2 {*/ /*RenderType::guiTextured, *//*?}*/ icon, this.dim.x() + 5, imgY, 0.0f, 0.0f, fontHeight, fontHeight, fontHeight, fontHeight);
+        /*?}*/
     }
 }

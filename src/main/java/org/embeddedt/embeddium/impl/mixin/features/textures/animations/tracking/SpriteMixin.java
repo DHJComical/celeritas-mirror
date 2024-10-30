@@ -1,19 +1,50 @@
 package org.embeddedt.embeddium.impl.mixin.features.textures.animations.tracking;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import org.embeddedt.embeddium.impl.render.texture.SpriteContentsExtended;
 import org.embeddedt.embeddium.impl.render.texture.SpriteUtil;
+//? if >=1.20
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(TextureAtlasSprite.class)
-public class SpriteMixin {
+public class SpriteMixin
+    //? if >=1.20 {
+{
     @Shadow
     @Final
     private SpriteContents contents;
+    //?} else {
+/*implements SpriteContentsExtended {
+    @Shadow
+    @Final
+    @Nullable
+    private TextureAtlasSprite.AnimatedTexture animatedTexture;
+
+    @Unique
+    private boolean active;
+
+    @Override
+    public void sodium$setActive(boolean value) {
+        this.active = value;
+    }
+
+    @Override
+    public boolean sodium$hasAnimation() {
+        return this.animatedTexture != null;
+    }
+
+    @Override
+    public boolean sodium$isActive() {
+        return this.active;
+    }
+    *///?}
 
     /**
      * @author embeddedt

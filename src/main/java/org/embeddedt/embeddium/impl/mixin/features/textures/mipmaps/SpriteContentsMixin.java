@@ -1,10 +1,13 @@
 package org.embeddedt.embeddium.impl.mixin.features.textures.mipmaps;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.api.util.ColorABGR;
 import org.embeddedt.embeddium.impl.util.NativeImageHelper;
 import org.embeddedt.embeddium.impl.util.color.ColorSRGB;
 import net.minecraft.client.Minecraft;
+//? if >=1.20
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
@@ -22,14 +25,20 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 /**
  * This Mixin is partially ported from Iris at <a href="https://github.com/IrisShaders/Iris/blob/41095ac23ea0add664afd1b85c414d1f1ed94066/src/main/java/net/coderbot/iris/mixin/bettermipmaps/MixinTextureAtlasSprite.java">MixinTextureAtlasSprite</a>.
  */
+//? if >=1.20 {
 @Mixin(SpriteContents.class)
+//?} else
+/*@Mixin(TextureAtlasSprite.class)*/
 public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
+    //? if >=1.20 {
     @Mutable
     @Shadow
     @Final
     private NativeImage originalImage;
+    //?}
 
     @Shadow
+    @Mutable
     @Final
     private ResourceLocation name;
 
@@ -44,6 +53,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
     // support Forge, since this works well on Fabric too, it's fine to ensure that the diff between Fabric and Forge
     // can remain minimal. Being less dependent on specific details of Fabric is good, since it means we can be more
     // cross-platform.
+    //? if >=1.20 {
     @Redirect(method = "<init>(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/client/resources/metadata/animation/FrameSize;Lcom/mojang/blaze3d/platform/NativeImage;" +
             /*? if <1.20.2 {*/
             "Lnet/minecraft/client/resources/metadata/animation/AnimationMetadataSection;"
@@ -58,6 +68,16 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
 
         this.originalImage = nativeImage;
     }
+    //?} else {
+    /*@Redirect(method = "<init>", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;name:Lnet/minecraft/resources/ResourceLocation;", opcode = Opcodes.PUTFIELD))
+    private void sodium$beforeGenerateMipLevels(TextureAtlasSprite instance, ResourceLocation name, TextureAtlas pAtlas, TextureAtlasSprite.Info pSpriteInfo, int pMipLevel, int pStorageX, int pStorageY, int pX, int pY, NativeImage pImage) {
+        // Only fill in transparent colors if mipmaps are on and the texture name does not contain "leaves".
+        // We're injecting after the "name" field has been set, so this is safe even though we're in a constructor.
+        embeddium$processTransparentImages(pImage, Minecraft.getInstance().options.mipmapLevels().get() > 0 && !name.getPath().contains("leaves"));
+
+        this.name = name;
+    }
+    *///?}
 
     /**
      * Fixes a common issue in image editing programs where fully transparent pixels are saved with fully black colors.

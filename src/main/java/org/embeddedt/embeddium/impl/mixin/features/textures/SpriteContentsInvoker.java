@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.textures;
 
+//? if >=1.20 {
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,3 +11,4 @@ public interface SpriteContentsInvoker {
     @Invoker
     void invokeUpload(int x, int y, int unpackSkipPixels, int unpackSkipRows, NativeImage[] images);
 }
+//?}

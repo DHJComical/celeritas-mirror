@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.gui.frame;
 
 import com.google.common.base.Predicates;
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.gui.options.Option;
 import org.embeddedt.embeddium.impl.gui.options.OptionGroup;
 import org.embeddedt.embeddium.impl.gui.options.OptionImpact;

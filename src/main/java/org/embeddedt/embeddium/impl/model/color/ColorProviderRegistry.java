@@ -46,7 +46,10 @@ public class ColorProviderRegistry {
                 //?} else {
                 /*Blocks.SHORT_GRASS,
                 *///?}
-                Blocks.POTTED_FERN, Blocks.PINK_PETALS, Blocks.SUGAR_CANE, Blocks.LARGE_FERN, Blocks.TALL_GRASS);
+                Blocks.POTTED_FERN,
+                //? if >=1.20
+                Blocks.PINK_PETALS,
+                Blocks.SUGAR_CANE, Blocks.LARGE_FERN, Blocks.TALL_GRASS);
 
         this.registerBlocks(new DefaultColorProviders.VertexBlendedBiomeColorAdapter<>(BiomeColors::getAverageFoliageColor),
                 Blocks.OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.ACACIA_LEAVES,

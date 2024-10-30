@@ -532,10 +532,13 @@ public class SodiumWorldRenderer {
                         .getBuffer(ModelBakery.DESTROY_TYPES.get(stage));
 
                 PoseStack.Pose entry = matrices.last();
-                //? if <1.21
+                //? if <1.20 {
+                /*VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry.pose(), entry.normal());
+                *///?} else if >=1.20 <1.21 {
                 VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry.pose(), entry.normal(), 1.0f);
-                //? if >=1.21
-                /*VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry, 1.0f);*/
+                //?} else if >=1.21 {
+                /*VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry, 1.0f);
+                *///?}
 
                 consumer = (layer) -> layer.affectsCrumbling() ? VertexMultiConsumer.create(transformer, immediate.getBuffer(layer)) : immediate.getBuffer(layer);
             }

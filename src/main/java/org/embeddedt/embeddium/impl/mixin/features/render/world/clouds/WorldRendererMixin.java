@@ -2,13 +2,17 @@ package org.embeddedt.embeddium.impl.mixin.features.render.world.clouds;
 
 //? if <1.21.2 {
 import com.mojang.blaze3d.vertex.PoseStack;
+import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.render.immediate.CloudRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.jetbrains.annotations.Nullable;
+//? if >=1.20 {
 import org.joml.Matrix4f;
+//?} else
+/*import com.mojang.math.Matrix4f;*/
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -41,8 +45,9 @@ public class WorldRendererMixin {
         boolean renderFasterClouds = true; //!Screen.hasAltDown()
 
         if (renderFasterClouds) {
-            //? if <1.21
+            //? if <1.21 {
             Matrix4f modelViewMatrix = matrices.last().pose();
+            //?}
             this.cloudRenderer.render(this.level, this.minecraft.player, modelViewMatrix, projectionMatrix, this.ticks, tickDelta, x, y, z);
             ci.cancel();
         }

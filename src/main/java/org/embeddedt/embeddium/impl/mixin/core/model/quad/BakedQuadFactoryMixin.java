@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
 import net.minecraft.client.renderer.block.model.BlockFaceUV;
 import net.minecraft.client.renderer.block.model.FaceBakery;
+//? if >=1.20
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.joml.Vector3f;
@@ -25,7 +26,7 @@ public class BakedQuadFactoryMixin {
      */
     @ModifyReturnValue(method = "bakeQuad", at = @At("RETURN"))
     private BakedQuad setMaterialClassification(BakedQuad quad, @Local(ordinal = 0, argsOnly = true) BlockElementFace face, @Local(ordinal = 0, argsOnly = true) TextureAtlasSprite sprite) {
-        if (sprite.getClass() == TextureAtlasSprite.class && sprite.contents().getClass() == SpriteContents.class) {
+        if (sprite.getClass() == TextureAtlasSprite.class /*? if >=1.20 {*/ && sprite.contents().getClass() == SpriteContents.class /*?}*/) {
             //? if <1.21
             float[] uvs = face.uv.uvs;
             //? if >=1.21
