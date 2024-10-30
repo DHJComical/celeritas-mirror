@@ -22,4 +22,4 @@ jobs:
           distribution: 'temurin'
           java-version: 21
       - name: Build artifacts
-        run: ./gradlew setupChiseledBuild && ./gradlew chiseledBuild
+        run: ./gradlew chiseledBuild
