@@ -7,7 +7,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 //? if forge
 import net.minecraftforge.client.model.data.ModelData;
-
+//? if neoforge {
+/*import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelDataManager;
+*///?}
 import java.util.Map;
 
 public class ModelDataSnapshotter {
@@ -58,7 +61,14 @@ public class ModelDataSnapshotter {
 
         return ourMap.isEmpty() ? Getter.EMPTY : pos -> ourMap.get(pos.asLong());
         //?} else if neoforge {
-        //?} else {
+        /*var snapshot = world.getModelDataManager().snapshotSectionRegion(origin.getX(), origin.getY(), origin.getZ(), origin.getX(), origin.getY(), origin.getZ());
+        if (snapshot == ModelDataManager.EMPTY_SNAPSHOT) {
+            // Avoid an extra level of indirection
+            return Getter.EMPTY;
+        } else {
+            return pos -> snapshot.get(pos.asLong());
+        }
+        *///?} else {
         /*return Getter.EMPTY;
         *///?}
     }

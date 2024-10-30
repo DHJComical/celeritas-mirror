@@ -40,6 +40,7 @@ public class BlockModelRendererMixin {
      */
     @Inject(method = "renderModel(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/resources/model/BakedModel;FFFII" +
             /*? if forge {*/ "Lnet/minecraftforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;" +  /*?}*/
+            /*? if neoforge {*/ /*"Lnet/neoforged/neoforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;" +  *//*?}*/
     ")V", at = @At("HEAD"), cancellable = true/*? if forgelike {*/, remap = false/*?}*/)
     private void renderFast(PoseStack.Pose entry, VertexConsumer vertexConsumer, BlockState blockState, BakedModel bakedModel, float red, float green, float blue, int light, int overlay,
                             /*? if forgelike {*/ModelData modelData, RenderType renderType,/*?}*/ CallbackInfo ci) {
