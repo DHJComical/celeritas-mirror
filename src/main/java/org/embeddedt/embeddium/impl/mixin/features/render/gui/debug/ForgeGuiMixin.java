@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.gui.debug;
 
-//? if forge {
+//? if forge && <1.20.6 {
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;

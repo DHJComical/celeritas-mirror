@@ -11,6 +11,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLLoader;
+//? if forge && <1.20.2
 import net.minecraftforge.network.NetworkConstants;
 //?}
 
@@ -44,6 +45,7 @@ public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer
     //? if forgelike {
     public SodiumClientMod() {
         MOD_VERSION = ModList.get().getModContainerById(MODID).get().getModInfo().getVersion().toString();
+        //? if forge && <1.20.2
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
 
         if (!FMLLoader.getDist().isClient()) {

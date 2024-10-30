@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.options.overlays;
 
-//? if forgelike {
+//? if forgelike && <1.20.6 {
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import org.spongepowered.asm.mixin.Mixin;

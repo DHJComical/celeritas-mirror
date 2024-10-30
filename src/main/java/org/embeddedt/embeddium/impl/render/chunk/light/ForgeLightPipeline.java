@@ -96,10 +96,12 @@ public class ForgeLightPipeline implements LightPipeline {
         // This should always override the exact overload called in QuadLighter#process. We use it to capture the
         // brightness and lightmap.
         @Override
-        public void putBulkData(PoseStack.Pose pose, BakedQuad quad, float[] brightness, float r, float g, float b, int[] lm, int overlay, boolean colorize) {
+        public void putBulkData(PoseStack.Pose pose, BakedQuad quad, float[] brightness, float r, float g, float b, /*? if >=1.21 {*/ /*float a, *//*?}*/ int[] lm, int overlay, boolean colorize) {
             this.brightness = brightness;
             this.lm = lm;
         }
+
+        //? if <1.21 {
 
         @Override
         public VertexConsumer vertex(double pX, double pY, double pZ) {
@@ -145,6 +147,38 @@ public class ForgeLightPipeline implements LightPipeline {
         public void unsetDefaultColor() {
 
         }
+        //?}
+        //? if >=1.21 {
+        /*@Override
+        public VertexConsumer addVertex(float x, float y, float z) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setColor(int red, int green, int blue, int alpha) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv(float u, float v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv1(int u, int v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv2(int u, int v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setNormal(float normalX, float normalY, float normalZ) {
+            return this;
+        }
+        *///?}
     }
 }
 //?}

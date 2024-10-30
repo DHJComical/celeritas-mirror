@@ -147,7 +147,9 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         // TODO: Avoid setting up and clearing the state a second time
         //? if forge {
         renderLayer.setupRenderState();
-        ForgeHooksClient.dispatchRenderStage(renderLayer, ((LevelRenderer)(Object)this), matrices, matrix, this.ticks, this.minecraft.gameRenderer.getMainCamera(), this.getFrustum());
+        ForgeHooksClient.dispatchRenderStage(renderLayer, ((LevelRenderer)(Object)this),
+                /*? if <1.20.6 {*/ matrices /*?} else {*/ /*pose *//*?}*/,
+                matrix, this.ticks, this.minecraft.gameRenderer.getMainCamera(), this.getFrustum());
         renderLayer.clearRenderState();
         //?}
     }
