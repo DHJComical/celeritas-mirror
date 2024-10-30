@@ -238,6 +238,10 @@ if (stonecutter.current.isActive) {
     group = "project"
     dependsOn("runClient")
   }
+  tasks.register("packageActive") {
+    group = "project"
+    dependsOn("packageJar")
+  }
 }
 
 tasks.named("validateAccessWidener") {
