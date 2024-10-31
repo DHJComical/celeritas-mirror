@@ -401,7 +401,7 @@ public class SodiumWorldRenderer {
         }
     }
 
-    public void renderBlockEntities(Matrix4f pose,
+    public void renderBlockEntities(PoseStack poseStack,
                                     RenderBuffers bufferBuilders,
                                     Long2ObjectMap<SortedSet<BlockDestructionProgress>> blockBreakingProgressions,
                                     Camera camera,
@@ -416,8 +416,6 @@ public class SodiumWorldRenderer {
         BlockEntityRenderDispatcher blockEntityRenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher();
 
         this.blockEntityRequestedOutline = false;
-
-        final PoseStack poseStack = new PoseStack();
 
         this.renderBlockEntities(poseStack, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer);
         this.renderGlobalBlockEntities(poseStack, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer);
