@@ -31,5 +31,8 @@ jobs:
           key: ${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-${{ hashFiles('settings.gradle') }}
           restore-keys: |
             ${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-
-      - name: Build artifacts
-        run: ./gradlew chiseledPackage && ./gradlew publishPackagesToDiscord
+      - name: Build jars
+        run: ./gradlew chiseledPackage
+      - name: Publish jars
+        continue-on-error: true
+        run: ./gradlew publishPackagesToDiscord
