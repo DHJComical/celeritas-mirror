@@ -1,3 +1,5 @@
+import org.embeddedt.embeddium.gradle.DiscordNotifier
+
 plugins {
     id "dev.kikugie.stonecutter"
     id "dev.architectury.loom" version "$architectury_loom_version" apply false
@@ -14,4 +16,11 @@ stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chisele
 stonecutter.registerChiseled tasks.register("chiseledPackage", stonecutter.chiseled) {
     group = "project"
     ofTask("packageJar")
+}
+
+tasks.register("publishPackagesToDiscord") {
+    outputs.upToDateWhen { false }
+    doLast {
+        DiscordNotifier.publishEmbeddiumJar(project)
+    }
 }
