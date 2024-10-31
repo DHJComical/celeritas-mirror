@@ -32,7 +32,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-
       - name: Build jars
-        run: ./gradlew chiseledPackage
+        run: ./scripts/chiseled_build.sh
       - name: Publish jars
         continue-on-error: true
         run: ./gradlew publishPackagesToDiscord
