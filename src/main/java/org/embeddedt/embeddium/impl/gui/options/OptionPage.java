@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.gui.options;
 import com.google.common.collect.ImmutableList;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.network.chat.Component;
-//? if >=1.20 {
+//? if >=1.19 {
 import net.minecraft.network.chat.contents.TranslatableContents;
 //?} else
 /*import net.minecraft.network.chat.TranslatableComponent;*/
@@ -22,7 +22,7 @@ public class OptionPage {
     private final ImmutableList<Option<?>> options;
 
     private static String findKey(Component name) {
-        //? if >=1.20 {
+        //? if >=1.19 {
         if(name.getContents() instanceof TranslatableContents translatableContents) {
             String key = translatableContents.getKey();
             if (name.getSiblings().isEmpty()) {
