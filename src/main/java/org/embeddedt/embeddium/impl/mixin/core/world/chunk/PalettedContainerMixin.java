@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.impl.mixin.core.world.chunk;
 import org.embeddedt.embeddium.impl.world.PaletteStorageExtended;
 import org.embeddedt.embeddium.impl.world.ReadableContainerExtended;
 import net.minecraft.world.level.chunk.PalettedContainer;
-import net.minecraft.world.level.chunk.PalettedContainerRO;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -65,7 +64,7 @@ public abstract class PalettedContainerMixin<T> implements ReadableContainerExte
     }
 
     @Override
-    public PalettedContainerRO<T> sodium$copy() {
+    public PalettedContainer<T> sodium$copy() {
         return this.copy();
     }
 }

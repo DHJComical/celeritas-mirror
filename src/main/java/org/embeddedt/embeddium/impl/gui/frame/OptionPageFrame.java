@@ -8,6 +8,7 @@ import org.embeddedt.embeddium.impl.gui.options.OptionImpact;
 import org.embeddedt.embeddium.impl.gui.options.OptionPage;
 import org.embeddedt.embeddium.impl.gui.options.control.Control;
 import org.embeddedt.embeddium.impl.gui.options.control.ControlElement;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -161,13 +162,13 @@ public class OptionPageFrame extends AbstractFrame {
         OptionImpact impact = option.getImpact();
 
         if (impact != null) {
-            tooltip.add(Language.getInstance().getVisualOrder(Component.translatable("sodium.options.performance_impact_string", impact.getLocalizedName()).withStyle(ChatFormatting.GRAY)));
+            tooltip.add(Language.getInstance().getVisualOrder(ComponentUtil.translatable("sodium.options.performance_impact_string", impact.getLocalizedName()).withStyle(ChatFormatting.GRAY)));
         }
 
         var id = option.getId();
 
         if (OptionIdentifier.isPresent(page.getId()) && OptionIdentifier.isPresent(id) && !Objects.equals(normalizeModForTooltip(page.getId().getModId()), normalizeModForTooltip(id.getModId()))) {
-            tooltip.add(Language.getInstance().getVisualOrder(Component.translatable("embeddium.options.added_by_mod_string", Component.literal(PlatformUtil.getModName(id.getModId())).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY)));
+            tooltip.add(Language.getInstance().getVisualOrder(ComponentUtil.translatable("embeddium.options.added_by_mod_string", ComponentUtil.literal(PlatformUtil.getModName(id.getModId())).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY)));
         }
 
         int boxHeight = (tooltip.size() * 12) + boxPadding;

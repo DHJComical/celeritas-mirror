@@ -26,6 +26,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//$ rng_import
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
@@ -39,6 +40,7 @@ import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 import org.embeddedt.embeddium.impl.render.frapi.FRAPIModelUtils;
 import org.embeddedt.embeddium.impl.render.frapi.FRAPIRenderHandler;
+import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 //? if ffapi && >=1.20
 /*import org.embeddedt.embeddium.impl.render.frapi.IndigoBlockRenderContext;*/
 
@@ -53,7 +55,10 @@ import java.util.List;
  */
 public class BlockRenderer {
     private static final PoseStack EMPTY_STACK = new PoseStack();
+    //? if >=1.19 {
     private final RandomSource random = new SingleThreadedRandomSource(42L);
+    //?} else
+    /*private final Random random = new XoRoShiRoRandom(42L);*/
 
     private final ColorProviderRegistry colorProviderRegistry;
     private final BlockOcclusionCache occlusionCache;

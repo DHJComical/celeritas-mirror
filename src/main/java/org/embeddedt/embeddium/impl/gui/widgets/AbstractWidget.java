@@ -22,6 +22,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.sounds.SoundEvents;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractWidget implements Renderable, GuiEventListener, NarratableEntry {
@@ -78,9 +79,9 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, Na
     @Override
     public void updateNarration(NarrationElementOutput builder) {
         if (this.focused) {
-            builder.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.focused"));
+            builder.add(NarratedElementType.USAGE, ComponentUtil.translatable("narration.button.usage.focused"));
         } else if (this.hovered) {
-            builder.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.hovered"));
+            builder.add(NarratedElementType.USAGE, ComponentUtil.translatable("narration.button.usage.hovered"));
         }
     }
 

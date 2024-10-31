@@ -9,6 +9,7 @@ import net.minecraft.client.resources.model.MultiPartBakedModel;
 import net.minecraft.client.resources.model.SimpleBakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//$ rng_import
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
@@ -165,7 +166,7 @@ public class MultipartBakedModelMixin {
      * @reason Avoid expensive allocations and replace bitfield indirection
      */
     @Overwrite(/*? if forgelike {*/ remap = false/*?}*/)
-    public List<BakedQuad> getQuads(BlockState state, Direction face, RandomSource random/*? if forgelike {*/, ModelData modelData, RenderType renderLayer /*?}*/) {
+    public List<BakedQuad> getQuads(BlockState state, Direction face, /*$ rng >>*/ RandomSource random/*? if forgelike {*/, ModelData modelData, RenderType renderLayer /*?}*/) {
         if (state == null) {
             return Collections.emptyList();
         }

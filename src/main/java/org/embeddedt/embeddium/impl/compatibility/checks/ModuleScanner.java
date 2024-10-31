@@ -1,7 +1,6 @@
 package org.embeddedt.embeddium.impl.compatibility.checks;
 
 import com.mojang.blaze3d.platform.Window;
-import org.embeddedt.embeddium.impl.platform.MessageBox;
 import org.embeddedt.embeddium.impl.platform.windows.api.Kernel32;
 import org.embeddedt.embeddium.impl.platform.windows.api.version.Version;
 import net.minecraft.client.Minecraft;
@@ -64,11 +63,6 @@ public class ModuleScanner {
 
         if (version == null || !isRTSSCompatible(version)) {
             Window window = Minecraft.getInstance().getWindow();
-            MessageBox.showMessageBox(window, MessageBox.IconType.ERROR, "Embeddium Renderer",
-                    "You appear to be using an older version of RivaTuner Statistics Server (RTSS) which is not compatible with Embeddium. " +
-                            "You must either update to a newer version (7.3.4 and later) or close the RivaTuner Statistics Server application.\n\n" +
-                            "For more information on how to solve this problem, click the 'Help' button.",
-                    "https://github.com/CaffeineMC/sodium-fabric/wiki/Known-Issues#rtss-incompatible");
             
             throw new RuntimeException("RivaTuner Statistics Server (RTSS) is not compatible with Embeddium, " +
                     "see here for more details: https://github.com/CaffeineMC/sodium-fabric/wiki/Known-Issues#rtss-incompatible");

@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.gui.frame.components;
 import net.minecraft.util.StringUtil;
 import org.embeddedt.embeddium.impl.gui.options.OptionPage;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
@@ -48,7 +49,7 @@ public class SearchTextFieldComponent extends AbstractWidget {
             return;
         }
         if (this.model.text.isEmpty()) {
-            this.drawString(context, Component.translatable("embeddium.search_bar_empty"), this.dim.x() + 6, this.dim.y() + 6, 0xFFAAAAAA);
+            this.drawString(context, ComponentUtil.translatable("embeddium.search_bar_empty"), this.dim.x() + 6, this.dim.y() + 6, 0xFFAAAAAA);
         }
 
         this.drawRect(context, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), this.isFocused() ? 0xE0000000 : 0x90000000);

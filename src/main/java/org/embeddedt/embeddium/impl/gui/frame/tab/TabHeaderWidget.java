@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.loader.common.ModLogoUtil;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.client.Minecraft;
 //$ guigfx
@@ -23,7 +24,7 @@ public class TabHeaderWidget extends FlatButtonWidget {
     public static MutableComponent getLabel(String modId) {
         return (switch(modId) {
             // TODO handle long mod names better, this is the only one we know of right now
-            case "sspb" -> Component.literal("SSPB");
+            case "sspb" -> ComponentUtil.literal("SSPB");
             default -> Tab.idComponent(modId);
         }).withStyle(s -> s.withUnderlined(true));
     }

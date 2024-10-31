@@ -10,6 +10,7 @@ import org.embeddedt.embeddium.impl.gui.options.TextProvider;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.impl.config.ConfigMigrator;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -88,7 +89,7 @@ public class SodiumGameOptions {
         private final Component name;
 
         GraphicsQuality(String name) {
-            this.name = Component.translatable(name);
+            this.name = ComponentUtil.translatable(name);
         }
 
         @Override

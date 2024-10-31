@@ -289,6 +289,14 @@ stonecutter.swap("guigfx") {
             : "import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;"
 }
 
+stonecutter.swap("rng") {
+    stonecutter.compare(stonecutter.current.version, "1.19") >= 0 ? "RandomSource" : "Random"
+}
+
+stonecutter.swap("rng_import") {
+    stonecutter.compare(stonecutter.current.version, "1.19") >= 0 ? "import net.minecraft.util.RandomSource;" : "import java.util.Random;"
+}
+
 tasks.named("validateAccessWidener") {
   enabled = false
 }

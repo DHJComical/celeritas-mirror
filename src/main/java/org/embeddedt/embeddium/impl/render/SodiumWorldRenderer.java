@@ -242,7 +242,7 @@ public class SodiumWorldRenderer {
 
         profiler.pop();
 
-        Entity.setViewScale(Mth.clamp((double) this.client.options.getEffectiveRenderDistance() / 8.0D, 1.0D, 2.5D) * this.client.options.entityDistanceScaling().get());
+        Entity.setViewScale(Mth.clamp((double) this.client.options.getEffectiveRenderDistance() / 8.0D, 1.0D, 2.5D) * this.client.options.entityDistanceScaling/*? if >=1.19 {*/().get()/*?}*/);
     }
 
     private void processChunkEvents() {
@@ -291,7 +291,7 @@ public class SodiumWorldRenderer {
         // Forge workaround - reset VSync flag
         var window = Minecraft.getInstance().getWindow();
         if(window != null)
-            window.updateVsync(Minecraft.getInstance().options.enableVsync().get());
+            window.updateVsync(Minecraft.getInstance().options.enableVsync/*? if >=1.19 {*/().get()/*?}*/);
 
         BlendedColorProvider.checkBlendingEnabled();
     }

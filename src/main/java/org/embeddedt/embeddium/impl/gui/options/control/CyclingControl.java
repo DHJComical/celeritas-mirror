@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.gui.options.control;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.gui.options.Option;
 import org.embeddedt.embeddium.impl.gui.options.TextProvider;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.ChatFormatting;
 //$ guigfx
@@ -45,7 +46,7 @@ public class CyclingControl<T extends Enum<T>> implements Control<T> {
             if (value instanceof TextProvider) {
                 name = ((TextProvider) value).getLocalizedName();
             } else {
-                name = Component.literal(value.name());
+                name = ComponentUtil.literal(value.name());
             }
 
             this.names[i] = name;
@@ -106,7 +107,7 @@ public class CyclingControl<T extends Enum<T>> implements Control<T> {
             Component name = this.names[value.ordinal()];
 
             if(!this.option.isAvailable()) {
-                name = Component.empty().append(name).withStyle(ChatFormatting.GRAY, ChatFormatting.STRIKETHROUGH);
+                name = ComponentUtil.empty().append(name).withStyle(ChatFormatting.GRAY, ChatFormatting.STRIKETHROUGH);
             }
 
             int strWidth = this.getStringWidth(name);

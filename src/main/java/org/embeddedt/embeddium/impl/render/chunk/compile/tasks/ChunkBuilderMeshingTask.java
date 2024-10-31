@@ -12,6 +12,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderCon
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionInfo;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
+import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
@@ -24,6 +25,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.chunk.VisGraph;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
+//$ rng_import
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -53,7 +55,10 @@ import java.util.Objects;
  */
 public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> {
 
+    //? if >=1.19 {
     private final RandomSource random = new SingleThreadedRandomSource(42L);
+     //?} else
+    /*private final Random random = new XoRoShiRoRandom(42L);*/
 
     private final RenderSection render;
     private final ChunkRenderContext renderContext;

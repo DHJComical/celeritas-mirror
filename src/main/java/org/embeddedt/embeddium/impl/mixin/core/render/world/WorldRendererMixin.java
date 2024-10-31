@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.core.render.world;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 //? if >=1.21
@@ -99,7 +100,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void init(Minecraft client, EntityRenderDispatcher entityRenderDispatcher, BlockEntityRenderDispatcher blockEntityRenderDispatcher, RenderBuffers bufferBuilderStorage, CallbackInfo ci) {
+    private void init(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) Minecraft client) {
         this.renderer = new SodiumWorldRenderer(client);
     }
 

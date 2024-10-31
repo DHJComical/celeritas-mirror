@@ -21,6 +21,6 @@ public class WorldRendererMixin {
             "renderSnowAndRain"
             , at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;useFancyGraphics()Z"))
     private boolean redirectGetFancyWeather() {
-        return SodiumClientMod.options().quality.weatherQuality.isFancy(Minecraft.getInstance().options.graphicsMode().get());
+        return SodiumClientMod.options().quality.weatherQuality.isFancy(Minecraft.getInstance().options.graphicsMode/*? if >=1.19 {*/().get()/*?}*/);
     }
 }

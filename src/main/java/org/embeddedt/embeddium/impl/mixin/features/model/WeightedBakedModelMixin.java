@@ -6,6 +6,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.SimpleBakedModel;
 import net.minecraft.client.resources.model.WeightedBakedModel;
 import net.minecraft.core.Direction;
+//$ rng_import
 import net.minecraft.util.RandomSource;
 //? if >=1.21.2
 /*import net.minecraft.util.random.SimpleWeightedRandomList;*/
@@ -55,7 +56,7 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
      * @reason Avoid excessive object allocations
      */
     @Overwrite(/*? if forgelike {*/ remap = false/*?}*/)
-    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, RandomSource random/*? if forgelike {*/, ModelData modelData, RenderType renderLayer/*?}*/) {
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, /*$ rng >>*/ RandomSource random/*? if forgelike {*/, ModelData modelData, RenderType renderLayer/*?}*/) {
         //? if <1.21.2
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) random.nextLong()) % this.totalWeight);
         //? if >=1.21.2
@@ -106,7 +107,7 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
     }
 
     @Override
-    public @Nullable BakedModel embeddium$getInnerModel(RandomSource rand) {
+    public @Nullable BakedModel embeddium$getInnerModel(/*$ rng >>*/ RandomSource rand) {
         //? if <1.21.2
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) rand.nextLong()) % this.totalWeight);
         //? if >=1.21.2

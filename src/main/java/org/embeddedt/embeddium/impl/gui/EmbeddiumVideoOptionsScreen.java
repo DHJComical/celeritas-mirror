@@ -11,6 +11,7 @@ import org.embeddedt.embeddium.impl.gui.options.OptionGroup;
 import org.embeddedt.embeddium.impl.gui.options.OptionPage;
 import org.embeddedt.embeddium.impl.gui.options.storage.OptionStorage;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.client.Minecraft;
 //? if <1.20
@@ -59,7 +60,7 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
     private boolean firstInit = true;
 
     public EmbeddiumVideoOptionsScreen(Screen prev) {
-        super(Component.literal("Embeddium Options"));
+        super(ComponentUtil.literal("Embeddium Options"));
         this.prevScreen = prev;
         this.pages.add(SodiumGameOptionPages.general());
         this.pages.add(SodiumGameOptionPages.quality());
@@ -80,7 +81,10 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         // Remember if the search bar was previously focused since we'll lose that information after recreating
         // the widget.
         boolean wasSearchFocused = this.searchTextField.isFocused();
+        //? if >=1.19 {
         this.rebuildWidgets();
+        //?} else
+        /*this.init();*/
         if(wasSearchFocused) {
             this.setFocused(this.searchTextField);
         }
@@ -119,9 +123,9 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         Dim2i closeButtonDim = new Dim2i(tabFrameDim.getLimitX() - 65, tabFrameDim.getLimitY() + 5, 65, 20);
 
 
-        this.undoButton = new FlatButtonWidget(undoButtonDim, Component.translatable("sodium.options.buttons.undo"), this::undoChanges);
-        this.applyButton = new FlatButtonWidget(applyButtonDim, Component.translatable("sodium.options.buttons.apply"), this::applyChanges);
-        this.closeButton = new FlatButtonWidget(closeButtonDim, Component.translatable("gui.done"), this::onClose);
+        this.undoButton = new FlatButtonWidget(undoButtonDim, ComponentUtil.translatable("sodium.options.buttons.undo"), this::undoChanges);
+        this.applyButton = new FlatButtonWidget(applyButtonDim, ComponentUtil.translatable("sodium.options.buttons.apply"), this::applyChanges);
+        this.closeButton = new FlatButtonWidget(closeButtonDim, ComponentUtil.translatable("gui.done"), this::onClose);
 
         Dim2i searchTextFieldDim = new Dim2i(tabFrameDim.x(), tabFrameDim.y() - 26, tabFrameDim.width(), 20);
 
@@ -157,7 +161,7 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         if(this.searchTextModel.getOptionPredicate().test(null) && ShaderModBridge.isShaderModPresent()) {
             String shaderModId = Stream.of("oculus", "iris").filter(PlatformUtil::modPresent).findFirst().orElse("iris");
             tabs.put(shaderModId, Tab.createBuilder()
-                    .setTitle(Component.translatable("options.iris.shaderPackSelection"))
+                    .setTitle(ComponentUtil.translatable("options.iris.shaderPackSelection"))
                     .setId(OptionIdentifier.create("iris", "shader_packs"))
                     .setOnSelectFunction(() -> {
                         if(ShaderModBridge.openShaderScreen(this) instanceof Screen screen) {
@@ -266,13 +270,13 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         }
 
         if (flags.contains(OptionFlag.REQUIRES_ASSET_RELOAD)) {
-            client.updateMaxMipLevel(client.options.mipmapLevels().get());
+            client.updateMaxMipLevel(client.options.mipmapLevels/*? if >=1.19 {*/().get()/*?}*/);
             client.delayTextureReload();
         }
 
         if (flags.contains(OptionFlag.REQUIRES_GAME_RESTART)) {
             Console.instance().logMessage(MessageLevel.WARN,
-                    Component.translatable("sodium.console.game_restart"), 10.0);
+                    ComponentUtil.translatable("sodium.console.game_restart"), 10.0);
         }
 
         for (OptionStorage<?> storage : dirtyStorages) {

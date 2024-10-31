@@ -256,9 +256,15 @@ public class RenderSectionManager {
         if(!this.translucencySorting || lastCameraPosition == null)
             return;
 
+        //? if >=1.19 {
         int camSectionX = SectionPos.blockToSectionCoord(cameraPosition.x);
         int camSectionY = SectionPos.blockToSectionCoord(cameraPosition.y);
         int camSectionZ = SectionPos.blockToSectionCoord(cameraPosition.z);
+        //?} else {
+        /*int camSectionX = SectionPos.posToSectionCoord(cameraPosition.x);
+        int camSectionY = SectionPos.posToSectionCoord(cameraPosition.y);
+        int camSectionZ = SectionPos.posToSectionCoord(cameraPosition.z);
+        *///?}
 
         this.scheduleTranslucencyUpdates(camSectionX, camSectionY, camSectionZ);
     }
@@ -306,9 +312,15 @@ public class RenderSectionManager {
                     continue;
                 }
 
+                //? if >=1.19 {
                 boolean cameraChangedSection = camSectionX != SectionPos.blockToSectionCoord(section.lastCameraX) ||
                         camSectionY != SectionPos.blockToSectionCoord(section.lastCameraY) ||
                         camSectionZ != SectionPos.blockToSectionCoord(section.lastCameraZ);
+                //?} else {
+                /*boolean cameraChangedSection = camSectionX != SectionPos.posToSectionCoord(section.lastCameraX) ||
+                        camSectionY != SectionPos.posToSectionCoord(section.lastCameraY) ||
+                        camSectionZ != SectionPos.posToSectionCoord(section.lastCameraZ);
+                *///?}
 
                 if (cameraChangedSection || section.isAlignedWithSectionOnGrid(camSectionX, camSectionY, camSectionZ)) {
                     section.setPendingUpdate(update);

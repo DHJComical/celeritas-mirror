@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.Validate;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -236,11 +237,11 @@ public class OptionImpl<S, T> implements Option<T> {
                 //SodiumClientMod.logger().warn("Id must be specified in option '{}', this might throw a exception on a future release", this.name.getString());
             } else {
                 if (this.name == null) {
-                    this.name = Component.translatable(this.id.getModId() + ".options." + this.id.getPath() + ".name");
+                    this.name = ComponentUtil.translatable(this.id.getModId() + ".options." + this.id.getPath() + ".name");
                 }
 
                 if (this.tooltip == null) {
-                    this.tooltip = Component.translatable(this.id.getModId() + ".options." + this.id.getPath() + ".tooltip");
+                    this.tooltip = ComponentUtil.translatable(this.id.getModId() + ".options." + this.id.getPath() + ".tooltip");
                 }
             }
 

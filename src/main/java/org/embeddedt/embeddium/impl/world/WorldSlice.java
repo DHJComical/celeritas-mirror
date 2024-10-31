@@ -181,7 +181,13 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         this.modelDataGetters = new ModelDataSnapshotter.Getter[SECTION_ARRAY_SIZE];
 
         this.biomeSlice = new BiomeSlice();
-        this.biomeColors = new BiomeColorCache(this.biomeSlice, Minecraft.getInstance().options.biomeBlendRadius().get());
+        this.biomeColors = new BiomeColorCache(this.biomeSlice,
+                //? if >=1.19 {
+                Minecraft.getInstance().options.biomeBlendRadius().get()
+                //?} else
+                /*Minecraft.getInstance().options.biomeBlendRadius*/
+        );
+
 
         for (BlockState[] blockArray : this.blockArrays) {
             Arrays.fill(blockArray, EMPTY_BLOCK_STATE);

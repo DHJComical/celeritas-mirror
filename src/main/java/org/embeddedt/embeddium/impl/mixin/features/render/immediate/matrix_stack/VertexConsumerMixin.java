@@ -1,29 +1,31 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.immediate.matrix_stack;
 
-//? if >=1.20 {
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import org.embeddedt.embeddium.api.math.MatrixHelper;
+//? if <1.20 {
+/*import com.mojang.math.Matrix3f;
+import com.mojang.math.Matrix4f;
+*///?} else {
 import org.joml.Math;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+//?}
+import org.embeddedt.embeddium.api.math.MatrixHelper;
+import org.embeddedt.embeddium.api.math.Matrix3fExtended;
+import org.embeddedt.embeddium.api.math.Matrix4fExtended;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(VertexConsumer.class)
 public interface VertexConsumerMixin {
-    //? if <1.21 {
+    //? if >=1.20 <1.21 {
     @Shadow
     VertexConsumer normal(float x, float y, float z);
 
     @Shadow
     VertexConsumer vertex(double x, double y, double z);
 
-    /**
-     * @reason Avoid allocations
-     * @author JellySquid
-     */
     @Overwrite
     default VertexConsumer vertex(Matrix4f matrix, float x, float y, float z) {
         float xt = MatrixHelper.transformPositionX(matrix, x, y, z);
@@ -33,10 +35,6 @@ public interface VertexConsumerMixin {
         return this.vertex(xt, yt, zt);
     }
 
-    /**
-     * @reason Avoid allocations
-     * @author JellySquid
-     */
     @Overwrite
     default VertexConsumer normal(Matrix3f matrix, float x, float y, float z) {
         float xt = MatrixHelper.transformNormalX(matrix, x, y, z);
@@ -45,17 +43,14 @@ public interface VertexConsumerMixin {
 
         return this.normal(xt, yt, zt);
     }
-    //?} else {
-    /*/^/^@Shadow
+    //?} else if >=1.21 {
+
+    /*@Shadow
     VertexConsumer setNormal(float x, float y, float z);
 
     @Shadow
     VertexConsumer addVertex(float x, float y, float z);
 
-    /^*
-     * @reason Avoid allocations
-     * @author JellySquid
-     ^/
     @Overwrite
     default VertexConsumer addVertex(Matrix4f matrix, float x, float y, float z) {
         float xt = MatrixHelper.transformPositionX(matrix, x, y, z);
@@ -65,10 +60,6 @@ public interface VertexConsumerMixin {
         return this.addVertex(xt, yt, zt);
     }
 
-    /^*
-     * @reason Avoid allocations
-     * @author JellySquid
-     ^/
     @Overwrite
     default VertexConsumer setNormal(PoseStack.Pose pose, float x, float y, float z) {
         final Matrix3f matrix = pose.normal();
@@ -86,30 +77,13 @@ public interface VertexConsumerMixin {
 
         return this.setNormal(xt, yt, zt);
     }
-    *///?}
-}
-*///?} else {
-/*import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import org.embeddedt.embeddium.api.math.Matrix3fExtended;
-import org.embeddedt.embeddium.api.math.Matrix4fExtended;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
-
-@Mixin(VertexConsumer.class)
-public interface VertexConsumerMixin {
-    @Shadow
+    *///?} else {
+    /*@Shadow
     VertexConsumer normal(float x, float y, float z);
 
     @Shadow
     VertexConsumer vertex(double x, double y, double z);
 
-    /^*
-     * @reason Avoid allocations
-     * @author JellySquid
-     ^/
     @Overwrite
     default VertexConsumer vertex(Matrix4f matrix, float x, float y, float z) {
         float xt = ((Matrix4fExtended)(Object)matrix).transformVecX(x, y, z);
@@ -119,10 +93,6 @@ public interface VertexConsumerMixin {
         return this.vertex(xt, yt, zt);
     }
 
-    /^*
-     * @reason Avoid allocations
-     * @author JellySquid
-     ^/
     @Overwrite
     default VertexConsumer normal(Matrix3f matrix, float x, float y, float z) {
         var matrixExt = Matrix3fExtended.get(matrix);
@@ -132,5 +102,5 @@ public interface VertexConsumerMixin {
 
         return this.normal(xt, yt, zt);
     }
+    *///?}
 }
-*///?}

@@ -33,12 +33,16 @@ public class ModelPartMixin implements ModelPartData {
     @Shadow
     public float z;
 
+    //? if >=1.19 {
     @Shadow
     public float xScale;
     @Shadow
     public float yScale;
     @Shadow
     public float zScale;
+    @Shadow
+    public boolean skipDraw;
+    //?}
 
     @Shadow
     public float yRot;
@@ -49,8 +53,6 @@ public class ModelPartMixin implements ModelPartData {
 
     @Shadow
     public boolean visible;
-    @Shadow
-    public boolean skipDraw;
 
     @Mutable
     @Shadow
@@ -169,9 +171,11 @@ public class ModelPartMixin implements ModelPartData {
         }
         *///?}
 
+        //? if >=1.19 {
         if (this.xScale != 1.0F || this.yScale != 1.0F || this.zScale != 1.0F) {
             matrixStack.scale(this.xScale, this.yScale, this.zScale);
         }
+        //?}
     }
 
     @Override
@@ -186,7 +190,10 @@ public class ModelPartMixin implements ModelPartData {
 
     @Override
     public boolean isHidden() {
+        //? if >=1.19 {
         return this.skipDraw;
+        //?} else
+        /*return false;*/
     }
 
     @Override

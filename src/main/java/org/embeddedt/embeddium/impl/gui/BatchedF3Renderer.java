@@ -90,9 +90,15 @@ public class BatchedF3Renderer {
             bufferBuilder.vertex(matrix, x1, y1, 0.0F).color(g, h, k, f).endVertex();
         }
 
-        BufferBuilder.RenderedBuffer output = bufferBuilder.end();
+        //? if >=1.19 {
+        /^BufferBuilder.RenderedBuffer output = bufferBuilder.end();
 
         BufferUploader.drawWithShader(output);
+        ^///?} else {
+        bufferBuilder.end();
+
+        BufferUploader.end(bufferBuilder);
+        //?}
         RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }

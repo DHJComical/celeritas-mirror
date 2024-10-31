@@ -8,6 +8,7 @@ import org.embeddedt.embeddium.impl.gui.options.control.SliderControl;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.api.options.structure.StandardOptions;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 import java.util.Optional;
 
@@ -30,17 +31,17 @@ public class FullscreenResolutionHelper {
         }
         ControlValueFormatter formatter = value -> {
             if (monitor == null) {
-                return Component.translatable("options.fullscreen.unavailable");
+                return ComponentUtil.translatable("options.fullscreen.unavailable");
             } else if (value == -1) {
-                return Component.translatable("options.fullscreen.current");
+                return ComponentUtil.translatable("options.fullscreen.current");
             } else {
-                return Component.literal(monitor.getMode(value).toString());
+                return ComponentUtil.literal(monitor.getMode(value).toString());
             }
         };
         return OptionImpl.createBuilder(int.class, SodiumGameOptionPages.getVanillaOpts())
                 .setId(StandardOptions.Option.FULLSCREEN_RESOLUTION)
-                .setName(Component.translatable("options.fullscreen.resolution"))
-                .setTooltip(Component.translatable("embeddium.options.fullscreen.resolution.tooltip"))
+                .setName(ComponentUtil.translatable("options.fullscreen.resolution"))
+                .setTooltip(ComponentUtil.translatable("embeddium.options.fullscreen.resolution.tooltip"))
                 .setControl(option -> new SliderControl(option, -1, maxMode, 1, formatter))
                 .setBinding((opts, value) -> {
                     if (monitor != null) {

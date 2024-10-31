@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.gui.frame.tab;
 
 import org.embeddedt.embeddium.impl.gui.options.Option;
 import org.embeddedt.embeddium.impl.gui.options.OptionPage;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -19,7 +20,7 @@ import java.util.function.Supplier;
 public record Tab<T extends AbstractFrame>(OptionIdentifier<Void> id, Component title, Supplier<Boolean> onSelectFunction, Function<Dim2i, T> frameFunction) {
 
     static MutableComponent idComponent(String namespace) {
-        return Component.literal(PlatformUtil.getModName(namespace));
+        return ComponentUtil.literal(PlatformUtil.getModName(namespace));
     }
 
     public static Tab.Builder<?> createBuilder() {

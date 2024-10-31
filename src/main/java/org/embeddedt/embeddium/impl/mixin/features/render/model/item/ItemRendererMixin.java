@@ -14,9 +14,11 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
+//$ rng_import
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
+import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -28,7 +30,10 @@ import java.util.List;
 @Mixin(ItemRenderer.class)
 public class ItemRendererMixin {
     @Unique
+    //? if >=1.19 {
     private final RandomSource random = new SingleThreadedRandomSource(42L);
+     //?} else
+    /*private final Random random = new XoRoShiRoRandom(42L);*/
 
     @Shadow
     @Final
@@ -48,7 +53,7 @@ public class ItemRendererMixin {
 
         ci.cancel();
 
-        RandomSource random = this.random;
+        /*$ rng >>*/ RandomSource random = this.random;
         PoseStack.Pose matrices = matrixStack.last();
 
         ItemColor colorProvider = null;

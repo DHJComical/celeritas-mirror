@@ -3,7 +3,10 @@ package org.embeddedt.embeddium.impl.gui.options;
 import com.google.common.collect.ImmutableList;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.network.chat.Component;
+//? if >=1.20 {
 import net.minecraft.network.chat.contents.TranslatableContents;
+//?} else
+/*import net.minecraft.network.chat.TranslatableComponent;*/
 import org.embeddedt.embeddium.api.OptionPageConstructionEvent;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.api.options.structure.StandardOptions;
@@ -18,20 +21,36 @@ public class OptionPage {
     private final ImmutableList<OptionGroup> groups;
     private final ImmutableList<Option<?>> options;
 
-    private static OptionIdentifier<Void> tryMakeId(Component name) {
-        OptionIdentifier<Void> id = null;
+    private static String findKey(Component name) {
+        //? if >=1.20 {
         if(name.getContents() instanceof TranslatableContents translatableContents) {
             String key = translatableContents.getKey();
-            if(name.getSiblings().isEmpty()) {
-                // Detect our own tabs
-                id = switch(key) {
-                    case "stat.generalButton" -> StandardOptions.Pages.GENERAL;
-                    case "sodium.options.pages.quality" -> StandardOptions.Pages.QUALITY;
-                    case "sodium.options.pages.advanced" -> StandardOptions.Pages.ADVANCED;
-                    case "sodium.options.pages.performance" -> StandardOptions.Pages.PERFORMANCE;
-                    default -> null;
-                };
+            if (name.getSiblings().isEmpty()) {
+                return key;
             }
+        }
+        //?} else {
+        /*if(name instanceof TranslatableComponent component) {
+            if (component.getSiblings().isEmpty()) {
+                return component.getKey();
+            }
+        }
+        *///?}
+        return null;
+    }
+
+    private static OptionIdentifier<Void> tryMakeId(Component name) {
+        OptionIdentifier<Void> id = null;
+        String key = findKey(name);
+        if (key != null) {
+            // Detect our own tabs
+            id = switch(key) {
+                case "stat.generalButton" -> StandardOptions.Pages.GENERAL;
+                case "sodium.options.pages.quality" -> StandardOptions.Pages.QUALITY;
+                case "sodium.options.pages.advanced" -> StandardOptions.Pages.ADVANCED;
+                case "sodium.options.pages.performance" -> StandardOptions.Pages.PERFORMANCE;
+                default -> null;
+            };
         }
         if(id != null) {
             return id;

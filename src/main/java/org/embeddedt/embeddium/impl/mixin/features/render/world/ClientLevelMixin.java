@@ -9,6 +9,7 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceKey;
+//$ rng_import
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.Level;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.levelgen.RandomSupport;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.WritableLevelData;
+import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -41,9 +43,13 @@ public abstract class ClientLevelMixin extends Level {
     /*protected ClientLevelMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, RegistryAccess registryAccess, Holder<DimensionType> holder, boolean bl, boolean bl2, long l, int i) {
         super(writableLevelData, resourceKey, registryAccess, holder, bl, bl2, l, i);
     }
-    *///?} else {
+    *///?} else if >=1.19.2 {
     /*protected ClientLevelMixin(WritableLevelData levelData, ResourceKey<Level> dimension, Holder<DimensionType> dimensionTypeRegistration, Supplier<ProfilerFiller> profiler, boolean isClientSide, boolean isDebug, long biomeZoomSeed, int maxChainedNeighborUpdates) {
         super(levelData, dimension, dimensionTypeRegistration, profiler, isClientSide, isDebug, biomeZoomSeed, maxChainedNeighborUpdates);
+    }
+    *///?} else {
+    /*protected ClientLevelMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean bl, boolean bl2, long l) {
+        super(writableLevelData, resourceKey, holder, supplier, bl, bl2, l);
     }
     *///?}
 
@@ -58,21 +64,25 @@ public abstract class ClientLevelMixin extends Level {
     @Shadow
     protected abstract void trySpawnDripParticles(BlockPos p_104690_, BlockState p_104691_, ParticleOptions p_104692_, boolean p_104693_);
 
-    /**
-     * @author embeddedt
-     * @reason Use singlethreaded random to avoid AtomicLong overhead
-     */
+
+    //? if >=1.19 {
     @Redirect(method = "animateTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/RandomSource;create()Lnet/minecraft/util/RandomSource;"))
     private RandomSource createLocal() {
         return new SingleThreadedRandomSource(RandomSupport.generateUniqueSeed());
     }
+    //?} else {
+    /*@Redirect(method = "animateTick", at = @At(value = "NEW", target = "()Ljava/util/Random;"))
+    private Random createLocal() {
+        return new XoRoShiRoRandom();
+    }
+    *///?}
 
     /**
      * @author embeddedt
      * @reason Avoid allocations & do some misc optimizations. Partially based on old Sodium 0.2 mixin
      */
     @Overwrite
-    public void doAnimateTick(int xCenter, int yCenter, int zCenter, int radius, RandomSource random, @Nullable Block markerBlock, BlockPos.MutableBlockPos pos) {
+    public void doAnimateTick(int xCenter, int yCenter, int zCenter, int radius, /*$ rng >>*/ RandomSource random, @Nullable Block markerBlock, BlockPos.MutableBlockPos pos) {
         int x = xCenter + (random.nextInt(radius) - random.nextInt(radius));
         int y = yCenter + (random.nextInt(radius) - random.nextInt(radius));
         int z = zCenter + (random.nextInt(radius) - random.nextInt(radius));

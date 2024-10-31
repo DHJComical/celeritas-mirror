@@ -45,3 +45,7 @@ accessible method net/minecraft/client/renderer/texture/TextureAtlasSprite uploa
 
 accessible method com/mojang/blaze3d/vertex/PoseStack$Pose <init> (Lcom/mojang/math/Matrix4f;Lcom/mojang/math/Matrix3f;)V
 
+accessible field net/minecraft/client/CycleOption setter Lnet/minecraft/client/CycleOption$OptionSetter;
+accessible field net/minecraft/client/CycleOption getter Ljava/util/function/Function;
+accessible field net/minecraft/world/level/biome/Biome$ClimateSettings temperature F
+accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall F

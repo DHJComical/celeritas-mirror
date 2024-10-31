@@ -28,7 +28,6 @@ import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
-import net.minecraft.world.level.chunk.PalettedContainerRO;
 import net.minecraft.world.level.levelgen.DebugLevelSource;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.jetbrains.annotations.NotNull;
@@ -66,9 +65,9 @@ public class ClonedChunkSection {
 
     private final @Nullable DataLayer[] lightDataArrays;
 
-    private final @Nullable PalettedContainerRO<BlockState> blockData;
+    private final @Nullable PalettedContainer<BlockState> blockData;
 
-    private final @Nullable PalettedContainerRO<Holder<Biome>> biomeData;
+    private final @Nullable PalettedContainer<Holder<Biome>> biomeData;
 
     private long lastUsedTimestamp = Long.MAX_VALUE;
 
@@ -92,8 +91,8 @@ public class ClonedChunkSection {
     public ClonedChunkSection(Level world, LevelChunk chunk, @Nullable LevelChunkSection section, SectionPos pos) {
         this.pos = pos;
 
-        PalettedContainerRO<BlockState> blockData = null;
-        PalettedContainerRO<Holder<Biome>> biomeData = null;
+        PalettedContainer<BlockState> blockData = null;
+        PalettedContainer<Holder<Biome>> biomeData = null;
 
         Int2ReferenceMap<BlockEntity> blockEntityMap = null;
         Int2ReferenceMap<Object> blockEntityRenderDataMap = null;
@@ -112,7 +111,7 @@ public class ClonedChunkSection {
                 }
             }
 
-            biomeData = ReadableContainerExtended.clone(section.getBiomes());
+            biomeData = ReadableContainerExtended.clone((PalettedContainer<Holder<Biome>>)section.getBiomes());
         }
 
         this.blockData = blockData;
@@ -261,11 +260,11 @@ public class ClonedChunkSection {
         return this.pos;
     }
 
-    public @Nullable PalettedContainerRO<BlockState> getBlockData() {
+    public @Nullable PalettedContainer<BlockState> getBlockData() {
         return this.blockData;
     }
 
-    public @Nullable PalettedContainerRO<Holder<Biome>> getBiomeData() {
+    public @Nullable PalettedContainer<Holder<Biome>> getBiomeData() {
         return this.biomeData;
     }
 

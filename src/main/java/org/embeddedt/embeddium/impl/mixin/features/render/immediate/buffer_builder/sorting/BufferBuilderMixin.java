@@ -42,8 +42,13 @@ public abstract class BufferBuilderMixin {
     @Shadow
     private VertexFormat format;
 
+    //? if >=1.19 {
     @Shadow
     private int renderedBufferPointer;
+    //?} else {
+    /*@Shadow
+    private int totalRenderedBytes;
+    *///?}
 
     //? if >=1.20 {
     @Shadow
@@ -62,9 +67,15 @@ public abstract class BufferBuilderMixin {
 
         Vector3f[] centers = new Vector3f[primitiveCount];
 
+        //? if >=1.19 {
+        int renderedBufferPointer = this.renderedBufferPointer;
+        //?} else {
+        /*int renderedBufferPointer = this.totalRenderedBytes;
+        *///?}
+
         for (int index = 0; index < primitiveCount; ++index) {
-            long v1 = MemoryUtil.memAddress(this.buffer, this.renderedBufferPointer + (((index * 4) + 0) * vertexStride));
-            long v2 = MemoryUtil.memAddress(this.buffer, this.renderedBufferPointer + (((index * 4) + 2) * vertexStride));
+            long v1 = MemoryUtil.memAddress(this.buffer, renderedBufferPointer + (((index * 4) + 0) * vertexStride));
+            long v2 = MemoryUtil.memAddress(this.buffer, renderedBufferPointer + (((index * 4) + 2) * vertexStride));
 
             float x1 = MemoryUtil.memGetFloat(v1 + 0);
             float y1 = MemoryUtil.memGetFloat(v1 + 4);
@@ -98,7 +109,7 @@ public abstract class BufferBuilderMixin {
      * @author JellySquid
      * @reason Use direct memory access, avoid indirection
      ^/
-    @Inject(method = "putSortedQuadIndices", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferBuilder;intConsumer(ILcom/mojang/blaze3d/vertex/VertexFormat$IndexType;)Lit/unimi/dsi/fastutil/ints/IntConsumer;"), cancellable = true)
+    @Inject(method = "putSortedQuadIndices", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferBuilder;intConsumer(" + /^? if >=1.19 {^/ /^"I" + ^//^?}^/ "Lcom/mojang/blaze3d/vertex/VertexFormat$IndexType;)Lit/unimi/dsi/fastutil/ints/IntConsumer;"), cancellable = true)
     private void putSortedQuadIndices(VertexFormat.IndexType indexType, CallbackInfo ci, @Local(ordinal = 0) int[] indices) {
         ci.cancel();
         this.writePrimitiveIndices(indexType, indices);

@@ -8,6 +8,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 public class GuiGraphics {
     public final PoseStack stack;
@@ -29,7 +30,7 @@ public class GuiGraphics {
     }
 
     public int drawString(Font font, String str, int x, int y, int color) {
-        return drawString(font, Component.literal(str), x, y, color);
+        return drawString(font, ComponentUtil.literal(str), x, y, color);
     }
 
     public int drawString(Font font, Component component, int x, int y, int color) {

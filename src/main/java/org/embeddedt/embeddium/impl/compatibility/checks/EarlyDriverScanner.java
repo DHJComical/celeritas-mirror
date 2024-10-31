@@ -1,7 +1,6 @@
 package org.embeddedt.embeddium.impl.compatibility.checks;
 
 import org.embeddedt.embeddium.impl.compatibility.environment.OSInfo;
-import org.embeddedt.embeddium.impl.platform.MessageBox;
 import org.embeddedt.embeddium.impl.platform.windows.WindowsDriverStoreVersion;
 import org.embeddedt.embeddium.impl.compatibility.environment.probe.GraphicsAdapterProbe;
 import org.embeddedt.embeddium.impl.compatibility.environment.probe.GraphicsAdapterVendor;
@@ -51,8 +50,6 @@ public class EarlyDriverScanner {
                 .replace("###ERROR_DESCRIPTION###", message)
                 .replace("###HELP_URL###", url));
 
-        // Try to show a graphical message box (if the platform supports it) and shut down the game.
-        MessageBox.showMessageBox(null, MessageBox.IconType.ERROR, "Embeddium Renderer - Unsupported Driver", message, url);
         System.exit(1 /* failure code */);
     }
 

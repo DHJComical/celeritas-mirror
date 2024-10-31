@@ -11,6 +11,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class TerrainRenderPassArgumentType implements ArgumentType<TerrainRenderPass> {
     private static final List<String> EXAMPLES = Arrays.asList("solid", "translucent");
-    public static final SimpleCommandExceptionType UNKNOWN_PASS = new SimpleCommandExceptionType(Component.literal("Unknown terrain render pass"));
+    public static final SimpleCommandExceptionType UNKNOWN_PASS = new SimpleCommandExceptionType(ComponentUtil.literal("Unknown terrain render pass"));
 
     public static TerrainRenderPassArgumentType type() {
         return new TerrainRenderPassArgumentType();

@@ -20,10 +20,7 @@ public abstract class HierarchicalModelMixin {
     @Shadow
     public abstract ModelPart root();
 
-    /**
-     * @author embeddedt
-     * @reason replace stream with cached lookup from map
-     */
+    //? if >=1.19 {
     @Overwrite
     public Optional<ModelPart> getAnyDescendantWithName(String pName) {
         var extendedRoot = ModelPartExtended.of(this.root());
@@ -34,4 +31,5 @@ public abstract class HierarchicalModelMixin {
             return part != null ? ModelPartExtended.of(part).embeddium$asOptional() : Optional.empty();
         }
     }
+    //?}
 }
