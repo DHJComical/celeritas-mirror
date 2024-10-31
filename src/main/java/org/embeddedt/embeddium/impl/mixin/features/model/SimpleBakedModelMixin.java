@@ -4,7 +4,7 @@ package org.embeddedt.embeddium.impl.mixin.features.model;
 import net.minecraftforge.client.extensions.IForgeBakedModel;
 //? if forge && >=1.19 {
 import net.minecraftforge.client.model.data.ModelData;
-//? } else if forge && <1.19 {
+//?} else if forge && <1.19 {
 /*import net.minecraftforge.client.model.data.IModelData;
 *///?} else if neoforge {
 /*import net.neoforged.neoforge.client.extensions.IBakedModelExtension;
