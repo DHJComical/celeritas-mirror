@@ -7,8 +7,10 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
-//? if forge
+//? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelData;
+//? if forge && <1.19
+/*import net.minecraftforge.client.model.data.IModelData;*/
 //? if neoforge
 /*import net.neoforged.neoforge.client.model.data.ModelData;*/
 import org.embeddedt.embeddium.impl.render.matrix_stack.CachingPoseStack;
@@ -36,6 +38,8 @@ public class BlockRenderContext {
 
     //? if forgelike && >=1.19.1
     private ModelData modelData;
+    //? if forgelike && <1.19.1
+    /*private IModelData modelData;*/
     private RenderType renderLayer;
 
 
@@ -44,7 +48,7 @@ public class BlockRenderContext {
         ((CachingPoseStack)this.stack).embeddium$setCachingEnabled(true);
     }
 
-    public void update(BlockPos pos, BlockPos origin, BlockState state, BakedModel model, long seed, /*? if forgelike {*/ ModelData modelData, /*?}*/ RenderType renderLayer) {
+    public void update(BlockPos pos, BlockPos origin, BlockState state, BakedModel model, long seed, /*? if forgelike && >=1.19 {*/ ModelData modelData, /*?}*//*? if forgelike && <1.19 {*/ /*IModelData modelData, *//*?}*/ RenderType renderLayer) {
         this.pos.set(pos);
         this.origin.set(origin.getX(), origin.getY(), origin.getZ());
 
@@ -107,7 +111,7 @@ public class BlockRenderContext {
         return this.seed;
     }
 
-    //? if forgelike {
+    //? if forgelike && >=1.19 {
     /**
      * @return The additional data for model instance
      */
@@ -115,6 +119,15 @@ public class BlockRenderContext {
         return this.modelData;
     }
     //?}
+
+    //? if forgelike && <1.19 {
+    /*/^*
+     * @return The additional data for model instance
+     ^/
+    public IModelData modelData() {
+        return this.modelData;
+    }
+    *///?}
 
     /**
      * @return The render layer for model rendering

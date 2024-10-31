@@ -12,10 +12,12 @@ import net.minecraft.util.RandomSource;
 /*import net.minecraft.util.random.SimpleWeightedRandomList;*/
 import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.world.level.block.state.BlockState;
-//? if forge {
+//? if forge && >=1.19 {
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
 //?}
+//? if forge && <1.19
+/*import net.minecraftforge.client.model.data.IModelData;*/
 //? if neoforge {
 /*import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.model.data.ModelData;
@@ -56,7 +58,7 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
      * @reason Avoid excessive object allocations
      */
     @Overwrite(/*? if forgelike {*/ remap = false/*?}*/)
-    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, /*$ rng >>*/ RandomSource random/*? if forgelike {*/, ModelData modelData, RenderType renderLayer/*?}*/) {
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, /*$ rng >>*/ RandomSource random/*? if forgelike && >=1.19 {*/, ModelData modelData, RenderType renderLayer/*?}*/ /*? if forgelike && <1.19 {*//*, IModelData modelData *//*?}*/) {
         //? if <1.21.2
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) random.nextLong()) % this.totalWeight);
         //? if >=1.21.2
@@ -64,13 +66,13 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
 
         if (quad != null) {
             return getData(quad)
-                    .getQuads(state, face, random/*? if forgelike {*/, modelData, renderLayer/*?}*/);
+                    .getQuads(state, face, random/*? if forgelike && >=1.19 {*/, modelData, renderLayer/*?}*//*? if forgelike && <1.19 {*//*, modelData*//*?}*/);
         }
 
         return Collections.emptyList();
     }
 
-    //? if forgelike {
+    //? if forgelike && >=1.19 {
     /**
      * @author embeddedt
      * @reason Avoid excessive object allocations

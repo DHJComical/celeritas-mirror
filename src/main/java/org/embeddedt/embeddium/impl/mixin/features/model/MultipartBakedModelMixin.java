@@ -13,11 +13,15 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
-//? if forge {
+//? if forge && >=1.19 {
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.client.model.data.MultipartModelData;
 //?}
+//? if forge && <1.19 {
+/*import net.minecraftforge.client.model.data.IModelData;
+*///?}
+//? if forge
+import net.minecraftforge.client.model.data.MultipartModelData;
 //? if neoforge {
 /*import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.model.data.ModelData;
@@ -75,7 +79,7 @@ public class MultipartBakedModelMixin {
 
 
 
-    //? if forgelike {
+    //? if forgelike && >=1.19 {
     @Unique
     private boolean embeddium$hasCustomRenderTypes;
 
@@ -166,8 +170,20 @@ public class MultipartBakedModelMixin {
      * @reason Avoid expensive allocations and replace bitfield indirection
      */
     @Overwrite(/*? if forgelike {*/ remap = false/*?}*/)
-    public List<BakedQuad> getQuads(BlockState state, Direction face, /*$ rng >>*/ RandomSource random/*? if forgelike {*/, ModelData modelData, RenderType renderLayer /*?}*/) {
+    public List<BakedQuad> getQuads(BlockState state, Direction face, /*$ rng >>*/ RandomSource random/*? if forgelike && >=1.19 {*/, ModelData modelData, RenderType renderLayer /*?}*//*? if forge && <1.19 {*//*, IModelData modelData *//*?}*/) {
         if (state == null) {
+            //? if <1.19 {
+            /*// Embeddium: There needs to be Map#get() and Map#put() calls in this method in order for FerriteCore 1.18
+            // and older mixins to work. This if statement is rarely hit, and the JIT should hopefully optimize away the
+            // redundant call.
+            //noinspection RedundantOperationOnEmptyContainer
+            if(Collections.emptyMap().get(null) != null) {
+                // This must be a local so that the put() call is an interface dispatch instead of being invoked
+                // on HashMap directly
+                Map<Object, Object> fakeMap = new HashMap<>();
+                fakeMap.put(null, null);
+            }
+            *///?}
             return Collections.emptyList();
         }
 
@@ -176,7 +192,7 @@ public class MultipartBakedModelMixin {
         ArrayList<BakedQuad> quads = null;
         long seed = random.nextLong();
 
-        //? if forgelike
+        //? if forgelike && >=1.19
         boolean checkSubmodelTypes = this.embeddium$hasCustomRenderTypes;
 
         for (BakedModel model : models) {
@@ -188,23 +204,23 @@ public class MultipartBakedModelMixin {
             // The original implementation accidentally handled these as a result of doing the filtering in getQuads.
             // We consider this a worthwhile tradeoff, because the API contract for chunk meshing requires iterating over
             // the return value of getRenderTypes(). To date, only Windowlogged is known to be broken by this change.
-            //? if forgelike
+            //? if forgelike && >=1.19
             if (!checkSubmodelTypes || renderLayer == null || model.getRenderTypes(state, random, modelData).contains(renderLayer)) {
-                List<BakedQuad> submodelQuads = model.getQuads(state, face, random/*? if forgelike {*/, MultipartModelData.resolve(modelData, model), renderLayer/*?}*/);
+                List<BakedQuad> submodelQuads = model.getQuads(state, face, random/*? if forgelike && >=1.19 {*/, MultipartModelData.resolve(modelData, model), renderLayer/*?}*//*? if forge && <1.19 {*//*, MultipartModelData.resolve(model, modelData)*//*?}*/);
                 if(models.length == 1) {
                     // Nobody else will return quads, so no need to make a wrapper list
                     return submodelQuads;
                 } else {
                     quads = addAllQuads(quads, submodelQuads);
                 }
-            //? if forgelike
+            //? if forgelike && >=1.19
             }
         }
 
         return quads != null ? quads : Collections.emptyList();
     }
 
-    //? if forgelike {
+    //? if forgelike && >=1.19 {
     /**
      * @author embeddedt
      * @reason faster, less allocation
@@ -260,6 +276,36 @@ public class MultipartBakedModelMixin {
         }
 
         return dataMap == null ? tileModelData : tileModelData.derive().with(MultipartModelDataAccessor.getProperty(), dataMap).build();
+    }
+    *///?}
+
+    //? if forge && <1.19 {
+    /*/^*
+     * @author embeddedt
+     * @reason use our selector system, avoid creating multipart model data if no submodels use it
+     ^/
+    @Overwrite(remap = false)
+    public IModelData getModelData(BlockAndTintGetter world, BlockPos pos, BlockState state, IModelData tileModelData) {
+        BakedModel[] models = getModelComponents(state);
+
+        Map<BakedModel, IModelData> dataMap = null;
+
+        var multipartData = new MultipartModelData(tileModelData);
+        boolean hadPartData = false;
+
+        for(BakedModel model : models) {
+            IModelData data = model.getModelData(world, pos, state, tileModelData);
+            if(data != tileModelData) {
+                multipartData.setPartData(model, data);
+                hadPartData = true;
+            }
+        }
+
+        if (!hadPartData) {
+            return tileModelData;
+        } else {
+            return multipartData;
+        }
     }
     *///?}
 }

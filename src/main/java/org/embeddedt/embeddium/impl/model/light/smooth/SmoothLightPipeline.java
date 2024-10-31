@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.model.light.smooth;
 
+//? if forgelike && <1.19
+/*import net.minecraftforge.client.model.pipeline.LightUtil;*/
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
@@ -10,6 +12,8 @@ import org.embeddedt.embeddium.api.util.NormI8;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+
+import java.util.Arrays;
 
 /**
  * A light pipeline which produces smooth interpolated lighting and ambient occlusion for model quads. This
@@ -245,7 +249,7 @@ public class SmoothLightPipeline implements LightPipeline {
         }
     }
 
-    //? if forgelike {
+    //? if forgelike && >=1.19 {
     private void applySidedBrightnessFromNormals(QuadLightData out, ModelQuadView quad, boolean shade) {
         // TODO: consider calculating for vertex if mods actually change normals per-vertex
         int normal = quad.getModFaceNormal();
@@ -256,7 +260,17 @@ public class SmoothLightPipeline implements LightPipeline {
             br[i] *= brightness;
         }
     }
-    //?}
+    //?} else if forgelike && <1.19 {
+    /*private void applySidedBrightnessFromNormals(QuadLightData out, ModelQuadView quad, boolean shade) {
+        int normal = quad.getModFaceNormal();
+        float brightness = shade ? LightUtil.diffuseLight(NormI8.unpackX(normal), NormI8.unpackY(normal), NormI8.unpackZ(normal)) : 1.0f;
+        float[] br = out.br;
+
+        for (int i = 0; i < br.length; i++) {
+            br[i] *= brightness;
+        }
+    }
+    *///?}
 
     /**
      * Returns the cached data for a given facing or calculates it if it hasn't been cached.

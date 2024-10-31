@@ -2,6 +2,9 @@ package org.embeddedt.embeddium.impl;
 
 //? if forge {
 import net.minecraftforge.api.distmarker.Dist;
+//? if <1.19 {
+/*import net.minecraftforge.client.ConfigGuiHandler;
+*///?} else
 import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -15,7 +18,10 @@ public class ConfigScreenHandlerHook {
     @SubscribeEvent
     @SuppressWarnings("removal")
     public static void onModConstruct(FMLConstructModEvent event) {
+        //? if >=1.19 {
         ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new EmbeddiumVideoOptionsScreen(screen)));
+        //?} else
+        /*ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class, () -> new ConfigGuiHandler.ConfigGuiFactory((mc, screen) -> new EmbeddiumVideoOptionsScreen(screen)));*/
     }
 }
 //?}

@@ -205,9 +205,11 @@ public class FluidRenderer {
 
         // LVT name kept for 1.20.1 in case a mixin captures it, the meaning of this variable is now "does the fluid
         // support AO"
-        //? if forgelike {
+        //? if forgelike && >=1.19 {
         boolean isWater = fluid.getFluidType().getLightLevel(fluidState, world, blockPos) == 0;
-        //?} else
+        //?} else if forgelike && <1.19 {
+        /*boolean isWater = fluid.getAttributes().getLuminosity(world, blockPos) == 0;
+        *///?} else
         /*boolean isWater = fluid.is(FluidTags.WATER);*/
 
         final ColorProvider<FluidState> colorProvider = this.getColorProvider(fluid);

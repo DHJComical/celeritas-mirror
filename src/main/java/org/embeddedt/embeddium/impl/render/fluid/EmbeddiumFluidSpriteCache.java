@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.render.fluid;
 
-//? if forge
+//? if forge && >=1.19
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 //? if neoforge
 /*import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;*/
@@ -33,10 +33,17 @@ public class EmbeddiumFluidSpriteCache {
     }
 
     public TextureAtlasSprite[] getSprites(BlockAndTintGetter world, BlockPos pos, FluidState fluidState) {
+        //? if >=1.19 {
         IClientFluidTypeExtensions fluidExt = IClientFluidTypeExtensions.of(fluidState);
         sprites[0] = getTexture(fluidExt.getStillTexture(fluidState, world, pos));
         sprites[1] = getTexture(fluidExt.getFlowingTexture(fluidState, world, pos));
         ResourceLocation overlay = fluidExt.getOverlayTexture(fluidState, world, pos);
+        //?} else {
+        /*var attrs = fluidState.getType().getAttributes();
+        sprites[0] = getTexture(attrs.getStillTexture(world, pos));
+        sprites[1] = getTexture(attrs.getFlowingTexture(world, pos));
+        ResourceLocation overlay = attrs.getOverlayTexture();
+        *///?}
         sprites[2] = overlay != null ? getTexture(overlay) : null;
         return sprites;
     }

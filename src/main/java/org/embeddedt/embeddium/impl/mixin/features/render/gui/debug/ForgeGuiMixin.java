@@ -9,7 +9,10 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+//? if >=1.19 {
 import net.minecraftforge.client.gui.overlay.ForgeGui;
+//?} else
+/*import net.minecraftforge.client.gui.ForgeIngameGui;*/
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 //? if <1.20
 /*import org.embeddedt.embeddium.impl.gui.BatchedF3Renderer;*/
@@ -20,17 +23,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 
+//? if >=1.19 {
 @Mixin(ForgeGui.class)
+//?} else
+/*@Mixin(ForgeIngameGui.class)*/
 public abstract class ForgeGuiMixin extends Gui {
     private DebugScreenOverlay embeddium$debugOverlay;
 
     public ForgeGuiMixin(Minecraft pMinecraft, ItemRenderer pItemRenderer) {
-        super(pMinecraft, pItemRenderer);
+        super(pMinecraft/*? if >=1.19 {*/, pItemRenderer/*?}*/);
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void accessDebugOverlay(Minecraft mc, CallbackInfo ci) {
+        //? if >=1.19 {
         embeddium$debugOverlay = ObfuscationReflectionHelper.getPrivateValue(ForgeGui.class, (ForgeGui)(Object)this, "debugOverlay");
+        //?} else
+        /*embeddium$debugOverlay = ObfuscationReflectionHelper.getPrivateValue(ForgeIngameGui.class, (ForgeIngameGui)(Object)this, "debugOverlay");*/
     }
 
     /**

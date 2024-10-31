@@ -33,8 +33,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
-//? if forge
+//? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelData;
+//? if forge && <1.19
+/*import net.minecraftforge.client.ForgeHooksClient;*/
 //? if neoforge
 /*import net.neoforged.neoforge.client.model.data.ModelData;*/
 import org.embeddedt.embeddium.api.ChunkDataBuiltEvent;
@@ -126,7 +128,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             BakedModel model = cache.getBlockModels()
                                 .getBlockModel(blockState);
                             //? if forgelike
-                            ModelData modelData = model.getModelData(context.localSlice(), blockPos, blockState, modelDataGetter.getModelData(blockPos));
+                            var modelData = model.getModelData(context.localSlice(), blockPos, blockState, modelDataGetter.getModelData(blockPos));
 
                             long seed = blockState.getSeed(blockPos);
                             random.setSeed(seed);
@@ -137,13 +139,20 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
                             random.setSeed(seed);
 
-                            //? if forgelike {
+                            //? if forgelike && >=1.19 {
                             for (RenderType layer : model.getRenderTypes(blockState, random, modelData)) {
                                 context.update(blockPos, modelOffset, blockState, model, seed, modelData, layer);
                                 cache.getBlockRenderer()
                                         .renderModel(context, buffers);
                             }
-                            //?} else {
+                            //?} else if forge && <1.19 {
+                            /*for (RenderType layer : cache.getRenderLayerCache().forState(blockState)) {
+                                ForgeHooksClient.setRenderType(layer);
+                                context.update(blockPos, modelOffset, blockState, model, seed, modelData, layer);
+                                cache.getBlockRenderer()
+                                        .renderModel(context, buffers);
+                            }
+                            *///?} else {
                             /*context.update(blockPos, modelOffset, blockState, model, seed, ItemBlockRenderTypes.getChunkRenderType(blockState));
                             cache.getBlockRenderer()
                                     .renderModel(context, buffers);

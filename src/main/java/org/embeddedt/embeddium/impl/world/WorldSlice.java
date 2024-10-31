@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.world;
 
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
-//? if forge
+//? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelData;
 //? if neoforge
 /*import net.neoforged.neoforge.client.model.data.ModelData;*/
@@ -40,7 +40,7 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
-//? if forge
+//? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelDataManager;
 import org.embeddedt.embeddium.api.ChunkMeshEvent;
 import org.embeddedt.embeddium.api.MeshAppender;
@@ -402,7 +402,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         return this.biomeColors.getColor(source, x, y, z);
     }
 
-    //? if forge {
+    //? if forge && >=1.19 {
     @Override
     public @Nullable ModelDataManager getModelDataManager() {
         return this.world.getModelDataManager();
@@ -411,7 +411,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
 
     //? if neoforge
     /*@Override*/
-    //? if forgelike {
+    //? if forgelike && >=1.19 {
     public ModelData getModelData(BlockPos pos) {
         int relX = pos.getX() - this.originX;
         int relY = pos.getY() - this.originY;
@@ -440,7 +440,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         return this.modelDataGetters[getLocalSectionIndex(relSX, relSY, relSZ)];
     }
 
-    //? if forgelike {
+    //? if forgelike && >=1.19 {
     @Override
     public float getShade(float normalX, float normalY, float normalZ, boolean shade) {
         return this.world.getShade(normalX, normalY, normalZ, shade);

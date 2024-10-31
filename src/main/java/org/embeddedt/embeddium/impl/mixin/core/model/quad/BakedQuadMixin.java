@@ -36,7 +36,7 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     @Final
     private boolean shade;
 
-    //? if forgelike {
+    //? if forgelike && >=1.19 {
     @Shadow(remap = false)
     @Final
     private boolean hasAmbientOcclusion;
@@ -144,7 +144,7 @@ public abstract class BakedQuadMixin implements BakedQuadView {
         return this.shade;
     }
 
-    //? if forgelike {
+    //? if forgelike && >=1.19 {
     @Override
     public boolean hasAmbientOcclusion() {
         return this.hasAmbientOcclusion;

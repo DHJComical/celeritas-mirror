@@ -1,11 +1,11 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.model;
 
-//? if forge
+//? if forge && >=1.19
 import net.minecraftforge.client.ChunkRenderTypeSet;
 //? if neoforge
 /*import net.neoforged.neoforge.client.ChunkRenderTypeSet;*/
 
-//? if forgelike {
+//? if forgelike && >=1.19 {
 import com.google.common.collect.ImmutableList;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.RenderType;

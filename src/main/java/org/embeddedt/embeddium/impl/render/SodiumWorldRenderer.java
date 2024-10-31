@@ -461,7 +461,7 @@ public class SodiumWorldRenderer {
                         continue;
                     //?}
 
-                    //? if forgelike {
+                    //? if forgelike && >=1.19.2 {
                     if (blockEntity.hasCustomOutlineRendering(this.client.player)) {
                         this.blockEntityRequestedOutline = true;
                     }
@@ -495,7 +495,7 @@ public class SodiumWorldRenderer {
                     continue;
                 //?}
 
-                //? if forgelike {
+                //? if forgelike && >=1.19.2 {
                 if (blockEntity.hasCustomOutlineRendering(this.client.player)) {
                     this.blockEntityRequestedOutline = true;
                 }

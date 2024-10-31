@@ -1,8 +1,9 @@
 package org.embeddedt.embeddium.impl.loader.forge;
 
 //? if forge {
-import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.common.ForgeConfig;
+//? if >=1.19
+import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.minecraftforge.common.extensions.IForgeBlockEntity;
 //?} else if neoforge {
 /*import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
@@ -19,25 +20,33 @@ import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
+//? if >=1.19
 import org.embeddedt.embeddium.impl.render.chunk.light.ForgeLightPipeline;
 
 public final class ForgeLoaderServices implements LoaderServices {
     @Override
     public boolean hasCustomLightPipeline() {
-        //? if forge
+        //? if forge && >=1.19 {
         return ForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get();
-        //? if neoforge
-        /*return NeoForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get();*/
+        //?} else if neoforge {
+        /*return NeoForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get();
+        *///?} else
+        /*return false;*/
     }
 
+    //? if >=1.19 {
     @Override
     public LightPipeline createCustomLightPipeline(LightMode mode, LightDataAccess cache) {
         return mode == LightMode.SMOOTH ? ForgeLightPipeline.smooth(cache) : ForgeLightPipeline.flat(cache);
     }
+    //?}
 
     @Override
     public int getFluidTintColor(BlockAndTintGetter world, FluidState state, BlockPos pos) {
+        //? if >=1.19 {
         return IClientFluidTypeExtensions.of(state).getTintColor(state, world, pos);
+        //?} else
+        /*return state.getType().getAttributes().getColor(world, pos);*/
     }
 
     @Override

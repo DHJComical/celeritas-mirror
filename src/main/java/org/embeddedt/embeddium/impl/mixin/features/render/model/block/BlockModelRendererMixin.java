@@ -17,8 +17,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
-//? if forge
+//? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelData;
+//? if forge && <1.19
+/*import net.minecraftforge.client.model.data.IModelData;*/
 //? if neoforge
 /*import net.neoforged.neoforge.client.model.data.ModelData;*/
 import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
@@ -44,11 +46,12 @@ public class BlockModelRendererMixin {
      * @author JellySquid
      */
     @Inject(method = "renderModel(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/resources/model/BakedModel;FFFII" +
-            /*? if forge {*/ "Lnet/minecraftforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;" +  /*?}*/
+            /*? if forge && >=1.19 {*/ "Lnet/minecraftforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;" +  /*?}*/
+            /*? if forge && <1.19 {*/ /*"Lnet/minecraftforge/client/model/data/IModelData;" +  *//*?}*/
             /*? if neoforge {*/ /*"Lnet/neoforged/neoforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;" +  *//*?}*/
     ")V", at = @At("HEAD"), cancellable = true/*? if forgelike {*/, remap = false/*?}*/)
     private void renderFast(PoseStack.Pose entry, VertexConsumer vertexConsumer, BlockState blockState, BakedModel bakedModel, float red, float green, float blue, int light, int overlay,
-                            /*? if forgelike {*/ModelData modelData, RenderType renderType,/*?}*/ CallbackInfo ci) {
+                            /*? if forgelike && >=1.19 {*/ModelData modelData, RenderType renderType,/*?}*//*? if forge && <1.19 {*//*IModelData modelData,*//*?}*/ CallbackInfo ci) {
         var writer = VertexConsumerUtils.convertOrLog(vertexConsumer);
         if(writer == null) {
             return;
@@ -67,7 +70,7 @@ public class BlockModelRendererMixin {
 
         for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
             random.setSeed(42L);
-            List<BakedQuad> quads = bakedModel.getQuads(blockState, direction, random/*? if forgelike {*/, modelData, renderType /*?}*/);
+            List<BakedQuad> quads = bakedModel.getQuads(blockState, direction, random/*? if forgelike && >=1.19 {*/, modelData, renderType /*?}*//*? if forge && <1.19 {*//*, modelData*//*?}*/);
 
             if (!quads.isEmpty()) {
                 renderQuads(entry, writer, defaultColor, quads, light, overlay);
@@ -75,7 +78,7 @@ public class BlockModelRendererMixin {
         }
 
         random.setSeed(42L);
-        List<BakedQuad> quads = bakedModel.getQuads(blockState, null, random/*? if forgelike {*/, modelData, renderType /*?}*/);
+        List<BakedQuad> quads = bakedModel.getQuads(blockState, null, random/*? if forgelike && >=1.19 {*/, modelData, renderType /*?}*//*? if forge && <1.19 {*//*, modelData*//*?}*/);
 
         if (!quads.isEmpty()) {
             renderQuads(entry, writer, defaultColor, quads, light, overlay);

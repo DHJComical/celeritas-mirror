@@ -1,8 +1,11 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 
+import lombok.Getter;
 import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
 import org.embeddedt.embeddium.impl.model.light.LightPipelineProvider;
 import org.embeddedt.embeddium.impl.model.light.data.ArrayLightDataCache;
+//? if forgelike && <1.19
+/*import org.embeddedt.embeddium.impl.render.EmbeddiumRenderLayerCache;*/
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
 import net.minecraft.client.Minecraft;
@@ -23,6 +26,11 @@ public class BlockRenderCache {
 
     private final BlockModelShaper blockModels;
     private final WorldSlice worldSlice;
+
+    //? if forgelike && <1.19 {
+    /*@Getter
+    private final EmbeddiumRenderLayerCache renderLayerCache = new EmbeddiumRenderLayerCache();
+    *///?}
 
     public BlockRenderCache(Minecraft client, ClientLevel world) {
         this.worldSlice = new WorldSlice(world);

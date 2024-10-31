@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
-//? if forge {
+//? if forge && >=1.19 {
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import org.spongepowered.asm.mixin.Final;

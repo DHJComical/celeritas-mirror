@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.model.light.flat;
 
+//? if forgelike && <1.19
+/*import net.minecraftforge.client.model.pipeline.LightUtil;*/
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
@@ -64,12 +66,17 @@ public class FlatLightPipeline implements LightPipeline {
         } /*?}*/
     }
 
-    //? if forgelike {
-    private void applySidedBrightnessFromNormals(ModelQuadView quad, QuadLightData out, boolean shade) {
+    //? if forgelike && >=1.19 {
+    public void applySidedBrightnessFromNormals(ModelQuadView quad, QuadLightData out, boolean shade) {
         int normal = quad.getModFaceNormal();
         Arrays.fill(out.br, this.lightCache.getWorld().getShade(NormI8.unpackX(normal), NormI8.unpackY(normal), NormI8.unpackZ(normal), shade));
     }
-    //?}
+    //?} else if forgelike && <=1.19 {
+    /*private void applySidedBrightnessFromNormals(ModelQuadView quad, QuadLightData out, boolean shade) {
+        int normal = quad.getModFaceNormal();
+        Arrays.fill(out.br, shade ? LightUtil.diffuseLight(NormI8.unpackX(normal), NormI8.unpackY(normal), NormI8.unpackZ(normal)) : 1.0f);
+    }
+    *///?}
 
     /**
      * When vanilla computes an offset lightmap with flat lighting, it passes the original BlockState but the
