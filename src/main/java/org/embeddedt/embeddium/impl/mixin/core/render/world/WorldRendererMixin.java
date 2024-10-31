@@ -259,7 +259,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     //? if <1.21.2 {
     @Inject(method = "renderLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;globalBlockEntities:Ljava/util/Set;", shift = At.Shift.BEFORE, ordinal = 0))
     private void onRenderBlockEntities(/*? if <1.21 {*/ PoseStack matrices, float tickDelta, long limitTime, /*?} else {*/ /*DeltaTracker tracker, *//*?}*/ boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightmapTextureManager, /*? if >=1.21 {*/ /*Matrix4f pose, *//*?}*/ Matrix4f positionMatrix, CallbackInfo ci) {
-        //? if >=1.21
+        //? if >=1.21 {
         /*float tickDelta = tracker.getGameTimeDeltaPartialTick(false);
         PoseStack matrices = new PoseStack();
         *///?}
