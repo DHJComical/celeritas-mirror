@@ -99,10 +99,6 @@ if (loader == FORGE) {
     }
 }
 
-tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:-overwrite"
-}
-
 dependencies {
     minecraft "net.minecraft:minecraft:${ModLoader.getMinecraftVersion(project)}"
 
