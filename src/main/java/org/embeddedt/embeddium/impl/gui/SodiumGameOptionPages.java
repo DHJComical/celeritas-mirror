@@ -148,7 +148,7 @@ public class SodiumGameOptionPages {
                         .setControl(option -> new CyclingControl<>(option, InactivityFpsLimit.class, Arrays.stream(InactivityFpsLimit.values()).map(InactivityFpsLimit::getKey).map(Component::translatable).toArray(Component[]::new)))
                         .setBinding((opts, value) -> {
                             opts.inactivityFpsLimit().set(value);
-                        }, opts -> opts.inactivityFpsLimit.get())
+                        }, opts -> opts.inactivityFpsLimit().get())
                         .build())
                 *///?}
                 .build());
