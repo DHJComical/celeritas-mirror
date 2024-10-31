@@ -6,6 +6,7 @@ for version in $(cat settings.gradle  | grep "vers(" | sed 's/\w*vers("//' | sed
 
 echo "Building ${version}"
 
-./gradlew --no-daemon :"Set active version to ${version}"
-./gradlew --no-daemon packageActive
+./gradlew "Set active project to ${version}"
+./gradlew :${version}:packageActive
+./gradlew --stop
 done
