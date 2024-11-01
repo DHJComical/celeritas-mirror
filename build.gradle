@@ -1,5 +1,6 @@
 import bs.ModLoader
 import bs.SemverUtils
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import org.embeddedt.embeddium.gradle.DiscordNotifier
@@ -13,6 +14,9 @@ import static bs.ModLoader.NEOFORGE
 plugins {
     id 'java'
     id 'embeddium-fabric-remapper' apply false
+
+    id "com.gradleup.shadow" version "8.3.0"
+    id "xyz.wagyourtail.jvmdowngrader" version "1.1.3"
 }
 
 group = rootProject.properties.mod_package
@@ -171,6 +175,7 @@ dependencies {
                     implementation(include("io.github.llamalad7:mixinextras-$loader.friendlyName:$rootProject.properties.mixinextras"))
                 } else {
                     implementation("io.github.llamalad7:mixinextras-common:$rootProject.properties.mixinextras")
+                    shadow("io.github.llamalad7:mixinextras-common:$rootProject.properties.mixinextras")
                 }
             }
 
@@ -271,9 +276,26 @@ processResources {
     }
 }
 
+tasks.named("shadowJar", ShadowJar).configure {
+    archiveClassifier = "dev-shadow"
+    configurations = [project.configurations.shadow]
+    relocate("com.llamalad7.mixinextras", "org.embeddedt.embeddium.impl.shadow.mixinextras")
+    relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml")
+    mergeServiceFiles()
+
+    from("COPYING", "COPYING.LESSER", "README.md")
+}
+
 remapJar {
     if (loader == FORGE || loader == NEOFORGE) {
         atAccessWideners.add("${rootProject.properties.mod_id}.accesswidener")
+    }
+    if(stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
+        dependsOn("shadeDowngradedApi")
+        inputFile = tasks.getByName("shadeDowngradedApi").archiveFile.get()
+    } else {
+        dependsOn("shadowJar")
+        inputFile = tasks.getByName("shadowJar").archiveFile.get()
     }
 }
 
