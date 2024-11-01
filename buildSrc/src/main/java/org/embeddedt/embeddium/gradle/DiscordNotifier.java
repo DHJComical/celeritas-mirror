@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.gradle;
 import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.send.WebhookMessage;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
+import com.google.common.collect.Lists;
 import org.gradle.api.Project;
 
 import java.io.ByteArrayInputStream;
@@ -12,7 +13,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class DiscordNotifier {
     private static final String URL;
@@ -54,25 +58,39 @@ public class DiscordNotifier {
         return executeCommand("git", "archive", "--format=zip", "HEAD");
     }
 
+    private static WebhookMessageBuilder makeBuilder() {
+        return new WebhookMessageBuilder()
+                .setUsername("Embeddium Test Builds") // use this username
+                .setAvatarUrl("https://raw.githubusercontent.com/FiniteReality/embeddium/master/src/main/resources/icon.png"); // use this avatar
+    }
+
     public static void publishEmbeddiumJar(Project project) {
         if(URL != null) {
             List<File> jars;
             File libsDir = new File(project.getRootDir(), "build/libs/" + project.getVersion().toString());
             if (libsDir.isDirectory()) {
-                jars = Arrays.stream(libsDir.listFiles()).filter(File::isFile).toList();
+                jars = Arrays.stream(libsDir.listFiles()).filter(File::isFile).collect(Collectors.toCollection(ArrayList::new));
+                jars.sort(Comparator.comparing(File::getName));
             } else {
                 throw new IllegalStateException("Cannot find " + libsDir.toString());
             }
             try(WebhookClient client = WebhookClient.withUrl(URL)) {
-                var builder = new WebhookMessageBuilder()
-                        .setUsername("Embeddium Test Builds") // use this username
-                        .setAvatarUrl("https://raw.githubusercontent.com/FiniteReality/embeddium/master/src/main/resources/icon.png") // use this avatar
-                        .setContent(getLastCommitInfo());
-                jars.forEach(builder::addFile);
-                var message = builder
-                        .addFile("embeddium-" + project.getVersion() + "-sources.zip", getSourceTarball())
-                        .build();
-                client.onThread(TEST_BUILD_THREAD).send(message);
+                CompletableFuture<?> future = client.onThread(TEST_BUILD_THREAD).send(makeBuilder()
+                        .setContent(getLastCommitInfo()).build());
+                var partitionList = Lists.partition(jars, 10);
+                for(var partition : partitionList) {
+                    future = future.thenCompose(v -> {
+                        var builder = makeBuilder();
+                        partition.forEach(builder::addFile);
+                        return client.onThread(TEST_BUILD_THREAD).send(builder.build());
+                    });
+                }
+                future = future.thenCompose(v -> {
+                    var builder = makeBuilder();
+                    return client.onThread(TEST_BUILD_THREAD)
+                            .send(builder.addFile("embeddium-" + project.getVersion() + "-sources.zip", getSourceTarball()).build());
+                });
+                future.join();
             }
         } else {
             throw new IllegalStateException("No webhook found");

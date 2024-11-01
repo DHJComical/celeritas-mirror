@@ -326,6 +326,12 @@ if (stonecutter.current.isActive) {
         group = "project"
         dependsOn("packageJar")
     }
+    tasks.register("publishPackagesToDiscord") {
+        outputs.upToDateWhen { false }
+        doLast {
+            DiscordNotifier.publishEmbeddiumJar(project)
+        }
+    }
 }
 
 stonecutter.swap("gui_render_method") {

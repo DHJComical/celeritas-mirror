@@ -17,10 +17,3 @@ stonecutter.registerChiseled tasks.register("chiseledPackage", stonecutter.chise
     group = "project"
     ofTask("packageJar")
 }
-
-tasks.register("publishPackagesToDiscord") {
-    outputs.upToDateWhen { false }
-    doLast {
-        DiscordNotifier.publishEmbeddiumJar(project)
-    }
-}
