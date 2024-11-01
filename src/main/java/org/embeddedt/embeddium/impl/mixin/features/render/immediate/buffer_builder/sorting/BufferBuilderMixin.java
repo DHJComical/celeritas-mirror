@@ -1,8 +1,6 @@
 
 package org.embeddedt.embeddium.impl.mixin.features.render.immediate.buffer_builder.sorting;
 
-//? if >=1.18 <1.21 {
-
 import com.llamalad7.mixinextras.sugar.Local;
 import org.jetbrains.annotations.Nullable;
 //? if >=1.20 {
@@ -26,6 +24,7 @@ import java.nio.ByteBuffer;
 
 @Mixin(BufferBuilder.class)
 public abstract class BufferBuilderMixin {
+    //? if >=1.18 <1.21 {
     @Shadow
     private ByteBuffer buffer;
 
@@ -41,6 +40,7 @@ public abstract class BufferBuilderMixin {
 
     @Shadow
     private VertexFormat format;
+    //? }
 
     //? if >=1.19 {
     @Shadow
@@ -60,6 +60,7 @@ public abstract class BufferBuilderMixin {
      * @author JellySquid
      * @reason Avoid slow memory accesses
      */
+    //? if >=1.18 <1.21 {
     @Overwrite
     private Vector3f[] makeQuadSortingPoints() {
         int vertexStride = this.format.getVertexSize();
@@ -90,8 +91,9 @@ public abstract class BufferBuilderMixin {
 
         return centers;
     }
+    //? }
 
-    //? if >=1.20 {
+    //? if >=1.20 <1.21 {
     
     @Overwrite
     private void putSortedQuadIndices(VertexFormat.IndexType indexType) {
@@ -100,14 +102,21 @@ public abstract class BufferBuilderMixin {
             this.writePrimitiveIndices(indexType, indices);
         }
     }
-    //?} else {
-    /*/^@Inject(method = "putSortedQuadIndices", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferBuilder;intConsumer(" + /^? if >=1.19 {^/ "I" + *//*?}*/ "Lcom/mojang/blaze3d/vertex/VertexFormat$IndexType;)Lit/unimi/dsi/fastutil/ints/IntConsumer;"), cancellable = true)
+    //?} else if >=1.19 <1.21 {
+    /*@Inject(method = "putSortedQuadIndices", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferBuilder;intConsumer(ILcom/mojang/blaze3d/vertex/VertexFormat$IndexType;)Lit/unimi/dsi/fastutil/ints/IntConsumer;"), cancellable = true)
+    private void putSortedQuadIndices(VertexFormat.IndexType indexType, CallbackInfo ci, @Local(ordinal = 0) int[] indices) {
+        ci.cancel();
+        this.writePrimitiveIndices(indexType, indices);
+    }
+    *///?} else if >=1.18 <1.21 {
+    /*@Inject(method = "putSortedQuadIndices", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferBuilder;intConsumer(Lcom/mojang/blaze3d/vertex/VertexFormat$IndexType;)Lit/unimi/dsi/fastutil/ints/IntConsumer;"), cancellable = true)
     private void putSortedQuadIndices(VertexFormat.IndexType indexType, CallbackInfo ci, @Local(ordinal = 0) int[] indices) {
         ci.cancel();
         this.writePrimitiveIndices(indexType, indices);
     }
     *///?}
 
+    //? if >=1.18 <1.21 {
     @Unique
     private static final int[] VERTEX_ORDER = new int[] { 0, 1, 2, 2, 3, 0 };
 
@@ -148,6 +157,5 @@ public abstract class BufferBuilderMixin {
             }
         }
     }
+    //? }
 }
-
-//?}
