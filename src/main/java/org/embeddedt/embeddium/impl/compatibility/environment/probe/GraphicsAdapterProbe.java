@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.compatibility.environment.probe;
 
+//? if >=1.18 {
+
 import org.embeddedt.embeddium.impl.compatibility.environment.OSInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,3 +111,4 @@ public class GraphicsAdapterProbe {
         return ADAPTERS;
     }
 }
+//?}

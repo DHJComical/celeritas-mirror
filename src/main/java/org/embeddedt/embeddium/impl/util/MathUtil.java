@@ -11,4 +11,8 @@ public class MathUtil {
     public static long toMib(long bytes) {
         return bytes / (1024L * 1024L); // 1 MiB = 1048576 (2^20) bytes
     }
+
+    public static int roundToward(int value, int factor) {
+        return -Math.floorDiv(-value, factor) * factor;
+    }
 }

@@ -41,8 +41,14 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
     @Shadow
     protected abstract void ensureCapacity(int size);
 
+    //? if >=1.17 {
     @Shadow
     private VertexFormat.Mode mode;
+    //?} else {
+    /*@Shadow
+    private int mode;
+    *///?}
+
     @Unique
     private VertexFormatDescription format;
 
@@ -166,7 +172,10 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
 
     @Unique
     private boolean shouldDuplicateVertices() {
+        //? if >=1.18 {
         return this.mode == VertexFormat.Mode.LINES || this.mode == VertexFormat.Mode.LINE_STRIP;
+        //?} else
+        /*return false;*/
     }
 
     @Unique

@@ -138,11 +138,15 @@ dependencies {
             if (rootProject.properties.include_fabric_api_modules == "true") {
                 throw new RuntimeException("You can't include the entirety of Fabric API!")
             }
-            modApi "net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabric_api_version")}"
+            modApi "net.fabricmc.fabric-api:fabric-api:${versionedProperty("fabric_api_version")}", {
+                exclude group: 'net.fabricmc', module: 'fabric-loader'
+            }
         } else {
             for (String module in rootProject.properties.fabric_api_modules.split(",") as String[]) {
                 var dep = fabricApi.module(module, versionedProperty("fabric_api_version"))
-                modApi dep
+                modApi dep, {
+                    exclude group: 'net.fabricmc', module: 'fabric-loader'
+                }
                 if (rootProject.properties.include_fabric_api_modules == "true") {
                     include(dep)
                 }

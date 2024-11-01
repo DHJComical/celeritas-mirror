@@ -46,11 +46,16 @@ public class ChunkShaderInterface {
 
     @Deprecated(forRemoval = true) // should be handled properly in GFX instead.
     private void bindTexture(ChunkShaderTextureSlot slot, int textureId) {
+        var uniform = this.uniformTextures.get(slot);
+
+        //? if >=1.17 {
         GlStateManager._activeTexture(GL32C.GL_TEXTURE0 + slot.ordinal());
         GlStateManager._bindTexture(textureId);
 
-        var uniform = this.uniformTextures.get(slot);
         uniform.setInt(slot.ordinal());
+        //?} else {
+        /*uniform.setInt(textureId);
+        *///?}
     }
 
     public void setProjectionMatrix(Matrix4fc matrix) {

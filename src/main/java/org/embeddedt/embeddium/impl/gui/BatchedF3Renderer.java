@@ -8,6 +8,7 @@ import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import org.lwjgl.opengl.GL20C;
 
 import java.util.List;
 
@@ -59,9 +60,12 @@ public class BatchedF3Renderer {
         float k = (float) (color & 255) / 255.0F;
 
         BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        //? if >=1.17 {
+        /^bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        ^///?} else
+        bufferBuilder.begin(GL20C.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         Matrix4f matrix = matrixStack.last()
                 .pose();

@@ -2,12 +2,11 @@ package org.embeddedt.embeddium.impl.render.vertex.serializers;
 
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
+import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.render.vertex.serializers.generated.VertexSerializerFactory;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
 import org.embeddedt.embeddium.api.vertex.serializer.VertexSerializer;
 import org.embeddedt.embeddium.api.vertex.serializer.VertexSerializerRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -17,8 +16,6 @@ import java.nio.file.Path;
 import java.util.concurrent.locks.StampedLock;
 
 public class VertexSerializerRegistryImpl implements VertexSerializerRegistry {
-    private static final Logger LOGGER = LoggerFactory.getLogger(VertexSerializerRegistryImpl.class);
-
     private static final Path CLASS_DUMP_PATH;
 
     static {
@@ -119,7 +116,7 @@ public class VertexSerializerRegistryImpl implements VertexSerializerRegistry {
         try {
             Files.write(path, bytecode.copy());
         } catch (IOException e) {
-            LOGGER.warn("Could not dump bytecode to location: {}", path, e);
+            SodiumClientMod.logger().warn("Could not dump bytecode to location: {}", path, e);
         }
     }
 

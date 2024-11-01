@@ -23,7 +23,7 @@ public class VanillaBooleanOptionBinding implements OptionBinding<Options, Boole
         return this.option.get();
     }
 }
-//?} else {
+//?} else if >=1.18 {
 /*import net.minecraft.client.CycleOption;
 
 public class VanillaBooleanOptionBinding implements OptionBinding<Options, Boolean> {
@@ -41,6 +41,26 @@ public class VanillaBooleanOptionBinding implements OptionBinding<Options, Boole
     @Override
     public Boolean getValue(Options storage) {
         return this.option.getter.apply(storage);
+    }
+}
+*///?} else {
+/*import net.minecraft.client.BooleanOption;
+
+public class VanillaBooleanOptionBinding implements OptionBinding<Options, Boolean> {
+    private final BooleanOption option;
+
+    public VanillaBooleanOptionBinding(BooleanOption option) {
+        this.option = option;
+    }
+
+    @Override
+    public void setValue(Options storage, Boolean value) {
+        this.option.set(storage, value.toString());
+    }
+
+    @Override
+    public Boolean getValue(Options storage) {
+        return this.option.get(storage);
     }
 }
 *///?}

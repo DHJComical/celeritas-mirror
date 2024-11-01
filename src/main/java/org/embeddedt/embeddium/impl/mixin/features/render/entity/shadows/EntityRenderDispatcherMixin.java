@@ -18,6 +18,7 @@ import org.embeddedt.embeddium.api.util.ColorABGR;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.embeddedt.embeddium.api.math.MatrixHelper;
+import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -152,6 +153,6 @@ public class EntityRenderDispatcherMixin {
         float zt = matPosition.transformVecZ(x, y, z);
     *///?}
 
-        ModelVertex.write(ptr, xt, yt, zt, color, u, v, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, normal);
+        ModelVertex.write(ptr, xt, yt, zt, color, u, v, LightDataAccess.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, normal);
     }
 }

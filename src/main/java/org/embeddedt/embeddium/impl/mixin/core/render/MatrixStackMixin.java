@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.core.render;
 
+import org.embeddedt.embeddium.api.math.Matrix4fExtended;
 import org.embeddedt.embeddium.impl.render.matrix_stack.CachingPoseStack;
 //? if >=1.20 {
 import org.joml.Matrix3f;
@@ -41,8 +42,11 @@ public abstract class MatrixStackMixin implements CachingPoseStack {
             //? if >=1.20 {
             entry.pose().set(prev.pose());
             entry.normal().set(prev.normal());
-            //?} else {
+            //?} else if >=1.18 {
             /*entry.pose().load(prev.pose());
+            entry.normal().load(prev.normal());
+            *///?} else {
+            /*Matrix4fExtended.get(entry.pose()).embeddium$load(prev.pose());
             entry.normal().load(prev.normal());
             *///?}
         } else {

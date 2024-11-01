@@ -1,7 +1,7 @@
 
 package org.embeddedt.embeddium.impl.mixin.features.render.immediate.buffer_builder.sorting;
 
-//? if <1.21 {
+//? if >=1.18 <1.21 {
 
 import com.llamalad7.mixinextras.sugar.Local;
 import org.jetbrains.annotations.Nullable;
@@ -92,11 +92,7 @@ public abstract class BufferBuilderMixin {
     }
 
     //? if >=1.20 {
-
-    /**
-     * @author JellySquid
-     * @reason Use direct memory access, avoid indirection
-     */
+    
     @Overwrite
     private void putSortedQuadIndices(VertexFormat.IndexType indexType) {
         if (this.sorting != null) {
@@ -105,11 +101,7 @@ public abstract class BufferBuilderMixin {
         }
     }
     //?} else {
-    /*/^*
-     * @author JellySquid
-     * @reason Use direct memory access, avoid indirection
-     ^/
-    @Inject(method = "putSortedQuadIndices", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferBuilder;intConsumer(" + /^? if >=1.19 {^/ /^"I" + ^//^?}^/ "Lcom/mojang/blaze3d/vertex/VertexFormat$IndexType;)Lit/unimi/dsi/fastutil/ints/IntConsumer;"), cancellable = true)
+    /*@Inject(method = "putSortedQuadIndices", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferBuilder;intConsumer(" + /^? if >=1.19 {^/ "I" + /^?}^/ "Lcom/mojang/blaze3d/vertex/VertexFormat$IndexType;)Lit/unimi/dsi/fastutil/ints/IntConsumer;"), cancellable = true)
     private void putSortedQuadIndices(VertexFormat.IndexType indexType, CallbackInfo ci, @Local(ordinal = 0) int[] indices) {
         ci.cancel();
         this.writePrimitiveIndices(indexType, indices);

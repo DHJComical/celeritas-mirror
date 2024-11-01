@@ -37,8 +37,13 @@ import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
 import org.embeddedt.embeddium.impl.commands.DevCommands;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
+//? if >=1.18 {
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+//?} else {
+/*import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+*///?}
 
 import java.io.IOException;
 
@@ -49,7 +54,10 @@ public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer
     public static final String MODID = EmbeddiumConstants.MODID;
     public static final String MODNAME = EmbeddiumConstants.MODNAME;
 
+    //? if >=1.18 {
     private static final Logger LOGGER = LoggerFactory.getLogger(MODNAME);
+    //?} else
+    /*private static final Logger LOGGER = LogManager.getLogger(MODNAME);*/
     private static SodiumGameOptions CONFIG = loadConfig();
 
     private static String MOD_VERSION;

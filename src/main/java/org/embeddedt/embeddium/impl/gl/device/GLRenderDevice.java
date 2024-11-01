@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.gl.device;
 
+import com.mojang.blaze3d.vertex.VertexBuffer;
 import org.embeddedt.embeddium.impl.gl.array.GlVertexArray;
 import org.embeddedt.embeddium.impl.gl.buffer.*;
 import org.embeddedt.embeddium.impl.gl.functions.DeviceFunctions;
@@ -34,7 +35,10 @@ public class GLRenderDevice implements RenderDevice {
             return;
         }
 
+        //? if >=1.18 {
         BufferUploader.reset();
+        //?} else
+        /*VertexBuffer.unbind();*/
 
         this.stateTracker.clear();
         this.isActive = true;
@@ -45,6 +49,9 @@ public class GLRenderDevice implements RenderDevice {
         if (!this.isActive) {
             return;
         }
+
+        //? if <1.18
+        /*VertexBuffer.unbind();*/
 
         this.stateTracker.clear();
         this.isActive = false;

@@ -4,6 +4,8 @@ package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 /*import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;*/
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.level.block.HalfTransparentBlock;
+import net.minecraft.world.level.block.LeavesBlock;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
@@ -42,6 +44,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.GlobalChunkBuildContext
 import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 //? if forgelike
 import org.embeddedt.embeddium.impl.render.fluid.EmbeddiumFluidSpriteCache;
+//? if >=1.18
 import org.embeddedt.embeddium.impl.tags.EmbeddiumTags;
 
 import java.util.Objects;
@@ -156,7 +159,7 @@ public class FluidRenderer {
         var context = Objects.requireNonNull(GlobalChunkBuildContext.get());
         context.setCaptureAdditionalSprites(true);
         try(var consumer = buffers.asVertexConsumer(material)) {
-            Minecraft.getInstance().getBlockRenderer().renderLiquid(blockPos, world, consumer, world.getBlockState(blockPos), fluidState);
+            Minecraft.getInstance().getBlockRenderer().renderLiquid(blockPos, world, consumer, /*? if >=1.18 {*/ world.getBlockState(blockPos),/*?}*/ fluidState);
         }
 
         var sprites = context.getAdditionalCapturedSprites();
@@ -181,10 +184,12 @@ public class FluidRenderer {
         // TODO support custom fabric fluid rendering
 
         // Embeddium: Delegate to vanilla liquid renderer if fluid has this tag.
+        //? if >=1.18 {
         if(fluidState.getType().is(EmbeddiumTags.RENDERS_WITH_VANILLA)) {
             renderVanilla(world, fluidState, blockPos, meshBuilder, material);
             return;
         }
+        //?}
 
         int posX = blockPos.getX();
         int posY = blockPos.getY();
@@ -456,8 +461,10 @@ public class FluidRenderer {
                     if (sprites[2] != null &&
                             /*? if forgelike {*/
                             adjBlock.shouldDisplayFluidOverlay(world, adjPos, fluidState)
-                            /*?} else {*/
+                            /*?} else if >=1.18 {*/
                             /*FluidRenderHandlerRegistry.INSTANCE.isBlockTransparent(adjBlock.getBlock())
+                            *//*?} else {*/
+                            /*adjBlock.getBlock() instanceof HalfTransparentBlock || adjBlock.getBlock() instanceof LeavesBlock
                             *//*?}*/) {
                         sprite = sprites[2];
                         isOverlay = true;

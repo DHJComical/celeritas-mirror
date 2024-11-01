@@ -177,6 +177,8 @@ public abstract class LightDataAccess {
         return LightTexture.pack(Math.max(unpackBL(word), unpackLU(word)), unpackSL(word));
     }
 
+    public static final int FULL_BRIGHT = LightTexture.pack(15, 15);
+
     /**
      * Like {@link #getLightmap(int)}, but checks {@link #unpackEM(int)} first and returns
      * the {@link LightTexture#FULL_BRIGHT fullbright lightmap} if emissive.
@@ -186,7 +188,7 @@ public abstract class LightDataAccess {
      */
     public static int getEmissiveLightmap(int word) {
         if (unpackEM(word)) {
-            return LightTexture.FULL_BRIGHT;
+            return FULL_BRIGHT;
         } else {
             return getLightmap(word);
         }

@@ -21,6 +21,7 @@ import net.minecraft.server.level.progress.StoringChunkProgressListener;
 *///?} else
 import net.minecraft.world.level.chunk.ChunkStatus;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL20C;
 import org.lwjgl.system.MemoryStack;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -63,17 +64,23 @@ public class LevelLoadingScreenMixin {
         Matrix4f matrix = drawContext.pose().last().pose();
     //?} else {
     /*private static void renderChunks(PoseStack matrices, StoringChunkProgressListener tracker, int mapX, int mapY, int mapScale, int mapPadding, CallbackInfo ci) {
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        //? if >=1.17
+        /^RenderSystem.setShader(GameRenderer::getPositionColorShader);^/
 
         Matrix4f matrix = JomlHelper.copy(matrices.last().pose());
 
         Tesselator tessellator = Tesselator.getInstance();
 
         RenderSystem.enableBlend();
+        //? if <1.17
+        RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
 
         BufferBuilder bufferBuilder = tessellator.getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        //? if >=1.17 {
+        /^bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        ^///?} else
+        bufferBuilder.begin(GL20C.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         var writer = VertexBufferWriter.of(bufferBuilder);
     *///?}

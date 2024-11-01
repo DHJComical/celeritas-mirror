@@ -84,6 +84,8 @@ public interface Matrix4fExtended {
 
     float getA33();
 
+    void embeddium$load(Matrix4f matrix);
+
     @Contract(pure = true)
     static Matrix4fExtended get(Matrix4f matrix) {
         return (Matrix4fExtended)(Object)matrix;

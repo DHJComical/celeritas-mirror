@@ -5,7 +5,11 @@ import it.unimi.dsi.fastutil.ints.Int2ReferenceMaps;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceOpenHashMap;
 import lombok.Getter;
 import net.minecraft.Util;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.world.level.chunk.*;
 import org.embeddedt.embeddium.impl.model.ModelDataSnapshotter;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
+import org.embeddedt.embeddium.impl.world.ChunkBiomeContainerExtended;
 import org.embeddedt.embeddium.impl.world.ReadableContainerExtended;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 //? if ffapi {
@@ -15,6 +19,7 @@ import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 /^import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;^/
 *///?}
 import net.minecraft.core.BlockPos;
+//? if >=1.18.2
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.Level;
@@ -24,10 +29,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.DataLayer;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.level.levelgen.DebugLevelSource;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.jetbrains.annotations.NotNull;
@@ -36,15 +37,21 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 
 public class ClonedChunkSection {
+    //? if >=1.18 {
+    private static final int DATA_LAYER_COUNT = DataLayer.LAYER_COUNT;
+    //?} else {
+    /*private static final int DATA_LAYER_COUNT = 16;
+    *///?}
+
     //? if >=1.20 {
     private static final DataLayer DEFAULT_SKY_LIGHT_ARRAY = new DataLayer(15);
     private static final DataLayer DEFAULT_BLOCK_LIGHT_ARRAY = new DataLayer(0);
     //?} else {
     /*private static final DataLayer DEFAULT_SKY_LIGHT_ARRAY = Util.make(() -> {
         var layer = new DataLayer();
-        for(int y = 0; y < DataLayer.LAYER_COUNT; y++) {
-            for(int z = 0; z < DataLayer.LAYER_COUNT; z++) {
-                for(int x = 0; x < DataLayer.LAYER_COUNT; x++) {
+        for(int y = 0; y < DATA_LAYER_COUNT; y++) {
+            for(int z = 0; z < DATA_LAYER_COUNT; z++) {
+                for(int x = 0; x < DATA_LAYER_COUNT; x++) {
                     layer.set(x, y, z, 15);
                 }
             }
@@ -53,7 +60,13 @@ public class ClonedChunkSection {
     });
     private static final DataLayer DEFAULT_BLOCK_LIGHT_ARRAY = new DataLayer();
     *///?}
+
+    //? if >=1.18 {
     private static final PalettedContainer<BlockState> DEFAULT_STATE_CONTAINER = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
+    //?} else {
+    /*private static final GlobalPalette<BlockState> GLOBAL_STATE_PALETTE = new GlobalPalette(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState());
+    private static final PalettedContainer<BlockState> DEFAULT_STATE_CONTAINER = new PalettedContainer<>(GLOBAL_STATE_PALETTE, Block.BLOCK_STATE_REGISTRY, NbtUtils::readBlockState, NbtUtils::writeBlockState, Blocks.AIR.defaultBlockState());
+    *///?}
     private static final boolean HAS_FABRIC_RENDER_DATA;
 
     private final SectionPos pos;
@@ -67,7 +80,13 @@ public class ClonedChunkSection {
 
     private final @Nullable PalettedContainer<BlockState> blockData;
 
+    //? if >=1.18.2
     private final @Nullable PalettedContainer<Holder<Biome>> biomeData;
+
+    //? if <1.18 {
+    /*@Getter
+    private final @Nullable ChunkBiomeContainer biomeData;
+    *///?}
 
     private long lastUsedTimestamp = Long.MAX_VALUE;
 
@@ -92,13 +111,16 @@ public class ClonedChunkSection {
         this.pos = pos;
 
         PalettedContainer<BlockState> blockData = null;
+        //? if >=1.18 {
         PalettedContainer<Holder<Biome>> biomeData = null;
+        //?} else
+        /*ChunkBiomeContainer biomeData = null;*/
 
         Int2ReferenceMap<BlockEntity> blockEntityMap = null;
         Int2ReferenceMap<Object> blockEntityRenderDataMap = null;
 
         if (section != null) {
-            if (!section.hasOnlyAir()) {
+            if (!WorldUtil.isSectionEmpty(section)) {
                 if (!world.isDebug()) {
                     blockData = ReadableContainerExtended.clone(section.getStates());
                 } else {
@@ -111,8 +133,12 @@ public class ClonedChunkSection {
                 }
             }
 
+            //? if >=1.18
             biomeData = ReadableContainerExtended.clone((PalettedContainer<Holder<Biome>>)section.getBiomes());
         }
+
+        //? if <1.18
+        /*biomeData = ChunkBiomeContainerExtended.clone(chunk.getBiomes());*/
 
         this.blockData = blockData;
         this.biomeData = biomeData;
@@ -136,7 +162,11 @@ public class ClonedChunkSection {
             return DEFAULT_STATE_CONTAINER;
 
         // We use swapUnsafe in the loops to avoid acquiring/releasing the lock on each iteration
+        //? if >=1.18 {
         var container = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
+        //?} else
+        /*var container = new PalettedContainer<>(GLOBAL_STATE_PALETTE, Block.BLOCK_STATE_REGISTRY, NbtUtils::readBlockState, NbtUtils::writeBlockState, Blocks.AIR.defaultBlockState());*/
+
         if (pos.getY() == 3) {
             // Set the blocks at relative Y 12 (world Y 60) to barriers
             BlockState barrier = Blocks.BARRIER.defaultBlockState();
@@ -149,7 +179,7 @@ public class ClonedChunkSection {
             // Set the blocks at relative Y 6 (world Y 70) to the appropriate state from the generator
             for (int z = 0; z < 16; z++) {
                 for (int x = 0; x < 16; x++) {
-                    container.getAndSetUnchecked(x, 6, z, DebugLevelSource.getBlockStateFor(SectionPos.sectionToBlockCoord(pos.getX(), x), SectionPos.sectionToBlockCoord(pos.getZ(), z)));
+                    container.getAndSetUnchecked(x, 6, z, DebugLevelSource.getBlockStateFor(WorldUtil.sectionToBlockCoord(pos.getX(), x), WorldUtil.sectionToBlockCoord(pos.getZ(), z)));
                 }
             }
         }
@@ -264,9 +294,11 @@ public class ClonedChunkSection {
         return this.blockData;
     }
 
+    //? if >=1.18.2 {
     public @Nullable PalettedContainer<Holder<Biome>> getBiomeData() {
         return this.biomeData;
     }
+    //?}
 
     public @Nullable Int2ReferenceMap<BlockEntity> getBlockEntityMap() {
         return this.blockEntityMap;

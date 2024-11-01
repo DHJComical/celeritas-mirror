@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.world.sky;
 
+//? if >=1.18.2 {
 import org.embeddedt.embeddium.impl.util.color.FastCubicSampler;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.CubicSampler;
@@ -20,3 +21,4 @@ public class ClientWorldMixin {
         return FastCubicSampler.sampleColor(pos, (x, y, z) -> world.getNoiseBiome(x, y, z).value().getSkyColor(), Function.identity());
     }
 }
+//?}

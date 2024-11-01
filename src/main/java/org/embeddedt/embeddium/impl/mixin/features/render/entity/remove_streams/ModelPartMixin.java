@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.entity.remove_streams;
 
+//? if >=1.18 {
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.model.geom.ModelPart;
@@ -67,3 +68,4 @@ public class ModelPartMixin implements ModelPartExtended {
         return embeddium$getPartsList().stream();
     }
 }
+//?}

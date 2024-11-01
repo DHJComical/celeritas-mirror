@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.workarounds.context_creation;
 
+//? if >=1.18 {
 import org.embeddedt.embeddium.impl.compatibility.checks.ModuleScanner;
 import org.embeddedt.embeddium.impl.compatibility.checks.LateDriverScanner;
 import net.minecraft.Util;
@@ -73,3 +74,5 @@ public class WindowMixin {
         this.wglPrevContext = context;
     }
 }
+
+//?}

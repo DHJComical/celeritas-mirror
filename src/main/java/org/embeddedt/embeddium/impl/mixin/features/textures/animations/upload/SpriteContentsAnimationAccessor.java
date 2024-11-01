@@ -5,6 +5,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.List;
 
+//? if >=1.18 {
+
 //? if >=1.20 {
 import net.minecraft.client.renderer.texture.SpriteContents;
 
@@ -24,3 +26,5 @@ public interface SpriteContentsAnimationAccessor {
     @Accessor
     int getFrameRowSize();
 }
+
+//?}

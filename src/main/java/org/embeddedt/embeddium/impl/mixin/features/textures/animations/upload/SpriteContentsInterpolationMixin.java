@@ -101,7 +101,7 @@ public class SpriteContentsInterpolationMixin {
         ((SpriteContentsInvoker) this.parent).invokeUpload(x, y, 0, 0, this.activeFrame);
     }
 }
-//?} else {
+//?} else if >=1.18 {
 /*import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.api.util.ColorMixer;
 import org.lwjgl.system.MemoryUtil;

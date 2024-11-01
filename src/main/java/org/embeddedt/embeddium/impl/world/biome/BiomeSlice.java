@@ -6,8 +6,10 @@ import org.embeddedt.embeddium.impl.world.BiomeSeedProvider;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
 import net.minecraft.client.multiplayer.ClientLevel;
+//? if >=1.18.2 {
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
+//?}
 //? if >=1.20
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.LinearCongruentialGenerator;
@@ -20,8 +22,11 @@ public class BiomeSlice {
     private static final int SIZE = 3 * 4; // 3 chunks * 4 biomes per chunk
 
     // Arrays are in ZYX order
+    //? if >=1.18.2 {
     @SuppressWarnings("unchecked")
     private final Holder<Biome>[] biomes = new Holder[SIZE * SIZE * SIZE];
+    //?} else
+    /*private final Biome[] biomes = new Biome[SIZE * SIZE * SIZE];*/
     private final boolean[] uniform = new boolean[SIZE * SIZE * SIZE];
     private final BiasMap bias = new BiasMap();
 
@@ -29,9 +34,19 @@ public class BiomeSlice {
 
     private int worldX, worldY, worldZ;
 
+    private final boolean is3D;
+
+    public BiomeSlice() {
+        this(true);
+    }
+
+    public BiomeSlice(boolean is3D) {
+        this.is3D = is3D;
+    }
+
     public void update(ClientLevel world, ChunkRenderContext context) {
         this.worldX = context.getOrigin().minBlockX() - 16;
-        this.worldY = context.getOrigin().minBlockY() - 16;
+        this.worldY = (this.is3D ? context.getOrigin().minBlockY() : 0) - 16;
         this.worldZ = context.getOrigin().minBlockZ() - 16;
 
         this.biomeSeed = BiomeSeedProvider.getBiomeSeed(world);
@@ -43,6 +58,7 @@ public class BiomeSlice {
     }
 
     private void copyBiomeData(Level world, ChunkRenderContext context) {
+        //? if >=1.18 {
         var defaultValue = world.registryAccess()
                 //? if <1.21.2 {
                 //? if <1.20
@@ -55,6 +71,8 @@ public class BiomeSlice {
                 .getOrThrow(Biomes.PLAINS);
                 *///?}
 
+        //?} else
+        /*Object defaultValue = null;*/
         for (int sectionX = 0; sectionX < 3; sectionX++) {
             for (int sectionY = 0; sectionY < 3; sectionY++) {
                 for (int sectionZ = 0; sectionZ < 3; sectionZ++) {
@@ -64,7 +82,7 @@ public class BiomeSlice {
         }
     }
 
-    private void copySectionBiomeData(ChunkRenderContext context, int sectionX, int sectionY, int sectionZ, Holder<Biome> defaultBiome) {
+    private void copySectionBiomeData(ChunkRenderContext context, int sectionX, int sectionY, int sectionZ, /*? if >=1.18.2 {*/ Holder<Biome> defaultBiome /*?} else {*/ /*Object dummy *//*?}*/) {
         var section = context.getSections()[WorldSlice.getLocalSectionIndex(sectionX, sectionY, sectionZ)];
         var biomeData = section.getBiomeData();
 
@@ -77,11 +95,18 @@ public class BiomeSlice {
 
                     var idx = dataArrayIndex(biomeX, biomeY, biomeZ);
 
+                    //? if >=1.18 {
                     if (biomeData == null) {
                         this.biomes[idx] = defaultBiome;
                     } else {
                         this.biomes[idx] = biomeData.get(x, y, z);
                     }
+                    //?} else {
+                    /*int chunkX = x;
+                    int chunkY = y + sectionY * 4 + worldY / 4;
+                    int chunkZ = z;
+                    this.biomes[idx] = biomeData.getNoiseBiome(chunkX, chunkY, chunkZ);
+                    *///?}
                 }
             }
         }
@@ -137,7 +162,7 @@ public class BiomeSlice {
     }
 
     private boolean hasUniformNeighbors(int x, int y, int z) {
-        Biome biome = this.biomes[dataArrayIndex(x, y, z)].value();
+        Biome biome = this.biomes[dataArrayIndex(x, y, z)] /*? if >=1.18.2 {*/ .value() /*?}*/;
 
         int minX = x - 1, maxX = x + 1;
         int minY = y - 1, maxY = y + 1;
@@ -146,7 +171,7 @@ public class BiomeSlice {
         for (int adjX = minX; adjX <= maxX; adjX++) {
             for (int adjY = minY; adjY <= maxY; adjY++) {
                 for (int adjZ = minZ; adjZ <= maxZ; adjZ++) {
-                    if (this.biomes[dataArrayIndex(adjX, adjY, adjZ)].value() != biome) {
+                    if (this.biomes[dataArrayIndex(adjX, adjY, adjZ)]/*? if >=1.18.2 {*/ .value() /*?}*/ != biome) {
                         return false;
                     }
                 }
@@ -155,8 +180,7 @@ public class BiomeSlice {
 
         return true;
     }
-
-    public Holder<Biome> getBiome(int x, int y, int z) {
+    public /*? if >=1.18.2 {*/ Holder<Biome> /*?} else {*/ /*Biome *//*?}*/ getBiome(int x, int y, int z) {
         int relX = x - this.worldX;
         int relY = y - this.worldY;
         int relZ = z - this.worldZ;
@@ -173,7 +197,7 @@ public class BiomeSlice {
         return this.getBiomeUsingVoronoi(relX, relY, relZ);
     }
 
-    private Holder<Biome> getBiomeUsingVoronoi(int worldX, int worldY, int worldZ) {
+    private /*? if >=1.18.2 {*/ Holder<Biome> /*?} else {*/ /*Biome *//*?}*/ getBiomeUsingVoronoi(int worldX, int worldY, int worldZ) {
         int x = worldX - 2;
         int y = worldY - 2;
         int z = worldZ - 2;

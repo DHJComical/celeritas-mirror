@@ -7,6 +7,8 @@ import net.minecraftforge.client.model.data.ModelData;
 /*import net.neoforged.neoforge.client.model.data.ModelData;*/
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.model.ModelDataSnapshotter;
+import org.embeddedt.embeddium.impl.util.MathUtil;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorCache;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorSource;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorView;
@@ -23,6 +25,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//? if >=1.18.2
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
@@ -78,7 +81,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     private static final int NEIGHBOR_BLOCK_RADIUS = 2;
 
     // The radius of chunks around the origin chunk that should be copied.
-    private static final int NEIGHBOR_CHUNK_RADIUS = Mth.roundToward(NEIGHBOR_BLOCK_RADIUS, 16) >> 4;
+    private static final int NEIGHBOR_CHUNK_RADIUS = MathUtil.roundToward(NEIGHBOR_BLOCK_RADIUS, 16) >> 4;
 
     // The number of sections on each axis of this slice.
     private static final int SECTION_ARRAY_LENGTH = 1 + (NEIGHBOR_CHUNK_RADIUS * 2);
@@ -127,13 +130,13 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
 
     public static ChunkRenderContext prepare(Level world, SectionPos origin, ClonedChunkSectionCache sectionCache) {
         LevelChunk chunk = world.getChunk(origin.getX(), origin.getZ());
-        LevelChunkSection section = chunk.getSections()[world.getSectionIndexFromSectionY(origin.getY())];
+        LevelChunkSection section = chunk.getSections()[WorldUtil.getSectionIndexFromSectionY(world, origin.getY())];
 
         // If the chunk section is absent or empty, simply terminate now. There will never be anything in this chunk
         // section to render, so we need to signal that a chunk render task shouldn't created. This saves a considerable
         // amount of time in queueing instant build tasks and greatly accelerates how quickly the world can be loaded.
         List<MeshAppender> meshAppenders = ChunkMeshEvent.post(world, origin);
-        boolean isEmpty = (section == null || section.hasOnlyAir()) && meshAppenders.isEmpty();
+        boolean isEmpty = WorldUtil.isSectionEmpty(section) && meshAppenders.isEmpty();
 
         if (isEmpty) {
             return null;
@@ -247,6 +250,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         } else {
             var bounds = context.getVolume();
 
+            //? if >=1.18 {
             int minBlockX = Math.max(bounds.minX(), pos.minBlockX());
             int maxBlockX = Math.min(bounds.maxX(), pos.maxBlockX());
 
@@ -255,6 +259,16 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
 
             int minBlockZ = Math.max(bounds.minZ(), pos.minBlockZ());
             int maxBlockZ = Math.min(bounds.maxZ(), pos.maxBlockZ());
+            //?} else {
+            /*int minBlockX = Math.max(bounds.x0, pos.minBlockX());
+            int maxBlockX = Math.min(bounds.x1, pos.maxBlockX());
+
+            int minBlockY = Math.max(bounds.y0, pos.minBlockY());
+            int maxBlockY = Math.min(bounds.y1, pos.maxBlockY());
+
+            int minBlockZ = Math.max(bounds.z0, pos.minBlockZ());
+            int maxBlockZ = Math.min(bounds.z1, pos.maxBlockZ());
+            *///?}
 
             container.sodium$unpack(blockArray, minBlockX & 15, minBlockY & 15, minBlockZ & 15,
                     maxBlockX & 15, maxBlockY & 15, maxBlockZ & 15);
@@ -380,17 +394,19 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         return this.biomeColors.getColor(resolver, pos.getX(), pos.getY(), pos.getZ());
     }
 
+    //? if >=1.18 {
     @Override
     public int getHeight() {
         return this.world.getHeight();
     }
+    //?}
 
-    //? if <1.21.2 {
+    //? if >=1.18 <1.21.2 {
     @Override
     public int getMinBuildHeight() {
         return this.world.getMinBuildHeight();
     }
-    //?} else {
+    //?} else if >=1.21.2 {
     /*@Override
     public int getMinY() {
         return this.world.getMinY();

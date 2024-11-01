@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.world.cloned;
 
 import it.unimi.dsi.fastutil.longs.Long2ReferenceLinkedOpenHashMap;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -62,7 +63,7 @@ public class ClonedChunkSectionCache {
         @Nullable LevelChunkSection section = null;
 
         if (!this.world.isOutsideBuildHeight(SectionPos.sectionToBlockCoord(y))) {
-            section = chunk.getSections()[this.world.getSectionIndexFromSectionY(y)];
+            section = chunk.getSections()[WorldUtil.getSectionIndexFromSectionY(this.world, y)];
         }
 
         return new ClonedChunkSection(this.world, chunk, section, SectionPos.of(x, y, z));

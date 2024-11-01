@@ -1,7 +1,10 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.entity.fast_render;
 
-//? if <1.20
-/*import com.mojang.math.Vector3f;*/
+//? if <1.20 {
+/*import com.mojang.math.Vector3f;
+import com.mojang.math.Vector4f;
+*///?}
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.impl.model.ModelCuboidAccessor;
 import org.embeddedt.embeddium.impl.render.immediate.model.EntityRenderer;
@@ -54,10 +57,17 @@ public class ModelPartMixin implements ModelPartData {
     @Shadow
     public boolean visible;
 
-    @Mutable
-    @Shadow
-    @Final
+    //? if >=1.18 {
+    @Shadow @Final
     private List<ModelPart.Cube> cubes;
+    @Shadow @Final
+    private Map<String, ModelPart> children;
+    //?} else {
+    /*@Shadow @Final
+    private ObjectList<ModelPart.Cube> cubes;
+    @Shadow @Final
+    private ObjectList<ModelPart> children;
+    *///?}
 
     @Unique
     private ModelPart[] sodium$children;
@@ -65,17 +75,19 @@ public class ModelPartMixin implements ModelPartData {
     @Unique
     private ModelCuboid[] sodium$cuboids;
 
-    @Inject(method = "<init>", at = @At("RETURN"))
-    private void onInit(List<ModelPart.Cube> cuboids, Map<String, ModelPart> children, CallbackInfo ci) {
-        var copies = new ModelCuboid[cuboids.size()];
+    @Inject(method = "/<init>/", at = @At("RETURN"))
+    private void onInit(CallbackInfo ci) {
+        var copies = new ModelCuboid[cubes.size()];
 
-        for (int i = 0; i < cuboids.size(); i++) {
-            var accessor = (ModelCuboidAccessor) cuboids.get(i);
+        for (int i = 0; i < cubes.size(); i++) {
+            var accessor = (ModelCuboidAccessor) cubes.get(i);
             copies[i] = accessor.sodium$copy();
         }
 
         this.sodium$cuboids = copies;
-        this.sodium$children = children.values()
+        this.sodium$children = children
+                //? if >=1.18
+                .values()
                 .toArray(ModelPart[]::new);
     }
 
@@ -132,7 +144,11 @@ public class ModelPartMixin implements ModelPartData {
                 EntityRenderer.renderCuboidFast(matrixPose, writer, simpleCuboid, light, overlay, packedColor);
             } else {
                 // Must use slow path as this cube can't be converted to a simple cuboid
-                cube.compile(matrixPose, vertices, light, overlay,
+                //? if >=1.18 {
+                cube.compile(
+                //?} else
+                /*compileCube(cube,*/
+                        matrixPose, vertices, light, overlay,
                         //? if <1.21
                         red, green, blue, alpha
                         //? if >=1.21
@@ -141,6 +157,30 @@ public class ModelPartMixin implements ModelPartData {
             }
         }
     }
+
+    //? if <1.18 {
+    /*private void compileCube(ModelPart.Cube cube, PoseStack.Pose matrixPose, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
+        ModelPart.Polygon[] var13 = cube.polygons;
+
+        for (ModelPart.Polygon lv4 : var13) {
+            Vector3f lv5 = lv4.normal.copy();
+            lv5.transform(matrixPose.normal());
+            float l = lv5.x();
+            float m = lv5.y();
+            float n = lv5.z();
+
+            for (int o = 0; o < 4; ++o) {
+                ModelPart.Vertex lv6 = lv4.vertices[o];
+                float p = lv6.pos.x() / 16.0F;
+                float q = lv6.pos.y() / 16.0F;
+                float r = lv6.pos.z() / 16.0F;
+                Vector4f lv7 = new Vector4f(p, q, r, 1.0F);
+                lv7.transform(matrixPose.pose());
+                vertices.vertex(lv7.x(), lv7.y(), lv7.z(), red, green, blue, alpha, lv6.u, lv6.v, overlay, light, l, m, n);
+            }
+        }
+    }
+    *///?}
 
     /**
      * @author JellySquid

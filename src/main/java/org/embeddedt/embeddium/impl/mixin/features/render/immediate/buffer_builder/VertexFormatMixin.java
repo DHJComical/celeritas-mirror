@@ -25,7 +25,7 @@ public class VertexFormatMixin implements ExtendedVertexFormat {
     private ExtendedVertexFormat.Element[] embeddium$extendedElements;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void embeddium$createElementArray(ImmutableMap<String, VertexFormatElement> immutableList, CallbackInfo ci) {
+    private void embeddium$createElementArray(/*? if >=1.18 {*/ ImmutableMap<String, VertexFormatElement> /*?} else {*/ /*ImmutableList<VertexFormatElement> *//*?}*/ immutableList, CallbackInfo ci) {
         this.embeddium$extendedElements = new ExtendedVertexFormat.Element[this.elements.size()];
 
         if (this.elements.size() == 0)

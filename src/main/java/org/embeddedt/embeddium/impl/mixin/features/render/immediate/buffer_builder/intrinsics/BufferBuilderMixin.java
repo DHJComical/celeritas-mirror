@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
 import org.embeddedt.embeddium.impl.render.immediate.model.BakedModelEncoder;
 import org.embeddedt.embeddium.impl.render.texture.SpriteUtil;
@@ -41,7 +42,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
             //? if >=1.21 && !neoforge
             /*VertexConsumer.super.putBulkData(matrices, bakedQuad, r, g, b, a, light, overlay);*/
 
-            SpriteUtil.markSpriteActive(bakedQuad.getSprite());
+            SpriteUtil.markSpriteActive(((BakedQuadView)bakedQuad).getSprite());
 
             return;
         }
@@ -75,7 +76,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
             /*VertexConsumer.*/
             super.putBulkData(matrices, bakedQuad, brightnessTable, r, g, b, /*? if >=1.21 {*/ /*a, *//*?}*/ light, overlay, colorize);
 
-            SpriteUtil.markSpriteActive(bakedQuad.getSprite());
+            SpriteUtil.markSpriteActive(((BakedQuadView)bakedQuad).getSprite());
 
             return;
         }

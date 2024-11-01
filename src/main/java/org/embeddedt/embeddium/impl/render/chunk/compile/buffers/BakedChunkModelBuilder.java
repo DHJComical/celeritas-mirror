@@ -198,7 +198,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
             return this;
         }
 
-        //? if <1.21 {
+        //? if >=1.18 <1.21 {
 
         @Override
         public void defaultColor(int r, int g, int b, int a) {
@@ -211,11 +211,13 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
             hasDefaultColor = false;
         }
 
+        //?}
+
+        //? if <1.21 {
         @Override
         public void endVertex() {
             // NO-OP: since on 1.21 this doesn't exist, everything is implemented in such a way that it doesn't matter
         }
-
         //?}
     }
 }

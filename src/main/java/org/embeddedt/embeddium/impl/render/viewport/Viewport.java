@@ -5,6 +5,7 @@ import org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.phys.AABB;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.joml.Vector3d;
 
 public final class Viewport {
@@ -19,9 +20,9 @@ public final class Viewport {
         this.transform = new CameraTransform(position.x, position.y, position.z);
 
         this.chunkCoords = SectionPos.of(
-                SectionPos.posToSectionCoord(position.x),
-                SectionPos.posToSectionCoord(position.y),
-                SectionPos.posToSectionCoord(position.z)
+                WorldUtil.posToSectionCoord(position.x),
+                WorldUtil.posToSectionCoord(position.y),
+                WorldUtil.posToSectionCoord(position.z)
         );
 
         //? if >=1.20 {

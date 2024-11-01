@@ -146,18 +146,18 @@ public class ScrollBarComponent extends AbstractWidget {
             return false;
 
         if (this.mode == Mode.VERTICAL) {
-            if (keyCode == InputConstants.KEY_UP) {
+            if (keyCode == 265) { // up
                 this.setOffset(this.getOffset() - SCROLL_OFFSET);
                 return true;
-            } else if (keyCode == InputConstants.KEY_DOWN) {
+            } else if (keyCode == 264) { // down
                 this.setOffset(this.getOffset() + SCROLL_OFFSET);
                 return true;
             }
         } else {
-            if (keyCode == InputConstants.KEY_LEFT) {
+            if (keyCode == 263) { // left
                 this.setOffset(this.getOffset() - SCROLL_OFFSET);
                 return true;
-            } else if (keyCode == InputConstants.KEY_RIGHT) {
+            } else if (keyCode == 262) { // right
                 this.setOffset(this.getOffset() + SCROLL_OFFSET);
                 return true;
             }

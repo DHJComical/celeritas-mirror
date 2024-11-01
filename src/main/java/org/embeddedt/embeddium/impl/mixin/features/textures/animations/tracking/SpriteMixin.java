@@ -22,10 +22,16 @@ public class SpriteMixin
     private SpriteContents contents;
     //?} else {
 /*implements SpriteContentsExtended {
-    @Shadow
+
+    //? if >=1.18 {
+    /^@Shadow
     @Final
     @Nullable
     private TextureAtlasSprite.AnimatedTexture animatedTexture;
+    ^///?} else {
+    @Shadow
+    public boolean isAnimation() { throw new AssertionError(); }
+    //?}
 
     @Unique
     private boolean active;
@@ -37,7 +43,10 @@ public class SpriteMixin
 
     @Override
     public boolean sodium$hasAnimation() {
-        return this.animatedTexture != null;
+        //? if >=1.18 {
+        /^return this.animatedTexture != null;
+        ^///?} else
+        return isAnimation();
     }
 
     @Override

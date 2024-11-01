@@ -16,6 +16,7 @@ import net.minecraft.util.Mth;
 //$ rng_import
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
+//? if >=1.18
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 //? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelData;

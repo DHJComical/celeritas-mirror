@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.compatibility.workarounds.nvidia;
 
+//? if >=1.18 {
 import org.embeddedt.embeddium.impl.compatibility.environment.OSInfo;
 import org.embeddedt.embeddium.impl.platform.unix.Libc;
 import org.embeddedt.embeddium.impl.platform.windows.api.Kernel32;
@@ -49,3 +50,4 @@ public class NvidiaWorkarounds {
         }
     }
 }
+//?}

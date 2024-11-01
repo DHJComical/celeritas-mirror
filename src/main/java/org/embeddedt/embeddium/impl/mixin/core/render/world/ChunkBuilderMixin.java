@@ -35,7 +35,9 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 //?}
 public class ChunkBuilderMixin {
     @ModifyVariable(method =
-            "<init>(Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/client/renderer/LevelRenderer;Ljava/util/concurrent/Executor;Z" +
+            "<init>("+
+                    /*? if >=1.18 {*/ "Lnet/minecraft/client/multiplayer/ClientLevel" /*?} else {*/ /*"Lnet/minecraft/world/level/Level" *//*?}*/
+                    + ";Lnet/minecraft/client/renderer/LevelRenderer;Ljava/util/concurrent/Executor;Z" +
                     /*? if <1.20.2 {*/
                     "Lnet/minecraft/client/renderer/ChunkBufferBuilderPack;"
                     /*?} else {*/

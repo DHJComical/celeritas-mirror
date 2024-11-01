@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.tags;
 
+//? if >=1.18 {
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 //? if >=1.20 {
 import net.minecraft.core.registries.Registries;
@@ -17,3 +18,4 @@ public class EmbeddiumTags {
             Registries.FLUID,
             ResourceLocationUtil.make(SodiumClientMod.MODID, "is_vanilla_rendered_fluid"));
 }
+//?}

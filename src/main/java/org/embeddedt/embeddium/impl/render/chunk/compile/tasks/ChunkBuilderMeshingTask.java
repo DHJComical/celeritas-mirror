@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.render.chunk.compile.tasks;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBufferSorter;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
@@ -12,6 +13,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderCon
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionInfo;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
@@ -30,6 +32,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+//? if >=1.18
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
@@ -117,7 +120,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         BlockState blockState = slice.getBlockState(x, y, z);
 
                         // Fast path - skip blocks that are air and don't have any custom logic
-                        if (blockState.isAir() && blockState.getRenderShape() == RenderShape.INVISIBLE && !blockState.hasBlockEntity()) {
+                        if (blockState.isAir() && blockState.getRenderShape() == RenderShape.INVISIBLE && !WorldUtil.hasBlockEntity(blockState)) {
                             continue;
                         }
 
@@ -165,11 +168,14 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             cache.getFluidRenderer().render(slice, fluidState, blockPos, modelOffset, buffers);
                         }
 
-                        if (blockState.hasBlockEntity()) {
+                        if (WorldUtil.hasBlockEntity(blockState)) {
                             BlockEntity entity = slice.getBlockEntity(blockPos);
 
                             if (entity != null) {
+                                //? if >=1.18 {
                                 BlockEntityRenderer<BlockEntity> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(entity);
+                                //?} else
+                                /*BlockEntityRenderer<BlockEntity> renderer = BlockEntityRenderDispatcher.instance.getRenderer(entity);*/
 
                                 if (renderer != null) {
                                     renderData.addBlockEntity(entity, !renderer.shouldRenderOffScreen(entity));
@@ -228,7 +234,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         try {
             state = slice.getBlockState(pos);
         } catch (Exception ignored) {}
-        CrashReportCategory.populateBlockDetails(crashReportSection, slice, pos, state);
+        CrashReportCategory.populateBlockDetails(crashReportSection, /*? if >=1.18 {*/ slice, /*?}*/ pos, state);
 
         crashReportSection.setDetail("Chunk section", this.render);
         if (this.renderContext != null) {

@@ -223,6 +223,7 @@ public class SodiumBufferBuilder implements VertexConsumer, VertexBufferWriter {
         this.endVertex();
     }
 
+    //? if >=1.18 {
     @Override
     public void defaultColor(int red, int green, int blue, int alpha) {
         ((BufferBuilder)this.builder).defaultColor(red, green, blue, alpha);
@@ -233,6 +234,7 @@ public class SodiumBufferBuilder implements VertexConsumer, VertexBufferWriter {
     public void unsetDefaultColor() {
         ((BufferBuilder)this.builder).unsetDefaultColor();
     }
+    //?}
 
     @Override
     public VertexConsumer vertex(double x, double y, double z) {
@@ -252,6 +254,7 @@ public class SodiumBufferBuilder implements VertexConsumer, VertexBufferWriter {
         return this;
     }
 
+    //? if >=1.18 {
     @Override
     public VertexConsumer color(int argb) { // No, this isn't a typo. One method takes RGBA, but this one takes ARGB.
         if (this.builder.sodium$usingFixedColor()) {
@@ -267,6 +270,7 @@ public class SodiumBufferBuilder implements VertexConsumer, VertexBufferWriter {
 
         return this;
     }
+    //?}
 
     @Override
     public VertexConsumer uv(float u, float v) {

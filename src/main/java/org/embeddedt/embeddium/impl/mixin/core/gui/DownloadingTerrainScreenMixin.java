@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.core.gui;
 
+//? if >=1.18 {
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -22,3 +23,4 @@ public class DownloadingTerrainScreenMixin {
                 (instance.getX(), instance.getEyeY(), instance.getZ());
     }
 }
+//?}

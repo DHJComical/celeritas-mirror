@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 //? if >=1.21.2
 /*import net.minecraft.client.renderer.CompiledShaderProgram;*/
-//? if <1.21.2
+//? if >=1.18 <1.21.2
 import net.minecraft.client.renderer.ShaderInstance;
 //? if >=1.20 {
 import org.joml.Matrix4f;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 // High priority so replacement happens before other mods increase the sampler count, so that we see the updated value
-//? if <1.21
+//? if >=1.18 <1.21
 @Mixin(value = VertexBuffer.class, priority = 500)
 //? if >=1.21 <1.21.2
 /*@Mixin(value = ShaderInstance.class, priority = 500)*/
@@ -37,7 +37,9 @@ public class VertexBufferMixin {
      * @author embeddedt
      * @reason Avoid regenerating the sampler ID strings every time a buffer is drawn
      */
-    //? if <1.21 {
+    //? if <1.18 {
+    /*private int dummySetSamplers(int numSamplers) {
+    *///?} else if >=1.18 <1.21 {
     @ModifyExpressionValue(method = "_drawWithShader", at = @At(value = "CONSTANT", args = "intValue=" + DEFAULT_NUM_SAMPLERS, ordinal = 0))
     private int setSamplersManually(int numSamplers, Matrix4f mat1, Matrix4f mat2, ShaderInstance shader) {
     //?} else {
@@ -54,7 +56,7 @@ public class VertexBufferMixin {
             SAMPLER_IDS = samplerIds;
         }
         for(int i = 0; i < numSamplers; i++) {
-            //? if <1.21.2
+            //? if >=1.18 <1.21.2
             shader.setSampler(samplerIds[i], RenderSystem.getShaderTexture(i));
             //? if >=1.21.2
             /*shader.bindSampler(samplerIds[i], RenderSystem.getShaderTexture(i));*/

@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.compatibility.workarounds;
 
+//? if >=1.18 {
 import org.embeddedt.embeddium.impl.compatibility.environment.OSInfo;
 import org.embeddedt.embeddium.impl.compatibility.environment.probe.GraphicsAdapterInfo;
 import org.embeddedt.embeddium.impl.compatibility.environment.probe.GraphicsAdapterProbe;
@@ -85,3 +86,5 @@ public class Workarounds {
         NO_ERROR_CONTEXT_UNSUPPORTED,
     }
 }
+
+//?}

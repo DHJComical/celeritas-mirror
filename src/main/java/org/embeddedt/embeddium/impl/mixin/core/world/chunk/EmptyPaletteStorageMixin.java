@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.core.world.chunk;
 
+//? if >=1.18 {
 import org.embeddedt.embeddium.impl.world.PaletteStorageExtended;
 import net.minecraft.util.ZeroBitStorage;
 import net.minecraft.world.level.chunk.Palette;
@@ -17,7 +18,7 @@ public class EmptyPaletteStorageMixin implements PaletteStorageExtended {
     private int size;
 
     @Override
-    public <T> void sodium$unpack(T[] out, Palette<T> palette) {
+    public <T> void sodium$unpack(T[] out, Palette<T> palette, T defaultValue) {
         if (this.size != out.length) {
             throw new IllegalArgumentException("Array has mismatched size");
         }
@@ -26,3 +27,4 @@ public class EmptyPaletteStorageMixin implements PaletteStorageExtended {
         Arrays.fill(out, defaultEntry);
     }
 }
+//?}

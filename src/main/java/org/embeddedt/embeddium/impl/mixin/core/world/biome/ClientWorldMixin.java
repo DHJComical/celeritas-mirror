@@ -4,6 +4,7 @@ import org.embeddedt.embeddium.impl.world.BiomeSeedProvider;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.LevelRenderer;
+//? if >=1.18
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -26,8 +27,12 @@ public class ClientWorldMixin implements BiomeSeedProvider {
     private void captureSeed(ClientPacketListener networkHandler,
                              ClientLevel.ClientLevelData properties,
                              ResourceKey<Level> registryRef,
+                             //? if >=1.18 {
                              Holder<DimensionType> dimensionTypeEntry,
+                             //?} else
+                             /*DimensionType dimensionType,*/
                              int loadDistance,
+                             //? if >=1.18
                              int simulationDistance,
                              /*? if <1.21.2 {*/ Supplier<ProfilerFiller> profiler, /*?}*/
                              LevelRenderer worldRenderer,

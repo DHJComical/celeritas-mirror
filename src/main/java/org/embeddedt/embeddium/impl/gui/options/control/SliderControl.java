@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.gui.options.control;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.gui.options.Option;
 import org.embeddedt.embeddium.impl.util.Dim2i;
@@ -174,10 +173,10 @@ public class SliderControl implements Control<Integer> {
         public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
             if (!isFocused()) return false;
 
-            if (keyCode == InputConstants.KEY_LEFT) {
+            if (keyCode == 263) { // left
                 this.option.setValue(Mth.clamp(this.option.getValue() - this.interval, this.min, this.max));
                 return true;
-            } else if (keyCode == InputConstants.KEY_RIGHT) {
+            } else if (keyCode == 262) { // right
                 this.option.setValue(Mth.clamp(this.option.getValue() + this.interval, this.min, this.max));
                 return true;
             }

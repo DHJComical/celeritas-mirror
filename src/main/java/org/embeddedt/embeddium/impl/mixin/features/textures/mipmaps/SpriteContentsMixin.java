@@ -37,10 +37,17 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
     private NativeImage originalImage;
     //?}
 
+    //? if >=1.18 {
     @Shadow
     @Mutable
     @Final
     private ResourceLocation name;
+    //?} else {
+    /*@Shadow
+    @Mutable
+    @Final
+    private TextureAtlasSprite.Info info;
+    *///?}
 
     @Unique
     private SpriteTransparencyLevel embeddium$transparencyLevel;
@@ -68,7 +75,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
 
         this.originalImage = nativeImage;
     }
-    //?} else {
+    //?} else if >=1.18 {
     /*@Redirect(method = "<init>", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;name:Lnet/minecraft/resources/ResourceLocation;", opcode = Opcodes.PUTFIELD))
     private void sodium$beforeGenerateMipLevels(TextureAtlasSprite instance, ResourceLocation name, TextureAtlas pAtlas, TextureAtlasSprite.Info pSpriteInfo, int pMipLevel, int pStorageX, int pStorageY, int pX, int pY, NativeImage pImage) {
         // Only fill in transparent colors if mipmaps are on and the texture name does not contain "leaves".
@@ -76,6 +83,15 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
         embeddium$processTransparentImages(pImage, Minecraft.getInstance().options.mipmapLevels/^? if >=1.19 {^//^().get()^//^?}^/ > 0 && !name.getPath().contains("leaves"));
 
         this.name = name;
+    }
+    *///?} else {
+    /*@Redirect(method = "<init>", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;info:Lnet/minecraft/client/renderer/texture/TextureAtlasSprite$Info;", opcode = Opcodes.PUTFIELD))
+    private void sodium$beforeGenerateMipLevels(TextureAtlasSprite instance, TextureAtlasSprite.Info info, TextureAtlas pAtlas, TextureAtlasSprite.Info pSpriteInfo, int pMipLevel, int pStorageX, int pStorageY, int pX, int pY, NativeImage pImage) {
+        // Only fill in transparent colors if mipmaps are on and the texture name does not contain "leaves".
+        // We're injecting after the "name" field has been set, so this is safe even though we're in a constructor.
+        embeddium$processTransparentImages(pImage, Minecraft.getInstance().options.mipmapLevels/^? if >=1.19 {^//^().get()^//^?}^/ > 0 && !info.name().getPath().contains("leaves"));
+
+        this.info = info;
     }
     *///?}
 

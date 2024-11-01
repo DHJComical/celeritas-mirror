@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
@@ -256,15 +257,9 @@ public class RenderSectionManager {
         if(!this.translucencySorting || lastCameraPosition == null)
             return;
 
-        //? if >=1.19 {
-        int camSectionX = SectionPos.blockToSectionCoord(cameraPosition.x);
-        int camSectionY = SectionPos.blockToSectionCoord(cameraPosition.y);
-        int camSectionZ = SectionPos.blockToSectionCoord(cameraPosition.z);
-        //?} else {
-        /*int camSectionX = SectionPos.posToSectionCoord(cameraPosition.x);
-        int camSectionY = SectionPos.posToSectionCoord(cameraPosition.y);
-        int camSectionZ = SectionPos.posToSectionCoord(cameraPosition.z);
-        *///?}
+        int camSectionX = WorldUtil.posToSectionCoord(cameraPosition.x);
+        int camSectionY = WorldUtil.posToSectionCoord(cameraPosition.y);
+        int camSectionZ = WorldUtil.posToSectionCoord(cameraPosition.z);
 
         this.scheduleTranslucencyUpdates(camSectionX, camSectionY, camSectionZ);
     }
@@ -312,15 +307,9 @@ public class RenderSectionManager {
                     continue;
                 }
 
-                //? if >=1.19 {
-                boolean cameraChangedSection = camSectionX != SectionPos.blockToSectionCoord(section.lastCameraX) ||
-                        camSectionY != SectionPos.blockToSectionCoord(section.lastCameraY) ||
-                        camSectionZ != SectionPos.blockToSectionCoord(section.lastCameraZ);
-                //?} else {
-                /*boolean cameraChangedSection = camSectionX != SectionPos.posToSectionCoord(section.lastCameraX) ||
-                        camSectionY != SectionPos.posToSectionCoord(section.lastCameraY) ||
-                        camSectionZ != SectionPos.posToSectionCoord(section.lastCameraZ);
-                *///?}
+                boolean cameraChangedSection = camSectionX != WorldUtil.posToSectionCoord(section.lastCameraX) ||
+                        camSectionY != WorldUtil.posToSectionCoord(section.lastCameraY) ||
+                        camSectionZ != WorldUtil.posToSectionCoord(section.lastCameraZ);
 
                 if (cameraChangedSection || section.isAlignedWithSectionOnGrid(camSectionX, camSectionY, camSectionZ)) {
                     section.setPendingUpdate(update);
@@ -401,9 +390,9 @@ public class RenderSectionManager {
         this.sectionByPosition.put(key, renderSection);
 
         ChunkAccess chunk = this.world.getChunk(x, z);
-        LevelChunkSection section = chunk.getSections()[this.world.getSectionIndexFromSectionY(y)];
+        LevelChunkSection section = chunk.getSections()[WorldUtil.getSectionIndexFromSectionY(this.world, y)];
 
-        boolean isEmpty = (section == null || section.hasOnlyAir()) && ChunkMeshEvent.post(this.world, SectionPos.of(x, y, z)).isEmpty();
+        boolean isEmpty = WorldUtil.isSectionEmpty(section) && ChunkMeshEvent.post(this.world, SectionPos.of(x, y, z)).isEmpty();
         if (isEmpty) {
             this.updateSectionInfo(renderSection, BuiltSectionInfo.EMPTY);
         } else {
@@ -752,15 +741,9 @@ public class RenderSectionManager {
     }
 
     private float getEffectiveRenderDistance() {
-        //? if <1.21.2 {
-        var color = RenderSystem.getShaderFogColor();
+        var color = FogHelper.getFogColor();
         var alpha = color[3];
-        var distance = RenderSystem.getShaderFogEnd();
-        //?} else {
-        /*var fogParams = RenderSystem.getShaderFog();
-        var alpha = fogParams.alpha();
-        var distance = fogParams.end();
-        *///?}
+        var distance = FogHelper.getFogCutoff();
 
         var renderDistance = this.getRenderDistance();
 

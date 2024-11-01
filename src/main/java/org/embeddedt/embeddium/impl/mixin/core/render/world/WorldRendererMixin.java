@@ -48,7 +48,10 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     @Final
     private Long2ObjectMap<SortedSet<BlockDestructionProgress>> destructionProgress;
 
-    //? if <1.20.2 {
+    //? if <1.18 {
+    /*@Shadow
+    private boolean needsUpdate;
+    *///?} else if >=1.18 <1.20.2 {
     @Shadow
     private boolean needsFullRenderChunkUpdate;
 
@@ -69,11 +72,6 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     private Minecraft minecraft;
 
     @Unique
-    private Frustum embeddium$getCurrentFrustum() {
-        return this.capturedFrustum != null ? this.capturedFrustum : this.cullingFrustum;
-    }
-
-    @Unique
     private SodiumWorldRenderer renderer;
 
     @Unique
@@ -81,6 +79,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
 
     @Shadow public abstract boolean shouldShowEntityOutlines();
 
+    //? if >=1.18 {
     @Shadow
     @Nullable
     private Frustum capturedFrustum;
@@ -88,12 +87,23 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     @Shadow
     private Frustum cullingFrustum;
 
+    @Unique
+    private Frustum embeddium$getCurrentFrustum() {
+        return this.capturedFrustum != null ? this.capturedFrustum : this.cullingFrustum;
+    }
+    //?}
+
     @Override
     public SodiumWorldRenderer sodium$getWorldRenderer() {
         return this.renderer;
     }
 
-    @Redirect(method = "allChanged()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getEffectiveRenderDistance()I", ordinal = 1))
+    @Redirect(method = "allChanged()V", at =
+        //? if >=1.18 {
+        @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getEffectiveRenderDistance()I", ordinal = 1)
+        //?} else
+        /*@At(value = "FIELD", target = "Lnet/minecraft/client/Options;renderDistance:I")*/
+    )
     private int nullifyBuiltChunkStorage(Options options) {
         // Do not allow any resources to be allocated
         return 0;
@@ -143,7 +153,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      * @author JellySquid
      */
     @Overwrite
-    private void /*? if <1.20.2 {*/ renderChunkLayer /*?} else {*/ /*renderSectionLayer *//*?}*/(RenderType renderLayer, /*? if <1.21 {*/ PoseStack matrices, /*?}*/ double x, double y, double z, /*? if >=1.21 {*/ /*Matrix4f pose, *//*?}*/ Matrix4f matrix) {
+    private void /*? if <1.20.2 {*/ renderChunkLayer /*?} else {*/ /*renderSectionLayer *//*?}*/(RenderType renderLayer, /*? if <1.21 {*/ PoseStack matrices, /*?}*/ double x, double y, double z /*? if >=1.21 {*/ /*,Matrix4f pose *//*?}*/ /*? if >=1.18 {*/, Matrix4f matrix /*?}*/) {
         RenderDevice.enterManagedCode();
 
         //? if >=1.20 <1.21 {
@@ -173,11 +183,13 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      * @author JellySquid
      */
     @Overwrite
-    private void setupRender(Camera camera, Frustum frustum, boolean hasForcedFrustum, boolean spectator) {
+    private void setupRender(Camera camera, Frustum frustum, boolean hasForcedFrustum, /*? if <1.18 {*/ /*int frame, *//*?}*/ boolean spectator) {
         var viewport = ((ViewportProvider) frustum).sodium$createViewport();
 
         // Detect mods setting the vanilla update flags themselves
-        //? if <1.20.2 {
+        //? if <1.18 {
+        /*if (this.needsUpdate) {
+        *///?} else if >=1.18 <1.20.2 {
         if (this.needsFullRenderChunkUpdate || this.needsFrustumUpdate.compareAndSet(true, false)) {
         //?} else
         /*if (this.sectionOcclusionGraph.consumeFrustumUpdate()) {*/
@@ -192,8 +204,11 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
             RenderDevice.exitManagedCode();
         }
 
-        //? if <1.20.2
-        this.needsFullRenderChunkUpdate = false; // We set this because third-party mods may use it (to loop themselves), even if Vanilla does not.
+        // We set this because third-party mods may use it (to loop themselves), even if Vanilla does not.
+        //? if <1.18
+        /*this.needsUpdate = false;*/
+        //? if >=1.18 <1.20.2
+        this.needsFullRenderChunkUpdate = false;
     }
 
     /**
@@ -232,14 +247,12 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         this.renderer.scheduleRebuildForChunk(x, y, z, important);
     }
 
-    /**
-     * @reason Redirect chunk updates to our renderer
-     * @author JellySquid
-     */
+    //? if >=1.18 {
     @Overwrite
     public boolean /*? if <1.20.2 {*/ isChunkCompiled /*?} else {*/ /*isSectionCompiled *//*?}*/(BlockPos pos) {
         return this.renderer.isSectionReady(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
     }
+    //?}
 
     @Inject(method = "allChanged()V", at = @At("RETURN"))
     private void onReload(CallbackInfo ci) {

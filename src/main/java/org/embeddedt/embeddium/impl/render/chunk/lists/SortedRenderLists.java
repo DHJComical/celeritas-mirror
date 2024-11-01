@@ -6,7 +6,7 @@ import org.embeddedt.embeddium.impl.util.iterator.ReversibleObjectArrayIterator;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 
 public class SortedRenderLists implements ChunkRenderListIterable {
-    private static final SortedRenderLists EMPTY = new SortedRenderLists(ObjectArrayList.of());
+    private static final SortedRenderLists EMPTY = new SortedRenderLists(new ObjectArrayList<>());
 
     private final ObjectArrayList<ChunkRenderList> lists;
 

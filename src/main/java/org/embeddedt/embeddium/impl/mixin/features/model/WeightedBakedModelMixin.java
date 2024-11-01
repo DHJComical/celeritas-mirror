@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
+//? if >=1.18 {
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
@@ -73,10 +74,6 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
     }
 
     //? if forgelike && >=1.19 {
-    /**
-     * @author embeddedt
-     * @reason Avoid excessive object allocations
-     */
     @Overwrite(remap = false)
     public ChunkRenderTypeSet getRenderTypes(@NotNull BlockState state, @NotNull RandomSource rand, @NotNull ModelData data) {
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) rand.nextLong()) % this.totalWeight);
@@ -126,3 +123,4 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
         return null;
     }
 }
+//?}

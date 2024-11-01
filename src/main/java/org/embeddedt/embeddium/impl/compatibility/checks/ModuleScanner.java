@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.compatibility.checks;
 
+//? if >=1.18 {
 import com.mojang.blaze3d.platform.Window;
 import org.embeddedt.embeddium.impl.platform.windows.api.Kernel32;
 import org.embeddedt.embeddium.impl.platform.windows.api.version.Version;
@@ -164,3 +165,4 @@ public class ModuleScanner {
         return false;
     }
 }
+//?}

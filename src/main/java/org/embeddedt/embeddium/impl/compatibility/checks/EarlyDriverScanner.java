@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.compatibility.checks;
 
+//? if >=1.18 {
 import org.embeddedt.embeddium.impl.compatibility.environment.OSInfo;
 import org.embeddedt.embeddium.impl.platform.windows.WindowsDriverStoreVersion;
 import org.embeddedt.embeddium.impl.compatibility.environment.probe.GraphicsAdapterProbe;
@@ -85,3 +86,4 @@ public class EarlyDriverScanner {
         return null;
     }
 }
+//?}

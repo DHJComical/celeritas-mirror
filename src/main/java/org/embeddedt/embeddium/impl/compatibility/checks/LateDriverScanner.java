@@ -9,8 +9,13 @@ import org.embeddedt.embeddium.impl.compatibility.environment.GLContextInfo;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.lwjgl.opengl.ARBDebugOutput;
 import org.lwjgl.opengl.GL11;
+//? if >=1.18 {
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+//?} else {
+/*import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+*///?}
 
 import static org.embeddedt.embeddium.impl.SodiumClientMod.MODNAME;
 
@@ -19,7 +24,11 @@ import static org.embeddedt.embeddium.impl.SodiumClientMod.MODNAME;
  * context creation, and uses the implementation details of the OpenGL context to perform validation.
  */
 public class LateDriverScanner {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MODNAME + "-PostlaunchChecks");
+    //? if >=1.18 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MODNAME + "-PostLaunchChecks");
+    //?} else {
+    /*private static final Logger LOGGER = LogManager.getLogger(MODNAME + "-PostLaunchChecks");
+    *///?}
 
     public static void onContextInitialized() {
         checkContextImplementation();

@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import lombok.Getter;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.model.quad.blender.BlendedColorProvider;
@@ -162,6 +163,13 @@ public class SodiumWorldRenderer {
         return this.renderSectionManager.getBuilder().isBuildQueueEmpty();
     }
 
+    private int getEffectiveRenderDistance() {
+        //? if >=1.18 {
+        return this.client.options.getEffectiveRenderDistance();
+        //?} else
+        /*return this.client.options.renderDistance;*/
+    }
+
     /**
      * Called prior to any chunk rendering in order to update necessary state.
      */
@@ -176,7 +184,7 @@ public class SodiumWorldRenderer {
 
         this.useEntityCulling = SodiumClientMod.options().performance.useEntityCulling;
 
-        if (this.client.options.getEffectiveRenderDistance() != this.renderDistance) {
+        if (getEffectiveRenderDistance() != this.renderDistance) {
             this.reload();
         }
 
@@ -192,11 +200,7 @@ public class SodiumWorldRenderer {
         Vec3 pos = camera.getPosition();
         float pitch = camera.getXRot();
         float yaw = camera.getYRot();
-        //? if >=1.21.2 {
-        /*float fogDistance = RenderSystem.getShaderFog().end();
-        *///?} else {
-        float fogDistance = RenderSystem.getShaderFogEnd();
-        //?}
+        float fogDistance = FogHelper.getFogCutoff();
 
         boolean dirty = pos.x != this.lastCameraX || pos.y != this.lastCameraY || pos.z != this.lastCameraZ ||
                 pitch != this.lastCameraPitch || yaw != this.lastCameraYaw || fogDistance != this.lastFogDistance;
@@ -242,7 +246,7 @@ public class SodiumWorldRenderer {
 
         profiler.pop();
 
-        Entity.setViewScale(Mth.clamp((double) this.client.options.getEffectiveRenderDistance() / 8.0D, 1.0D, 2.5D) * this.client.options.entityDistanceScaling/*? if >=1.19 {*/().get()/*?}*/);
+        Entity.setViewScale(Mth.clamp((double) getEffectiveRenderDistance() / 8.0D, 1.0D, 2.5D) * this.client.options.entityDistanceScaling/*? if >=1.19 {*/().get()/*?}*/);
     }
 
     private void processChunkEvents() {
@@ -281,7 +285,7 @@ public class SodiumWorldRenderer {
             this.renderSectionManager = null;
         }
 
-        this.renderDistance = this.client.options.getEffectiveRenderDistance();
+        this.renderDistance = getEffectiveRenderDistance();
 
         this.renderSectionManager = new RenderSectionManager(this.world, this.renderDistance, commandList);
 
@@ -413,7 +417,10 @@ public class SodiumWorldRenderer {
         double y = cameraPos.y();
         double z = cameraPos.z();
 
+        //? if >=1.18 {
         BlockEntityRenderDispatcher blockEntityRenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher();
+        //?} else
+        /*BlockEntityRenderDispatcher blockEntityRenderer = BlockEntityRenderDispatcher.instance;*/
 
         this.blockEntityRequestedOutline = false;
 
@@ -609,13 +616,13 @@ public class SodiumWorldRenderer {
             return true;
         }
 
-        int minX = SectionPos.posToSectionCoord(x1 - 0.5D);
-        int minY = SectionPos.posToSectionCoord(y1 - 0.5D);
-        int minZ = SectionPos.posToSectionCoord(z1 - 0.5D);
+        int minX = WorldUtil.posToSectionCoord(x1 - 0.5D);
+        int minY = WorldUtil.posToSectionCoord(y1 - 0.5D);
+        int minZ = WorldUtil.posToSectionCoord(z1 - 0.5D);
 
-        int maxX = SectionPos.posToSectionCoord(x2 + 0.5D);
-        int maxY = SectionPos.posToSectionCoord(y2 + 0.5D);
-        int maxZ = SectionPos.posToSectionCoord(z2 + 0.5D);
+        int maxX = WorldUtil.posToSectionCoord(x2 + 0.5D);
+        int maxY = WorldUtil.posToSectionCoord(y2 + 0.5D);
+        int maxZ = WorldUtil.posToSectionCoord(z2 + 0.5D);
 
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {

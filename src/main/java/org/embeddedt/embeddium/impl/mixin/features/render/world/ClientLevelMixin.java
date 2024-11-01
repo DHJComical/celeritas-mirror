@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.mixin.features.render.world;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+//? if >=1.18.2
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -15,10 +16,13 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.AmbientParticleSettings;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
+//? if >=1.18 {
 import net.minecraft.world.level.levelgen.RandomSupport;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
+//?}
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.WritableLevelData;
 import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
@@ -47,19 +51,29 @@ public abstract class ClientLevelMixin extends Level {
     /*protected ClientLevelMixin(WritableLevelData levelData, ResourceKey<Level> dimension, Holder<DimensionType> dimensionTypeRegistration, Supplier<ProfilerFiller> profiler, boolean isClientSide, boolean isDebug, long biomeZoomSeed, int maxChainedNeighborUpdates) {
         super(levelData, dimension, dimensionTypeRegistration, profiler, isClientSide, isDebug, biomeZoomSeed, maxChainedNeighborUpdates);
     }
-    *///?} else {
+    *///?} else if >=1.18 {
     /*protected ClientLevelMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean bl, boolean bl2, long l) {
         super(writableLevelData, resourceKey, holder, supplier, bl, bl2, l);
     }
+    *///?} else {
+    /*protected ClientLevelMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, DimensionType dimensionType, Supplier<ProfilerFiller> supplier, boolean bl, boolean bl2, long l) {
+        super(writableLevelData, resourceKey, dimensionType, supplier, bl, bl2, l);
+    }
     *///?}
 
-    @Shadow
-    private void lambda$doAnimateTick$8(BlockPos.MutableBlockPos pos, AmbientParticleSettings settings) {
-        throw new AssertionError();
-    }
-
     private BlockPos.MutableBlockPos embeddium$particlePos;
+
+    //? if >=1.18 {
+    @Shadow
+    private void lambda$doAnimateTick$8(BlockPos.MutableBlockPos pos, AmbientParticleSettings settings) {throw new AssertionError();}
+
     private final Consumer<AmbientParticleSettings> embeddium$particleSettingsConsumer = settings -> lambda$doAnimateTick$8(embeddium$particlePos, settings);
+    //?} else {
+    /*@Shadow
+    private void lambda$doAnimateTick$4(BlockPos.MutableBlockPos pos, AmbientParticleSettings settings) {throw new AssertionError();}
+
+    private final Consumer<AmbientParticleSettings> embeddium$particleSettingsConsumer = settings -> lambda$doAnimateTick$4(embeddium$particlePos, settings);
+    *///?}
 
     @Shadow
     protected abstract void trySpawnDripParticles(BlockPos p_104690_, BlockState p_104691_, ParticleOptions p_104692_, boolean p_104693_);
@@ -82,7 +96,12 @@ public abstract class ClientLevelMixin extends Level {
      * @reason Avoid allocations & do some misc optimizations. Partially based on old Sodium 0.2 mixin
      */
     @Overwrite
-    public void doAnimateTick(int xCenter, int yCenter, int zCenter, int radius, /*$ rng >>*/ RandomSource random, @Nullable Block markerBlock, BlockPos.MutableBlockPos pos) {
+    public void doAnimateTick(int xCenter, int yCenter, int zCenter, int radius, /*$ rng >>*/ RandomSource random,
+                              //? if >=1.17 {
+                              @Nullable Block markerBlock,
+                              //?} else
+                              /*boolean showMarker,*/
+                              BlockPos.MutableBlockPos pos) {
         int x = xCenter + (random.nextInt(radius) - random.nextInt(radius));
         int y = yCenter + (random.nextInt(radius) - random.nextInt(radius));
         int z = zCenter + (random.nextInt(radius) - random.nextInt(radius));
@@ -105,15 +124,21 @@ public abstract class ClientLevelMixin extends Level {
             }
         }
 
+        //? if >=1.17 {
         if (blockState.getBlock() == markerBlock) {
             this.addParticle(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, blockState), (double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, 0.0D, 0.0D, 0.0D);
         }
+        //?} else {
+        /*if (showMarker && blockState.is(Blocks.BARRIER)) {
+            this.addParticle(ParticleTypes.BARRIER, (double)x + 0.5, (double)y + 0.5, (double)z + 0.5, 0.0, 0.0, 0.0);
+        }
+        *///?}
 
         if (!blockState.isCollisionShapeFullBlock(this, pos)) {
             // This dance looks ridiculous over just calling the lambda, but it's needed because mod mixins target the ifPresent call.
             // The important part (skipping the allocation) still happens.
             embeddium$particlePos = pos;
-            this.getBiome(pos).value().getAmbientParticle().ifPresent(embeddium$particleSettingsConsumer);
+            this.getBiome(pos) /*? if >=1.18.2 {*/.value()/*?}*/.getAmbientParticle().ifPresent(embeddium$particleSettingsConsumer);
         }
     }
 }

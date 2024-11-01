@@ -17,6 +17,7 @@ import net.minecraft.core.Direction;
 //$ rng_import
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
+//? if >=1.18
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 import org.spongepowered.asm.mixin.*;

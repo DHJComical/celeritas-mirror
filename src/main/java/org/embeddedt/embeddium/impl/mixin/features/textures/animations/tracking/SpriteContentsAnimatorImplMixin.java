@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.textures.animations.tracking;
 
+//? if >=1.18 {
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.render.texture.SpriteContentsExtended;
@@ -40,21 +41,13 @@ public class SpriteContentsAnimatorImplMixin {
     *///?}
 
     //? if >=1.20 {
-    /**
-     * @author IMS
-     * @reason Replace fragile Shadow
-     */
     @Inject(method = "<init>", at = @At("RETURN"))
     public void assignParent(SpriteContents spriteContents, SpriteContents.AnimatedTexture animation, SpriteContents.InterpolationData interpolation, CallbackInfo ci) {
         this.parent = spriteContents;
     }
     private static final String TICK_METHOD = "tickAndUpload";
     //?} else {
-    /*/^*
-     * @author IMS
-     * @reason Replace fragile Shadow
-     ^/
-    @Inject(method = "<init>", at = @At("RETURN"))
+    /*@Inject(method = "<init>", at = @At("RETURN"))
     public void assignParent(TextureAtlasSprite spriteContents, List<TextureAtlasSprite.FrameInfo> pFrames, int pFrameRowSize, TextureAtlasSprite.InterpolationData pInterpolationData, CallbackInfo ci) {
         this.parent = spriteContents;
     }
@@ -90,3 +83,4 @@ public class SpriteContentsAnimatorImplMixin {
         parent.sodium$setActive(false);
     }
 }
+//?}

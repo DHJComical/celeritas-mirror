@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.shader;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat4v;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformInt;
@@ -29,6 +29,22 @@ public abstract class ChunkShaderFogComponent {
         }
     }
 
+    public static class Exp2 extends ChunkShaderFogComponent {
+        private final GlUniformFloat4v uFogColor;
+        private final GlUniformFloat uFogDensity;
+
+        public Exp2(ShaderBindingContext context) {
+            this.uFogColor = context.bindUniform("u_FogColor", GlUniformFloat4v::new);
+            this.uFogDensity = context.bindUniform("u_FogDensity", GlUniformFloat::new);
+        }
+
+        @Override
+        public void setup() {
+            this.uFogColor.set(FogHelper.getFogColor());
+            this.uFogDensity.set(FogHelper.getFogDensity());
+        }
+    }
+
     public static class Smooth extends ChunkShaderFogComponent {
         private final GlUniformFloat4v uFogColor;
 
@@ -45,20 +61,11 @@ public abstract class ChunkShaderFogComponent {
 
         @Override
         public void setup() {
-            //? if <1.21.2 {
-            this.uFogColor.set(RenderSystem.getShaderFogColor());
-            this.uFogShape.set(RenderSystem.getShaderFogShape().getIndex());
+            this.uFogColor.set(FogHelper.getFogColor());
+            this.uFogShape.set(FogHelper.getFogShapeIndex());
 
-            this.uFogStart.setFloat(RenderSystem.getShaderFogStart());
-            this.uFogEnd.setFloat(RenderSystem.getShaderFogEnd());
-            //?} else {
-            /*var fogParams = RenderSystem.getShaderFog();
-            this.uFogColor.set(new float[] { fogParams.red(), fogParams.green(), fogParams.blue(), fogParams.alpha() });
-            this.uFogShape.set(fogParams.shape().getIndex());
-
-            this.uFogStart.setFloat(fogParams.start());
-            this.uFogEnd.setFloat(fogParams.end());
-            *///?}
+            this.uFogStart.set(FogHelper.getFogStart());
+            this.uFogEnd.set(FogHelper.getFogEnd());
         }
     }
 

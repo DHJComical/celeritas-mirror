@@ -8,6 +8,7 @@ import net.minecraftforge.common.ForgeConfig;
 //? if <1.19
 /*import net.minecraft.client.Option;*/
 import org.embeddedt.embeddium.impl.compat.modernui.MuiGuiScaleHook;
+//? if >=1.18
 import org.embeddedt.embeddium.impl.compatibility.workarounds.Workarounds;
 import org.embeddedt.embeddium.impl.gl.arena.staging.MappedStagingBuffer;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
@@ -64,6 +65,7 @@ public class SodiumGameOptionPages {
                         .setImpact(OptionImpact.HIGH)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
+                //? if >=1.18 {
                 .add(OptionImpl.createBuilder(int.class, vanillaOpts)
                         .setId(StandardOptions.Option.SIMULATION_DISTANCE)
                         .setName(ComponentUtil.translatable("options.simulationDistance"))
@@ -73,6 +75,7 @@ public class SodiumGameOptionPages {
                         .setImpact(OptionImpact.HIGH)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
+                //?}
                 .add(OptionImpl.createBuilder(int.class, vanillaOpts)
                         .setId(StandardOptions.Option.BRIGHTNESS)
                         .setName(ComponentUtil.translatable("options.gamma"))
@@ -172,6 +175,7 @@ public class SodiumGameOptionPages {
                         .setControl(opts -> new CyclingControl<>(opts, AttackIndicatorStatus.class, new Component[] { ComponentUtil.translatable("options.off"), ComponentUtil.translatable("options.attack.crosshair"), ComponentUtil.translatable("options.attack.hotbar") }))
                         .setBinding((opts, value) -> opts.attackIndicator/*? if >=1.19 {*/().set/*?} else {*//*=*//*?}*/(value), (opts) -> opts.attackIndicator/*? if >=1.19 {*/().get()/*?}*/)
                         .build())
+                //? if >=1.18 {
                 .add(OptionImpl.createBuilder(boolean.class, vanillaOpts)
                         .setId(StandardOptions.Option.AUTOSAVE_INDICATOR)
                         .setName(ComponentUtil.translatable("options.autosaveIndicator"))
@@ -179,6 +183,7 @@ public class SodiumGameOptionPages {
                         .setControl(TickBoxControl::new)
                         .setBinding((opts, value) -> opts.showAutosaveIndicator/*? if >=1.19 {*/().set/*?} else {*//*=*//*?}*/(value), opts -> opts.showAutosaveIndicator/*? if >=1.19 {*/().get()/*?}*/)
                         .build())
+                //?}
                 .build());
 
         return new OptionPage(ComponentUtil.translatable("stat.generalButton"), ImmutableList.copyOf(groups));
@@ -465,9 +470,12 @@ public class SodiumGameOptionPages {
     }
 
     private static boolean supportsNoErrorContext() {
+        //? if >=1.18 {
         GLCapabilities capabilities = GL.getCapabilities();
         return (capabilities.OpenGL46 || capabilities.GL_KHR_no_error)
                 && !Workarounds.isWorkaroundEnabled(Workarounds.Reference.NO_ERROR_CONTEXT_UNSUPPORTED);
+        //?} else
+        /*return false;*/
     }
 
     public static OptionPage advanced() {

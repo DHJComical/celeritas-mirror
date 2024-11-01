@@ -328,5 +328,25 @@ public class Matrix4fMixin implements Matrix4fExtended {
     public float getA33() {
         return this.m33;
     }
+
+    @Override
+    public void embeddium$load(Matrix4f matrix) {
+        this.m00 = ((Matrix4fMixin)(Object)matrix).m00;
+        this.m01 = ((Matrix4fMixin)(Object)matrix).m01;
+        this.m02 = ((Matrix4fMixin)(Object)matrix).m02;
+        this.m03 = ((Matrix4fMixin)(Object)matrix).m03;
+        this.m10 = ((Matrix4fMixin)(Object)matrix).m10;
+        this.m11 = ((Matrix4fMixin)(Object)matrix).m11;
+        this.m12 = ((Matrix4fMixin)(Object)matrix).m12;
+        this.m13 = ((Matrix4fMixin)(Object)matrix).m13;
+        this.m20 = ((Matrix4fMixin)(Object)matrix).m20;
+        this.m21 = ((Matrix4fMixin)(Object)matrix).m21;
+        this.m22 = ((Matrix4fMixin)(Object)matrix).m22;
+        this.m23 = ((Matrix4fMixin)(Object)matrix).m23;
+        this.m30 = ((Matrix4fMixin)(Object)matrix).m30;
+        this.m31 = ((Matrix4fMixin)(Object)matrix).m31;
+        this.m32 = ((Matrix4fMixin)(Object)matrix).m32;
+        this.m33 = ((Matrix4fMixin)(Object)matrix).m33;
+    }
 }
 *///?}

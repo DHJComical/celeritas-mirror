@@ -12,12 +12,13 @@ import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
 import org.embeddedt.embeddium.impl.gui.compat.Renderable;
 *///?}
 import net.minecraft.client.Minecraft;
-import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+//? if >=1.18 {
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+//?}
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -25,7 +26,7 @@ import net.minecraft.sounds.SoundEvents;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class AbstractWidget implements Renderable, GuiEventListener, NarratableEntry {
+public abstract class AbstractWidget implements Renderable, GuiEventListener/*? if >=1.18 {*/, NarratableEntry /*?}*/ {
     protected final Font font;
     protected boolean focused;
     protected boolean hovered;
@@ -66,6 +67,8 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, Na
         return this.font.width(text);
     }
 
+    //? if >=1.18 {
+
     public NarratableEntry.NarrationPriority narrationPriority() {
         if (this.focused) {
             return NarratableEntry.NarrationPriority.FOCUSED;
@@ -84,6 +87,7 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, Na
             builder.add(NarratedElementType.USAGE, ComponentUtil.translatable("narration.button.usage.hovered"));
         }
     }
+    //?}
 
     //? if >=1.20 {
 
@@ -127,6 +131,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, Na
     }
 
     protected static boolean keySelected(int keyCode) {
-        return keyCode == InputConstants.KEY_SPACE || keyCode == InputConstants.KEY_RETURN;
+        return keyCode == 32 || keyCode == 257;
     }
 }

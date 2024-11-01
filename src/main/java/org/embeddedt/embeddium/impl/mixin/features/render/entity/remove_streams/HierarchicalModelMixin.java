@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.entity.remove_streams;
 
-//? if <1.21.2
+//? if >=1.18 <1.21.2
 import net.minecraft.client.model.HierarchicalModel;
 //? if >=1.21.2
 /*import net.minecraft.client.model.Model;*/
@@ -12,11 +12,12 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.Optional;
 
-//? if <1.21.2
+//? if >=1.18 <1.21.2
 @Mixin(HierarchicalModel.class)
 //? if >=1.21.2
 /*@Mixin(Model.class)*/
 public abstract class HierarchicalModelMixin {
+    //? if >=1.18
     @Shadow
     public abstract ModelPart root();
 
