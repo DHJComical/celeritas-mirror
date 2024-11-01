@@ -20,6 +20,7 @@ import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 //?}
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+//? if >=1.16.2
 import net.minecraft.util.FormattedCharSequence;
 import org.apache.commons.lang3.Validate;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
@@ -107,7 +108,7 @@ public class OptionPageFrame extends AbstractFrame {
     }
 
     //$ gui_render_method {
-                                                                                                                                                                                                                                                                                                                            @Override
+                                                                                                                                                                                                                                                                                                                                                                                            @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
 //$}
         ControlElement<?> hoveredElement = this.controlElements.stream()
@@ -157,18 +158,26 @@ public class OptionPageFrame extends AbstractFrame {
         int boxX = dim.x();
 
         Option<?> option = element.getOption();
-        List<FormattedCharSequence> tooltip = new ArrayList<>(Minecraft.getInstance().font.split(option.getTooltip(), boxWidth - (textPadding * 2)));
+        var tooltip = new ArrayList<>(Minecraft.getInstance().font.split(option.getTooltip(), boxWidth - (textPadding * 2)));
 
         OptionImpact impact = option.getImpact();
 
         if (impact != null) {
-            tooltip.add(Language.getInstance().getVisualOrder(ComponentUtil.translatable("sodium.options.performance_impact_string", impact.getLocalizedName()).withStyle(ChatFormatting.GRAY)));
+            var impactString = ComponentUtil.translatable("sodium.options.performance_impact_string", impact.getLocalizedName()).withStyle(ChatFormatting.GRAY);
+            //? if >=1.16.5 {
+            tooltip.add(Language.getInstance().getVisualOrder(impactString));
+            //?} else
+            /*tooltip.add(impactString);*/
         }
 
         var id = option.getId();
 
         if (OptionIdentifier.isPresent(page.getId()) && OptionIdentifier.isPresent(id) && !Objects.equals(normalizeModForTooltip(page.getId().getModId()), normalizeModForTooltip(id.getModId()))) {
-            tooltip.add(Language.getInstance().getVisualOrder(ComponentUtil.translatable("embeddium.options.added_by_mod_string", ComponentUtil.literal(PlatformUtil.getModName(id.getModId())).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY)));
+            var addedByModString = ComponentUtil.translatable("embeddium.options.added_by_mod_string", ComponentUtil.literal(PlatformUtil.getModName(id.getModId())).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY);
+            //? if >=1.16.5 {
+            tooltip.add(Language.getInstance().getVisualOrder(addedByModString));
+            //?} else
+            /*tooltip.add(addedByModString);*/
         }
 
         int boxHeight = (tooltip.size() * 12) + boxPadding;

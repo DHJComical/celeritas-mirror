@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.gui.console;
 
+import net.minecraft.network.chat.FormattedText;
 import org.embeddedt.embeddium.impl.gui.console.message.Message;
 import org.embeddedt.embeddium.impl.gui.console.message.MessageLevel;
 import org.embeddedt.embeddium.api.util.ColorARGB;
@@ -11,6 +12,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+//? if >=1.16.5
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.lwjgl.glfw.GLFW;
@@ -69,14 +71,17 @@ public class ConsoleRenderer {
                     continue;
                 }
 
-                List<FormattedCharSequence> lines = new ArrayList<>();
-
                 var messageWidth = 270;
 
                 StringSplitter textHandler = client.font.getSplitter();
+
+                //? if >=1.16.5 {
+                List<FormattedCharSequence> lines = new ArrayList<>();
                 textHandler.splitLines(message.text(), messageWidth - 20, Style.EMPTY, (text, lastLineWrapped) -> {
                     lines.add(Language.getInstance().getVisualOrder(text));
                 });
+                //?} else
+                /*List<net.minecraft.network.chat.FormattedText> lines = textHandler.splitLines(message.text(), messageWidth - 20, Style.EMPTY, null);*/
 
                 var messageHeight = (client.font.lineHeight * lines.size()) + (paddingHeight * 2);
 
@@ -208,7 +213,12 @@ public class ConsoleRenderer {
 
     }
 
-    private record MessageRender(int x, int y, int width, int height, MessageLevel level, List<FormattedCharSequence> lines, double opacity) {
+    private record MessageRender(int x, int y, int width, int height, MessageLevel level,
+                                 //? if >=1.16.5 {
+                                 List<FormattedCharSequence> lines,
+                                 //?} else
+                                 /*List<FormattedText> lines,*/
+                                 double opacity) {
 
     }
 }

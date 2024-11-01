@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.gui.frame.components;
 
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.StringUtil;
 import org.embeddedt.embeddium.impl.gui.options.OptionPage;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
@@ -20,6 +21,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+//? if >=1.16.5
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
@@ -32,7 +34,10 @@ public class SearchTextFieldComponent extends AbstractWidget {
     protected final Dim2i dim;
     protected final List<OptionPage> pages;
     private final Font textRenderer = Minecraft.getInstance().font;
+    //? if >=1.16.5 {
     private final BiFunction<String, Integer, FormattedCharSequence> renderTextProvider = (string, firstCharacterIndex) -> FormattedCharSequence.forward(string, Style.EMPTY);
+    //?} else
+    /*private final BiFunction<String, Integer, FormattedText> renderTextProvider = (string, firstCharacterIndex) -> FormattedText.of(string, Style.EMPTY);*/
     private final SearchTextFieldModel model;
 
     public SearchTextFieldComponent(Dim2i dim, List<OptionPage> pages, SearchTextFieldModel model) {

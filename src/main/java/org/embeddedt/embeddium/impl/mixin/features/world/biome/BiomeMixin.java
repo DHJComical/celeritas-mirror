@@ -15,9 +15,16 @@ public abstract class BiomeMixin {
     @Final
     private BiomeSpecialEffects specialEffects;
 
+    //? if >=1.16.2 {
     @Shadow
     @Final
     private Biome.ClimateSettings climateSettings;
+    //?} else {
+    /*@Shadow
+    public abstract float getDownfall();
+    @Shadow
+    public abstract float getTemperature();
+    *///?}
 
     @Unique
     private int defaultColorIndex;
@@ -33,6 +40,7 @@ public abstract class BiomeMixin {
      */
     @Overwrite
     public int getGrassColor(double x, double z) {
+        //? if >=1.16.2 {
         var override = this.specialEffects.getGrassColorOverride().orElse(null);
         int color = override != null ? override.intValue() : BiomeColorMaps.getGrassColor(this.defaultColorIndex);
 
@@ -43,6 +51,8 @@ public abstract class BiomeMixin {
         }
 
         return color;
+        //?} else
+        /*return BiomeColorMaps.getGrassColor(this.defaultColorIndex);*/
     }
 
     /**
@@ -51,14 +61,25 @@ public abstract class BiomeMixin {
      */
     @Overwrite
     public int getFoliageColor() {
+        //? if >=1.16.2 {
         var override = this.specialEffects.getFoliageColorOverride().orElse(null);
         return override != null ? override.intValue() : BiomeColorMaps.getFoliageColor(this.defaultColorIndex);
+        //?} else
+        /*return BiomeColorMaps.getFoliageColor(this.defaultColorIndex);*/
     }
 
     @Unique
     private int getDefaultColorIndex() {
-        double temperature = Mth.clamp(this.climateSettings.temperature/*? if >=1.19 {*/()/*?}*/, 0.0F, 1.0F);
-        double humidity = Mth.clamp(this.climateSettings.downfall/*? if >=1.19 {*/()/*?}*/, 0.0F, 1.0F);
+        //? if >=1.19 {
+        double temperature = Mth.clamp(this.climateSettings.temperature(), 0.0F, 1.0F);
+        double humidity = Mth.clamp(this.climateSettings.downfall(), 0.0F, 1.0F);
+        //?} else if >=1.16.2 {
+        /*double temperature = Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
+        double humidity = Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
+        *///?} else {
+        /*double temperature = Mth.clamp(this.getTemperature(), 0.0F, 1.0F);
+        double humidity = Mth.clamp(this.getDownfall(), 0.0F, 1.0F);
+        *///?}
 
         return BiomeColorMaps.getIndex(temperature, humidity);
     }

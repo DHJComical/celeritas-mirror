@@ -55,9 +55,13 @@ public abstract class ClientLevelMixin extends Level {
     /*protected ClientLevelMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean bl, boolean bl2, long l) {
         super(writableLevelData, resourceKey, holder, supplier, bl, bl2, l);
     }
-    *///?} else {
+    *///?} else if >=1.16.2 {
     /*protected ClientLevelMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, DimensionType dimensionType, Supplier<ProfilerFiller> supplier, boolean bl, boolean bl2, long l) {
         super(writableLevelData, resourceKey, dimensionType, supplier, bl, bl2, l);
+    }
+    *///?} else {
+    /*protected ClientLevelMixin(WritableLevelData writableLevelData, ResourceKey<Level> resourceKey, ResourceKey<DimensionType> resourceKey2, DimensionType dimensionType, Supplier<ProfilerFiller> supplier, boolean bl, boolean bl2, long l) {
+        super(writableLevelData, resourceKey, resourceKey2, dimensionType, supplier, bl, bl2, l);
     }
     *///?}
 

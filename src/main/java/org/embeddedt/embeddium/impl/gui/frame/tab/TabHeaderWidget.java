@@ -22,11 +22,16 @@ public class TabHeaderWidget extends FlatButtonWidget {
     private final ResourceLocation logoTexture;
 
     public static MutableComponent getLabel(String modId) {
-        return (switch(modId) {
+        var component = (switch(modId) {
             // TODO handle long mod names better, this is the only one we know of right now
             case "sspb" -> ComponentUtil.literal("SSPB");
             default -> Tab.idComponent(modId);
-        }).withStyle(s -> s.withUnderlined(true));
+        });
+        //? if >=1.16.2 {
+        component = component.withStyle(s -> s.withUnderlined(true));
+        //?} else
+        /*component = component.withStyle(s -> s.withBold(true));*/
+        return component;
     }
 
     public TabHeaderWidget(Dim2i dim, String modId) {

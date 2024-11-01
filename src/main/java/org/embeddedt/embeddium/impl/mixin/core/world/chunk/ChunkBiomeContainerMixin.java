@@ -12,17 +12,27 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ChunkBiomeContainer.class)
 public abstract class ChunkBiomeContainerMixin implements ChunkBiomeContainerExtended {
-    @Shadow
+    //? if >=1.16.2 {
+    /^@Shadow
     @Final
     private IdMap<Biome> biomeRegistry;
 
     @Shadow
     public abstract int[] writeBiomes();
+    ^///?} else {
+    @Shadow
+    @Final
+    private Biome[] biomes;
+    //?}
 
     @Override
     public ChunkBiomeContainer embeddium$copy() {
-        int[] biomeIds = this.writeBiomes();
+        //? if >=1.16.2 {
+        /^int[] biomeIds = this.writeBiomes();
         return new ChunkBiomeContainer(this.biomeRegistry, biomeIds);
+        ^///?} else {
+        return new ChunkBiomeContainer(this.biomes.clone());
+        //?}
     }
 }
 *///?}

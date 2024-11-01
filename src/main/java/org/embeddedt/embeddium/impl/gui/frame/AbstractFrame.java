@@ -16,6 +16,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 //?} else {
 /*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
 import org.embeddedt.embeddium.impl.gui.compat.Renderable;
+import org.lwjgl.opengl.GL20C;
 *///?}
 import org.jetbrains.annotations.Nullable;
 
@@ -64,10 +65,18 @@ public abstract class AbstractFrame extends AbstractWidget implements ContainerE
 
     public void applyScissor(int x, int y, int width, int height, Runnable action) {
         double scale = Minecraft.getInstance().getWindow().getGuiScale();
+        //? if >=1.16.2 {
         RenderSystem.enableScissor((int) (x * scale), (int) (Minecraft.getInstance().getWindow().getHeight() - (y + height) * scale),
                 (int) (width * scale), (int) (height * scale));
         action.run();
         RenderSystem.disableScissor();
+        //?} else {
+        /*GL20C.glEnable(GL20C.GL_SCISSOR_TEST);
+        GL20C.glScissor((int) (x * scale), (int) (Minecraft.getInstance().getWindow().getHeight() - (y + height) * scale),
+                (int) (width * scale), (int) (height * scale));
+        action.run();
+        GL20C.glDisable(GL20C.GL_SCISSOR_TEST);
+        *///?}
     }
 
     public void registerFocusListener(Consumer<GuiEventListener> focusListener) {

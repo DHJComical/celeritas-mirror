@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.world.biome;
 
-//? if <1.20
+//? if >=1.18 <1.20
 /*import net.minecraft.data.BuiltinRegistries;*/
 import org.embeddedt.embeddium.impl.world.BiomeSeedProvider;
 import org.embeddedt.embeddium.impl.world.WorldSlice;

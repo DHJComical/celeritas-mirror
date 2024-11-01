@@ -26,7 +26,7 @@ public class OptionsScreenMixin extends Screen {
         ci.setReturnValue(new EmbeddiumVideoOptionsScreen(this));
     }
     //?} else {
-    /*@Inject(method = "lambda$init$4", at = @At("HEAD"), cancellable = true)
+    /*@Inject(method = "*", at = @At(value = "NEW", target = "net/minecraft/client/gui/screens/VideoSettingsScreen"), cancellable = true)
     @SuppressWarnings("removal")
     private void open(CallbackInfo ci) {
         ci.cancel();

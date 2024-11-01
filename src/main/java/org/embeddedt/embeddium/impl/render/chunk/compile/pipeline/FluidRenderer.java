@@ -31,6 +31,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
+//? if >=1.16.2
 import net.minecraft.world.level.block.SupportType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
@@ -108,7 +109,7 @@ public class FluidRenderer {
         BlockPos pos = this.scratchPos.set(x, y, z);
         BlockState blockState = world.getBlockState(pos);
 
-        if (!blockState.canOcclude() || !blockState.isFaceSturdy(world, pos, dir, SupportType.FULL)) {
+        if (!blockState.canOcclude() || !blockState.isFaceSturdy(world, pos, dir/*? if >=1.16.2 {*/, SupportType.FULL/*?}*/)) {
             // The blockstate we're inside doesn't occlude or isn't sturdy on this side, so it cannot possibly
             // be hiding the fluid
             return false;
