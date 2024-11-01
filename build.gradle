@@ -17,10 +17,13 @@ plugins {
 
     id "com.gradleup.shadow" version "8.3.0"
     id "xyz.wagyourtail.jvmdowngrader" version "1.1.3"
+    id "com.cinnober.gradle.semver-git" version "3.0.0" apply false
 }
 
 group = rootProject.properties.mod_package
-version = rootProject.properties.mod_version
+ext.snapshotSuffix = '<count>'
+apply plugin: 'com.cinnober.gradle.semver-git'
+
 ModLoader loader = ModLoader.fromProject(project)
 archivesBaseName = "${rootProject.properties.mod_id}-$loader.friendlyName-mc${ModLoader.getMinecraftVersion(project).replaceAll("^1\\.", "")}"
 
