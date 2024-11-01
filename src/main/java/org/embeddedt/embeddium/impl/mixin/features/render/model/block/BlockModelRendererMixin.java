@@ -50,7 +50,7 @@ public class BlockModelRendererMixin {
             /*? if forge && >=1.19 {*/ "Lnet/minecraftforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;" +  /*?}*/
             /*? if forge && <1.19 {*/ /*"Lnet/minecraftforge/client/model/data/IModelData;" +  *//*?}*/
             /*? if neoforge {*/ /*"Lnet/neoforged/neoforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;" +  *//*?}*/
-    ")V", at = @At("HEAD"), cancellable = true/*? if forgelike {*/, remap = false/*?}*/)
+    ")V", at = @At("HEAD"), cancellable = true/*? if forgelike && >=1.17 {*/, remap = false/*?}*/)
     private void renderFast(PoseStack.Pose entry, VertexConsumer vertexConsumer, BlockState blockState, BakedModel bakedModel, float red, float green, float blue, int light, int overlay,
                             /*? if forgelike && >=1.19 {*/ModelData modelData, RenderType renderType,/*?}*//*? if forge && <1.19 {*//*IModelData modelData,*//*?}*/ CallbackInfo ci) {
         var writer = VertexConsumerUtils.convertOrLog(vertexConsumer);

@@ -124,9 +124,19 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 
     if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.19.3")) {
-        implementation(include("org.joml:joml:1.10.5"))
-        if((loader == FORGE || loader == NEOFORGE) && stonecutter.eval(ModLoader.getMinecraftVersion(project), ">=1.17")) {
-            forgeRuntimeLibrary("org.joml:joml:1.10.5")
+        def jomlDep = "org.joml:joml:1.10.5"
+        implementation(jomlDep)
+        if(loader == FORGE || loader == NEOFORGE) {
+            if(stonecutter.eval(ModLoader.getMinecraftVersion(project), ">=1.17")) {
+                // Forge only supports JiJ on new enough versions
+                include(jomlDep)
+                forgeRuntimeLibrary(jomlDep)
+            } else {
+                shadow(jomlDep)
+            }
+        } else {
+            // Fabric always supports JiJ
+            include(jomlDep)
         }
     }
 
@@ -319,8 +329,8 @@ if (stonecutter.current.isActive) {
 }
 
 stonecutter.swap("gui_render_method") {
-    stonecutter.compare(stonecutter.current.version, "1.20") >= 0 ? "@Override public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {\n"
-            : "@Override public void render(PoseStack matrices, int mouseX, int mouseY, float delta) { GuiGraphics drawContext = new GuiGraphics(matrices); \n"
+    stonecutter.compare(stonecutter.current.version, "1.20") >= 0 ? "@Override public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {"
+            : "@Override public void render(PoseStack matrices, int mouseX, int mouseY, float delta) { GuiGraphics drawContext = new GuiGraphics(matrices); "
 }
 
 stonecutter.swap("guigfx") {

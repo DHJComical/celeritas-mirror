@@ -13,6 +13,7 @@ dependencies {
     implementation("org.eclipse.jgit:org.eclipse.jgit:6.10.0.202406032230-r")
     implementation("club.minnced:discord-webhooks:0.8.4")
     implementation("net.fabricmc:fabric-loader:0.15.11")
+    implementation("org.apache.commons:commons-compress:1.26.0")
 }
 
 repositories {

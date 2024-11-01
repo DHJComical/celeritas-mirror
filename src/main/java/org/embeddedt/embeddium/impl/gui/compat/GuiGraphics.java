@@ -8,9 +8,9 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 //? if >=1.16.5 {
-/^import net.minecraft.util.FormattedCharSequence;
-^///?} else
-import net.minecraft.network.chat.FormattedText;
+import net.minecraft.util.FormattedCharSequence;
+//?} else
+/^import net.minecraft.network.chat.FormattedText;^/
 
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
@@ -39,7 +39,7 @@ public class GuiGraphics {
 
     //? if >=1.16.2 {
 
-    /^public int drawString(Font font, Component component, int x, int y, int color) {
+    public int drawString(Font font, Component component, int x, int y, int color) {
         return drawString(font, component.getVisualOrderText(), x, y, color, true);
     }
 
@@ -48,12 +48,12 @@ public class GuiGraphics {
     }
 
     public int drawString(Font font, FormattedCharSequence sequence, int x, int y, int color, boolean shadow) {
-    ^///?} else {
-    public int drawString(Font font, FormattedText str, int x, int y, int color) {
+    //?} else {
+    /^public int drawString(Font font, FormattedText str, int x, int y, int color) {
         return drawString(font, str, x, y, color, true);
     }
     public int drawString(Font font, FormattedText sequence, int x, int y, int color, boolean shadow) {
-    //?}
+    ^///?}
         if(shadow) {
             return font.drawShadow(stack, sequence, x, y, color);
         } else {
