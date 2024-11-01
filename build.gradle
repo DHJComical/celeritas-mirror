@@ -21,7 +21,7 @@ plugins {
 }
 
 group = rootProject.properties.mod_package
-ext.snapshotSuffix = '<count>'
+ext.snapshotSuffix = 'beta.<count>'
 apply plugin: 'com.cinnober.gradle.semver-git'
 
 ModLoader loader = ModLoader.fromProject(project)
