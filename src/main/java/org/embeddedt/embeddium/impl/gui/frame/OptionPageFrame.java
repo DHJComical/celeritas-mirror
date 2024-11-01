@@ -107,10 +107,8 @@ public class OptionPageFrame extends AbstractFrame {
         super.buildFrame();
     }
 
-    //$ gui_render_method {
-                                                                                                                                                                                                                                                                                                                                                                                            @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-//$}
+    //$ gui_render_method
+    @Override public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         ControlElement<?> hoveredElement = this.controlElements.stream()
                 .filter(ControlElement::isHovered)
                 .findFirst()

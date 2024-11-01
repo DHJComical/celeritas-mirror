@@ -205,10 +205,8 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
                 .addChild(dim -> this.closeButton);
     }
 
-    //$ gui_render_method {
-                                                                                                                                                                                                                                                                                                                                                                                            @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-//$}
+    //$ gui_render_method
+    @Override public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         //? if >=1.20 <1.20.2 {
         this.renderBackground(drawContext);
         //?} else if >=1.20.2 {

@@ -137,10 +137,8 @@ public class ScrollableFrame extends AbstractFrame {
     }
 
 
-    //$ gui_render_method {
-                                                                                                                                                                                                                                                                                                                                                                                            @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-//$}
+    //$ gui_render_method
+    @Override public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         if (this.canScrollHorizontal || this.canScrollVertical) {
             if (this.renderOutline) {
                 this.drawBorder(drawContext, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), 0xFFAAAAAA);
