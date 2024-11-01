@@ -4,7 +4,6 @@ package org.embeddedt.embeddium.impl.loader.forge;
 import net.minecraftforge.common.ForgeConfig;
 //? if >=1.19
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.minecraftforge.common.extensions.IForgeBlockEntity;
 //?} else if neoforge {
 /*import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 import net.neoforged.neoforge.common.NeoForgeConfig;
@@ -51,8 +50,10 @@ public final class ForgeLoaderServices implements LoaderServices {
 
     @Override
     public boolean isCullableAABB(AABB box) {
-        //? if forge
-        return !box.equals(IForgeBlockEntity.INFINITE_EXTENT_AABB);
+        //? if forge && <1.18
+        /*return !box.equals(net.minecraftforge.common.extensions.IForgeTileEntity.INFINITE_EXTENT_AABB);*/
+        //? if forge && >=1.18
+        return !box.equals(net.minecraftforge.common.extensions.IForgeBlockEntity.INFINITE_EXTENT_AABB);
         //? if neoforge
         /*return !box.equals(AABB.INFINITE);*/
     }

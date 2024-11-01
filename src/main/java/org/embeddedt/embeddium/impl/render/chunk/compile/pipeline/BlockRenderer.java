@@ -41,6 +41,7 @@ import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 import org.embeddedt.embeddium.impl.render.frapi.FRAPIModelUtils;
 import org.embeddedt.embeddium.impl.render.frapi.FRAPIRenderHandler;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 //? if ffapi && >=1.20
 /*import org.embeddedt.embeddium.impl.render.frapi.IndigoBlockRenderContext;*/
@@ -336,11 +337,23 @@ public class BlockRenderer {
     }
 
     //? if forge || fabric {
+    private boolean modelUsesAO(BlockRenderContext ctx, BakedModel model) {
+        //? if forge && >=1.19 {
+        return model.useAmbientOcclusion(ctx.state(), ctx.renderLayer());
+        //?} else if forge && >=1.18 {
+        /*return model.useAmbientOcclusion(ctx.state());
+        *///?} else if forge {
+        /*return model.isAmbientOcclusion(ctx.state());
+        *///?} else {
+        /*return model.useAmbientOcclusion();
+        *///?}
+    }
+
     private LightMode getLightingMode(BlockRenderContext ctx) {
         var model = ctx.model();
         var state = ctx.state();
-        if (this.useAmbientOcclusion && model.useAmbientOcclusion(/*? if forgelike && >=1.19 {*/state, ctx.renderLayer()/*?}*/ /*? if forgelike && <1.19 {*//*state*//*?}*/)
-                && (((EmbeddiumBakedModelExtension)model).useAmbientOcclusionWithLightEmission(state, ctx.renderLayer()) || state.getLightEmission(/*? if forgelike {*/ctx.localSlice(), ctx.pos()/*?}*/) == 0)) {
+        if (this.useAmbientOcclusion && modelUsesAO(ctx, model)
+                && (((EmbeddiumBakedModelExtension)model).useAmbientOcclusionWithLightEmission(state, ctx.renderLayer()) || WorldUtil.getLightEmission(state, ctx.localSlice(), ctx.pos()) == 0)) {
             return LightMode.SMOOTH;
         } else {
             return LightMode.FLAT;

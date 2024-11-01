@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin;
 
+import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import org.embeddedt.embeddium.impl.SodiumPreLaunch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +41,9 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
                 this.config.getOptionCount(), this.config.getOptionOverrideCount());
 
         SodiumPreLaunch.onPreLaunch();
+
+        //? if forge && <1.17
+        /*MixinExtrasBootstrap.init();*/
     }
 
     @Override

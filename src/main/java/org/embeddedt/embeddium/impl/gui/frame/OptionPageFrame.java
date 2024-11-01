@@ -107,7 +107,7 @@ public class OptionPageFrame extends AbstractFrame {
     }
 
     //$ gui_render_method {
-                                                                                                                                                                                                                                                                                                    @Override
+                                                                                                                                                                                                                                                                                                                            @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
 //$}
         ControlElement<?> hoveredElement = this.controlElements.stream()

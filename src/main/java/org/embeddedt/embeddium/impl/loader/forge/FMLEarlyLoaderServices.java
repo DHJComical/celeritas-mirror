@@ -39,7 +39,10 @@ public class FMLEarlyLoaderServices implements EarlyLoaderServices {
 
         ModFile modFile = modFileInfo.getFile();
 
+        //? if >=1.17 {
         Path mixinPackagePath = modFile.findResource(path.split("/"));
+        //?} else
+        /*Path mixinPackagePath = modFile.findResource(path);*/
         if(Files.exists(mixinPackagePath))
             return mixinPackagePath;
         else

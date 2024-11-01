@@ -1,19 +1,22 @@
 package org.embeddedt.embeddium.impl;
 
-//? if forge {
+//? if forge && >=1.18 {
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
+import net.minecraftforge.fml.IExtensionPoint;
+//?}
+
+//? if forge {
 import net.minecraftforge.common.MinecraftForge;
 
 import net.minecraftforge.eventbus.api.IEventBus;
 
-import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLLoader;
-//? if forge && <1.20.2
+//? if forge && >=1.18 && <1.20.2
 import net.minecraftforge.network.NetworkConstants;
 //?}
 
@@ -65,7 +68,7 @@ public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer
     //? if forgelike {
     public SodiumClientMod(/*? if neoforge {*/ /*IEventBus modEventBus *//*?}*/) {
         MOD_VERSION = ModList.get().getModContainerById(MODID).get().getModInfo().getVersion().toString();
-        //? if forge && <1.20.2
+        //? if forge && >=1.18 && <1.20.2
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
 
         if (!FMLLoader.getDist().isClient()) {
@@ -81,6 +84,7 @@ public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer
 
         modEventBus.addListener(this::onClientSetup);
         if(!FMLLoader.isProduction()) {
+            //? if >=1.18
             mainEventBus.addListener((RegisterClientCommandsEvent event) -> DevCommands.register(event.getDispatcher()));
         }
     }

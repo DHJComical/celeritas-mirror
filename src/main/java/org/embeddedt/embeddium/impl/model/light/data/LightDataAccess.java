@@ -7,6 +7,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 
 /**
  * The light data cache is used to make accessing the light data and occlusion properties of blocks cheaper. The data
@@ -68,7 +69,7 @@ public abstract class LightDataAccess {
         boolean fo = state.isSolidRender(/*? if <1.21.2 {*/world, pos/*?}*/);
         boolean fc = state.isCollisionShapeFullBlock(world, pos);
 
-        int lu = state.getLightEmission(/*? if forgelike {*/world, pos/*?}*/);
+        int lu = WorldUtil.getLightEmission(state, world, pos);
 
         // OPTIMIZE: Do not calculate light data if the block is full and opaque and does not emit light.
         int bl;

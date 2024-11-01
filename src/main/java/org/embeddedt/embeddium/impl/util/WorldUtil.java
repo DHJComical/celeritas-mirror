@@ -1,7 +1,9 @@
 package org.embeddedt.embeddium.impl.util;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
 //? if <1.18
 /*import net.minecraft.world.level.block.EntityBlock;*/
@@ -66,6 +68,16 @@ public class WorldUtil {
         /*return state.hasTileEntity();
         *///?} else {
         /*return state instanceof EntityBlock;
+        *///?}
+    }
+
+    public static int getLightEmission(BlockState state, BlockGetter world, BlockPos pos) {
+        //? if forge && >=1.17 {
+        return state.getLightEmission(world, pos);
+        //?} else if forge {
+        /*return state.getLightValue(world, pos);
+        *///?} else {
+        /*return state.getLightEmission();
         *///?}
     }
 

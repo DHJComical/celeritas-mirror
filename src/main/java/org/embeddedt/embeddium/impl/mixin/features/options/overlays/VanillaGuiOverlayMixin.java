@@ -25,11 +25,11 @@ public class VanillaGuiOverlayMixin {
 
     @Redirect(method = {
             //? if >=1.18
-            "lambda$static$0"
+            /^"lambda$static$0"^/
             //? if <1.18
-            /^"render"^/
+            "render"
     }, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;useFancyGraphics()Z"))
-    private /^? if >=1.18 {^/ static /^?}^/ boolean redirectFancyGraphicsVignette() {
+    private /^? if >=1.18 {^/ /^static ^//^?}^/ boolean redirectFancyGraphicsVignette() {
         return SodiumClientMod.options().quality.enableVignette;
     }
 

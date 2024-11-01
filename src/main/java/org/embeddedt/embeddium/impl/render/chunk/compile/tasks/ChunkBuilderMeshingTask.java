@@ -150,7 +150,10 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             }
                             //?} else if forge && <1.19 {
                             /*for (RenderType layer : cache.getRenderLayerCache().forState(blockState)) {
-                                ForgeHooksClient.setRenderType(layer);
+                                //? if >=1.17 {
+                                /^ForgeHooksClient.setRenderType(layer);
+                                ^///?} else
+                                ForgeHooksClient.setRenderLayer(layer);
                                 context.update(blockPos, modelOffset, blockState, model, seed, modelData, layer);
                                 cache.getBlockRenderer()
                                         .renderModel(context, buffers);

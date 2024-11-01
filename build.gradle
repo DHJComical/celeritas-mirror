@@ -92,11 +92,16 @@ loom {
 if (loader == FORGE) {
     loom {
         forge {
-            useCustomMixin = false
-
             mixinConfig "${E.p.mod_id}.mixins.json"
         }
     }
+}
+
+java {
+    withSourcesJar()
+    def java = stonecutter.eval(ModLoader.getMinecraftVersion(project), ">=1.20.5") ? JavaVersion.VERSION_21 : JavaVersion.VERSION_17
+    targetCompatibility = java
+    sourceCompatibility = java
 }
 
 dependencies {
@@ -116,7 +121,7 @@ dependencies {
 
     if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.19.3")) {
         implementation(include("org.joml:joml:1.10.5"))
-        if(loader == FORGE || loader == NEOFORGE) {
+        if((loader == FORGE || loader == NEOFORGE) && stonecutter.eval(ModLoader.getMinecraftVersion(project), ">=1.17")) {
             forgeRuntimeLibrary("org.joml:joml:1.10.5")
         }
     }
@@ -158,10 +163,25 @@ dependencies {
         if (loader == FORGE) {
             forge "net.minecraftforge:forge:${versionedProperty("forge")}"
 
+
             if (rootProject.properties.mixinextras) {
-                implementation(include("io.github.llamalad7:mixinextras-$loader.friendlyName:$rootProject.properties.mixinextras"))
                 compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:$rootProject.properties.mixinextras"))
-                //forgeRuntimeLibrary "io.github.llamalad7:mixinextras-$loader.friendlyName:$rootProject.properties.mixinextras"
+
+                if(stonecutter.eval(ModLoader.getMinecraftVersion(project), ">=1.17")) {
+                    implementation(include("io.github.llamalad7:mixinextras-$loader.friendlyName:$rootProject.properties.mixinextras"))
+                } else {
+                    implementation("io.github.llamalad7:mixinextras-common:$rootProject.properties.mixinextras")
+                }
+            }
+
+            if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
+                // Upgrade ASM
+                def ASM_VERSION = "9.7"
+                runtimeOnly 'org.ow2.asm:asm:' + ASM_VERSION
+                runtimeOnly 'org.ow2.asm:asm-commons:' + ASM_VERSION
+                runtimeOnly 'org.ow2.asm:asm-tree:' + ASM_VERSION
+                runtimeOnly 'org.ow2.asm:asm-util:' + ASM_VERSION
+                runtimeOnly 'org.ow2.asm:asm-analysis:' + ASM_VERSION
             }
         } else if (loader == NEOFORGE) {
             neoForge "net.neoforged:neoforge:${versionedProperty("neoforge")}"

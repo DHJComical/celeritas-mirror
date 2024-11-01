@@ -13,7 +13,10 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.inventory.InventoryMenu;
 //? if forge {
 import net.minecraftforge.api.distmarker.Dist;
+//? if >=1.18 {
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+//?} else
+/*import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;*/
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 //?}
@@ -51,7 +54,10 @@ public class SpriteFinderCache {
         TextureAtlasSprite findNearestSprite(float u, float v);
     }
 
-    //? if forgelike {
+    //? if forge && <1.18 {
+    /*@SubscribeEvent
+    public static void onReload(ParticleFactoryRegisterEvent event) {
+    *///?} else if forgelike && >=1.18 {
     @SubscribeEvent
     public static void onReload(RegisterClientReloadListenersEvent event) {
     //?} else {
@@ -85,9 +91,9 @@ public class SpriteFinderCache {
                     blockAtlasSpriteFinder = finder;
                 }
             };
-            //? if forgelike
+            //? if forgelike && >=1.18
             event.registerReloadListener(listener);
-            //? if fabric
+            //? if fabric || (forge && <1.18)
             /*((ReloadableResourceManager)Minecraft.getInstance().getResourceManager()).registerReloadListener(listener);*/
         }
     }

@@ -169,7 +169,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         }
 
         // TODO: Avoid setting up and clearing the state a second time
-        //? if forge {
+        //? if forge && >=1.18 {
         renderLayer.setupRenderState();
         ForgeHooksClient.dispatchRenderStage(renderLayer, ((LevelRenderer)(Object)this),
                 /*? if <1.20.6 {*/ matrices /*?} else {*/ /*pose *//*?}*/,

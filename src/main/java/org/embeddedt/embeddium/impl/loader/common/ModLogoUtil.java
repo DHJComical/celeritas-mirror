@@ -21,7 +21,7 @@ import java.util.Set;
 public class ModLogoUtil {
     private static final Set<String> erroredLogos = new HashSet<>();
 
-    //? if forge {
+    //? if forge && >=1.18 {
     public static ResourceLocation registerLogo(String modId) {
         Optional<String> logoFile = erroredLogos.contains(modId) ? Optional.empty() : ModList.get().getModContainerById(modId).flatMap(c -> c.getModInfo().getLogoFile());
         ResourceLocation texture = null;

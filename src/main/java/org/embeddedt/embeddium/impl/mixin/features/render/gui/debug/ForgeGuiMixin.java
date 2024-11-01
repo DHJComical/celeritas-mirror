@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 //?} else
 /*import net.minecraftforge.client.gui.ForgeIngameGui;*/
+//? if >=1.19
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 //? if <1.20
 /*import org.embeddedt.embeddium.impl.gui.BatchedF3Renderer;*/
@@ -38,8 +39,7 @@ public abstract class ForgeGuiMixin extends Gui {
     private void accessDebugOverlay(Minecraft mc, CallbackInfo ci) {
         //? if >=1.19 {
         embeddium$debugOverlay = ObfuscationReflectionHelper.getPrivateValue(ForgeGui.class, (ForgeGui)(Object)this, "debugOverlay");
-        //?} else
-        /*embeddium$debugOverlay = ObfuscationReflectionHelper.getPrivateValue(ForgeIngameGui.class, (ForgeIngameGui)(Object)this, "debugOverlay");*/
+        //?}
     }
 
     /**
