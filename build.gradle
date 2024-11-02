@@ -192,6 +192,11 @@ dependencies {
                 }
             }
 
+            if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.20.6")) {
+                annotationProcessor("net.fabricmc:sponge-mixin:0.12.5+mixin.0.8.5")
+            }
+
+
             if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
                 // Upgrade ASM
                 def ASM_VERSION = "9.7"
@@ -292,8 +297,10 @@ processResources {
 tasks.named("shadowJar", ShadowJar).configure {
     archiveClassifier = "dev-shadow"
     configurations = [project.configurations.shadow]
-    relocate("com.llamalad7.mixinextras", "org.embeddedt.embeddium.impl.shadow.mixinextras")
-    relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml")
+    if (loader == FORGE && stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
+        relocate("com.llamalad7.mixinextras", "org.embeddedt.embeddium.impl.shadow.mixinextras")
+        relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml")
+    }
     mergeServiceFiles()
 
     from("COPYING", "COPYING.LESSER", "README.md")
