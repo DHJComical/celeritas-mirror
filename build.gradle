@@ -16,6 +16,7 @@ plugins {
     id 'embeddium-fabric-remapper' apply false
 
     id "com.gradleup.shadow" version "8.3.0"
+    id 'ru.vyarus.use-python' version '4.0.0'
     id "xyz.wagyourtail.jvmdowngrader" version "1.1.3"
     id "com.cinnober.gradle.semver-git" version "3.0.0" apply false
 }
@@ -29,6 +30,12 @@ archivesBaseName = "${rootProject.properties.mod_id}-$loader.friendlyName-mc${Mo
 
 def packageJar = tasks.create("packageJar", Copy.class) {
     into("${rootProject.layout.buildDirectory.get()}/libs/${E.p["mod_version"]}")
+}
+
+python {
+    scope = VIRTUALENV
+    envPath = "${project.rootDir}/.gradle/python"
+    pip 'portablemc:4.4.0'
 }
 
 project.ext["loom.platform"] = loader.friendlyName
@@ -336,6 +343,31 @@ if (stonecutter.current.isActive) {
         group = "project"
         dependsOn("packageJar")
     }
+
+    def launchVersion
+    if (loader == FABRIC) {
+        launchVersion = fabricloader
+    } else if (loader == FORGE) {
+        launchVersion = versionedProperty("forge")
+    } else if (loader == NEOFORGE) {
+        launchVersion = versionedProperty("neoforge")
+    }
+
+    def launchDirectory = "${project.layout.buildDirectory.get()}/testProduction"
+
+    def copyJarForProductionTest = tasks.register("copyJarForProductionTest", Copy) {
+        into("${launchDirectory}/mods")
+        rename { String fileName -> "embeddium.jar" }
+        dependsOn(remapJar)
+        from(remapJar.archiveFile)
+    }
+
+    tasks.register('testProductionJar', PythonTask) {
+        dependsOn(copyJarForProductionTest)
+        command = "${project.rootDir}/scripts/test_mod_in_prod.py ${launchDirectory} ${ModLoader.getMinecraftVersion(project)} ${loader.friendlyName}  ${launchVersion}"
+        outputs.upToDateWhen { true }
+    }
+
     tasks.register("publishPackagesToDiscord") {
         outputs.upToDateWhen { false }
         doLast {

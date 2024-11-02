@@ -48,6 +48,8 @@ import org.slf4j.LoggerFactory;
 import org.apache.logging.log4j.LogManager;
 *///?}
 
+import org.spongepowered.asm.mixin.MixinEnvironment;
+
 import java.io.IOException;
 
 //? if forgelike
@@ -73,6 +75,11 @@ public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer
 
         if (!FMLLoader.getDist().isClient()) {
             return;
+        }
+
+        if (Boolean.getBoolean("embeddium.auditAndExit")) {
+            MixinEnvironment.getCurrentEnvironment().audit();
+            System.exit(1);
         }
 
         //? if forge {
