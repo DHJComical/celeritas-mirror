@@ -137,28 +137,19 @@ public class ScrollableFrame extends AbstractFrame {
     }
 
 
-    //$ gui_render_method
-    @Override public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    @Override
+    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         if (this.canScrollHorizontal || this.canScrollVertical) {
             if (this.renderOutline) {
                 this.drawBorder(drawContext, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), 0xFFAAAAAA);
             }
             boolean mouseInViewport = this.viewPortDimension.containsCursor(mouseX, mouseY);
-            //? if >=1.20 {
             drawContext.enableScissor(this.viewPortDimension.x(), this.viewPortDimension.y(), this.viewPortDimension.getLimitX(), this.viewPortDimension.getLimitY());
             drawContext.pose().pushPose();
             drawContext.pose().translate(applyOffset(this.horizontalScrollBar, 0, true), applyOffset(this.verticalScrollBar, 0, true), 0);
             super.render(drawContext, mouseInViewport ? (int)applyOffset(this.horizontalScrollBar, mouseX, false) : -1, mouseInViewport ? (int)applyOffset(this.verticalScrollBar, mouseY, false) : -1, delta);
             drawContext.pose().popPose();
             drawContext.disableScissor();
-            //?} else {
-            /*this.applyScissor(this.viewPortDimension.x(), this.viewPortDimension.y(), this.viewPortDimension.width(), this.viewPortDimension.height(), () -> {
-                matrices.pushPose();
-                matrices.translate(applyOffset(this.horizontalScrollBar, 0, true), applyOffset(this.verticalScrollBar, 0, true), 0);
-                super.render(matrices, mouseInViewport ? (int)applyOffset(this.horizontalScrollBar, mouseX, false) : -1, mouseInViewport ? (int)applyOffset(this.verticalScrollBar, mouseY, false) : -1, delta);
-                matrices.popPose();
-            });
-            *///?}
         } else {
             super.render(drawContext, mouseX, mouseY, delta);
         }
