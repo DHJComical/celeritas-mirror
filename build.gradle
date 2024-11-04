@@ -101,6 +101,10 @@ stonecutter.const("ffapi", versionedProperty("ffapi") != null || loader == FABRI
 
 loom {
     accessWidenerPath = project.rootDir.toPath().resolve("src/main/resources/${E.p.mod_id}.accesswidener").toFile()
+
+    runConfigs.client {
+        ideConfigGenerated(true)
+    }
 }
 // Use vanilla mixin on Forge
 if (loader == FORGE) {
