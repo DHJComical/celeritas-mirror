@@ -2,7 +2,10 @@
 # This makes use of caching for faster builds and uploads the resulting artifacts
 name: build-snapshot
 
-on: [ push ]
+on:
+  push:
+    branches:
+      - stonecutter
 
 env:
   DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
