@@ -40,7 +40,7 @@ public abstract class BufferBuilderMixin {
 
     @Shadow
     private VertexFormat format;
-    //? }
+    //?}
 
     //? if >=1.19 {
     @Shadow
@@ -91,7 +91,7 @@ public abstract class BufferBuilderMixin {
 
         return centers;
     }
-    //? }
+    //?}
 
     //? if >=1.20 <1.21 {
     
@@ -157,5 +157,5 @@ public abstract class BufferBuilderMixin {
             }
         }
     }
-    //? }
+    //?}
 }
