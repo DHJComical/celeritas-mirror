@@ -37,6 +37,7 @@ import net.neoforged.fml.loading.FMLLoader;
 
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
+import org.embeddedt.embeddium.impl.util.MixinAuditUtil;
 import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
 import org.embeddedt.embeddium.impl.commands.DevCommands;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
@@ -47,8 +48,6 @@ import org.slf4j.LoggerFactory;
 /*import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 *///?}
-
-import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import java.io.IOException;
 
@@ -78,8 +77,7 @@ public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer
         }
 
         if (Boolean.getBoolean("embeddium.auditAndExit")) {
-            MixinEnvironment.getCurrentEnvironment().audit();
-            System.exit(1);
+            MixinAuditUtil.auditAndExit();
         }
 
         //? if forge {
