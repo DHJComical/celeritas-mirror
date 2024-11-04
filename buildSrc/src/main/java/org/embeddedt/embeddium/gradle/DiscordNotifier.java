@@ -60,7 +60,7 @@ public class DiscordNotifier {
 
     private static WebhookMessageBuilder makeBuilder() {
         return new WebhookMessageBuilder()
-                .setUsername("Embeddium Test Builds") // use this username
+                .setUsername("Celeritas Test Builds") // use this username
                 .setAvatarUrl("https://raw.githubusercontent.com/FiniteReality/embeddium/master/src/main/resources/icon.png"); // use this avatar
     }
 
@@ -88,7 +88,7 @@ public class DiscordNotifier {
                 future = future.thenCompose(v -> {
                     var builder = makeBuilder();
                     return client.onThread(TEST_BUILD_THREAD)
-                            .send(builder.addFile("embeddium-" + project.getVersion() + "-sources.zip", getSourceTarball()).build());
+                            .send(builder.addFile("celeritas-" + project.getVersion() + "-sources.zip", getSourceTarball()).build());
                 });
                 future.join();
             }
