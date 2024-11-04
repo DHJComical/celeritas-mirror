@@ -317,6 +317,12 @@ remapJar {
     if (loader == FORGE || loader == NEOFORGE) {
         atAccessWideners.add("${rootProject.properties.mod_id}.accesswidener")
     }
+    if (loader == NEOFORGE) {
+        // Disable remapping as it's a waste of CPU time
+        // This is theoretically useless on Forge too but Arch Loom currently requires it.
+        // (loader == FORGE && stonecutter.eval(ModLoader.getMinecraftVersion(project), ">=1.20.6"))
+        sourceNamespace = targetNamespace
+    }
     if(stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
         dependsOn("shadeDowngradedApi")
         inputFile = tasks.getByName("shadeDowngradedApi").archiveFile.get()
