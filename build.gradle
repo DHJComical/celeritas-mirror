@@ -404,6 +404,10 @@ tasks.named("validateAccessWidener") {
   enabled = false
 }
 
+tasks.named("remapSourcesJar") {
+  enabled = false // wastes too much memory
+}
+
 afterEvaluate {
     packageJar.dependsOn(remapJar)
     packageJar.from(remapJar.archiveFile)
