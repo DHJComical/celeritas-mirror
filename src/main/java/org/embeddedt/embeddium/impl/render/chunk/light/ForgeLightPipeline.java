@@ -25,6 +25,7 @@ import net.minecraftforge.client.textures.UnitTextureAtlasSprite;
 import net.neoforged.neoforge.client.model.lighting.FlatQuadLighter;
 import net.neoforged.neoforge.client.model.lighting.QuadLighter;
 import net.neoforged.neoforge.client.model.lighting.SmoothQuadLighter;
+import net.neoforged.neoforge.client.textures.UnitTextureAtlasSprite;
 *///?}
 //? if >=1.20 {
 import org.joml.Matrix3f;
@@ -41,7 +42,7 @@ public class ForgeLightPipeline implements LightPipeline {
     private final QuadLighter forgeLighter;
     private final BlockAndTintGetter level;
     private final int[] mutableQuadVertexData = new int[32];
-    //? if forge {
+    //? if forge || (neoforge && <1.21) {
     private final LightDataConsumer consumer = new LightDataConsumer();
     private final BakedQuad mutableQuadWithoutShade = new BakedQuad(mutableQuadVertexData, -1, Direction.UP, UnitTextureAtlasSprite.INSTANCE, false);
     private final BakedQuad mutableQuadWithShade = new BakedQuad(mutableQuadVertexData, -1, Direction.UP, UnitTextureAtlasSprite.INSTANCE, true);
@@ -91,7 +92,7 @@ public class ForgeLightPipeline implements LightPipeline {
     @Override
     public void calculate(ModelQuadView quad, BlockPos pos, QuadLightData out, Direction cullFace, Direction lightFace, boolean shade) {
         this.computeLightData(pos);
-        //? if forge {
+        //? if forge || (neoforge && <1.21) {
         BakedQuad forgeQuad;
         if(quad instanceof BakedQuad) {
             forgeQuad = generateForgeQuad(quad, ((BakedQuad)quad).isShade());
@@ -114,7 +115,7 @@ public class ForgeLightPipeline implements LightPipeline {
         this.cachedPos = Long.MIN_VALUE;
     }
 
-    //? if forge {
+    //? if forge || (neoforge && <1.21) {
     static class LightDataConsumer implements VertexConsumer {
         float[] brightness;
         int[] lm;

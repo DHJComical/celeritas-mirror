@@ -275,9 +275,11 @@ processResources {
             fileTree(dir: outputs.files.asPath, include: "META-INF/mods.toml").each { File file ->
                 file.text += "\n\n[[mixins]]\nconfig = \"${rootProject.properties.mod_id}.mixins.json\""
             }
-            fileTree(dir: outputs.files.asPath, include: "META-INF/mods.toml").each { File file ->
-                Files.copy(file.toPath(), java.nio.file.Path.of(outputs.files.asPath).resolve("META-INF/neoforge.mods.toml"), StandardCopyOption.REPLACE_EXISTING)
-                file.delete()
+            if (stonecutter.eval(ModLoader.getMinecraftVersion(project), ">=1.20.5")) {
+                fileTree(dir: outputs.files.asPath, include: "META-INF/mods.toml").each { File file ->
+                    Files.copy(file.toPath(), java.nio.file.Path.of(outputs.files.asPath).resolve("META-INF/neoforge.mods.toml"), StandardCopyOption.REPLACE_EXISTING)
+                    file.delete()
+                }
             }
         }
         if (loader == FABRIC) {

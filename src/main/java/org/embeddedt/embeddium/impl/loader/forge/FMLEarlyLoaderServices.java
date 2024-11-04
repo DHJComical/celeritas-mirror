@@ -56,9 +56,9 @@ public class FMLEarlyLoaderServices implements EarlyLoaderServices {
 
     @Override
     public boolean isLoadingNormally() {
-        //? if neoforge
+        //? if neoforge && >=1.20.6
         /*return !FMLLoader.getLoadingModList().hasErrors();*/
-        //? if forge
+        //? if forge || (neoforge && <1.20.6)
         return FMLLoader.getLoadingModList().getErrors().isEmpty();
     }
 

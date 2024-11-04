@@ -425,7 +425,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     }
     //?}
 
-    //? if neoforge
+    //? if neoforge && >=1.20.6
     /*@Override*/
     //? if forgelike && >=1.19 {
     public ModelData getModelData(BlockPos pos) {

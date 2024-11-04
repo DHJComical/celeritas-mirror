@@ -5,7 +5,19 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-//? if forgelike && <1.20.6 && >=1.19 {
+//? if neoforge && <1.20.5 {
+/*import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
+
+@Mixin(VanillaGuiOverlay.class)
+public class VanillaGuiOverlayMixin {
+
+    @Redirect(method = "lambda$static$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;useFancyGraphics()Z"))
+    private static boolean redirectFancyGraphicsVignette() {
+        return SodiumClientMod.options().quality.enableVignette;
+    }
+
+}
+*///?} else if forge && <1.20.6 && >=1.19 {
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 
 @Mixin(VanillaGuiOverlay.class)

@@ -78,13 +78,20 @@ public class ModelDataSnapshotter {
                 pos -> (ModelData)ourMap.get(pos.asLong());
                 //?} else
                 /*pos -> (IModelData)ourMap.get(pos.asLong());*/
-        //?} else if neoforge {
+        //?} else if neoforge && >=1.20.6 {
         /*var snapshot = world.getModelDataManager().snapshotSectionRegion(origin.getX(), origin.getY(), origin.getZ(), origin.getX(), origin.getY(), origin.getZ());
         if (snapshot == ModelDataManager.EMPTY_SNAPSHOT) {
             // Avoid an extra level of indirection
             return Getter.EMPTY;
         } else {
             return pos -> snapshot.get(pos.asLong());
+        }
+        *///?} else if neoforge {
+        /*var snapshot = world.getModelDataManager().snapshotSectionRegion(origin.getX(), origin.getY(), origin.getZ(), origin.getX(), origin.getY(), origin.getZ());
+        if (snapshot == ModelDataManager.Snapshot.EMPTY) {
+            return Getter.EMPTY;
+        } else {
+            return snapshot::getAtOrEmpty;
         }
         *///?} else {
         /*return Getter.EMPTY;

@@ -54,8 +54,10 @@ public final class ForgeLoaderServices implements LoaderServices {
         /*return !box.equals(net.minecraftforge.common.extensions.IForgeTileEntity.INFINITE_EXTENT_AABB);*/
         //? if forge && >=1.18
         return !box.equals(net.minecraftforge.common.extensions.IForgeBlockEntity.INFINITE_EXTENT_AABB);
-        //? if neoforge
+        //? if neoforge && >=1.20.6
         /*return !box.equals(AABB.INFINITE);*/
+        //? if neoforge && <1.20.6
+        /*return !box.equals(net.neoforged.neoforge.client.extensions.IBlockEntityRendererExtension.INFINITE_EXTENT_AABB);*/
     }
 }
 //?}

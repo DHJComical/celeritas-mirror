@@ -29,6 +29,7 @@ stonecutter {
     shared {
         vers("1.20.1-forge", "1.20.1")
         vers("1.20.1-fabric", "1.20.1")
+        vers("1.20.4-neoforge", "1.20.4")
         vers("1.21.1-fabric", "1.21.1")
         vers("1.21.1-forge", "1.21.1")
         vers("1.21.1-neoforge", "1.21.1")
