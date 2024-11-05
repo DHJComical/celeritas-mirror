@@ -42,13 +42,10 @@ public abstract class BufferBuilderMixin {
     private VertexFormat format;
     //?}
 
-    //? if >=1.19 {
-    @Shadow
-    private int renderedBufferPointer;
-    //?} else {
-    /*@Shadow
-    private int totalRenderedBytes;
-    *///?}
+    //? if >=1.19 <1.21
+    @Shadow private int renderedBufferPointer;
+    //? if <1.19
+    /*@Shadow private int totalRenderedBytes;*/
 
     //? if >=1.20 {
     @Shadow
