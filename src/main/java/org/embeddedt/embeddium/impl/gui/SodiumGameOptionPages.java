@@ -13,7 +13,6 @@ import org.embeddedt.embeddium.impl.compat.modernui.MuiGuiScaleHook;
 import org.embeddedt.embeddium.impl.compatibility.workarounds.Workarounds;
 import org.embeddedt.embeddium.impl.gl.arena.staging.MappedStagingBuffer;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
-import org.embeddedt.embeddium.impl.gui.options.*;
 import org.embeddedt.embeddium.api.options.binding.compat.VanillaBooleanOptionBinding;
 import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
 import org.embeddedt.embeddium.api.options.control.CyclingControl;

@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.gui.options;
 
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.Window;
+import org.embeddedt.embeddium.api.options.structure.OptionImpl;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptionPages;
 import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
 import org.embeddedt.embeddium.api.options.control.SliderControl;

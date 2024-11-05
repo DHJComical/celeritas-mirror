@@ -1,12 +1,8 @@
-package org.embeddedt.embeddium.impl.gui.options;
+package org.embeddedt.embeddium.api.options.structure;
 
 import org.embeddedt.embeddium.api.options.binding.GenericBinding;
 import org.embeddedt.embeddium.api.options.binding.OptionBinding;
 import org.embeddedt.embeddium.api.options.control.Control;
-import org.embeddedt.embeddium.api.options.structure.Option;
-import org.embeddedt.embeddium.api.options.structure.OptionFlag;
-import org.embeddedt.embeddium.api.options.structure.OptionImpact;
-import org.embeddedt.embeddium.api.options.structure.OptionStorage;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.Validate;
