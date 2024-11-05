@@ -47,7 +47,7 @@ public abstract class BufferBuilderMixin {
     //? if <1.19
     /*@Shadow private int totalRenderedBytes;*/
 
-    //? if >=1.20 {
+    //? if >=1.20 <1.21 {
     @Shadow
     @Nullable
     private VertexSorting sorting;
