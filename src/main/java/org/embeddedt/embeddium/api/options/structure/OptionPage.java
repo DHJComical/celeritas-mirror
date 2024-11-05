@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.gui.options;
+package org.embeddedt.embeddium.api.options.structure;
 
 import com.google.common.collect.ImmutableList;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
@@ -9,7 +9,6 @@ import net.minecraft.network.chat.contents.TranslatableContents;
 /*import net.minecraft.network.chat.TranslatableComponent;*/
 import org.embeddedt.embeddium.api.OptionPageConstructionEvent;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
-import org.embeddedt.embeddium.api.options.structure.StandardOptions;
 
 import java.util.List;
 

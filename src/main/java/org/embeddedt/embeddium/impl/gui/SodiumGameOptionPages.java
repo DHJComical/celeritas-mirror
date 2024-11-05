@@ -7,19 +7,19 @@ import com.mojang.blaze3d.platform.Window;
 import net.minecraftforge.common.ForgeConfig;
 //? if <1.19
 /*import net.minecraft.client.Option;*/
+import org.embeddedt.embeddium.api.options.structure.*;
 import org.embeddedt.embeddium.impl.compat.modernui.MuiGuiScaleHook;
 //? if >=1.18
 import org.embeddedt.embeddium.impl.compatibility.workarounds.Workarounds;
 import org.embeddedt.embeddium.impl.gl.arena.staging.MappedStagingBuffer;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gui.options.*;
-import org.embeddedt.embeddium.impl.gui.options.binding.compat.VanillaBooleanOptionBinding;
-import org.embeddedt.embeddium.impl.gui.options.control.ControlValueFormatter;
-import org.embeddedt.embeddium.impl.gui.options.control.CyclingControl;
-import org.embeddedt.embeddium.impl.gui.options.control.SliderControl;
-import org.embeddedt.embeddium.impl.gui.options.control.TickBoxControl;
-import org.embeddedt.embeddium.impl.gui.options.storage.MinecraftOptionsStorage;
-import org.embeddedt.embeddium.impl.gui.options.storage.OptionStorage;
+import org.embeddedt.embeddium.api.options.binding.compat.VanillaBooleanOptionBinding;
+import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
+import org.embeddedt.embeddium.api.options.control.CyclingControl;
+import org.embeddedt.embeddium.api.options.control.SliderControl;
+import org.embeddedt.embeddium.api.options.control.TickBoxControl;
+import org.embeddedt.embeddium.api.options.storage.MinecraftOptionsStorage;
 import org.embeddedt.embeddium.impl.gui.options.storage.SodiumOptionsStorage;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import net.minecraft.ChatFormatting;
@@ -27,7 +27,6 @@ import net.minecraft.client.*;
 //? if >=1.21.2
 /*import net.minecraft.server.level.ParticleStatus;*/
 import net.minecraft.network.chat.Component;
-import org.embeddedt.embeddium.api.options.structure.StandardOptions;
 import org.embeddedt.embeddium.impl.gui.options.FullscreenResolutionHelper;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;

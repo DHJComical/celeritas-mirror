@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.gui.options.binding;
+package org.embeddedt.embeddium.api.options.binding;
 
 public interface OptionBinding<S, T> {
     void setValue(S storage, T value);

@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.gui.frame.components;
 
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.StringUtil;
-import org.embeddedt.embeddium.impl.gui.options.OptionPage;
+import org.embeddedt.embeddium.api.options.structure.OptionPage;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;

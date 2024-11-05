@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.api;
 
-import org.embeddedt.embeddium.impl.gui.options.OptionGroup;
+import org.embeddedt.embeddium.api.options.structure.OptionGroup;
 import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
 import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;

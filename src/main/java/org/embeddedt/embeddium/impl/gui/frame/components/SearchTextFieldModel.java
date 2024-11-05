@@ -2,9 +2,9 @@ package org.embeddedt.embeddium.impl.gui.frame.components;
 
 import com.google.common.base.Predicates;
 import net.minecraft.util.StringUtil;
-import org.embeddedt.embeddium.impl.gui.options.Option;
-import org.embeddedt.embeddium.impl.gui.options.OptionPage;
-import org.embeddedt.embeddium.impl.gui.options.control.CyclingControl;
+import org.embeddedt.embeddium.api.options.structure.Option;
+import org.embeddedt.embeddium.api.options.structure.OptionPage;
+import org.embeddedt.embeddium.api.options.control.CyclingControl;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;

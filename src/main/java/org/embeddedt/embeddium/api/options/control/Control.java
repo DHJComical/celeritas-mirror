@@ -1,6 +1,6 @@
-package org.embeddedt.embeddium.impl.gui.options.control;
+package org.embeddedt.embeddium.api.options.control;
 
-import org.embeddedt.embeddium.impl.gui.options.Option;
+import org.embeddedt.embeddium.api.options.structure.Option;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 
 public interface Control<T> {

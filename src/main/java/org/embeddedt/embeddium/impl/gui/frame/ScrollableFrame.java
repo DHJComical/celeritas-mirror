@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.gui.frame;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import org.embeddedt.embeddium.impl.gui.options.control.ControlElement;
+import org.embeddedt.embeddium.api.options.control.ControlElement;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 //? if >=1.20 {
 import net.minecraft.client.gui.GuiGraphics;

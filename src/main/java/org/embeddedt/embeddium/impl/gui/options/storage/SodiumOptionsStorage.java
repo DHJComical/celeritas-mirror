@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.gui.options.storage;
 
+import org.embeddedt.embeddium.api.options.structure.OptionStorage;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 

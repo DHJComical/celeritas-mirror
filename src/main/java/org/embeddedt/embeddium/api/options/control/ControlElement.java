@@ -1,7 +1,7 @@
-package org.embeddedt.embeddium.impl.gui.options.control;
+package org.embeddedt.embeddium.api.options.control;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import org.embeddedt.embeddium.impl.gui.options.Option;
+import org.embeddedt.embeddium.api.options.structure.Option;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
@@ -17,7 +17,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ControlElement<T> extends AbstractWidget {
+public class ControlElement<T> extends AbstractWidget implements OptionControlElement<T> {
     protected final Option<T> option;
 
     protected final Dim2i dim;

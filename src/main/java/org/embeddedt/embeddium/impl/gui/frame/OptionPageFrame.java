@@ -2,12 +2,12 @@ package org.embeddedt.embeddium.impl.gui.frame;
 
 import com.google.common.base.Predicates;
 import com.mojang.blaze3d.vertex.PoseStack;
-import org.embeddedt.embeddium.impl.gui.options.Option;
-import org.embeddedt.embeddium.impl.gui.options.OptionGroup;
-import org.embeddedt.embeddium.impl.gui.options.OptionImpact;
-import org.embeddedt.embeddium.impl.gui.options.OptionPage;
-import org.embeddedt.embeddium.impl.gui.options.control.Control;
-import org.embeddedt.embeddium.impl.gui.options.control.ControlElement;
+import org.embeddedt.embeddium.api.options.structure.Option;
+import org.embeddedt.embeddium.api.options.structure.OptionGroup;
+import org.embeddedt.embeddium.api.options.structure.OptionImpact;
+import org.embeddedt.embeddium.api.options.structure.OptionPage;
+import org.embeddedt.embeddium.api.options.control.Control;
+import org.embeddedt.embeddium.api.options.control.ControlElement;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.ChatFormatting;
@@ -29,7 +29,6 @@ import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 

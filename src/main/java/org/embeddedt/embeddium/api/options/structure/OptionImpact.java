@@ -1,7 +1,8 @@
-package org.embeddedt.embeddium.impl.gui.options;
+package org.embeddedt.embeddium.api.options.structure;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import org.embeddedt.embeddium.impl.gui.options.TextProvider;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 public enum OptionImpact implements TextProvider {

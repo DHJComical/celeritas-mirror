@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.api;
 
-import org.embeddedt.embeddium.impl.gui.options.OptionPage;
+import org.embeddedt.embeddium.api.options.structure.OptionPage;
 import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
 import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;
 

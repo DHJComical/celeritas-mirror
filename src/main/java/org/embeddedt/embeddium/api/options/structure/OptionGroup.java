@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.gui.options;
+package org.embeddedt.embeddium.api.options.structure;
 
 import com.google.common.collect.ImmutableList;
 import org.embeddedt.embeddium.impl.SodiumClientMod;

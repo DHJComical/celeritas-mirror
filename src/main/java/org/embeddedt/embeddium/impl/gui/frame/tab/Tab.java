@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.gui.frame.tab;
 
-import org.embeddedt.embeddium.impl.gui.options.Option;
-import org.embeddedt.embeddium.impl.gui.options.OptionPage;
+import org.embeddedt.embeddium.api.options.structure.Option;
+import org.embeddedt.embeddium.api.options.structure.OptionPage;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.network.chat.Component;
