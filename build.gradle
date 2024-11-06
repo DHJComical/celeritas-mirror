@@ -40,7 +40,6 @@ python {
 
 project.ext["loom.platform"] = loader.friendlyName
 project.ext["cur_mc_ver"] = ModLoader.getMinecraftVersion(project)
-stonecutter.dependency("minecraft", ModLoader.getMinecraftVersion(project))
 
 repositories {
     mavenCentral()

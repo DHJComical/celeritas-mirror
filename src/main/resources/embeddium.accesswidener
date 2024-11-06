@@ -60,3 +60,4 @@ accessible method net/minecraft/client/renderer/texture/TextureAtlasSprite$Inter
 accessible field net/minecraft/client/renderer/LightTexture lightTextureLocation Lnet/minecraft/resources/ResourceLocation;
 accessible field com/mojang/blaze3d/platform/GlStateManager$BooleanState enabled Z
 accessible field net/minecraft/client/model/geom/ModelPart$Cube polygons [Lnet/minecraft/client/model/geom/ModelPart$Polygon;
+accessible method net/minecraft/client/renderer/block/model/BlockModel getElements ()Ljava/util/List;

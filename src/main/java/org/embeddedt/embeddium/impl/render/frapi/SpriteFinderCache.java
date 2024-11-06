@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.frapi;
 
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
@@ -75,7 +76,7 @@ public class SpriteFinderCache {
                     var modelManager = Minecraft.getInstance().getModelManager();
                     Finder finder = NULL_FINDER;
                     //? if ffapi {
-                    /*var fabricFinder = SpriteFinder.get(modelManager.getAtlas(InventoryMenu.BLOCK_ATLAS));
+                    /*var fabricFinder = SpriteFinder.get(modelManager.getAtlas(TextureAtlas.LOCATION_BLOCKS));
                     try {
                         MethodType bootstrapType = MethodType.methodType(Finder.class, SpriteFinder.class);
                         MethodType invocationType = MethodType.methodType(TextureAtlasSprite.class, float.class, float.class);
