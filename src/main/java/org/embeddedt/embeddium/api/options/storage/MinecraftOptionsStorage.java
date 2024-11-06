@@ -23,4 +23,11 @@ public class MinecraftOptionsStorage implements OptionStorage<Options> {
 
         SodiumClientMod.logger().info("Flushed changes to Minecraft configuration");
     }
+
+    public static int getMipmapLevels() {
+        //? if >=1.19 {
+        return Minecraft.getInstance().options.mipmapLevels().get();
+        //?} else
+        /*return Minecraft.getInstance().options.mipmapLevels;*/
+    }
 }
