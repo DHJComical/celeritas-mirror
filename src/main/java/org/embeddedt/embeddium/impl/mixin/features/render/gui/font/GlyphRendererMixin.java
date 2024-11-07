@@ -56,20 +56,37 @@ public class GlyphRendererMixin {
      * @reason Use intrinsics
      * @author JellySquid
      */
-    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    //? if <1.21.2 {
-    private void renderFast(boolean italic, float x, float y, Matrix4f matrix, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha, int light, CallbackInfo ci) {
+    @Inject(method = {
+            //? if <1.21.4-alpha.24.45.a {
+            "render"
+            //?} else
+            /*"render(ZFFFLorg/joml/Matrix4f;Lcom/mojang/blaze3d/vertex/VertexConsumer;IZI)V"*/
+    }, at = @At("HEAD"), cancellable = true)
+    private void renderFast(boolean italic, float x, float y,
+                            //? if >=1.21.4-alpha.24.45.a
+                            /*float z,*/
+                            Matrix4f matrix, VertexConsumer vertexConsumer,
+                            //? if <1.21.2
+                            float red, float green, float blue, float alpha,
+                            //? if >=1.21.2
+                            /*int color,*/
+                            //? if >=1.21.4-alpha.24.45.a
+                            /*boolean applyBoldScale,*/
+                            int light, CallbackInfo ci) {
+        //? if <1.21.2
         int packedColor = ColorABGR.pack(red, green, blue, alpha);
-    //?} else {
-    /*private void renderFast(boolean italic, float x, float y, Matrix4f matrix, VertexConsumer vertexConsumer, int color, int light, CallbackInfo ci) {
-        int packedColor = ColorARGB.toABGR(color);
-    *///?}
-        if(drawFast(italic, x, y, matrix, vertexConsumer, packedColor, light)) {
+        //? if >=1.21.2
+        /*int packedColor = ColorARGB.toABGR(color);*/
+        //? if <1.21.4-alpha.24.45.a {
+        float z = 0.0f;
+        boolean applyBoldScale = false;
+        //?}
+        if(drawFast(italic, x, y, z, matrix, vertexConsumer, packedColor, light, applyBoldScale)) {
             ci.cancel();
         }
     }
 
-    private boolean drawFast(boolean italic, float x, float y, Matrix4f matrix, VertexConsumer vertexConsumer, int color, int light) {
+    private boolean drawFast(boolean italic, float x, float y, float z, Matrix4f matrix, VertexConsumer vertexConsumer, int color, int light, boolean applyBoldScale) {
         var writer = VertexBufferWriter.tryOf(vertexConsumer);
 
         if (writer == null)
@@ -84,21 +101,22 @@ public class GlyphRendererMixin {
         float h2 = y + y2;
         float w1 = italic ? 1.0F - 0.25F * y1 : 0.0F;
         float w2 = italic ? 1.0F - 0.25F * y2 : 0.0F;
+        float boldScale = applyBoldScale ? 0.1F : 0.0F;
 
         try (MemoryStack stack = MemoryStack.stackPush()) {
             long buffer = stack.nmalloc(4 * GlyphVertex.STRIDE);
             long ptr = buffer;
 
-            write(ptr, matrix, x1 + w1, h1, 0.0F, color, this.u0, this.v0, light);
+            write(ptr, matrix, x1 + w1 - boldScale, h1 - boldScale, z, color, this.u0, this.v0, light);
             ptr += GlyphVertex.STRIDE;
 
-            write(ptr, matrix, x1 + w2, h2, 0.0F, color, this.u0, this.v1, light);
+            write(ptr, matrix, x1 + w2 - boldScale, h2 + boldScale, z, color, this.u0, this.v1, light);
             ptr += GlyphVertex.STRIDE;
 
-            write(ptr, matrix, x2 + w2, h2, 0.0F, color, this.u1, this.v1, light);
+            write(ptr, matrix, x2 + w2 + boldScale, h2 + boldScale, z, color, this.u1, this.v1, light);
             ptr += GlyphVertex.STRIDE;
 
-            write(ptr, matrix, x2 + w1, h1, 0.0F, color, this.u1, this.v0, light);
+            write(ptr, matrix, x2 + w1 + boldScale, h1 - boldScale, z, color, this.u1, this.v0, light);
             ptr += GlyphVertex.STRIDE;
 
             writer.push(stack, buffer, 4, GlyphVertex.FORMAT);

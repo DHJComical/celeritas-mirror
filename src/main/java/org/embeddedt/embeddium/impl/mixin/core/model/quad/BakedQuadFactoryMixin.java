@@ -16,15 +16,25 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * Check if quad's UVs are contained within the sprite's boundaries; if so, mark it as having a trusted sprite
+ * (meaning the particle sprite matches the encoded UVs)
+ */
 @Mixin(FaceBakery.class)
 public class BakedQuadFactoryMixin {
-    /**
-     * @author embeddedt
-     * @reason Check if quad's UVs are contained within the sprite's boundaries; if so, mark it as having a trusted sprite
-     * (meaning the particle sprite matches the encoded UVs)
-     */
+    //? if <1.21.4-alpha.24.45.a {
     @ModifyReturnValue(method = "bakeQuad", at = @At("RETURN"))
     private BakedQuad setMaterialClassification(BakedQuad quad, @Local(ordinal = 0, argsOnly = true) BlockElementFace face, @Local(ordinal = 0, argsOnly = true) TextureAtlasSprite sprite) {
+        return quad;
+    }
+    //?} else {
+    /*@ModifyReturnValue(method = "bakeQuad", at = @At("RETURN"))
+    private static BakedQuad setMaterialClassification(BakedQuad quad, @Local(ordinal = 0, argsOnly = true) BlockElementFace face, @Local(ordinal = 0, argsOnly = true) TextureAtlasSprite sprite) {
+        return quad;
+    }
+    *///?}
+
+    private static void handleMaterialClassifications(BakedQuad quad, TextureAtlasSprite sprite, BlockElementFace face) {
         if (sprite.getClass() == TextureAtlasSprite.class /*? if >=1.20 {*/ && sprite.contents().getClass() == SpriteContents.class /*?}*/) {
             //? if <1.21
             float[] uvs = face.uv.uvs;
@@ -44,8 +54,6 @@ public class BakedQuadFactoryMixin {
             }
 
         }
-
-        return quad;
     }
 
     //? if forgelike && <1.20.2 {

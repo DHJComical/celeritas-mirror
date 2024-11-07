@@ -121,6 +121,8 @@ java {
     sourceCompatibility = java
 }
 
+def skippedFabricApiModules = ["fabric-renderer-api-v1", "fabric-renderer-indigo"]
+
 dependencies {
     minecraft "net.minecraft:minecraft:${ModLoader.getMinecraftVersion(project)}"
 
@@ -176,7 +178,7 @@ dependencies {
         } else {
             for (String module in rootProject.properties.fabric_api_modules.split(",") as String[]) {
                 var dep = fabricApi.module(module, versionedProperty("fabric_api_version"))
-                if(module.equals("fabric-resource-loader-v0") || module.equals("fabric-api-base") || module.equals("fabric-rendering-fluids-v1")) {
+                if(!skippedFabricApiModules.contains(module)) {
                     modApi dep, {
                         exclude group: 'net.fabricmc', module: 'fabric-loader'
                     }
@@ -297,6 +299,9 @@ processResources {
                 } else {
                     def fModules = fModulesString.split(",")
                     for (String s in fModules) {
+                        if(skippedFabricApiModules.contains(s)) {
+                            continue
+                        }
                         // ^ means until the next major
                         parse.depends[s] = "^" + fabricApi.module(s, versionedProperty("fabric_api_version")).getVersion()
                     }
