@@ -20,10 +20,10 @@ public class ModelPartMixin implements ModelPartExtended {
     @Shadow
     @Final
     private Map<String, ModelPart> children;
-    private List<ModelPart> embeddium$allParts;
+    private transient List<ModelPart> embeddium$allParts;
 
-    private Optional<ModelPart> embeddium$optional;
-    private Map<String, ModelPart> embeddium$descendantsByName;
+    private transient Optional<ModelPart> embeddium$optional;
+    private transient Map<String, ModelPart> embeddium$descendantsByName;
 
     @Override
     public Optional<ModelPart> embeddium$asOptional() {
