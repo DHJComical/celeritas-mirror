@@ -176,9 +176,16 @@ dependencies {
         } else {
             for (String module in rootProject.properties.fabric_api_modules.split(",") as String[]) {
                 var dep = fabricApi.module(module, versionedProperty("fabric_api_version"))
-                modApi dep, {
-                    exclude group: 'net.fabricmc', module: 'fabric-loader'
+                if(module.equals("fabric-resource-loader-v0") || module.equals("fabric-api-base") || module.equals("fabric-rendering-fluids-v1")) {
+                    modApi dep, {
+                        exclude group: 'net.fabricmc', module: 'fabric-loader'
+                    }
+                } else {
+                    modCompileOnly dep, {
+                        exclude group: 'net.fabricmc', module: 'fabric-loader'
+                    }
                 }
+
                 if (rootProject.properties.include_fabric_api_modules == "true") {
                     include(dep)
                 }
