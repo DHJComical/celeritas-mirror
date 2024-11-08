@@ -100,7 +100,6 @@ stonecutter.const("fabric", loader == FABRIC)
 stonecutter.const("forge", loader == FORGE)
 stonecutter.const("neoforge", loader == NEOFORGE)
 stonecutter.const("forgelike", loader == NEOFORGE || loader == FORGE)
-stonecutter.const("ffapi", versionedProperty("ffapi") != null || (loader == FABRIC && !"true".equals(versionedProperty("disable_frapi_on"))))
 
 loom {
     accessWidenerPath = project.rootDir.toPath().resolve("src/main/resources/${E.p.mod_id}.accesswidener").toFile()
@@ -169,6 +168,8 @@ dependencies {
     }
 
     if(fabric_api_version != null) {
+        stonecutter.const("ffapi", !"true".equals(versionedProperty("disable_frapi_on")))
+
         for (String module in rootProject.properties.fabric_api_modules.split(",") as String[]) {
             if(loader == FABRIC && !skippedFabricApiModules.contains(module)) {
                 modApi fabricApiModuleFinder.module(loader, module, fabric_api_version), {
@@ -179,9 +180,13 @@ dependencies {
                     modCompileOnly fabricApiModuleFinder.module(loader, module, fabric_api_version), {
                         exclude group: 'net.fabricmc', module: 'fabric-loader'
                     }
-                } catch(Exception ignored) {}
+                } catch(Exception e) {
+                    println("Skipped module " + module + " on " + ModLoader.getMinecraftVersion(project) + "/" + loader.friendlyName)
+                }
             }
         }
+    } else {
+        stonecutter.const("ffapi", false)
     }
 
     if (loader == FABRIC) {

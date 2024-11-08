@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.gradle.fabric.remapper;
 import java.io.*;
 import java.net.URL;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -43,8 +43,8 @@ public abstract class FabricApiModuleFinder {
         }
     }
 
-    private static final HashMap<FabricApiVersion, Map<String, String>> moduleVersionCache = new HashMap<>();
-    private static final HashMap<FabricApiVersion, Map<String, String>> deprecatedModuleVersionCache = new HashMap<>();
+    private static final ConcurrentHashMap<FabricApiVersion, Map<String, String>> moduleVersionCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<FabricApiVersion, Map<String, String>> deprecatedModuleVersionCache = new ConcurrentHashMap<>();
 
     public Dependency module(ModLoader loader, String moduleName, String fabricApiVersion) {
         return getProject().getDependencies()
@@ -96,7 +96,7 @@ public abstract class FabricApiModuleFinder {
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             Document pom = docBuilder.parse(pomFile);
 
-            Map<String, String> versionMap = new HashMap<>();
+            Map<String, String> versionMap = new ConcurrentHashMap<>();
 
             NodeList dependencies = ((Element) pom.getElementsByTagName("dependencies").item(0)).getElementsByTagName("dependency");
 

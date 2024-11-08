@@ -40,6 +40,7 @@ import org.embeddedt.embeddium.impl.render.frapi.FRAPIModelUtils;
 import org.embeddedt.embeddium.impl.render.frapi.FRAPIRenderHandler;
 //? if ffapi && >=1.20
 import org.embeddedt.embeddium.impl.render.frapi.IndigoBlockRenderContext;
+import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 
 import java.util.Arrays;
 import java.util.List;
