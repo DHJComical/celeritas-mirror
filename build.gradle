@@ -170,19 +170,20 @@ dependencies {
     if(fabric_api_version != null) {
         stonecutter.const("ffapi", !"true".equals(versionedProperty("disable_frapi_on")))
 
+
         for (String module in rootProject.properties.fabric_api_modules.split(",") as String[]) {
-            if(loader == FABRIC && !skippedFabricApiModules.contains(module)) {
-                modApi fabricApiModuleFinder.module(loader, module, fabric_api_version), {
-                    exclude group: 'net.fabricmc', module: 'fabric-loader'
-                }
-            } else {
-                try {
+            try {
+                if(loader == FABRIC && !skippedFabricApiModules.contains(module)) {
+                    modApi fabricApiModuleFinder.module(loader, module, fabric_api_version), {
+                        exclude group: 'net.fabricmc', module: 'fabric-loader'
+                    }
+                } else {
                     modCompileOnly fabricApiModuleFinder.module(loader, module, fabric_api_version), {
                         exclude group: 'net.fabricmc', module: 'fabric-loader'
                     }
-                } catch(Exception e) {
-                    println("Skipped module " + module + " on " + ModLoader.getMinecraftVersion(project) + "/" + loader.friendlyName)
                 }
+            } catch(Exception ignored) {
+                println("Skipped module " + module + " on " + ModLoader.getMinecraftVersion(project) + "/" + loader.friendlyName)
             }
         }
     } else {
