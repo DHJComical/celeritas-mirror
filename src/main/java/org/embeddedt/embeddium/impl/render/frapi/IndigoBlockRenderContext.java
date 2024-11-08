@@ -21,6 +21,8 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 //? if forge
 import net.minecraftforge.client.model.data.ModelData;
+//? if neoforge
+/*import net.neoforged.neoforge.client.model.data.ModelData;*/
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;

@@ -311,8 +311,10 @@ processResources {
                         if(skippedFabricApiModules.contains(s)) {
                             continue
                         }
-                        // ^ means until the next major
-                        parse.depends[s] = "^" + fabricApi.module(s, versionedProperty("fabric_api_version")).getVersion()
+                        try {
+                            // ^ means until the next major
+                            parse.depends[s] = "^" + fabricApi.module(s, versionedProperty("fabric_api_version")).getVersion()
+                        } catch(Exception ignored) {}
                     }
                 }
                 file.text = JsonOutput.prettyPrint(JsonOutput.toJson(parse))
