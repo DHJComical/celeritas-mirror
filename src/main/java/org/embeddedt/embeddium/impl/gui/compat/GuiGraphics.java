@@ -85,7 +85,7 @@ public class GuiGraphics {
         //? if >=1.16.2 {
         RenderSystem.disableScissor();
         //?} else
-        GL20C.glDisable(GL20C.GL_SCISSOR_TEST);
+        /^GL20C.glDisable(GL20C.GL_SCISSOR_TEST);^/
     }
 }
 
