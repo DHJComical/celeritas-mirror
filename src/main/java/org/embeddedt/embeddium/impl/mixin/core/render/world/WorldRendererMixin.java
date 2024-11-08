@@ -6,6 +6,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 //? if >=1.21
 /*import net.minecraft.client.DeltaTracker;*/
 import net.minecraft.client.renderer.*;
+//? if neoforge
+/*import net.neoforged.neoforge.client.ClientHooks;*/
 import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;
@@ -176,6 +178,11 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
                 matrix, this.ticks, this.minecraft.gameRenderer.getMainCamera(), this.embeddium$getCurrentFrustum());
         renderLayer.clearRenderState();
         //?}
+        //? if neoforge && <1.21 {
+        /*renderLayer.setupRenderState();
+        ClientHooks.dispatchRenderStage(renderLayer, (LevelRenderer)(Object)this, matrices, matrix, this.ticks, this.minecraft.gameRenderer.getMainCamera(), this.embeddium$getCurrentFrustum());
+        renderLayer.clearRenderState();
+        *///?}
     }
 
     /**
