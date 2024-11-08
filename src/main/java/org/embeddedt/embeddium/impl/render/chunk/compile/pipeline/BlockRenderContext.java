@@ -1,6 +1,9 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
@@ -23,6 +26,7 @@ import org.joml.Vector3fc;
  * Holds the context for the current block being rendered in a chunk section. This container is reused rather than
  * being freshly constructed for each block to avoid allocations.
  */
+@Accessors(fluent = true)
 public class BlockRenderContext {
     private final EmbeddiumBlockAndTintGetter localSlice;
 
@@ -37,6 +41,10 @@ public class BlockRenderContext {
 
     private long seed;
 
+    //? if forgelike {
+    @Setter
+    @Accessors(fluent = false)
+    //? }
     //? if forgelike && >=1.19.1
     private ModelData modelData;
     //? if forgelike && <1.19.1
@@ -45,12 +53,16 @@ public class BlockRenderContext {
 
     private int lightValue = -1;
 
+    @Getter
+    private GeometryCategory category = GeometryCategory.BLOCK;
+
     public BlockRenderContext(WorldSlice world) {
         this.localSlice = WorldSliceLocalGenerator.generate(world);
         ((CachingPoseStack)this.stack).embeddium$setCachingEnabled(true);
     }
 
-    public void update(BlockPos pos, BlockPos origin, BlockState state, BakedModel model, long seed, /*? if forgelike && >=1.19 {*/ ModelData modelData, /*?}*//*? if forgelike && <1.19 {*/ /*IModelData modelData, *//*?}*/ RenderType renderLayer) {
+    public void update(GeometryCategory category, BlockPos pos, BlockPos origin, BlockState state, BakedModel model, long seed, RenderType renderLayer) {
+        this.category = category;
         this.pos.set(pos);
         this.origin.set(origin.getX(), origin.getY(), origin.getZ());
 
@@ -61,8 +73,6 @@ public class BlockRenderContext {
 
         this.lightValue = -1;
 
-        //? if forgelike
-        this.modelData = modelData;
         this.renderLayer = renderLayer;
     }
 

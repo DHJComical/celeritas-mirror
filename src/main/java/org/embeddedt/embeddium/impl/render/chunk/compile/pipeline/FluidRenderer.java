@@ -47,6 +47,7 @@ import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 import org.embeddedt.embeddium.impl.render.fluid.EmbeddiumFluidSpriteCache;
 //? if >=1.18
 import org.embeddedt.embeddium.impl.tags.EmbeddiumTags;
+import org.joml.Vector3fc;
 
 import java.util.Objects;
 
@@ -174,7 +175,11 @@ public class FluidRenderer {
         context.setCaptureAdditionalSprites(false);
     }
 
-    public void render(EmbeddiumBlockAndTintGetter world, FluidState fluidState, BlockPos blockPos, BlockPos offset, ChunkBuildBuffers buffers) {
+    public void render(BlockRenderContext ctx, ChunkBuildBuffers buffers) {
+        var fluidState = ctx.state().getFluidState();
+        var blockPos = ctx.pos();
+        var world = ctx.localSlice();
+        var offset = ctx.origin();
         var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(ItemBlockRenderTypes.getRenderLayer(fluidState));
         var meshBuilder = buffers.get(material);
         Fluid fluid = fluidState.getType();
@@ -357,11 +362,11 @@ public class FluidRenderer {
             }
 
             this.updateQuad(quad, world, blockPos, lighter, Direction.UP, 1.0F, colorProvider, fluidState);
-            this.writeQuad(meshBuilder, material, offset, quad, facing, false);
+            this.writeQuad(meshBuilder, material, offset, quad, facing, false, ctx);
 
             if (fluidState.shouldRenderBackwardUpFace(world, this.scratchPos.set(posX, posY + 1, posZ))) {
                 this.writeQuad(meshBuilder, material, offset, quad,
-                        ModelQuadFacing.NEG_Y, true);
+                        ModelQuadFacing.NEG_Y, true, ctx);
 
             }
 
@@ -382,7 +387,7 @@ public class FluidRenderer {
             setVertex(quad, 3, 1.0F, yOffset, 1.0F, maxU, maxV);
 
             this.updateQuad(quad, world, blockPos, lighter, Direction.DOWN, 1.0F, colorProvider, fluidState);
-            this.writeQuad(meshBuilder, material, offset, quad, ModelQuadFacing.NEG_Y, false);
+            this.writeQuad(meshBuilder, material, offset, quad, ModelQuadFacing.NEG_Y, false, ctx);
 
         }
 
@@ -498,10 +503,10 @@ public class FluidRenderer {
                 ModelQuadFacing facing = ModelQuadFacing.fromDirection(dir);
 
                 this.updateQuad(quad, world, blockPos, lighter, dir, br, colorProvider, fluidState);
-                this.writeQuad(meshBuilder, material, offset, quad, facing, false);
+                this.writeQuad(meshBuilder, material, offset, quad, facing, false, ctx);
 
                 if (!isOverlay) {
-                    this.writeQuad(meshBuilder, material, offset, quad, facing.getOpposite(), true);
+                    this.writeQuad(meshBuilder, material, offset, quad, facing.getOpposite(), true, ctx);
                 }
 
             }
@@ -532,15 +537,15 @@ public class FluidRenderer {
         }
     }
 
-    private void writeQuad(ChunkModelBuilder builder, Material material, BlockPos offset, ModelQuadView quad,
-                           ModelQuadFacing facing, boolean flip) {
+    private void writeQuad(ChunkModelBuilder builder, Material material, Vector3fc offset, ModelQuadView quad,
+                           ModelQuadFacing facing, boolean flip, BlockRenderContext ctx) {
         var vertices = this.vertices;
 
         for (int i = 0; i < 4; i++) {
             var out = vertices[flip ? (3 - i + 1) & 0b11 : i];
-            out.x = offset.getX() + quad.getX(i);
-            out.y = offset.getY() + quad.getY(i);
-            out.z = offset.getZ() + quad.getZ(i);
+            out.x = offset.x() + quad.getX(i);
+            out.y = offset.y() + quad.getY(i);
+            out.z = offset.z() + quad.getZ(i);
 
             out.color = this.quadColors[i];
             out.u = quad.getTexU(i);
@@ -555,7 +560,7 @@ public class FluidRenderer {
         }
 
         var vertexBuffer = builder.getVertexBuffer(facing);
-        vertexBuffer.push(vertices, material, null);
+        vertexBuffer.push(vertices, material, ctx);
     }
 
     private static void setVertex(ModelQuadViewMutable quad, int i, float x, float y, float z, float u, float v) {

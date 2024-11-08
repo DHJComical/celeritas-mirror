@@ -10,6 +10,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderCache;
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
+import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.GeometryCategory;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionInfo;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -144,7 +145,8 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
                             //? if forgelike && >=1.19 {
                             for (RenderType layer : model.getRenderTypes(blockState, random, modelData)) {
-                                context.update(blockPos, modelOffset, blockState, model, seed, modelData, layer);
+                                context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, model, seed, layer);
+                                context.setModelData(modelData);
                                 cache.getBlockRenderer()
                                         .renderModel(context, buffers);
                             }
@@ -154,12 +156,13 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                                 /^ForgeHooksClient.setRenderType(layer);
                                 ^///?} else
                                 ForgeHooksClient.setRenderLayer(layer);
-                                context.update(blockPos, modelOffset, blockState, model, seed, modelData, layer);
+                                context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, model, seed, layer);
+                                context.setModelData(modelData);
                                 cache.getBlockRenderer()
                                         .renderModel(context, buffers);
                             }
                             *///?} else {
-                            /*context.update(blockPos, modelOffset, blockState, model, seed, ItemBlockRenderTypes.getChunkRenderType(blockState));
+                            /*context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, model, seed, ItemBlockRenderTypes.getChunkRenderType(blockState));
                             cache.getBlockRenderer()
                                     .renderModel(context, buffers);
                             *///?}
@@ -168,7 +171,8 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         FluidState fluidState = blockState.getFluidState();
 
                         if (!fluidState.isEmpty()) {
-                            cache.getFluidRenderer().render(slice, fluidState, blockPos, modelOffset, buffers);
+                            context.update(GeometryCategory.FLUID, blockPos, modelOffset, blockState, null, 42L, ItemBlockRenderTypes.getRenderLayer(fluidState));
+                            cache.getFluidRenderer().render(context, buffers);
                         }
 
                         if (WorldUtil.hasBlockEntity(blockState)) {
