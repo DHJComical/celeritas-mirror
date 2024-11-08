@@ -13,8 +13,8 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 public class WorldUtil {
     public static int getMinBuildHeight(LevelReader level) {
         //? if >=1.21.2 {
-        /*return level.getMinY();*/
-        //?} else if >=1.17 <1.21.2 {
+        /*return level.getMinY();
+        *///?} else if >=1.17 <1.21.2 {
         return level.getMinBuildHeight();
         //?} else
         /*return 0;*/
@@ -22,8 +22,8 @@ public class WorldUtil {
 
     public static int getMaxBuildHeight(LevelReader level) {
         //? if >=1.21.2 {
-        /*return level.getMaxY() + 1;*/
-        //?} else if >=1.17 <1.21.2 {
+        /*return level.getMaxY() + 1;
+        *///?} else if >=1.17 <1.21.2 {
         return level.getMaxBuildHeight();
         //?} else
         /*return 255;*/
@@ -31,8 +31,8 @@ public class WorldUtil {
 
     public static int getMinSection(LevelReader level) {
         //? if >=1.21.2 {
-        /*return level.getMinSectionY();*/
-        //?} else if >=1.17 <1.21.2 {
+        /*return level.getMinSectionY();
+        *///?} else if >=1.17 <1.21.2 {
         return level.getMinSection();
         //?} else
         /*return 0;*/
@@ -40,8 +40,8 @@ public class WorldUtil {
 
     public static int getMaxSection(LevelReader level) {
         //? if >=1.21.2 {
-        /*return level.getMaxSectionY() + 1;*/
-        //?} else if >=1.17 <1.21.2 {
+        /*return level.getMaxSectionY() + 1;
+        *///?} else if >=1.17 <1.21.2 {
         return level.getMaxSection();
         //?} else
         /*return 15;*/
