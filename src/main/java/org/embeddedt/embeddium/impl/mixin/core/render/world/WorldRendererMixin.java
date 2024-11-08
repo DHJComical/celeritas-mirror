@@ -183,6 +183,11 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         ClientHooks.dispatchRenderStage(renderLayer, (LevelRenderer)(Object)this, matrices, matrix, this.ticks, this.minecraft.gameRenderer.getMainCamera(), this.embeddium$getCurrentFrustum());
         renderLayer.clearRenderState();
         *///?}
+        //? if neoforge && >=1.21 {
+        /*renderLayer.setupRenderState();
+        ClientHooks.dispatchRenderStage(renderLayer, (LevelRenderer)(Object)this, pose, matrix, this.ticks, this.minecraft.gameRenderer.getMainCamera(), this.embeddium$getCurrentFrustum());
+        renderLayer.clearRenderState();
+        *///?}
     }
 
     /**
