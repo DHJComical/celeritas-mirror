@@ -20,15 +20,12 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncode
 import org.embeddedt.embeddium.impl.util.DirectionUtil;
 import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 //$ rng_import
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 //? if >=1.18
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
@@ -41,8 +38,6 @@ import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 import org.embeddedt.embeddium.impl.render.frapi.FRAPIModelUtils;
 import org.embeddedt.embeddium.impl.render.frapi.FRAPIRenderHandler;
-import org.embeddedt.embeddium.impl.util.WorldUtil;
-import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 //? if ffapi && >=1.20
 import org.embeddedt.embeddium.impl.render.frapi.IndigoBlockRenderContext;
 
@@ -353,7 +348,7 @@ public class BlockRenderer {
         var model = ctx.model();
         var state = ctx.state();
         if (this.useAmbientOcclusion && modelUsesAO(ctx, model)
-                && (((EmbeddiumBakedModelExtension)model).useAmbientOcclusionWithLightEmission(state, ctx.renderLayer()) || WorldUtil.getLightEmission(state, ctx.localSlice(), ctx.pos()) == 0)) {
+                && (((EmbeddiumBakedModelExtension)model).useAmbientOcclusionWithLightEmission(state, ctx.renderLayer()) || ctx.lightEmission() == 0)) {
             return LightMode.SMOOTH;
         } else {
             return LightMode.FLAT;
@@ -365,7 +360,7 @@ public class BlockRenderer {
         var state = ctx.state();
         boolean canBeSmooth = this.useAmbientOcclusion && switch(model.useAmbientOcclusion(state, ctx.modelData(), ctx.renderLayer())) {
             case TRUE -> true;
-            case DEFAULT -> state.getLightEmission(ctx.localSlice(), ctx.pos()) == 0;
+            case DEFAULT -> ctx.lightEmission() == 0;
             case FALSE -> false;
         };
         return canBeSmooth ? LightMode.SMOOTH : LightMode.FLAT;

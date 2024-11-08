@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
@@ -42,6 +43,7 @@ public class BlockRenderContext {
     /*private IModelData modelData;*/
     private RenderType renderLayer;
 
+    private int lightValue = -1;
 
     public BlockRenderContext(WorldSlice world) {
         this.localSlice = WorldSliceLocalGenerator.generate(world);
@@ -56,6 +58,8 @@ public class BlockRenderContext {
         this.model = model;
 
         this.seed = seed;
+
+        this.lightValue = -1;
 
         //? if forgelike
         this.modelData = modelData;
@@ -134,5 +138,15 @@ public class BlockRenderContext {
      */
     public RenderType renderLayer() {
         return this.renderLayer;
+    }
+
+    /**
+     * @return The light emission of the current block
+     */
+    public int lightEmission() {
+        if (this.lightValue == -1) {
+            this.lightValue = WorldUtil.getLightEmission(this.state, this.localSlice, this.pos);
+        }
+        return this.lightValue;
     }
 }
