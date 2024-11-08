@@ -23,10 +23,14 @@ repositories {
 
 gradlePlugin {
     plugins {
-        // here we register our plugin with an ID
         register("embeddium-fabric-remapper") {
             id = "embeddium-fabric-remapper"
             implementationClass = "org.embeddedt.embeddium.gradle.fabric.remapper.RemapperPlugin"
+        }
+        // here we register our plugin with an ID
+        register("embeddium-fabric-module-finder") {
+            id = "embeddium-fabric-module-finder"
+            implementationClass = "org.embeddedt.embeddium.gradle.fabric.remapper.ModuleFinderPlugin"
         }
     }
 }

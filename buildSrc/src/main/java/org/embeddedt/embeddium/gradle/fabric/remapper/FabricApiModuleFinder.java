@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import bs.ModLoader;
 import com.google.common.io.ByteStreams;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Dependency;
@@ -24,22 +25,40 @@ public abstract class FabricApiModuleFinder {
     @Inject
     public abstract Project getProject();
 
-    private static final HashMap<String, Map<String, String>> moduleVersionCache = new HashMap<>();
-    private static final HashMap<String, Map<String, String>> deprecatedModuleVersionCache = new HashMap<>();
+    private record FabricApiVersion(ModLoader loader, String fabricApiVersion) {
+        public String getGroup() {
+            return switch (loader) {
+                case FABRIC -> "net.fabricmc.fabric-api";
+                case FORGE -> "dev.su5ed.sinytra.fabric-api";
+                case NEOFORGE -> "org.sinytra.forgified-fabric-api";
+            };
+        }
 
-    public Dependency module(String moduleName, String fabricApiVersion) {
-        return getProject().getDependencies()
-                .create(getDependencyNotation(moduleName, fabricApiVersion));
+        public String getMavenUrl() {
+            if (loader == ModLoader.FABRIC) {
+                return "https://maven.fabricmc.net";
+            } else {
+                return "https://maven.su5ed.dev/releases";
+            }
+        }
     }
 
-    public String moduleVersion(String moduleName, String fabricApiVersion) {
+    private static final HashMap<FabricApiVersion, Map<String, String>> moduleVersionCache = new HashMap<>();
+    private static final HashMap<FabricApiVersion, Map<String, String>> deprecatedModuleVersionCache = new HashMap<>();
+
+    public Dependency module(ModLoader loader, String moduleName, String fabricApiVersion) {
+        return getProject().getDependencies()
+                .create(getDependencyNotation(moduleName, new FabricApiVersion(loader, fabricApiVersion)));
+    }
+
+    private String moduleVersion(String moduleName, FabricApiVersion version) {
         String moduleVersion = moduleVersionCache
-                .computeIfAbsent(fabricApiVersion, this::getApiModuleVersions)
+                .computeIfAbsent(version, this::getApiModuleVersions)
                 .get(moduleName);
 
         if (moduleVersion == null) {
             moduleVersion = deprecatedModuleVersionCache
-                    .computeIfAbsent(fabricApiVersion, this::getDeprecatedApiModuleVersions)
+                    .computeIfAbsent(version, this::getDeprecatedApiModuleVersions)
                     .get(moduleName);
         }
 
@@ -50,11 +69,11 @@ public abstract class FabricApiModuleFinder {
         return moduleVersion;
     }
 
-    private String getDependencyNotation(String moduleName, String fabricApiVersion) {
-        return String.format("net.fabricmc.fabric-api:%s:%s", moduleName, moduleVersion(moduleName, fabricApiVersion));
+    private String getDependencyNotation(String moduleName, FabricApiVersion version) {
+        return String.format("%s:%s:%s", version.getGroup(), moduleName, moduleVersion(moduleName, version));
     }
 
-    private Map<String, String> getApiModuleVersions(String fabricApiVersion) {
+    private Map<String, String> getApiModuleVersions(FabricApiVersion fabricApiVersion) {
         try {
             return populateModuleVersionMap(getApiMavenPom(fabricApiVersion));
         } catch (PomNotFoundException e) {
@@ -62,7 +81,7 @@ public abstract class FabricApiModuleFinder {
         }
     }
 
-    private Map<String, String> getDeprecatedApiModuleVersions(String fabricApiVersion) {
+    private Map<String, String> getDeprecatedApiModuleVersions(FabricApiVersion fabricApiVersion) {
         try {
             return populateModuleVersionMap(getDeprecatedApiMavenPom(fabricApiVersion));
         } catch (PomNotFoundException e) {
@@ -99,25 +118,28 @@ public abstract class FabricApiModuleFinder {
         }
     }
 
-    private File getApiMavenPom(String fabricApiVersion) throws PomNotFoundException {
-        return getPom("fabric-api", fabricApiVersion);
+    private File getApiMavenPom(FabricApiVersion fabricApiVersion) throws PomNotFoundException {
+        String artifact = fabricApiVersion.loader == ModLoader.NEOFORGE ? "forgified-fabric-api" : "fabric-api";
+        return getPom(artifact, fabricApiVersion);
     }
 
-    private File getDeprecatedApiMavenPom(String fabricApiVersion) throws PomNotFoundException {
+    private File getDeprecatedApiMavenPom(FabricApiVersion fabricApiVersion) throws PomNotFoundException {
         return getPom("fabric-api-deprecated", fabricApiVersion);
     }
 
-    private File getPom(String name, String version) throws PomNotFoundException {
-        final var mavenPom = new File(getProject().getLayout().getBuildDirectory().getAsFile().get(), "fabric-api/%s-%s.pom".formatted(name, version));
+    private File getPom(String name, FabricApiVersion version) throws PomNotFoundException {
+        final var mavenPom = new File(getProject().getLayout().getBuildDirectory().getAsFile().get(), "fabric-api-%s/%s-%s.pom".formatted(version.loader.friendlyName, name, version.fabricApiVersion()));
 
         if(!mavenPom.exists()) {
             mavenPom.getParentFile().mkdirs();
             try(FileOutputStream fos = new FileOutputStream(mavenPom)) {
-                URL url = new URL(String.format("https://maven.fabricmc.net/net/fabricmc/fabric-api/%2$s/%1$s/%2$s-%1$s.pom", version, name));
+                String urlStr = String.format("%3$s/%4$s/%2$s/%1$s/%2$s-%1$s.pom", version.fabricApiVersion(), name, version.getMavenUrl(), version.getGroup().replace('.', '/'));
+                URL url = new URL(urlStr);
                 try(InputStream stream = url.openStream()) {
                     ByteStreams.copy(stream, fos);
                 }
             } catch (IOException e) {
+                mavenPom.delete();
                 throw new UncheckedIOException("Failed to download maven info to " + mavenPom.getName(), e);
             }
         }
