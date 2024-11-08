@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.render.frapi;
 
 //? if ffapi && >=1.20 {
-/*import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.fabric.impl.client.indigo.renderer.mesh.MutableQuadViewImpl;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
@@ -20,16 +20,16 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 //? if forge
-/^import net.minecraftforge.client.model.data.ModelData;^/
+import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
-/^*
+/**
  * Adaptation of Indigo's {@link BlockRenderContext} that delegates back to the Sodium renderer.
- ^/
+ */
 public class IndigoBlockRenderContext extends BlockRenderContext implements FRAPIRenderHandler {
     private org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext currentContext;
     private ChunkBuildBuffers currentBuffers;
@@ -49,12 +49,12 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
             fabricException = e;
         }
         //? if forgelike {
-        /^try {
+        try {
             forgeHandle = MethodHandles.lookup().findVirtual(BlockRenderContext.class, "render", MethodType.methodType(void.class, BlockAndTintGetter.class, BakedModel.class, BlockState.class, BlockPos.class, PoseStack.class, VertexConsumer.class, boolean.class, RandomSource.class, long.class, int.class, ModelData.class, RenderType.class));
         } catch(ReflectiveOperationException e) {
             forgeException = e;
         }
-        ^///?}
+        //?}
         if(fabricHandle == null && forgeHandle == null) {
             var ex = new IllegalStateException("Failed to find render method on BlockRenderContext.");
             if(fabricException != null) {
@@ -154,10 +154,10 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
                 FABRIC_RENDER_HANDLE.invokeExact((BlockRenderContext)this, (BlockAndTintGetter)ctx.localSlice(), ctx.model(), ctx.state(), ctx.pos(), mStack, (VertexConsumer)null, true, random, ctx.seed(), OverlayTexture.NO_OVERLAY);
             }
             //? if forgelike {
-            /^else if(FORGIFIED_RENDER_HANDLE != null) {
+            else if(FORGIFIED_RENDER_HANDLE != null) {
                 FORGIFIED_RENDER_HANDLE.invokeExact((BlockRenderContext)this, (BlockAndTintGetter)ctx.localSlice(), ctx.model(), ctx.state(), ctx.pos(), mStack, (VertexConsumer)null, true, random, ctx.seed(), OverlayTexture.NO_OVERLAY, ctx.modelData(), ctx.renderLayer());
             }
-            ^///?}
+            //?}
         } catch(Throwable e) {
             throw processException(e);
         } finally {
@@ -168,4 +168,3 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
     }
 }
 // }
-*/

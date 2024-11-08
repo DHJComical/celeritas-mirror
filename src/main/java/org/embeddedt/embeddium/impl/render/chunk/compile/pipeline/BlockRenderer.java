@@ -44,7 +44,7 @@ import org.embeddedt.embeddium.impl.render.frapi.FRAPIRenderHandler;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 //? if ffapi && >=1.20
-/*import org.embeddedt.embeddium.impl.render.frapi.IndigoBlockRenderContext;*/
+import org.embeddedt.embeddium.impl.render.frapi.IndigoBlockRenderContext;
 
 import java.util.Arrays;
 import java.util.List;
@@ -101,10 +101,10 @@ public class BlockRenderer {
         this.occlusionCache = new BlockOcclusionCache();
         this.useAmbientOcclusion = Minecraft.useAmbientOcclusion();
         //? if ffapi && >=1.20 {
-        /*this.fabricModelRenderingHandler = FRAPIRenderHandler.INDIGO_PRESENT ? new IndigoBlockRenderContext(this.occlusionCache, lighters.getLightData()) : null;
-        *///?} else {
-        this.fabricModelRenderingHandler = null;
-        //?}
+        this.fabricModelRenderingHandler = FRAPIRenderHandler.INDIGO_PRESENT ? new IndigoBlockRenderContext(this.occlusionCache, lighters.getLightData()) : null;
+        //?} else {
+        /*this.fabricModelRenderingHandler = null;
+        *///?}
         this.useRenderPassOptimization = SodiumClientMod.options().performance.useRenderPassOptimization && !ShaderModBridge.areShadersEnabled();
     }
 

@@ -13,11 +13,11 @@ import org.embeddedt.embeddium.impl.world.ChunkBiomeContainerExtended;
 import org.embeddedt.embeddium.impl.world.ReadableContainerExtended;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 //? if ffapi {
-/*//? if <1.20
-import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
+//? if <1.20
+/*import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;*/
 //? if >=1.20
-/^import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;^/
-*///?}
+import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;
+//?}
 import net.minecraft.core.BlockPos;
 //? if >=1.18.2
 import net.minecraft.core.Holder;
@@ -92,19 +92,19 @@ public class ClonedChunkSection {
 
     static {
         //? if ffapi {
-        /*boolean hasRenderData;
+        boolean hasRenderData;
         try {
             //? if <1.20
-            hasRenderData = RenderAttachmentBlockEntity.class.isAssignableFrom(BlockEntity.class);
+            /*hasRenderData = RenderAttachmentBlockEntity.class.isAssignableFrom(BlockEntity.class);*/
             //? if >=1.20
-            /^hasRenderData = RenderDataBlockEntity.class.isAssignableFrom(BlockEntity.class);^/
+            hasRenderData = RenderDataBlockEntity.class.isAssignableFrom(BlockEntity.class);
         } catch(Throwable e) {
             hasRenderData = false;
         }
         HAS_FABRIC_RENDER_DATA = hasRenderData;
-        *///?} else {
-        HAS_FABRIC_RENDER_DATA = false;
-        //?}
+        //?} else {
+        /*HAS_FABRIC_RENDER_DATA = false;
+        *///?}
     }
 
     public ClonedChunkSection(Level world, LevelChunk chunk, @Nullable LevelChunkSection section, SectionPos pos) {
@@ -262,13 +262,13 @@ public class ClonedChunkSection {
         // See https://github.com/CaffeineMC/sodium-fabric/issues/942 for more info.
         for (var entry : Int2ReferenceMaps.fastIterable(blockEntities)) {
             //? if ffapi {
-            /*//? if >=1.20
-            /^Object data = ((RenderDataBlockEntity)entry.getValue()).getRenderData();^/
+            //? if >=1.20
+            Object data = ((RenderDataBlockEntity)entry.getValue()).getRenderData();
             //? if <1.20
-            Object data = ((RenderAttachmentBlockEntity)entry.getValue()).getRenderAttachmentData();
-            *///?} else {
-            Object data = null;
-            //?}
+            /*Object data = ((RenderAttachmentBlockEntity)entry.getValue()).getRenderAttachmentData();*/
+            //?} else {
+            /*Object data = null;
+            *///?}
 
             if (data != null) {
                 if (blockEntityRenderDataMap == null) {

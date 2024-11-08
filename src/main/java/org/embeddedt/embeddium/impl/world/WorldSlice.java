@@ -17,9 +17,9 @@ import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
 import org.embeddedt.embeddium.impl.world.cloned.ClonedChunkSection;
 import org.embeddedt.embeddium.impl.world.cloned.ClonedChunkSectionCache;
 //? if ffapi
-/*import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;*/
+import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
 //? if ffapi && >=1.20.1
-/*import net.fabricmc.fabric.api.blockview.v2.FabricBlockView;*/
+import net.fabricmc.fabric.api.blockview.v2.FabricBlockView;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -64,13 +64,13 @@ import java.util.Objects;
  * <p>Object pooling should be used to avoid huge allocations as this class contains many large arrays.</p>
  */
 //? if ffapi {
-/*@OptionalInterface({
+@OptionalInterface({
         //? if >=1.20.1
-        /^FabricBlockView.class,^/
+        FabricBlockView.class,
         RenderAttachedBlockView.class })
-*///?}
+//?}
 public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
-        /*? if ffapi {*/ /*/^? if >=1.20.1 {^/ /^, FabricBlockView ^//^?}^/, RenderAttachedBlockView *//*?}*/ {
+        /*? if ffapi {*/ /*? if >=1.20.1 {*/ , FabricBlockView /*?}*/, RenderAttachedBlockView /*?}*/ {
     private static final LightLayer[] LIGHT_TYPES = LightLayer.values();
 
     // The number of blocks in a section.
@@ -463,7 +463,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     //?}
 
     //? if ffapi && >=1.20.1 {
-    /*@Override
+    @Override
     public Holder<Biome> getBiomeFabric(BlockPos pos) {
         return this.biomeSlice.getBiome(pos.getX(), pos.getY(), pos.getZ());
     }
@@ -472,7 +472,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     public boolean hasBiomes() {
         return true;
     }
-    *///?}
+    //?}
 
     private Object getBlockEntityAttachment(BlockPos pos) {
         int relX = pos.getX() - this.originX;
@@ -493,8 +493,8 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     }
 
     //? if ffapi && >=1.20.1 {
-    /*@Override public Object getBlockEntityRenderData(BlockPos pos) { return getBlockEntityAttachment(pos); }
-    *///?} else if ffapi
+    @Override public Object getBlockEntityRenderData(BlockPos pos) { return getBlockEntityAttachment(pos); }
+    //?} else if ffapi
     /*@Override public Object getBlockEntityRenderAttachment(BlockPos pos) { return getBlockEntityAttachment(pos); }*/
 
     public static int getLocalBlockIndex(int x, int y, int z) {
