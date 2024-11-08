@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.api.util.ColorABGR;
 import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.api.util.ColorMixer;
+import org.embeddedt.embeddium.api.util.NormI8;
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import org.embeddedt.embeddium.api.vertex.format.common.ColorVertex;
 import net.minecraft.client.Camera;
@@ -29,6 +30,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.api.render.clouds.ModifyCloudRenderingEvent;
+import org.embeddedt.embeddium.api.vertex.format.common.LineVertex;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
@@ -61,6 +63,13 @@ public class CloudRenderer {
     private static final int DIR_POS_X = 1 << 3;
     private static final int DIR_NEG_Z = 1 << 4;
     private static final int DIR_POS_Z = 1 << 5;
+
+    private static final int NORMAL_NEG_Y = NormI8.pack(0f, -1f, 0f);
+    private static final int NORMAL_POS_Y = NormI8.pack(0f, 1f, 0f);
+    private static final int NORMAL_NEG_Z = NormI8.pack(0f, 0f, -1f);
+    private static final int NORMAL_POS_Z = NormI8.pack(0f, 0f, 1f);
+    private static final int NORMAL_NEG_X = NormI8.pack(-1f, 0f, 0f);
+    private static final int NORMAL_POS_X = NormI8.pack(1f, 0f, 0f);
 
     // 256x256 px cloud.png is 12x12 units
     // 3072 / 256 = 12
@@ -132,9 +141,9 @@ public class CloudRenderer {
         if (this.vertexBuffer == null || this.prevCenterCellX != centerCellX || this.prevCenterCellY != centerCellZ || this.cachedRenderDistance != renderDistance || cloudRenderMode != Minecraft.getInstance().options.getCloudsType()) {
             //? if <1.21 {
             BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
             //?} else {
-            /*BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            /*BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
             *///?}
 
             this.cloudRenderMode = Minecraft.getInstance().options.getCloudsType();
@@ -319,7 +328,7 @@ public class CloudRenderer {
                 float z = offsetZ * this.cloudSizeZ;
 
                 try (MemoryStack stack = MemoryStack.stackPush()) {
-                    final long buffer = stack.nmalloc((fastClouds ? 4 : (6 * 4)) * ColorVertex.STRIDE);
+                    final long buffer = stack.nmalloc((fastClouds ? 4 : (6 * 4)) * LineVertex.STRIDE);
 
                     long ptr = buffer;
                     int count = 0;
@@ -328,17 +337,17 @@ public class CloudRenderer {
                     if ((connectedEdges & DIR_NEG_Y) != 0) {
                         int mixedColor = ColorMixer.mul(texel, fastClouds ? CLOUD_COLOR_POS_Y : CLOUD_COLOR_NEG_Y);
 
-                        ptr = writeVertex(ptr, x + this.cloudSizeX, 0.0f, z + this.cloudSizeZ, mixedColor);
-                        ptr = writeVertex(ptr, x + 0.0f, 0.0f, z + this.cloudSizeZ, mixedColor);
-                        ptr = writeVertex(ptr, x + 0.0f, 0.0f, z + 0.0f, mixedColor);
-                        ptr = writeVertex(ptr, x + this.cloudSizeX, 0.0f, z + 0.0f, mixedColor);
+                        ptr = writeVertex(ptr, x + this.cloudSizeX, 0.0f, z + this.cloudSizeZ, mixedColor, NORMAL_NEG_Y);
+                        ptr = writeVertex(ptr, x + 0.0f, 0.0f, z + this.cloudSizeZ, mixedColor, NORMAL_NEG_Y);
+                        ptr = writeVertex(ptr, x + 0.0f, 0.0f, z + 0.0f, mixedColor, NORMAL_NEG_Y);
+                        ptr = writeVertex(ptr, x + this.cloudSizeX, 0.0f, z + 0.0f, mixedColor, NORMAL_NEG_Y);
 
                         count += 4;
                     }
 
                     // Only emit -Y geometry to emulate vanilla fast clouds
                     if (fastClouds) {
-                        writer.push(stack, buffer, count, ColorVertex.FORMAT);
+                        writer.push(stack, buffer, count, LineVertex.FORMAT);
                         continue;
                     }
 
@@ -346,10 +355,10 @@ public class CloudRenderer {
                     if ((connectedEdges & DIR_POS_Y) != 0) {
                         int mixedColor = ColorMixer.mul(texel, CLOUD_COLOR_POS_Y);
 
-                        ptr = writeVertex(ptr, x + 0.0f, 4.0f, z + this.cloudSizeZ, mixedColor);
-                        ptr = writeVertex(ptr, x + this.cloudSizeX, 4.0f, z + this.cloudSizeZ, mixedColor);
-                        ptr = writeVertex(ptr, x + this.cloudSizeX, 4.0f, z + 0.0f, mixedColor);
-                        ptr = writeVertex(ptr, x + 0.0f, 4.0f, z + 0.0f, mixedColor);
+                        ptr = writeVertex(ptr, x + 0.0f, 4.0f, z + this.cloudSizeZ, mixedColor, NORMAL_POS_Y);
+                        ptr = writeVertex(ptr, x + this.cloudSizeX, 4.0f, z + this.cloudSizeZ, mixedColor, NORMAL_POS_Y);
+                        ptr = writeVertex(ptr, x + this.cloudSizeX, 4.0f, z + 0.0f, mixedColor, NORMAL_POS_Y);
+                        ptr = writeVertex(ptr, x + 0.0f, 4.0f, z + 0.0f, mixedColor, NORMAL_POS_Y);
 
                         count += 4;
                     }
@@ -358,10 +367,10 @@ public class CloudRenderer {
                     if ((connectedEdges & DIR_NEG_X) != 0) {
                         int mixedColor = ColorMixer.mul(texel, CLOUD_COLOR_NEG_X);
 
-                        ptr = writeVertex(ptr, x + 0.0f, 0.0f, z + this.cloudSizeZ, mixedColor);
-                        ptr = writeVertex(ptr, x + 0.0f, 4.0f, z + this.cloudSizeZ, mixedColor);
-                        ptr = writeVertex(ptr, x + 0.0f, 4.0f, z + 0.0f, mixedColor);
-                        ptr = writeVertex(ptr, x + 0.0f, 0.0f, z + 0.0f, mixedColor);
+                        ptr = writeVertex(ptr, x + 0.0f, 0.0f, z + this.cloudSizeZ, mixedColor, NORMAL_NEG_X);
+                        ptr = writeVertex(ptr, x + 0.0f, 4.0f, z + this.cloudSizeZ, mixedColor, NORMAL_NEG_X);
+                        ptr = writeVertex(ptr, x + 0.0f, 4.0f, z + 0.0f, mixedColor, NORMAL_NEG_X);
+                        ptr = writeVertex(ptr, x + 0.0f, 0.0f, z + 0.0f, mixedColor, NORMAL_NEG_X);
 
                         count += 4;
                     }
@@ -370,10 +379,10 @@ public class CloudRenderer {
                     if ((connectedEdges & DIR_POS_X) != 0) {
                         int mixedColor = ColorMixer.mul(texel, CLOUD_COLOR_POS_X);
 
-                        ptr = writeVertex(ptr, x + this.cloudSizeX, 4.0f, z + this.cloudSizeZ, mixedColor);
-                        ptr = writeVertex(ptr, x + this.cloudSizeX, 0.0f, z + this.cloudSizeZ, mixedColor);
-                        ptr = writeVertex(ptr, x + this.cloudSizeX, 0.0f, z + 0.0f, mixedColor);
-                        ptr = writeVertex(ptr, x + this.cloudSizeX, 4.0f, z + 0.0f, mixedColor);
+                        ptr = writeVertex(ptr, x + this.cloudSizeX, 4.0f, z + this.cloudSizeZ, mixedColor, NORMAL_POS_X);
+                        ptr = writeVertex(ptr, x + this.cloudSizeX, 0.0f, z + this.cloudSizeZ, mixedColor, NORMAL_POS_X);
+                        ptr = writeVertex(ptr, x + this.cloudSizeX, 0.0f, z + 0.0f, mixedColor, NORMAL_POS_X);
+                        ptr = writeVertex(ptr, x + this.cloudSizeX, 4.0f, z + 0.0f, mixedColor, NORMAL_POS_X);
 
                         count += 4;
                     }
@@ -382,10 +391,10 @@ public class CloudRenderer {
                     if ((connectedEdges & DIR_NEG_Z) != 0) {
                         int mixedColor = ColorMixer.mul(texel, CLOUD_COLOR_NEG_Z);
 
-                        ptr = writeVertex(ptr, x + this.cloudSizeX, 4.0f, z + 0.0f, mixedColor);
-                        ptr = writeVertex(ptr, x + this.cloudSizeX, 0.0f, z + 0.0f, mixedColor);
-                        ptr = writeVertex(ptr, x + 0.0f, 0.0f, z + 0.0f, mixedColor);
-                        ptr = writeVertex(ptr, x + 0.0f, 4.0f, z + 0.0f, mixedColor);
+                        ptr = writeVertex(ptr, x + this.cloudSizeX, 4.0f, z + 0.0f, mixedColor, NORMAL_NEG_Z);
+                        ptr = writeVertex(ptr, x + this.cloudSizeX, 0.0f, z + 0.0f, mixedColor, NORMAL_NEG_Z);
+                        ptr = writeVertex(ptr, x + 0.0f, 0.0f, z + 0.0f, mixedColor, NORMAL_NEG_Z);
+                        ptr = writeVertex(ptr, x + 0.0f, 4.0f, z + 0.0f, mixedColor, NORMAL_NEG_Z);
 
                         count += 4;
                     }
@@ -394,25 +403,25 @@ public class CloudRenderer {
                     if ((connectedEdges & DIR_POS_Z) != 0) {
                         int mixedColor = ColorMixer.mul(texel, CLOUD_COLOR_POS_Z);
 
-                        ptr = writeVertex(ptr, x + this.cloudSizeX, 0.0f, z + this.cloudSizeZ, mixedColor);
-                        ptr = writeVertex(ptr, x + this.cloudSizeX, 4.0f, z + this.cloudSizeZ, mixedColor);
-                        ptr = writeVertex(ptr, x + 0.0f, 4.0f, z + this.cloudSizeZ, mixedColor);
-                        ptr = writeVertex(ptr, x + 0.0f, 0.0f, z + this.cloudSizeZ, mixedColor);
+                        ptr = writeVertex(ptr, x + this.cloudSizeX, 0.0f, z + this.cloudSizeZ, mixedColor, NORMAL_POS_Z);
+                        ptr = writeVertex(ptr, x + this.cloudSizeX, 4.0f, z + this.cloudSizeZ, mixedColor, NORMAL_POS_Z);
+                        ptr = writeVertex(ptr, x + 0.0f, 4.0f, z + this.cloudSizeZ, mixedColor, NORMAL_POS_Z);
+                        ptr = writeVertex(ptr, x + 0.0f, 0.0f, z + this.cloudSizeZ, mixedColor, NORMAL_POS_Z);
 
                         count += 4;
                     }
 
                     if (count > 0) {
-                        writer.push(stack, buffer, count, ColorVertex.FORMAT);
+                        writer.push(stack, buffer, count, LineVertex.FORMAT);
                     }
                 }
             }
         }
     }
 
-    private static long writeVertex(long buffer, float x, float y, float z, int color) {
-        ColorVertex.put(buffer, x, y, z, color);
-        return buffer + ColorVertex.STRIDE;
+    private static long writeVertex(long buffer, float x, float y, float z, int color, int normal) {
+        LineVertex.put(buffer, x, y, z, color, normal);
+        return buffer + LineVertex.STRIDE;
     }
 
     public void reloadTextures(ResourceProvider factory) {
