@@ -83,7 +83,7 @@ public class ForgeLightPipeline implements LightPipeline {
             // Do not tell Forge about the packed light, so that it doesn't use it in the lightmap calculation
             vData[vertexBase + IQuadTransformer.UV2] = 0;
         }
-        //? if forge {
+        //? if forge || (neoforge && <1.21) {
         return hasShade ? this.mutableQuadWithShade : this.mutableQuadWithoutShade;
         //?} else
         /*return null;*/
