@@ -44,7 +44,7 @@ public class VanillaLikeChunkVertex implements ChunkVertexType {
 
     @Override
     public ChunkVertexEncoder getEncoder() {
-        return (ptr, material, vertex, sectionIndex) -> {
+        return (ptr, material, vertex, sectionIndex, ctx) -> {
             MemoryUtil.memPutFloat(ptr + 0, vertex.x);
             MemoryUtil.memPutFloat(ptr + 4, vertex.y);
             MemoryUtil.memPutFloat(ptr + 8, vertex.z);

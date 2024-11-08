@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.vertex.builder;
 
+import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
@@ -32,7 +33,7 @@ public class ChunkMeshBufferBuilder {
         this.analyzer = collectSortState ? new TranslucentQuadAnalyzer() : null;
     }
 
-    public void push(ChunkVertexEncoder.Vertex[] vertices, Material material) {
+    public void push(ChunkVertexEncoder.Vertex[] vertices, Material material, @Nullable BlockRenderContext ctx) {
         var vertexStart = this.count;
         var vertexCount = vertices.length;
 
@@ -49,7 +50,7 @@ public class ChunkMeshBufferBuilder {
         }
 
         for (ChunkVertexEncoder.Vertex vertex : vertices) {
-            ptr = this.encoder.write(ptr, material, vertex, this.sectionIndex);
+            ptr = this.encoder.write(ptr, material, vertex, this.sectionIndex, ctx);
         }
 
         this.count += vertexCount;

@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.render.chunk.compile.buffers;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
+import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.builder.ChunkMeshBufferBuilder;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -9,6 +10,7 @@ import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionInfo;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.frapi.SpriteFinderCache;
 import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -35,8 +37,8 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
     }
 
     @Override
-    public ChunkModelVertexConsumer asVertexConsumer(Material material) {
-        this.vertexConsumer.initialize(material);
+    public ChunkModelVertexConsumer asVertexConsumer(Material material, BlockRenderContext ctx) {
+        this.vertexConsumer.initialize(material, ctx);
         return this.vertexConsumer;
     }
 
@@ -64,17 +66,19 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
         private int currentIndex = -1;
         private final Vector3f computedNormal = new Vector3f();
         private Material material;
+        private @Nullable BlockRenderContext ctx;
         private float xOff, yOff, zOff;
 
         private boolean hasDefaultColor;
         private int defaultColor;
 
-        private void initialize(Material material) {
+        private void initialize(Material material, @Nullable BlockRenderContext ctx) {
             if((currentIndex + 1) == 4) {
                 // Flush the last quad that was rendered, so the material isn't switched underneath it.
                 flushQuad();
             }
             this.material = material;
+            this.ctx = ctx;
             this.xOff = this.yOff = this.zOff = 0;
             this.currentIndex = -1;
             this.hasDefaultColor = false;
@@ -96,7 +100,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
             var n = computedNormal;
             ModelQuadUtil.calculateNormal(vertices, n);
             var facing = ModelQuadUtil.findNormalFace(n.x, n.y, n.z);
-            getVertexBuffer(facing).push(vertices, material);
+            getVertexBuffer(facing).push(vertices, material, ctx);
             currentIndex = -1;
         }
 
@@ -137,6 +141,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
                 flushLastVertex();
                 currentIndex = -1; // safety, to make sure we start at vertex 0 with next addVertex call
             }
+            this.ctx = null;
         }
 
         @Override

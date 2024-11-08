@@ -20,7 +20,7 @@ public class MeshAppenderRenderer {
         MeshAppender.Context context = new MeshAppender.Context(type -> {
             var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(type);
             usedMaterials.add(material);
-            return buffers.get(material).asVertexConsumer(material);
+            return buffers.get(material).asVertexConsumer(material, null);
         }, world, origin, buffers);
 
         for (MeshAppender appender : appenders) {
@@ -29,7 +29,7 @@ public class MeshAppenderRenderer {
 
         if (!usedMaterials.isEmpty()) {
             for (Material material : usedMaterials) {
-                buffers.get(material).asVertexConsumer(material).close();
+                buffers.get(material).asVertexConsumer(material, null).close();
             }
         }
     }

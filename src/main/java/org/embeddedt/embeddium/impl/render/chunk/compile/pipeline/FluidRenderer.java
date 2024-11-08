@@ -159,7 +159,7 @@ public class FluidRenderer {
         // Call vanilla fluid renderer and capture the results
         var context = Objects.requireNonNull(GlobalChunkBuildContext.get());
         context.setCaptureAdditionalSprites(true);
-        try(var consumer = buffers.asVertexConsumer(material)) {
+        try(var consumer = buffers.asVertexConsumer(material, null)) {
             Minecraft.getInstance().getBlockRenderer().renderLiquid(blockPos, world, consumer, /*? if >=1.18 {*/ world.getBlockState(blockPos),/*?}*/ fluidState);
         }
 
@@ -555,7 +555,7 @@ public class FluidRenderer {
         }
 
         var vertexBuffer = builder.getVertexBuffer(facing);
-        vertexBuffer.push(vertices, material);
+        vertexBuffer.push(vertices, material, null);
     }
 
     private static void setVertex(ModelQuadViewMutable quad, int i, float x, float y, float z, float u, float v) {

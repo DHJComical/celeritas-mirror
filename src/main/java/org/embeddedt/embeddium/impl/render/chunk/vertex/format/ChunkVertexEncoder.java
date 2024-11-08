@@ -1,9 +1,11 @@
 package org.embeddedt.embeddium.impl.render.chunk.vertex.format;
 
+import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
+import org.jetbrains.annotations.Nullable;
 
 public interface ChunkVertexEncoder {
-    long write(long ptr, Material material, Vertex vertex, int sectionIndex);
+    long write(long ptr, Material material, Vertex vertex, int sectionIndex, @Nullable BlockRenderContext ctx);
 
     class Vertex {
         public float x;

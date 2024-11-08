@@ -115,7 +115,7 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
     @Override
     protected VertexConsumer getVertexConsumer(RenderType layer) {
         var material = currentBuffers.getRenderPassConfiguration().getMaterialForRenderType(layer);
-        var consumer = currentBuffers.get(material).asVertexConsumer(material);
+        var consumer = currentBuffers.get(material).asVertexConsumer(material, null);
         consumer.embeddium$setOffset(currentContext.origin());
         return consumer;
     }

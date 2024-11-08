@@ -133,7 +133,7 @@ public class BlockRenderer {
 
         if(!customRenderers.isEmpty()) {
             for (BlockRendererRegistry.Renderer customRenderer : customRenderers) {
-                try(var consumer = meshBuilder.asVertexConsumer(material)) {
+                try(var consumer = meshBuilder.asVertexConsumer(material, ctx)) {
                     consumer.embeddium$setOffset(ctx.origin());
                     BlockRendererRegistry.RenderResult result = customRenderer.renderBlock(ctx, random, consumer);
                     if (result == BlockRendererRegistry.RenderResult.OVERRIDE) {
@@ -328,7 +328,7 @@ public class BlockRenderer {
         }
 
         var vertexBuffer = builder.getVertexBuffer(normalFace);
-        vertexBuffer.push(vertices, material);
+        vertexBuffer.push(vertices, material, ctx);
     }
 
     //? if forge || fabric {
