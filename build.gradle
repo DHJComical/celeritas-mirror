@@ -14,6 +14,7 @@ import static bs.ModLoader.NEOFORGE
 plugins {
     id 'java'
     id 'embeddium-fabric-remapper' apply false
+    id 'maven-publish'
 
     id "com.gradleup.shadow" version "8.3.0"
     id 'ru.vyarus.use-python' version '4.0.0'
@@ -21,7 +22,7 @@ plugins {
     id "com.cinnober.gradle.semver-git" version "3.0.0" apply false
 }
 
-group = rootProject.properties.mod_package
+group = "org.embeddedt"
 ext.snapshotSuffix = 'beta.<count>'
 apply plugin: 'com.cinnober.gradle.semver-git'
 
@@ -426,6 +427,34 @@ tasks.named("validateAccessWidener") {
 tasks.named("remapSourcesJar") {
   enabled = false // wastes too much memory
 }
+
+publishing {
+    tasks.publish {
+        dependsOn(tasks.build)
+    }
+    publications {
+        create("mavenJava", MavenPublication) {
+            artifactId = archivesBaseName
+            artifact(tasks.named("remapJar"))
+            artifact(tasks.named("sourcesJar"))
+        }
+    }
+
+    repositories {
+        maven {
+            name = "taumcRepository"
+            url = uri("https://maven.taumc.org/releases")
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_SECRET")
+            }
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+}
+
 
 afterEvaluate {
     packageJar.dependsOn(remapJar)
