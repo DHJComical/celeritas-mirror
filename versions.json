@@ -1,0 +1,42 @@
+{
+  "vcsVersion": "1.20.1-forge",
+  "versions": [
+    {
+      "friendlyName": "1.20.1",
+      "loaders": ["forge", "fabric"]
+    },
+    {
+      "friendlyName": "1.20.4",
+      "loaders": ["neoforge"]
+    },
+    {
+      "friendlyName": "1.21.1",
+      "loaders": ["fabric", "forge", "neoforge"]
+    },
+    {
+      "friendlyName": "1.21.3",
+      "loaders": ["fabric"]
+    },
+    {
+      "friendlyName": "24w45a",
+      "semanticName": "1.21.4-alpha.24.45.a",
+      "loaders": ["fabric"]
+    },
+    {
+      "friendlyName": "1.19.2",
+      "loaders": ["forge", "fabric"]
+    },
+    {
+      "friendlyName": "1.18.2",
+      "loaders": ["forge", "fabric"]
+    },
+    {
+      "friendlyName": "1.16.5",
+      "loaders": ["forge", "fabric"]
+    },
+    {
+      "friendlyName": "1.16.1",
+      "loaders": ["fabric"]
+    }
+  ]
+}
