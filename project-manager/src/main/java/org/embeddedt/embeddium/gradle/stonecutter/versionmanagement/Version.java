@@ -14,6 +14,10 @@ public class Version {
         return semanticName != null ? semanticName : friendlyName;
     }
 
+    public String getFriendlyName() {
+        return friendlyName;
+    }
+
     public Stream<Permutation> streamVersionPermutations() {
         String semanticName = getSemanticName();
         return loaders.stream().map(loader -> new Permutation(friendlyName + "-" + loader, semanticName));
