@@ -5,10 +5,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 //? if >=1.18.2
 import net.minecraft.core.Holder;
+//? if >=1.16
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+//? if >=1.16
 import net.minecraft.resources.ResourceKey;
 //$ rng_import
 import net.minecraft.util.RandomSource;
