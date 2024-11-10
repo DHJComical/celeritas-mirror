@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.modcompat.fabric_renderer_indigo;
 
 //? if ffapi && >=1.20 {
-import org.embeddedt.embeddium.impl.render.texture.SpriteUtil;
+import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.impl.client.indigo.renderer.render.ItemRenderContext;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;

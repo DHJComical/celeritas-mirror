@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionFlags;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.render.texture.SpriteUtil;
+import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import net.minecraft.client.renderer.chunk.VisibilitySet;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
