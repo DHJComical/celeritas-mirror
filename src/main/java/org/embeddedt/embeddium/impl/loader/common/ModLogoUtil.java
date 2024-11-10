@@ -7,6 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 //? if forge {
 import net.minecraftforge.fml.ModList;
 //?}
+//? if neoforge
+/*import net.neoforged.fml.ModList;*/
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
@@ -21,7 +23,7 @@ import java.util.Set;
 public class ModLogoUtil {
     private static final Set<String> erroredLogos = new HashSet<>();
 
-    //? if forge && >=1.18 {
+    //? if (forge && >=1.18) || neoforge {
     public static ResourceLocation registerLogo(String modId) {
         Optional<String> logoFile = erroredLogos.contains(modId) ? Optional.empty() : ModList.get().getModContainerById(modId).flatMap(c -> c.getModInfo().getLogoFile());
         ResourceLocation texture = null;
