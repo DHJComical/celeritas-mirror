@@ -1,6 +1,8 @@
 package org.embeddedt.embeddium.impl.loader.common;
 
 import com.mojang.blaze3d.platform.NativeImage;
+//? if fabric
+/*import net.fabricmc.loader.api.FabricLoader;*/
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -23,7 +25,21 @@ import java.util.Set;
 public class ModLogoUtil {
     private static final Set<String> erroredLogos = new HashSet<>();
 
-    //? if (forge && >=1.18) || neoforge {
+    //? if fabric {
+    /*public static ResourceLocation registerLogo(String modId) {
+        Optional<Path> logoPath = FabricLoader.getInstance().getModContainer(modId).flatMap(m -> m.getMetadata().getIconPath(32).flatMap(m::findPath));
+        ResourceLocation texture = null;
+        if (logoPath.isPresent()) {
+            try {
+                texture = handleIoSupplier(modId, Files.newInputStream(logoPath.get()));
+            } catch(IOException e) {
+                erroredLogos.add(modId);
+                SodiumClientMod.logger().error("Exception reading logo for " + modId, e);
+            }
+        }
+        return texture;
+    }
+    *///?} else if (forge && >=1.18) || neoforge {
     public static ResourceLocation registerLogo(String modId) {
         Optional<String> logoFile = erroredLogos.contains(modId) ? Optional.empty() : ModList.get().getModContainerById(modId).flatMap(c -> c.getModInfo().getLogoFile());
         ResourceLocation texture = null;
