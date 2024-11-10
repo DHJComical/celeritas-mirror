@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.mixin.features.render.immediate.buffer_buil
 import com.mojang.blaze3d.vertex.BufferBuilder;
 //? if <1.21
 import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;

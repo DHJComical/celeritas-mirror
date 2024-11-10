@@ -247,8 +247,7 @@ public class OverlayVertexConsumerMixin implements VertexBufferWriter {
 }
 *///?} else {
 
-/*import com.mojang.blaze3d.vertex.BreakingTextureGenerator;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+/*import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
