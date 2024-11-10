@@ -136,6 +136,13 @@ dependencies {
         if (versionedProperty("parchment_version") != null) {
             parchment("org.parchmentmc.data:parchment-${versionedProperty("parchment_version")}@zip")
         }
+        /*
+        def mappingPatch = rootProject.file("mapping-patches/${ModLoader.getMinecraftVersion(project)}.tiny")
+        if (mappingPatch.exists()) {
+            mappings(mappingPatch)
+        }
+
+         */
     }
 
     compileOnly("org.projectlombok:lombok:1.18.30")
