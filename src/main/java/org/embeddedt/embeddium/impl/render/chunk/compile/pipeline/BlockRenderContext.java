@@ -44,7 +44,7 @@ public class BlockRenderContext {
     //? if forgelike {
     @Setter
     @Accessors(fluent = false)
-    //? }
+    //?}
     //? if forgelike && >=1.19.1
     private ModelData modelData;
     //? if forgelike && <1.19.1
