@@ -6,7 +6,7 @@ import net.minecraft.world.entity.EntityType;
 
 public class ClientUtil {
     public static boolean shouldEntityAppearGlowing(Entity entity) {
-        //? if <1.16 {
+        //? if <1.17 {
         /*boolean glow = entity.isGlowing();
         *///?} else
         boolean glow = entity.isCurrentlyGlowing();
