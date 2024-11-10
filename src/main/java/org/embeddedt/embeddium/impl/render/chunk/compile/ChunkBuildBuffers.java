@@ -30,9 +30,9 @@ public class ChunkBuildBuffers {
     private final Reference2ReferenceOpenHashMap<TerrainRenderPass, BakedChunkModelBuilder> builders = new Reference2ReferenceOpenHashMap<>();
 
     @Getter
-    private final RenderPassConfiguration renderPassConfiguration;
+    private final RenderPassConfiguration<?> renderPassConfiguration;
 
-    public ChunkBuildBuffers(RenderPassConfiguration configuration) {
+    public ChunkBuildBuffers(RenderPassConfiguration<?> configuration) {
         this.renderPassConfiguration = configuration;
 
         for (TerrainRenderPass pass : configuration.renderPasses()) {
@@ -50,10 +50,6 @@ public class ChunkBuildBuffers {
         for (var builder : this.builders.values()) {
             builder.begin(renderData, sectionIndex);
         }
-    }
-
-    public ChunkModelBuilder get(RenderType type) {
-        return this.builders.get(this.renderPassConfiguration.getMaterialForRenderType(type).pass);
     }
 
     public ChunkModelBuilder get(Material material) {

@@ -24,9 +24,9 @@ public class RenderRegionManager {
 
     private final StagingBuffer stagingBuffer;
 
-    private final RenderPassConfiguration renderPassConfiguration;
+    private final RenderPassConfiguration<?> renderPassConfiguration;
 
-    public RenderRegionManager(CommandList commandList, RenderPassConfiguration renderPassConfiguration) {
+    public RenderRegionManager(CommandList commandList, RenderPassConfiguration<?> renderPassConfiguration) {
         this.stagingBuffer = createStagingBuffer(commandList);
         this.renderPassConfiguration = renderPassConfiguration;
     }

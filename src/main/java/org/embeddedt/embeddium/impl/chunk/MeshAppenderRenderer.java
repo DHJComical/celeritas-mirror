@@ -1,6 +1,8 @@
 package org.embeddedt.embeddium.impl.chunk;
 
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
+import net.minecraft.client.renderer.RenderType;
+import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -18,7 +20,7 @@ public class MeshAppenderRenderer {
         ReferenceArraySet<Material> usedMaterials = new ReferenceArraySet<>();
 
         MeshAppender.Context context = new MeshAppender.Context(type -> {
-            var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(type);
+            var material = ((RenderPassConfiguration<RenderType>)buffers.getRenderPassConfiguration()).getMaterialForRenderType(type);
             usedMaterials.add(material);
             return buffers.get(material).asVertexConsumer(material, null);
         }, world, origin, buffers);

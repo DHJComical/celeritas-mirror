@@ -101,7 +101,7 @@ public class RenderSectionManager {
     private final boolean translucencySorting;
 
     @Getter
-    private final RenderPassConfiguration renderPassConfiguration;
+    private final RenderPassConfiguration<?> renderPassConfiguration;
 
     private final Set<TerrainRenderPass> disabledRenderPasses;
 
@@ -137,7 +137,7 @@ public class RenderSectionManager {
         this.translucencySorting = SodiumClientMod.canApplyTranslucencySorting();
     }
 
-    private static RenderPassConfiguration createRenderPassConfiguration(ChunkVertexType vertexType) {
+    private static RenderPassConfiguration<?> createRenderPassConfiguration(ChunkVertexType vertexType) {
         return ModernRenderPassConfigurationBuilder.build(vertexType);
     }
 

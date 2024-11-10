@@ -18,7 +18,7 @@ public class ModernRenderPassConfigurationBuilder {
         return TerrainRenderPass.builder().setupState(chunkRenderType::setupRenderState).clearState(chunkRenderType::clearRenderState);
     }
 
-    public static RenderPassConfiguration build(ChunkVertexType vertexType) {
+    public static RenderPassConfiguration<RenderType> build(ChunkVertexType vertexType) {
         // First, build the main passes
         TerrainRenderPass solidPass, cutoutMippedPass, translucentPass;
 
@@ -101,7 +101,7 @@ public class ModernRenderPassConfigurationBuilder {
         var vanillaRenderStageMap = vanillaRenderStages.build();
         var allPasses = vanillaRenderStageMap.values().stream().distinct().toList();
 
-        return new RenderPassConfiguration(vertexType,
+        return new RenderPassConfiguration<>(vertexType,
                 allPasses,
                 renderTypeToMaterialMap,
                 vanillaRenderStageMap.asMap(),

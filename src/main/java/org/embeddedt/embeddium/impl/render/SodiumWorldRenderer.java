@@ -655,7 +655,7 @@ public class SodiumWorldRenderer {
         return String.format("C: %d/%d D: %d", this.renderSectionManager.getVisibleChunkCount(), this.renderSectionManager.getTotalSections(), this.renderDistance);
     }
 
-    public RenderPassConfiguration getRenderPassConfiguration() {
+    public RenderPassConfiguration<?> getRenderPassConfiguration() {
         return this.renderSectionManager.getRenderPassConfiguration();
     }
 
