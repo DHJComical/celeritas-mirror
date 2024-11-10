@@ -151,11 +151,11 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                                         .renderModel(context, buffers);
                             }
                             //?} else if forge && <1.19 {
-                            /*for (RenderType layer : cache.getRenderLayerCache().forState(blockState)) {
+                            /*for (RenderType layer : cache.getBlockRenderLayerCache().forState(blockState)) {
                                 //? if >=1.17 {
-                                /^ForgeHooksClient.setRenderType(layer);
-                                ^///?} else
-                                ForgeHooksClient.setRenderLayer(layer);
+                                ForgeHooksClient.setRenderType(layer);
+                                //?} else
+                                /^ForgeHooksClient.setRenderLayer(layer);^/
                                 context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, model, seed, layer);
                                 context.setModelData(modelData);
                                 cache.getBlockRenderer()

@@ -1,43 +1,46 @@
 package org.embeddedt.embeddium.impl.render;
 
-//? if forge && <1.19 {
-/*import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateHolder;
-import net.minecraft.world.level.material.FluidState;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-/^*
- * Implements a caching layer over Forge's predicate logic in {@link ItemBlockRenderTypes}. There is quite a bit
+/**
+ * Implements a caching layer over predicate-based render type selection logic. There is quite a bit
  * of overhead involved in dealing with the arbitrary predicates, so we cache a list of render layers
  * for each state (lazily), and just return that list.
- ^/
-public class EmbeddiumRenderLayerCache {
+ */
+public class EmbeddiumRenderLayerCache<STATE, LAYER> {
     private static final boolean DISABLE_CACHE = Boolean.getBoolean("embeddium.disableRenderLayerCache");
-    private static final Reference2ReferenceOpenHashMap<RenderType, ImmutableList<RenderType>> SINGLE_LAYERS = new Reference2ReferenceOpenHashMap<>();
 
-    private final Reference2ReferenceOpenHashMap<StateHolder<?, ?>, ImmutableList<RenderType>> stateToLayerMap = new Reference2ReferenceOpenHashMap<>();
+    private final Reference2ReferenceOpenHashMap<LAYER, ImmutableList<LAYER>> singleLayers;
+    private final Reference2ReferenceOpenHashMap<STATE, ImmutableList<LAYER>> stateToLayerMap = new Reference2ReferenceOpenHashMap<>();
+    private final List<LAYER> layers;
+    private final Predicate<STATE, LAYER> predicate;
 
-    public EmbeddiumRenderLayerCache() {
+    public EmbeddiumRenderLayerCache(List<LAYER> layers, Predicate<STATE, LAYER> predicate) {
+        this.layers = layers;
+        this.singleLayers = new Reference2ReferenceOpenHashMap<>(layers.size());
+        for(var layer : layers) {
+            singleLayers.put(layer, ImmutableList.of(layer));
+        }
+        this.predicate = predicate;
     }
 
-    /^*
+    /**
      * Retrieve the list of render layers for the given block/fluid state.
      * @param state a BlockState or FluidState
      * @return a list of render layers that the block/fluid state should be rendered on
-     ^/
-    public <O, S, H extends StateHolder<O, S>>  List<RenderType> forState(H state) {
+     */
+    public List<LAYER> forState(STATE state) {
         if(DISABLE_CACHE) {
             return generateList(state);
         }
 
-        ImmutableList<RenderType> list = stateToLayerMap.get(state);
+        ImmutableList<LAYER> list = stateToLayerMap.get(state);
 
         if(list == null) {
             list = createList(state);
@@ -46,39 +49,28 @@ public class EmbeddiumRenderLayerCache {
         return list;
     }
 
-    private static <O, S, H extends StateHolder<O, S>> List<RenderType> generateList(H state) {
-        List<RenderType> foundLayers = new ArrayList<>(2);
-        if(state instanceof BlockState) {
-            BlockState blockState = (BlockState)state;
-            for(RenderType layer : RenderType.chunkBufferLayers()) {
-                if(ItemBlockRenderTypes.canRenderInLayer(blockState, layer)) {
-                    foundLayers.add(layer);
-                }
+    private List<LAYER> generateList(STATE state) {
+        List<LAYER> foundLayers = new ArrayList<>(2);
+
+        for (var layer : this.layers) {
+            if (this.predicate.canRenderInLayer(state, layer)) {
+                foundLayers.add(layer);
             }
-        } else if(state instanceof FluidState) {
-            FluidState fluidState = (FluidState)state;
-            for(RenderType layer : RenderType.chunkBufferLayers()) {
-                if(ItemBlockRenderTypes.canRenderInLayer(fluidState, layer)) {
-                    foundLayers.add(layer);
-                }
-            }
-        } else {
-            throw new IllegalArgumentException("Unexpected type of state received: " + state.getClass().getName());
         }
 
         return foundLayers;
     }
 
-    private <O, S, H extends StateHolder<O, S>> ImmutableList<RenderType> createList(H state) {
-        List<RenderType> foundLayers = generateList(state);
+    private ImmutableList<LAYER> createList(STATE state) {
+        List<LAYER> foundLayers = generateList(state);
 
-        ImmutableList<RenderType> layerList;
+        ImmutableList<LAYER> layerList;
 
         // Deduplicate simple lists
         if(foundLayers.isEmpty()) {
             layerList = ImmutableList.of();
         } else if(foundLayers.size() == 1) {
-            layerList = SINGLE_LAYERS.get(foundLayers.get(0));
+            layerList = singleLayers.get(foundLayers.get(0));
             Objects.requireNonNull(layerList);
         } else {
             layerList = ImmutableList.copyOf(foundLayers);
@@ -89,14 +81,13 @@ public class EmbeddiumRenderLayerCache {
         return layerList;
     }
 
+    public interface Predicate<STATE, LAYER> {
+        boolean canRenderInLayer(STATE state, LAYER layer);
+    }
+
     static {
-        for(RenderType layer : RenderType.chunkBufferLayers()) {
-            SINGLE_LAYERS.put(layer, ImmutableList.of(layer));
-        }
         if(DISABLE_CACHE) {
             SodiumClientMod.logger().warn("Render layer cache is disabled, performance will be affected.");
         }
     }
 }
-
-*///?}
