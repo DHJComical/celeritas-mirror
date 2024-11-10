@@ -84,8 +84,11 @@ public class WorldRendererMixin {
 
         boolean isSubmersed = !camera.getFluidInCamera().isEmpty();
         boolean hasBlindness = cameraEntity instanceof LivingEntity && ((LivingEntity) cameraEntity).hasEffect(MobEffects.BLINDNESS);
-        boolean useThickFog = this.minecraft.level.effects().isFoggyAt(Mth.floor(cameraPosition.x()),
-                Mth.floor(cameraPosition.y())) || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
+        //? if >=1.16 {
+        /^boolean dimensionIsFoggy = this.minecraft.level.effects().isFoggyAt(Mth.floor(cameraPosition.x()), Mth.floor(cameraPosition.y()));
+        ^///?} else
+        boolean dimensionIsFoggy = this.minecraft.level.getDimension().isFoggyAt(Mth.floor(cameraPosition.x()), Mth.floor(cameraPosition.y()));
+        boolean useThickFog = dimensionIsFoggy || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
 
         if (isSubmersed || hasBlindness || useThickFog) {
             ci.cancel();

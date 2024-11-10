@@ -3,7 +3,10 @@ package org.embeddedt.embeddium.impl.render;
 import com.google.common.collect.Iterators;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+//? if >=1.16 {
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
+//?} else
+/*import com.mojang.blaze3d.vertex.BreakingTextureGenerator;*/
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -24,10 +27,7 @@ import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTracker;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
-import org.embeddedt.embeddium.impl.util.NativeBuffer;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
-import org.embeddedt.embeddium.impl.util.ProfilerUtil;
-import org.embeddedt.embeddium.impl.util.WorldUtil;
+import org.embeddedt.embeddium.impl.util.*;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -246,7 +246,17 @@ public class SodiumWorldRenderer {
 
         profiler.pop();
 
-        Entity.setViewScale(Mth.clamp((double) getEffectiveRenderDistance() / 8.0D, 1.0D, 2.5D) * this.client.options.entityDistanceScaling/*? if >=1.19 {*/().get()/*?}*/);
+        double entityDistanceScale;
+
+        //? if >=1.19 {
+        entityDistanceScale = this.client.options.entityDistanceScaling().get();
+        //?} else if >=1.16 {
+        /*entityDistanceScale = this.client.options.entityDistanceScaling;
+        *///?} else {
+        /*entityDistanceScale = 1.0;
+        *///?}
+
+        Entity.setViewScale(Mth.clamp((double) getEffectiveRenderDistance() / 8.0D, 1.0D, 2.5D) * entityDistanceScale);
     }
 
     private void processChunkEvents() {
@@ -537,7 +547,9 @@ public class SodiumWorldRenderer {
                         .getBuffer(ModelBakery.DESTROY_TYPES.get(stage));
 
                 PoseStack.Pose entry = matrices.last();
-                //? if <1.20 {
+                //? if <1.16 {
+                /*VertexConsumer transformer = new BreakingTextureGenerator(bufferBuilder, entry);
+                *///?} else if >=1.16 <1.20 {
                 /*VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry.pose(), entry.normal());
                 *///?} else if >=1.20 <1.21 {
                 VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry.pose(), entry.normal(), 1.0f);
@@ -585,7 +597,7 @@ public class SodiumWorldRenderer {
         }
 
         // Ensure entities with outlines or nametags are always visible
-        if (this.client.shouldEntityAppearGlowing(entity) || entity.shouldShowName()) {
+        if (ClientUtil.shouldEntityAppearGlowing(entity) || entity.shouldShowName()) {
             return true;
         }
 

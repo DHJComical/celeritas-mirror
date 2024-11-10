@@ -309,10 +309,12 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
                 .getFluidState();
     }
 
+    //? if >=1.16 {
     @Override
     public float getShade(Direction direction, boolean shaded) {
         return this.world.getShade(direction, shaded);
     }
+    //?}
 
     @Override
     public LevelLightEngine getLightEngine() {

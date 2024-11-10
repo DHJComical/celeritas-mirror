@@ -63,24 +63,27 @@ public class LevelLoadingScreenMixin {
         VertexBufferWriter writer = VertexBufferWriter.tryOf(Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(RenderType.gui()));
         Matrix4f matrix = drawContext.pose().last().pose();
     //?} else {
-    /*private static void renderChunks(PoseStack matrices, StoringChunkProgressListener tracker, int mapX, int mapY, int mapScale, int mapPadding, CallbackInfo ci) {
+    /*private static void renderChunks(/^? if >=1.16 {^//^PoseStack matrices, ^//^?}^/ StoringChunkProgressListener tracker, int mapX, int mapY, int mapScale, int mapPadding, CallbackInfo ci) {
         //? if >=1.17
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        /^RenderSystem.setShader(GameRenderer::getPositionColorShader);^/
 
-        Matrix4f matrix = JomlHelper.copy(matrices.last().pose());
+        //? if >=1.16 {
+        /^Matrix4f matrix = JomlHelper.copy(matrices.last().pose());
+        ^///?} else
+        Matrix4f matrix = new Matrix4f();
 
         Tesselator tessellator = Tesselator.getInstance();
 
         RenderSystem.enableBlend();
         //? if <1.17
-        /^RenderSystem.disableTexture();^/
+        RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
 
         BufferBuilder bufferBuilder = tessellator.getBuilder();
         //? if >=1.17 {
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        //?} else
-        /^bufferBuilder.begin(GL20C.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);^/
+        /^bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        ^///?} else
+        bufferBuilder.begin(GL20C.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         var writer = VertexBufferWriter.of(bufferBuilder);
     *///?}

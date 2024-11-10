@@ -48,12 +48,7 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
     }
 
     @Override
-    //? if >=1.20
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-    //? if <1.20 {
-    /*public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
-        GuiGraphics drawContext = new GuiGraphics(matrices);
-    *///?}
         if (!this.visible) {
             return;
         }
@@ -63,7 +58,7 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
         int backgroundColor = this.enabled ? (this.hovered ? this.style.bgHovered : this.style.bgDefault) : this.style.bgDisabled;
         int textColor = this.enabled ? this.style.textDefault : this.style.textDisabled;
 
-        int strWidth = this.font.width(this.label);
+        int strWidth = this.getStringWidth(this.label);
 
         this.drawRect(drawContext, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), backgroundColor);
         int textX;

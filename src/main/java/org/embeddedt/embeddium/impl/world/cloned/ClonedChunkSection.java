@@ -121,7 +121,7 @@ public class ClonedChunkSection {
 
         if (section != null) {
             if (!WorldUtil.isSectionEmpty(section)) {
-                if (!world.isDebug()) {
+                if (!WorldUtil.isDebug(world)) {
                     blockData = ReadableContainerExtended.clone(section.getStates());
                 } else {
                     blockData = constructDebugWorldContainer(pos);
@@ -192,7 +192,7 @@ public class ClonedChunkSection {
         arrays[LightLayer.BLOCK.ordinal()] = copyLightArray(world, LightLayer.BLOCK, pos);
 
         // Dimensions without sky-light should not have a default-initialized array
-        if (world.dimensionType().hasSkyLight()) {
+        if (WorldUtil.hasSkyLight(world)) {
             arrays[LightLayer.SKY.ordinal()] = copyLightArray(world, LightLayer.SKY, pos);
         }
 

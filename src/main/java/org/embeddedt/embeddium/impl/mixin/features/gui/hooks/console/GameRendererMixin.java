@@ -34,8 +34,10 @@ public class GameRendererMixin {
     @Inject(method = "render", at = @At(value = "INVOKE", target =
             //? if >=1.20 {
             "Lnet/minecraft/client/gui/GuiGraphics;flush()V",
-            //?} else
-            /*"Lnet/minecraft/client/gui/Gui;render(Lcom/mojang/blaze3d/vertex/PoseStack;F)V",*/
+            //?} else if >=1.16 {
+            /*"Lnet/minecraft/client/gui/Gui;render(Lcom/mojang/blaze3d/vertex/PoseStack;F)V",
+            *///?} else
+            /*"Lnet/minecraft/client/gui/Gui;render(F)V",*/
             shift = At.Shift.AFTER))
     private void onRender(
             //? if <1.21

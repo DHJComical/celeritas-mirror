@@ -41,7 +41,10 @@ public class ClonedPalette<T> implements Palette<T> {
         throw new IllegalStateException("Can't find value for: " + state);
     }
 
-    @Override
+    public boolean maybeHas(T object) {
+        return true;
+    }
+
     public boolean maybeHas(Predicate<T> filter) {
         return true;
     }

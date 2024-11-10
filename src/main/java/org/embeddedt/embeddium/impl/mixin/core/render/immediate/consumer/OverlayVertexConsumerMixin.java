@@ -247,7 +247,7 @@ public class OverlayVertexConsumerMixin implements VertexBufferWriter {
 }
 *///?} else {
 
-/*import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
+/*import com.mojang.blaze3d.vertex.BreakingTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
@@ -271,7 +271,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//? if >=1.16 {
+/^import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 @Mixin(SheetedDecalTextureGenerator.class)
+^///?} else {
+import com.mojang.blaze3d.vertex.BreakingTextureGenerator;
+@Mixin(BreakingTextureGenerator.class)
+//?}
 public class OverlayVertexConsumerMixin implements VertexBufferWriter {
     @Shadow
     @Final
@@ -279,7 +285,14 @@ public class OverlayVertexConsumerMixin implements VertexBufferWriter {
 
     @Shadow
     @Final
+    //? if >=1.16 {
+    /^private Matrix3f normalInversePose;
+    ^///?} else {
+    private Matrix3f normalPose;
+
+    @Unique
     private Matrix3f normalInversePose;
+    //?}
 
     @Shadow
     @Final
@@ -291,6 +304,8 @@ public class OverlayVertexConsumerMixin implements VertexBufferWriter {
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(CallbackInfo ci) {
         this.isFullWriter = VertexBufferWriter.tryOf(this.delegate) != null;
+        //? if <1.16
+        this.normalInversePose = this.normalPose;
     }
 
     @Override

@@ -195,9 +195,11 @@ public class BlockRenderer {
         }
         //?}
 
+        //? if >=1.16 {
         if (quad.isShade()) {
             flag |= 2;
         }
+        //?}
 
         return flag;
     }

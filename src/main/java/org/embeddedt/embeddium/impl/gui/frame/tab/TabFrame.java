@@ -38,7 +38,7 @@ public class TabFrame extends AbstractFrame {
         this.tabs = ImmutableListMultimap.copyOf(tabs);
         int tabSectionY = (this.tabs.size() + this.tabs.keySet().size()) * 18;
         Optional<Integer> result = Stream.concat(
-                tabs.keys().stream().map(id -> this.getStringWidth(TabHeaderWidget.getLabel(id)) + 10),
+                tabs.keys().stream().map(id -> this.getStringWidth(Tab.idComponent(id)) + 10),
                 tabs.values().stream().map(tab -> this.getStringWidth(tab.title()) + TAB_OPTION_INDENT)
         ).max(Integer::compareTo);
 
@@ -164,7 +164,7 @@ public class TabFrame extends AbstractFrame {
     }
 
     @Override
-    public void render(/*? if >=1.20 {*/ GuiGraphics /*?} else {*/ /*PoseStack *//*?}*/ drawContext, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         for (AbstractWidget widget : this.children) {
             if (widget != this.selectedFrame) {
                 widget.render(drawContext, mouseX, mouseY, delta);

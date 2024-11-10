@@ -5,8 +5,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.JsonSyntaxException;
+import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.gui.options.TextProvider;
+//? if >=1.16
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.impl.config.ConfigMigrator;
@@ -97,9 +99,25 @@ public class SodiumGameOptions {
             return this.name;
         }
 
+        //? if >=1.16 {
         public boolean isFancy(GraphicsStatus graphicsMode) {
             return (this == FANCY) || (this == DEFAULT && (graphicsMode == GraphicsStatus.FANCY || graphicsMode == GraphicsStatus.FABULOUS));
         }
+        //?} else {
+        /*public boolean isFancy(boolean fancyGraphics) {
+            return (this == FANCY) || (this == DEFAULT && fancyGraphics);
+        }
+        *///?}
+
+        //? if <1.16 {
+        /*public boolean isFancy() {
+            return isFancy(Minecraft.getInstance().options.fancyGraphics);
+        }
+        *///?} else {
+        public boolean isFancy() {
+            return isFancy(Minecraft.getInstance().options.graphicsMode/*? if >=1.19 {*/().get()/*?}*/);
+        }
+        //?}
     }
 
     private static final Gson GSON = new GsonBuilder()

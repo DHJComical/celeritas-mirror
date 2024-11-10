@@ -12,6 +12,7 @@ import org.embeddedt.embeddium.api.util.NormI8;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 
 import java.util.Arrays;
 
@@ -241,7 +242,7 @@ public class SmoothLightPipeline implements LightPipeline {
     }
 
     private void applySidedBrightness(QuadLightData out, Direction face, boolean shade) {
-        float brightness = this.lightCache.getWorld().getShade(face, shade);
+        float brightness = WorldUtil.getShade(this.lightCache.getWorld(), face, shade);
         float[] br = out.br;
 
         for (int i = 0; i < br.length; i++) {

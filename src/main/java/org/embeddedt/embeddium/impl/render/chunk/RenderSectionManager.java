@@ -193,17 +193,21 @@ public class RenderSectionManager {
                     .useReverseOrder(false)
                     .build();
 
+            //? if >=1.16 {
             tripwirePass = TerrainRenderPass.builder()
                     .layer(RenderType.tripwire())
                     .name("tripwire")
                     .fragmentDiscard(true)
                     .useReverseOrder(false)
                     .build();
+            //?}
 
             cutoutMaterial = new Material(cutoutPass, AlphaCutoffParameter.ONE_TENTH, false);
+            //? if >=1.16
             tripwireMaterial = new Material(tripwirePass, AlphaCutoffParameter.ONE_TENTH, false);
             vanillaRenderStages.put(RenderType.cutout(), cutoutPass);
             vanillaRenderStages.put(RenderType.cutoutMipped(), cutoutMippedPass);
+            //? if >=1.16
             vanillaRenderStages.put(RenderType.tripwire(), tripwirePass);
         }
 
@@ -214,6 +218,7 @@ public class RenderSectionManager {
         renderTypeToMaterialMap.put(RenderType.cutout(), cutoutMaterial);
         renderTypeToMaterialMap.put(RenderType.cutoutMipped(), cutoutMippedMaterial);
         renderTypeToMaterialMap.put(RenderType.translucent(), translucentMaterial);
+        //? if >=1.16
         renderTypeToMaterialMap.put(RenderType.tripwire(), tripwireMaterial);
 
         for(RenderType type : RenderType.chunkBufferLayers()) {
@@ -730,7 +735,7 @@ public class RenderSectionManager {
         }
     }
 
-    private static final float NEARBY_REBUILD_DISTANCE = Mth.square(16.0f);
+    private static final float NEARBY_REBUILD_DISTANCE = MathUtil.square(16.0f);
 
     private boolean shouldPrioritizeRebuild(RenderSection section) {
         return this.lastCameraPosition != null && section.getSquaredDistance(this.lastCameraPosition) < NEARBY_REBUILD_DISTANCE;

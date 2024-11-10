@@ -9,8 +9,6 @@ import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.client.Minecraft;
 //$ guigfx
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
@@ -21,21 +19,8 @@ public class TabHeaderWidget extends FlatButtonWidget {
 
     private final ResourceLocation logoTexture;
 
-    public static MutableComponent getLabel(String modId) {
-        var component = (switch(modId) {
-            // TODO handle long mod names better, this is the only one we know of right now
-            case "sspb" -> ComponentUtil.literal("SSPB");
-            default -> Tab.idComponent(modId);
-        });
-        //? if >=1.16.2 {
-        component = component.withStyle(s -> s.withUnderlined(true));
-        //?} else
-        /*component = component.withStyle(s -> s.withBold(true));*/
-        return component;
-    }
-
     public TabHeaderWidget(Dim2i dim, String modId) {
-        super(dim, getLabel(modId), () -> {});
+        super(dim, Tab.idComponent(modId), () -> {});
         this.logoTexture = ModLogoUtil.registerLogo(modId);
     }
 
@@ -49,16 +34,9 @@ public class TabHeaderWidget extends FlatButtonWidget {
         return false;
     }
 
-    //? if >=1.20 {
     @Override
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         super.render(drawContext, mouseX, mouseY, delta);
-    //?} else {
-    /*@Override
-    public void render(PoseStack pose, int mouseX, int mouseY, float delta) {
-        super.render(pose, mouseX, mouseY, delta);
-        GuiGraphics drawContext = new GuiGraphics(pose);
-    *///?}
         ResourceLocation icon = Objects.requireNonNullElse(this.logoTexture, FALLBACK_LOCATION);
         int fontHeight = Minecraft.getInstance().font.lineHeight;
         int imgY = this.dim.getCenterY() - (fontHeight / 2);

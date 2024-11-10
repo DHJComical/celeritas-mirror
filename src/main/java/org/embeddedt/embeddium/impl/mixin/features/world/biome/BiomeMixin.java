@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.mixin.features.world.biome;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorMaps;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.biome.Biome;
+//? if >=1.16
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,9 +12,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = Biome.class, priority = 800)
 public abstract class BiomeMixin {
+    //? if >=1.16 {
     @Shadow
     @Final
     private BiomeSpecialEffects specialEffects;
+    //?}
 
     //? if >=1.16.2 {
     @Shadow

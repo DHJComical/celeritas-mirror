@@ -14,10 +14,17 @@ public class ClientWorldMixin implements BiomeSeedProvider {
     @Unique
     private long biomeSeed;
 
+    //? if >=1.16 {
     @Inject(method = "<init>", at = @At("RETURN"))
     private void captureSeed(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) long seed) {
         this.biomeSeed = seed;
     }
+    //?} else {
+    /*@Inject(method = "<init>", at = @At("RETURN"))
+    private void captureSeed(CallbackInfo ci) {
+        this.biomeSeed = ((BiomeManagerAccessor)((ClientLevel)(Object)this).getBiomeManager()).getBiomeZoomSeed();
+    }
+    *///?}
 
     @Override
     public long sodium$getBiomeSeed() {

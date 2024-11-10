@@ -1,10 +1,8 @@
 package org.embeddedt.embeddium.impl.mixin.features.options.render_layers;
 
 import org.embeddedt.embeddium.impl.SodiumClientMod;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,7 +16,7 @@ public class LeavesBlockMixin extends Block {
 
     @Override
     public boolean skipRendering(BlockState state, BlockState stateFrom, Direction direction) {
-        if (SodiumClientMod.options().quality.leavesQuality.isFancy(Minecraft.getInstance().options.graphicsMode/*? if >=1.19 {*/().get()/*?}*/)) {
+        if (SodiumClientMod.options().quality.leavesQuality.isFancy()) {
             return super.skipRendering(state, stateFrom, direction);
         } else {
             return stateFrom.getBlock() instanceof LeavesBlock || super.skipRendering(state, stateFrom, direction);

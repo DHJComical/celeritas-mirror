@@ -92,16 +92,9 @@ public class CyclingControl<T extends Enum<T>> implements Control<T> {
             }
         }
 
-        //? if >=1.20 {
         @Override
         public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
             super.render(drawContext, mouseX, mouseY, delta);
-        //?} else {
-        /*@Override
-        public void render(PoseStack pose, int mouseX, int mouseY, float delta) {
-            super.render(pose, mouseX, mouseY, delta);
-            GuiGraphics drawContext = new GuiGraphics(pose);
-        *///?}
 
             Enum<T> value = this.option.getValue();
             Component name = this.names[value.ordinal()];

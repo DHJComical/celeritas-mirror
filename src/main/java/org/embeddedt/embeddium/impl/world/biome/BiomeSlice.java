@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.world.biome;
 
 //? if >=1.18 <1.20
 /*import net.minecraft.data.BuiltinRegistries;*/
+import org.embeddedt.embeddium.impl.util.MathUtil;
 import org.embeddedt.embeddium.impl.world.BiomeSeedProvider;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
@@ -235,9 +236,9 @@ public class BiomeSlice {
             float biasY = biasToVector(this.bias.getY(biasIndex));
             float biasZ = biasToVector(this.bias.getZ(biasIndex));
 
-            float distanceX = Mth.square(adjFracX + biasX);
-            float distanceY = Mth.square(adjFracY + biasY);
-            float distanceZ = Mth.square(adjFracZ + biasZ);
+            float distanceX = MathUtil.square(adjFracX + biasX);
+            float distanceY = MathUtil.square(adjFracY + biasY);
+            float distanceZ = MathUtil.square(adjFracZ + biasZ);
 
             float distance = distanceX + distanceY + distanceZ;
 

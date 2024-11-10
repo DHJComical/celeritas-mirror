@@ -15,4 +15,8 @@ public class MathUtil {
     public static int roundToward(int value, int factor) {
         return -Math.floorDiv(-value, factor) * factor;
     }
+
+    public static float square(float f) {
+        return f * f;
+    }
 }

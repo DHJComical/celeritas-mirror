@@ -66,8 +66,10 @@ public class EntityRenderDispatcherMixin {
 
         //? if >=1.19 {
         float brightness = LightTexture.getBrightness(world.dimensionType(), light);
-        //?} else
-        /*float brightness = world.dimensionType().brightness(light);*/
+        //?} else if >=1.16 {
+        /*float brightness = world.dimensionType().brightness(light);
+        *///?} else
+        /*float brightness = world.getDimension().getBrightness(light);*/
         float alpha = (float) (((double) opacity - ((y - (double) pos.getY()) / 2.0)) * 0.5 * (double) brightness);
 
         if (alpha >= 0.0F) {

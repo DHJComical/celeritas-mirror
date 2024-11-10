@@ -194,7 +194,7 @@ public class SearchTextFieldModel {
     }
 
     private int getCursorPosWithOffset(int offset) {
-        return Util.offsetByCodepoints(this.text, this.selectionStart, offset);
+        return this.text.offsetByCodePoints(this.selectionStart, offset);
     }
 
     public void setSelectionStart(int cursor) {
@@ -219,9 +219,15 @@ public class SearchTextFieldModel {
             }
 
             int j = this.innerWidth;
+            //? if <1.16 {
+            /*String string = textRenderer.substrByWidth(this.text.substring(this.firstCharacterIndex), j);
+            *///?} else
             String string = textRenderer.plainSubstrByWidth(this.text.substring(this.firstCharacterIndex), j);
             int k = string.length() + this.firstCharacterIndex;
             if (this.selectionEnd == this.firstCharacterIndex) {
+                //? if <1.16 {
+                /*this.firstCharacterIndex -= textRenderer.substrByWidth(this.text, j, true).length();
+                *///?} else
                 this.firstCharacterIndex -= textRenderer.plainSubstrByWidth(this.text, j, true).length();
             }
 

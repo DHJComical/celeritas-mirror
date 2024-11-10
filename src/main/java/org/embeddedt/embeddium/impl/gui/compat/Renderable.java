@@ -4,8 +4,6 @@ package org.embeddedt.embeddium.impl.gui.compat;
 /*import net.minecraft.client.gui.components.Widget;
 
 public interface Renderable extends Widget {
-    default void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        render(graphics.stack, mouseX, mouseY, partialTick);
-    }
+    void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick);
 }
 *///?}

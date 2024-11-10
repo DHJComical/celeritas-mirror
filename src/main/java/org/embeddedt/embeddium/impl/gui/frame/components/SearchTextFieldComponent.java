@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.gui.frame.components;
 
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.StringUtil;
 import org.embeddedt.embeddium.api.options.structure.OptionPage;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
@@ -34,10 +33,6 @@ public class SearchTextFieldComponent extends AbstractWidget {
     protected final Dim2i dim;
     protected final List<OptionPage> pages;
     private final Font textRenderer = Minecraft.getInstance().font;
-    //? if >=1.16.5 {
-    private final BiFunction<String, Integer, FormattedCharSequence> renderTextProvider = (string, firstCharacterIndex) -> FormattedCharSequence.forward(string, Style.EMPTY);
-    //?} else
-    /*private final BiFunction<String, Integer, FormattedText> renderTextProvider = (string, firstCharacterIndex) -> FormattedText.of(string, Style.EMPTY);*/
     private final SearchTextFieldModel model;
 
     public SearchTextFieldComponent(Dim2i dim, List<OptionPage> pages, SearchTextFieldModel model) {
@@ -60,6 +55,9 @@ public class SearchTextFieldComponent extends AbstractWidget {
         this.drawRect(context, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), this.isFocused() ? 0xE0000000 : 0x90000000);
         int j = this.model.selectionStart - this.model.firstCharacterIndex;
         int k = this.model.selectionEnd - this.model.firstCharacterIndex;
+        //? if <1.16 {
+        /*String string = this.textRenderer.substrByWidth(this.model.text.substring(this.model.firstCharacterIndex), this.getInnerWidth());
+        *///?} else
         String string = this.textRenderer.plainSubstrByWidth(this.model.text.substring(this.model.firstCharacterIndex), this.getInnerWidth());
         boolean bl = j >= 0 && j <= string.length();
         int l = this.dim.x() + 6;
@@ -70,7 +68,7 @@ public class SearchTextFieldComponent extends AbstractWidget {
         }
         if (!string.isEmpty()) {
             String string2 = bl ? string.substring(0, j) : string;
-            n = context.drawString(this.textRenderer, this.renderTextProvider.apply(string2, this.model.firstCharacterIndex), n, m, 0xFFFFFFFF);
+            n = context.drawString(this.textRenderer, string2, n, m, 0xFFFFFFFF);
         }
         boolean bl3 = this.model.selectionStart < this.model.text.length() || this.model.text.length() >= this.model.getMaxLength();
         int o = n;
@@ -81,7 +79,7 @@ public class SearchTextFieldComponent extends AbstractWidget {
             --n;
         }
         if (!string.isEmpty() && bl && j < string.length()) {
-            context.drawString(this.textRenderer, this.renderTextProvider.apply(string.substring(j), this.model.selectionStart), n, m, 0xFFFFFFFF);
+            context.drawString(this.textRenderer, string.substring(j), n, m, 0xFFFFFFFF);
         }
         // Cursor
         if (this.isFocused()) {
@@ -97,7 +95,13 @@ public class SearchTextFieldComponent extends AbstractWidget {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         int i = Mth.floor(mouseX) - this.dim.x() - 6;
+        //? if <1.16 {
+        /*String string = this.textRenderer.substrByWidth(this.model.text.substring(this.model.firstCharacterIndex), this.getInnerWidth());
+        *///?} else
         String string = this.textRenderer.plainSubstrByWidth(this.model.text.substring(this.model.firstCharacterIndex), this.getInnerWidth());
+        //? if <1.16 {
+        /*this.model.setCursor(this.textRenderer.substrByWidth(string, i).length() + this.model.firstCharacterIndex);
+        *///?} else
         this.model.setCursor(this.textRenderer.plainSubstrByWidth(string, i).length() + this.model.firstCharacterIndex);
 
         this.setFocused(this.dim.containsCursor(mouseX, mouseY));

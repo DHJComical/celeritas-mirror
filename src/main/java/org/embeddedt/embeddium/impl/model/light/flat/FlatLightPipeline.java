@@ -15,6 +15,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
+
 import java.util.Arrays;
 
 import static org.embeddedt.embeddium.impl.model.light.data.LightDataAccess.*;
@@ -60,7 +62,7 @@ public class FlatLightPipeline implements LightPipeline {
         Arrays.fill(out.lm, lightmap);
         //? if forgelike
         if((quad.getFlags() & ModelQuadFlags.IS_VANILLA_SHADED) != 0 || !this.useQuadNormalsForShading) {
-            Arrays.fill(out.br, this.lightCache.getWorld().getShade(lightFace, shade));
+            Arrays.fill(out.br, WorldUtil.getShade(this.lightCache.getWorld(), lightFace, shade));
         /*? if forgelike {*/ } else {
             this.applySidedBrightnessFromNormals(quad, out, shade);
         } /*?}*/

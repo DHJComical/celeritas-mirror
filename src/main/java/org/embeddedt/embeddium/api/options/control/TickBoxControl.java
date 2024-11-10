@@ -39,16 +39,9 @@ public class TickBoxControl implements Control<Boolean> {
             this.button = new Rect2i(dim.getLimitX() - 16, dim.getCenterY() - 5, 10, 10);
         }
 
-        //? if >=1.20 {
         @Override
         public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
             super.render(drawContext, mouseX, mouseY, delta);
-        //?} else {
-        /*@Override
-        public void render(PoseStack pose, int mouseX, int mouseY, float delta) {
-            super.render(pose, mouseX, mouseY, delta);
-            GuiGraphics drawContext = new GuiGraphics(pose);
-        *///?}
 
             final int x = this.button.getX();
             final int y = this.button.getY();

@@ -1,9 +1,12 @@
 package org.embeddedt.embeddium.impl.util;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 //? if <1.18
 /*import net.minecraft.world.level.block.EntityBlock;*/
@@ -91,5 +94,26 @@ public class WorldUtil {
 
     public static int sectionToBlockCoord(int sec, int block) {
         return (sec << 4) + block;
+    }
+
+    public static boolean isDebug(Level level) {
+        //? if >=1.16 {
+        return level.isDebug();
+        //?} else
+        /*return level.getGeneratorType() == net.minecraft.world.level.LevelType.DEBUG_ALL_BLOCK_STATES;*/
+    }
+
+    public static boolean hasSkyLight(Level level) {
+        //? if >=1.16 {
+        return level.dimensionType().hasSkyLight();
+        //?} else
+        /*return level.getDimension().isHasSkyLight();*/
+    }
+
+    public static float getShade(BlockAndTintGetter getter, Direction lightFace, boolean shade) {
+        //? if >=1.16 {
+        return getter.getShade(lightFace, shade);
+        //?} else
+        /*return 1.0f;*/
     }
 }

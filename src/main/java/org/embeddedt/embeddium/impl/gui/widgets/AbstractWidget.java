@@ -22,9 +22,12 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvents;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public abstract class AbstractWidget implements Renderable, GuiEventListener/*? if >=1.18 {*/, NarratableEntry /*?}*/ {
     protected final Font font;
@@ -35,12 +38,22 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener/*? 
         this.font = Minecraft.getInstance().font;
     }
 
-    //? if <1.20 {
+    //? if >=1.16 <1.20 {
     /*@Override
     public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         render(new GuiGraphics(poseStack), mouseX, mouseY, partialTick);
     }
-    *///?}
+    *///?} else if <1.16 {
+    /*@Override
+    public void render(int mouseX, int mouseY, float partialTick) {
+        render(new GuiGraphics(), mouseX, mouseY, partialTick);
+    }
+    *///?} else {
+    @Override
+    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float partialTick) {
+        render(drawContext, mouseX, mouseY, partialTick);
+    }
+    //?}
 
     protected void drawString(GuiGraphics drawContext, String str, int x, int y, int color) {
         drawContext.drawString(this.font, str, x, y, color);
@@ -63,8 +76,23 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener/*? 
                 .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK /*? if >=1.20 {*/ .value() /*?}*/, 1.0F));
     }
 
-    protected int getStringWidth(FormattedText text) {
+    protected int getStringWidth(String text) {
         return this.font.width(text);
+    }
+
+    protected int getStringWidth(Component text) {
+        return this.font.width(text.getString());
+    }
+
+    public static List<String> split(String string, int width) {
+        //? if <1.16 {
+        /*return this.font.split(string, width);
+        *///?} else
+        return Minecraft.getInstance().font.getSplitter().splitLines(string, width, Style.EMPTY).stream().map(t -> t.getString()).toList();
+    }
+
+    public static List<String> split(Component component, int width) {
+        return split(component.getString(), width);
     }
 
     //? if >=1.18 {

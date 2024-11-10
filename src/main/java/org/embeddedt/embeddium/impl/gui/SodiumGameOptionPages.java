@@ -192,14 +192,19 @@ public class SodiumGameOptionPages {
 
         groups.add(OptionGroup.createBuilder()
                 .setId(StandardOptions.Group.GRAPHICS)
-                .add(OptionImpl.createBuilder(GraphicsStatus.class, vanillaOpts)
+                .add(OptionImpl.createBuilder(/*? if >=1.16 {*/ GraphicsStatus.class /*?} else {*/ /*boolean.class *//*?}*/, vanillaOpts)
                         .setId(StandardOptions.Option.GRAPHICS_MODE)
                         .setName(ComponentUtil.translatable("options.graphics"))
                         .setTooltip(ComponentUtil.translatable("sodium.options.graphics_quality.tooltip"))
+                        //? if >=1.16 {
                         .setControl(option -> new CyclingControl<>(option, GraphicsStatus.class, new Component[] { ComponentUtil.translatable("options.graphics.fast"), ComponentUtil.translatable("options.graphics.fancy"), ComponentUtil.translatable("options.graphics.fabulous").withStyle(ChatFormatting.ITALIC) }))
                         .setBinding(
                                 (opts, value) -> opts.graphicsMode/*? if >=1.19 {*/().set/*?} else {*//*=*//*?}*/(value),
                                 opts -> opts.graphicsMode/*? if >=1.19 {*/().get()/*?}*/)
+                        //?} else {
+                        /*.setControl(TickBoxControl::new)
+                        .setBinding((opts, value) -> opts.fancyGraphics = value, opts -> opts.fancyGraphics)
+                        *///?}
                         .setImpact(OptionImpact.HIGH)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
@@ -219,12 +224,14 @@ public class SodiumGameOptionPages {
                             /*opts.renderClouds = value;
                             *///?}
 
+                            //? if >=1.16 {
                             if (Minecraft.useShaderTransparency()) {
                                 RenderTarget framebuffer = Minecraft.getInstance().levelRenderer.getCloudsTarget();
                                 if (framebuffer != null) {
                                     framebuffer.clear(/*? if <1.21.2 {*/Minecraft.ON_OSX/*?}*/);
                                 }
                             }
+                            //?}
                         }, opts -> {
                             //? if >=1.19 {
                             return opts.cloudStatus().get();
@@ -277,6 +284,7 @@ public class SodiumGameOptionPages {
                         .setImpact(OptionImpact.LOW)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
+                //? if >=1.16 {
                 .add(OptionImpl.createBuilder(int.class, vanillaOpts)
                         .setId(StandardOptions.Option.ENTITY_DISTANCE)
                         .setName(ComponentUtil.translatable("options.entityDistanceScaling"))
@@ -291,6 +299,7 @@ public class SodiumGameOptionPages {
                         .setImpact(OptionImpact.MEDIUM)
                         .build()
                 )
+                //?}
                 .add(OptionImpl.createBuilder(boolean.class, vanillaOpts)
                         .setId(StandardOptions.Option.ENTITY_SHADOWS)
                         .setName(ComponentUtil.translatable("options.entityShadows"))

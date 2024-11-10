@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.world.sky;
 
+//? if >=1.16 {
 import org.embeddedt.embeddium.impl.util.color.FastCubicSampler;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -22,3 +23,4 @@ public class BackgroundRendererMixin {
                 (v) -> world.effects().getBrightnessDependentFogColor(v, u));
     }
 }
+//?}

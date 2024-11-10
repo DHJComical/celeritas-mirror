@@ -74,16 +74,9 @@ public class SliderControl implements Control<Integer> {
             this.sliderHeld = false;
         }
 
-        //? if >=1.20 {
         @Override
         public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
             super.render(drawContext, mouseX, mouseY, delta);
-        //?} else {
-        /*@Override
-        public void render(PoseStack pose, int mouseX, int mouseY, float delta) {
-            super.render(pose, mouseX, mouseY, delta);
-            GuiGraphics drawContext = new GuiGraphics(pose);
-        *///?}
 
             if (this.option.isAvailable() && (this.hovered || this.isFocused())) {
                 this.renderSlider(drawContext);
@@ -99,7 +92,7 @@ public class SliderControl implements Control<Integer> {
             int sliderHeight = this.sliderBounds.getHeight();
 
             Component label = this.formatter.format(this.option.getValue());
-            int labelWidth = this.font.width(label);
+            int labelWidth = this.getStringWidth(label);
 
             this.drawString(drawContext, label, sliderX + sliderWidth - labelWidth, sliderY + (sliderHeight / 2) - 4, 0xFFFFFFFF);
         }

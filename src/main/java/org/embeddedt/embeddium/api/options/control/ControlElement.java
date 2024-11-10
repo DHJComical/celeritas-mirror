@@ -30,12 +30,7 @@ public class ControlElement<T> extends AbstractWidget implements OptionControlEl
     }
 
     @Override
-    //? if >=1.20
     public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-    //? if <1.20 {
-    /*public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
-        GuiGraphics drawContext = new GuiGraphics(matrices);
-    *///?}
         String name = this.option.getName().getString();
         String label;
 

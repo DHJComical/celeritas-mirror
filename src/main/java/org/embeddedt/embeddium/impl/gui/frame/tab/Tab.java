@@ -5,7 +5,6 @@ import org.embeddedt.embeddium.api.options.structure.OptionPage;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.frame.AbstractFrame;
 import org.embeddedt.embeddium.impl.gui.frame.OptionPageFrame;
@@ -19,8 +18,13 @@ import java.util.function.Supplier;
 
 public record Tab<T extends AbstractFrame>(OptionIdentifier<Void> id, Component title, Supplier<Boolean> onSelectFunction, Function<Dim2i, T> frameFunction) {
 
-    static MutableComponent idComponent(String namespace) {
-        return ComponentUtil.literal(PlatformUtil.getModName(namespace));
+    static Component idComponent(String namespace) {
+        return ComponentUtil.literal(PlatformUtil.getModName(namespace))
+                //? if <1.16 {
+                /*.withStyle(s -> s.setBold(true))
+                *///?} else
+                .withStyle(s -> s.withBold(true))
+                ;
     }
 
     public static Tab.Builder<?> createBuilder() {

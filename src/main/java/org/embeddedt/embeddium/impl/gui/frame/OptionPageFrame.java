@@ -106,8 +106,7 @@ public class OptionPageFrame extends AbstractFrame {
         super.buildFrame();
     }
 
-    //$ gui_render_method
-    @Override public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) { 
+   public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         ControlElement<?> hoveredElement = this.controlElements.stream()
                 .filter(ControlElement::isHovered)
                 .findFirst()
@@ -155,26 +154,20 @@ public class OptionPageFrame extends AbstractFrame {
         int boxX = dim.x();
 
         Option<?> option = element.getOption();
-        var tooltip = new ArrayList<>(Minecraft.getInstance().font.split(option.getTooltip(), boxWidth - (textPadding * 2)));
+        var tooltip = new ArrayList<>(this.split(option.getTooltip().getString(), boxWidth - (textPadding * 2)));
 
         OptionImpact impact = option.getImpact();
 
         if (impact != null) {
             var impactString = ComponentUtil.translatable("sodium.options.performance_impact_string", impact.getLocalizedName()).withStyle(ChatFormatting.GRAY);
-            //? if >=1.16.5 {
-            tooltip.add(Language.getInstance().getVisualOrder(impactString));
-            //?} else
-            /*tooltip.add(impactString);*/
+            tooltip.add(impactString.getString());
         }
 
         var id = option.getId();
 
         if (OptionIdentifier.isPresent(page.getId()) && OptionIdentifier.isPresent(id) && !Objects.equals(normalizeModForTooltip(page.getId().getModId()), normalizeModForTooltip(id.getModId()))) {
             var addedByModString = ComponentUtil.translatable("embeddium.options.added_by_mod_string", ComponentUtil.literal(PlatformUtil.getModName(id.getModId())).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY);
-            //? if >=1.16.5 {
-            tooltip.add(Language.getInstance().getVisualOrder(addedByModString));
-            //?} else
-            /*tooltip.add(addedByModString);*/
+            tooltip.add(addedByModString.getString());
         }
 
         int boxHeight = (tooltip.size() * 12) + boxPadding;

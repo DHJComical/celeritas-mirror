@@ -32,9 +32,11 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     @Final
     protected Direction direction; // This is really the light face, but we can't rename it.
 
+    //? if >=1.16 {
     @Shadow
     @Final
     private boolean shade;
+    //?}
 
     //? if forgelike && >=1.19 {
     @Shadow(remap = false)
@@ -141,7 +143,10 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     @Override
     @Unique(silent = true) // The target class has a function with the same name in a remapped environment
     public boolean hasShade() {
+        //? if >=1.16 {
         return this.shade;
+        //?} else
+        /*return false;*/
     }
 
     //? if forgelike && >=1.19 {

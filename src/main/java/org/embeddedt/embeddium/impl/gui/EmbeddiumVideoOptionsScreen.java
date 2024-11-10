@@ -95,8 +95,10 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         this.frame = this.parentFrameBuilder().build();
         //? if >=1.18 {
         this.addRenderableWidget(this.frame);
-        //?} else
-        /*this.addWidget(this.frame);*/
+        //?} else if >=1.16 {
+        /*this.addWidget(this.frame);
+        *///?} else
+        /*this.children.add(this.frame);*/
 
         this.setFocused(this.frame);
 
@@ -205,20 +207,24 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
                 .addChild(dim -> this.closeButton);
     }
 
-    //$ gui_render_method
-    @Override public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) { 
+    //? if >=1.20 {
+    @Override public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    //?} else if >=1.16 <1.20 {
+    /*@Override public void render(PoseStack matrices, int mouseX, int mouseY, float delta) { GuiGraphics drawContext = new GuiGraphics(matrices);
+    *///?} else
+    /*@Override public void render(int mouseX, int mouseY, float delta) { GuiGraphics drawContext = new GuiGraphics();*/
         //? if >=1.20 <1.20.2 {
         this.renderBackground(drawContext);
         //?} else if >=1.20.2 {
         /*this.renderBackground(drawContext, mouseX, mouseY, delta);
-        *///?} else {
-        /*this.renderBackground(matrices);
-        *///?}
+        *///?} else if >=1.16 {
+        /*this.renderBackground(drawContext.pose());
+        *///?} else
+        /*this.renderBackground();*/
+
         this.updateControls();
-        //? if >=1.20
+
         this.frame.render(drawContext, mouseX, mouseY, delta);
-        //? if <1.20
-        /*this.frame.render(matrices, mouseX, mouseY, delta);*/
     }
 
     private void updateControls() {
