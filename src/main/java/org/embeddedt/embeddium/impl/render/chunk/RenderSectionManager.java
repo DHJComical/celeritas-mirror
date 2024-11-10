@@ -1,21 +1,16 @@
 package org.embeddedt.embeddium.impl.render.chunk;
 
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimap;
-import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMaps;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
-import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
-import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobResult;
@@ -23,6 +18,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobCollec
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderMeshingTask;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderSortTask;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
+import org.embeddedt.embeddium.impl.render.chunk.config.ModernRenderPassConfigurationBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionInfo;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
@@ -33,8 +29,6 @@ import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionCuller;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegionManager;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
-import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
@@ -144,100 +138,7 @@ public class RenderSectionManager {
     }
 
     private static RenderPassConfiguration createRenderPassConfiguration(ChunkVertexType vertexType) {
-        // First, build the main passes
-        TerrainRenderPass solidPass, cutoutMippedPass, translucentPass;
-
-        solidPass = TerrainRenderPass.builder()
-                .layer(RenderType.solid())
-                .name("solid")
-                .fragmentDiscard(false)
-                .useReverseOrder(false)
-                .build();
-        cutoutMippedPass = TerrainRenderPass.builder()
-                .layer(RenderType.cutoutMipped())
-                .name("cutout_mipped")
-                .fragmentDiscard(true)
-                .useReverseOrder(false)
-                .build();
-        translucentPass = TerrainRenderPass.builder()
-                .layer(RenderType.translucent())
-                .name("translucent")
-                .fragmentDiscard(false)
-                .useReverseOrder(true)
-                .useTranslucencySorting(true)
-                .build();
-
-        ImmutableListMultimap.Builder<RenderType, TerrainRenderPass> vanillaRenderStages = ImmutableListMultimap.builder();
-
-        // Build the materials for the vanilla render passes
-        Material solidMaterial, cutoutMaterial, cutoutMippedMaterial, translucentMaterial, tripwireMaterial;
-        solidMaterial = new Material(solidPass, AlphaCutoffParameter.ZERO, true);
-        translucentMaterial = new Material(translucentPass, AlphaCutoffParameter.ZERO, true);
-        cutoutMippedMaterial = new Material(cutoutMippedPass, AlphaCutoffParameter.ONE_TENTH, true);
-
-        vanillaRenderStages.put(RenderType.solid(), solidPass);
-        vanillaRenderStages.put(RenderType.translucent(), translucentPass);
-
-        if(SodiumClientMod.options().performance.useRenderPassConsolidation) {
-            cutoutMaterial = new Material(cutoutMippedPass, AlphaCutoffParameter.ONE_TENTH, false);
-            tripwireMaterial = cutoutMippedMaterial;
-            // Render cutout immediately after solid geometry
-            vanillaRenderStages.put(RenderType.solid(), cutoutMippedPass);
-        } else {
-            TerrainRenderPass cutoutPass, tripwirePass;
-
-            cutoutPass = TerrainRenderPass.builder()
-                    .layer(RenderType.cutout())
-                    .name("cutout")
-                    .fragmentDiscard(true)
-                    .useReverseOrder(false)
-                    .build();
-
-            //? if >=1.16 {
-            tripwirePass = TerrainRenderPass.builder()
-                    .layer(RenderType.tripwire())
-                    .name("tripwire")
-                    .fragmentDiscard(true)
-                    .useReverseOrder(false)
-                    .build();
-            //?}
-
-            cutoutMaterial = new Material(cutoutPass, AlphaCutoffParameter.ONE_TENTH, false);
-            //? if >=1.16
-            tripwireMaterial = new Material(tripwirePass, AlphaCutoffParameter.ONE_TENTH, false);
-            vanillaRenderStages.put(RenderType.cutout(), cutoutPass);
-            vanillaRenderStages.put(RenderType.cutoutMipped(), cutoutMippedPass);
-            //? if >=1.16
-            vanillaRenderStages.put(RenderType.tripwire(), tripwirePass);
-        }
-
-        // Now build the material map
-        Map<RenderType, Material> renderTypeToMaterialMap = new Reference2ReferenceOpenHashMap<>(RenderType.chunkBufferLayers().size(), Reference2ReferenceOpenHashMap.VERY_FAST_LOAD_FACTOR);
-
-        renderTypeToMaterialMap.put(RenderType.solid(), solidMaterial);
-        renderTypeToMaterialMap.put(RenderType.cutout(), cutoutMaterial);
-        renderTypeToMaterialMap.put(RenderType.cutoutMipped(), cutoutMippedMaterial);
-        renderTypeToMaterialMap.put(RenderType.translucent(), translucentMaterial);
-        //? if >=1.16
-        renderTypeToMaterialMap.put(RenderType.tripwire(), tripwireMaterial);
-
-        for(RenderType type : RenderType.chunkBufferLayers()) {
-            if(!renderTypeToMaterialMap.containsKey(type)) {
-                SodiumClientMod.logger().warn("RenderType {} is not recognized by Embeddium. Treating it as cutout_mipped.", type);
-                renderTypeToMaterialMap.put(type, cutoutMippedMaterial);
-            }
-        }
-
-        var vanillaRenderStageMap = vanillaRenderStages.build();
-        var allPasses = vanillaRenderStageMap.values().stream().distinct().toList();
-
-        return new RenderPassConfiguration(vertexType,
-                allPasses,
-                renderTypeToMaterialMap,
-                vanillaRenderStageMap.asMap(),
-                solidMaterial,
-                cutoutMippedMaterial,
-                translucentMaterial);
+        return ModernRenderPassConfigurationBuilder.build(vertexType);
     }
 
     public void runAsyncTasks() {

@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
-import net.minecraft.client.renderer.RenderType;
 
 /**
  * A terrain render pass corresponds to a draw call to render some subset of terrain geometry. Passes are generally
@@ -26,9 +25,9 @@ public class TerrainRenderPass {
     private final String name;
 
     /**
-     * The RenderType that is used to set up/clear GPU pipeline state.
+     * A callback used to set up/clear GPU pipeline state.
      */
-    private final RenderType layer;
+    private final Runnable setupState, clearState;
 
     /**
      * Whether sections on this render pass should be rendered farthest-to-nearest, rather than nearest-to-farthest.
@@ -44,12 +43,13 @@ public class TerrainRenderPass {
     private final boolean useTranslucencySorting;
 
     @Builder
-    public TerrainRenderPass(String name, RenderType layer, boolean useReverseOrder, boolean fragmentDiscard, boolean useTranslucencySorting) {
+    public TerrainRenderPass(String name, Runnable setupState, Runnable clearState, boolean useReverseOrder, boolean fragmentDiscard, boolean useTranslucencySorting) {
         if(name == null || name.length() == 0) {
             throw new IllegalArgumentException("Name not specified for terrain pass");
         }
         this.name = name;
-        this.layer = layer;
+        this.setupState = setupState;
+        this.clearState = clearState;
         this.useReverseOrder = useReverseOrder;
         this.fragmentDiscard = fragmentDiscard;
         this.useTranslucencySorting = useTranslucencySorting;
@@ -64,16 +64,13 @@ public class TerrainRenderPass {
         return this.useTranslucencySorting && SodiumClientMod.canApplyTranslucencySorting();
     }
 
-    @Deprecated
     public void startDrawing() {
-        this.layer.setupRenderState();
+        this.setupState.run();
     }
 
-    @Deprecated
     public void endDrawing() {
-        this.layer.clearRenderState();
+        this.clearState.run();
     }
-
 
     public boolean supportsFragmentDiscard() {
         return this.fragmentDiscard;
