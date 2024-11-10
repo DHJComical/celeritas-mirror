@@ -82,7 +82,8 @@ public class EntityRenderDispatcherMixin {
             float minX = (float) ((pos.getX() + box.minX) - x);
             float maxX = (float) ((pos.getX() + box.maxX) - x);
 
-            float minY = (float) ((pos.getY() + box.minY) - y);
+            // Need to apply an epsilon pre-1.16 to prevent z-fighting
+            float minY = (float) ((pos.getY() + box.minY) - y /*? if <1.16 {*/ /*+ 0.015625 *//*?}*/);
 
             float minZ = (float) ((pos.getZ() + box.minZ) - z);
             float maxZ = (float) ((pos.getZ() + box.maxZ) - z);
