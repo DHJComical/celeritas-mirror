@@ -192,7 +192,7 @@ public class RenderRegionManager {
         var instance = this.regions.get(key);
 
         if (instance == null) {
-            this.regions.put(key, instance = new RenderRegion(x, y, z, this.stagingBuffer));
+            this.regions.put(key, instance = new RenderRegion(x, y, z, this.stagingBuffer, this.renderPassConfiguration.vertexType().getVertexFormat().getStride()));
         }
 
         return instance;

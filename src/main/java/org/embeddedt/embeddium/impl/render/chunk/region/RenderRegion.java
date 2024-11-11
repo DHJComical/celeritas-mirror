@@ -1,7 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.region;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.gl.arena.GlBufferArena;
 import org.embeddedt.embeddium.impl.gl.arena.staging.StagingBuffer;
 import org.embeddedt.embeddium.impl.gl.buffer.GlBuffer;
@@ -11,7 +10,6 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.util.MathUtil;
 import net.minecraft.core.SectionPos;
 import org.apache.commons.lang3.Validate;
@@ -50,13 +48,15 @@ public class RenderRegion {
 
     private final Map<TerrainRenderPass, SectionRenderDataStorage> sectionRenderData = new Reference2ReferenceOpenHashMap<>();
     private DeviceResources resources;
+    private final int stride;
 
-    public RenderRegion(int x, int y, int z, StagingBuffer stagingBuffer) {
+    public RenderRegion(int x, int y, int z, StagingBuffer stagingBuffer, int stride) {
         this.x = x;
         this.y = y;
         this.z = z;
 
         this.stagingBuffer = stagingBuffer;
+        this.stride = stride;
         this.renderList = new ChunkRenderList(this);
     }
 
@@ -183,7 +183,7 @@ public class RenderRegion {
 
     public DeviceResources createResources(CommandList commandList) {
         if (this.resources == null) {
-            this.resources = new DeviceResources(commandList, this.stagingBuffer);
+            this.resources = new DeviceResources(commandList, this.stagingBuffer, this.stride);
         }
 
         return this.resources;
@@ -206,14 +206,7 @@ public class RenderRegion {
         private GlTessellation tessellation;
         private GlTessellation indexedTessellation;
 
-        public DeviceResources(CommandList commandList, StagingBuffer stagingBuffer) {
-            int stride;
-            if(!SodiumClientMod.canUseVanillaVertices()) {
-                // this line must be left unchanged for the Oculus mixin to apply
-                stride = ChunkMeshFormats.COMPACT.getVertexFormat().getStride();
-            } else {
-                stride = ChunkMeshFormats.VANILLA_LIKE.getVertexFormat().getStride();
-            }
+        public DeviceResources(CommandList commandList, StagingBuffer stagingBuffer, int stride) {
             this.geometryArena = new GlBufferArena(commandList, REGION_SIZE * 756, stride, stagingBuffer);
             this.indexArena = new GlBufferArena(commandList, (REGION_SIZE * 378) / 4 * 6, 4, stagingBuffer);
         }
