@@ -5,7 +5,7 @@ plugins {
 dependencies {
     implementation("com.google.guava:guava:33.1.0-jre")
     implementation("com.google.code.gson:gson:2.10.1")
-    implementation("dev.kikugie:stonecutter:0.5-beta.4")
+    implementation("dev.kikugie:stonecutter:0.5-beta.5")
 }
 
 repositories {
