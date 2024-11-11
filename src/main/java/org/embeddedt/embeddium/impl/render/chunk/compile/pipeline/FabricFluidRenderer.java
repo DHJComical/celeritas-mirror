@@ -15,7 +15,7 @@ import net.minecraft.world.level.material.FluidState;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 
-import java.util.function.Predicate;
+import java.util.function.Function;
 
 public class FabricFluidRenderer {
     private final Reference2BooleanOpenHashMap<Class<? extends FluidRenderHandler>> handlersUsingCustomRenderer = new Reference2BooleanOpenHashMap<>();
@@ -29,7 +29,7 @@ public class FabricFluidRenderer {
         }
 
         // TODO move to a separate class
-        boolean overridesRenderFluid = handlersUsingCustomRenderer.computeIfAbsent(handler.getClass(), (Predicate<? super Class<? extends FluidRenderHandler>>) handlerClass -> {
+        boolean overridesRenderFluid = handlersUsingCustomRenderer.computeIfAbsent(handler.getClass(), (Function<? super Class<? extends FluidRenderHandler>, Boolean>) handlerClass -> {
             try {
                 var method = handlerClass.getMethod("renderFluid", BlockPos.class, BlockAndTintGetter.class, VertexConsumer.class, BlockState.class, FluidState.class);
                 return method.getDeclaringClass() != FluidRenderHandler.class;
@@ -50,7 +50,7 @@ public class FabricFluidRenderer {
         try {
             // Call vanilla fluid renderer and capture the results
             try(var consumer = modelBuffer.asVertexConsumer(material, ctx)) {
-                Minecraft.getInstance().getBlockRenderer().renderLiquid(ctx.pos(), ctx.localSlice(), consumer, ctx.state(), fluidState);
+                Minecraft.getInstance().getBlockRenderer().renderLiquid(ctx.pos(), ctx.localSlice(), consumer, /^? if >=1.17 {^/ ctx.state(), /^?}^/ fluidState);
             }
         } finally {
             renderingCustomFluid = false;
