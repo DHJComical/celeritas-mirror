@@ -17,3 +17,12 @@ stonecutter.registerChiseled tasks.register("chiseledPackage", stonecutter.chise
     group = "project"
     ofTask("packageJar")
 }
+
+tasks.register("runActive") {
+    dependsOn("${stonecutter.current.project}:runClient")
+}
+
+tasks.register("packageActive") {
+    group = "project"
+    dependsOn("${stonecutter.current.project}:packageJar")
+}

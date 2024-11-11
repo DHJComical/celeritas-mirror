@@ -376,15 +376,6 @@ if (loader == FORGE) {
 }
 
 if (stonecutter.current.isActive) {
-    tasks.register("runActive") {
-        group = "project"
-        dependsOn("runClient")
-    }
-    tasks.register("packageActive") {
-        group = "project"
-        dependsOn("packageJar")
-    }
-
     def launchVersion
     if (loader == FABRIC) {
         launchVersion = fabricloader
