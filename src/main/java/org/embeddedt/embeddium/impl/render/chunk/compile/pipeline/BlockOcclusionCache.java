@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.embeddedt.embeddium.impl.util.PositionUtil;
 
 /**
  * The block occlusion cache is responsible for performing occlusion testing of neighboring block faces.
@@ -32,34 +33,58 @@ public class BlockOcclusionCache {
      * @return True if the block side facing {@param dir} is not occluded, otherwise false
      */
     public boolean shouldDrawSide(BlockState selfState, BlockGetter view, BlockPos pos, Direction facing) {
-        BlockPos.MutableBlockPos adjPos = this.cpos;
-        adjPos.set(pos.getX() + facing.getStepX(), pos.getY() + facing.getStepY(), pos.getZ() + facing.getStepZ());
+        // self = occluded block
+        // adj = occluding block
+
+        BlockPos.MutableBlockPos adjPos = PositionUtil.setWithOffset(this.cpos, pos, facing);
 
         BlockState adjState = view.getBlockState(adjPos);
 
-        if (selfState.skipRendering(adjState, facing) /*? if forgelike && >=1.18 {*/|| (adjState.hidesNeighborFace(view, adjPos, selfState, facing.getOpposite()) && selfState.supportsExternalFaceHiding())/*?}*/) {
-            // Explicitly asked to skip rendering this face
-            return false;
-        } else if (adjState.canOcclude()) {
-            VoxelShape selfShape = selfState.getFaceOcclusionShape(/*? if <1.21.2 {*/view, pos,/*?}*/ facing);
-            VoxelShape adjShape = adjState.getFaceOcclusionShape(/*? if <1.21.2 {*/view, adjPos,/*?}*/ facing.getOpposite());
+        VoxelShape selfShape, adjShape;
 
-            if (selfShape == Shapes.block() && adjShape == Shapes.block()) {
-                // If both blocks use full-cube occlusion shapes, then the neighbor certainly occludes us, and we
-                // shouldn't render this face
-                return false;
-            } else if (selfShape.isEmpty()) {
-                // If our occlusion shape is empty, then we cannot be occluded by anything, and we should render
-                // this face
-                return true;
-            }
+        Direction oppositeFacing = facing.getOpposite();
 
-            // Consult the occlusion cache & do the voxel shape calculations if necessary
-            return this.calculate(selfShape, adjShape);
+        if (/*? if <1.21.2 {*/ adjState.canOcclude() /*?} else {*/ /*true *//*?}*/) {
+            adjShape = adjState.getFaceOcclusionShape(/*? if <1.21.2 {*/view, adjPos,/*?}*/ oppositeFacing);
+
+            // If both blocks use full-cube occlusion shapes (or we are in 1.21.2+, where only the occluding
+            // block's shape is checked by vanilla), then the neighbor certainly occludes us, and we
+            // shouldn't render this face.
+
+            //? if >=1.21.2
+            /*if (adjShape == Shapes.block()) return false;*/
+
+            selfShape = selfState.getFaceOcclusionShape(/*? if <1.21.2 {*/view, pos,/*?}*/ facing);
+
+            //? if <1.21.2
+            if (adjShape == Shapes.block() && selfShape == Shapes.block()) return false;
         } else {
-            // The neighboring block never occludes, we need to render this face
+            selfShape = Shapes.empty();
+            adjShape = Shapes.empty();
+        }
+
+        // We have not done a fast cull above. Start checking more specific conditions
+
+        if (selfState.skipRendering(adjState, facing)) {
+            return false;
+        }
+
+        //? if forgelike && >=1.18 {
+        if (adjState.hidesNeighborFace(view, adjPos, selfState, oppositeFacing) && selfState.supportsExternalFaceHiding()) {
+            // The Forge extension has requested that the face be hidden.
+            return false;
+        }
+        //?}
+
+        // Fast check if either shape is empty. If the occluding block does not occlude, we always end up here.
+        if (selfShape == Shapes.empty() || adjShape == Shapes.empty()) {
+            // If either occlusion shape is empty, then we cannot be occluded by anything, and we should render
+            // this face
             return true;
         }
+
+        // Consult the occlusion cache & do the voxel shape merging calculations if necessary
+        return this.calculate(selfShape, adjShape);
     }
 
     private boolean calculate(VoxelShape selfShape, VoxelShape adjShape) {
