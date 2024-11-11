@@ -83,6 +83,9 @@ public class FluidRenderer {
 
     private final ChunkColorWriter colorEncoder = ChunkColorWriter.get();
 
+    //? if fabric
+    /*private final FabricFluidRenderer fabricFluidRenderer = new FabricFluidRenderer();*/
+
     public FluidRenderer(ColorProviderRegistry colorProviderRegistry, LightPipelineProvider lighters) {
         this.quad.setLightFace(Direction.UP);
 
@@ -185,10 +188,13 @@ public class FluidRenderer {
         var meshBuilder = buffers.get(material);
         Fluid fluid = fluidState.getType();
 
-        //? if fabric
-        /*var fabricFluidHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid);*/
+        //? if fabric {
+        /*var fabricFluidHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid);
 
-        // TODO support custom fabric fluid rendering
+        if (fabricFluidRenderer.renderCustomFluid(ctx, fabricFluidHandler, fluidState, buffers, material)) {
+            return;
+        }
+        *///?}
 
         // Embeddium: Delegate to vanilla liquid renderer if fluid has this tag.
         //? if >=1.18 {
