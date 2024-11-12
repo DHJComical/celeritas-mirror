@@ -41,7 +41,4 @@ jobs:
             .gradle/loom-cache
           key: remapped-mods-${{ hashFiles('build.gradle') }}
       - name: Build jars
-        run: ./gradlew chiseledPackage
-      - name: Publish jars
-        continue-on-error: true
-        run: ./gradlew publishPackagesToDiscord
+        run: ./gradlew chiseledPublish
