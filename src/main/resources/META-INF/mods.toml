@@ -28,6 +28,3 @@ type="required"
 versionRange = "${minecraft}"
 ordering = "NONE"
 side = "BOTH"
-
-[modproperties.${mod_id}]
-catalogueImageIcon="icon.png"
