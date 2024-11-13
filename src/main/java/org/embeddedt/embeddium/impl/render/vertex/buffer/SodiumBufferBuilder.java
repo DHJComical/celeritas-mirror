@@ -223,7 +223,7 @@ public class SodiumBufferBuilder implements VertexConsumer, VertexBufferWriter {
         this.endVertex();
     }
 
-    //? if >=1.18 {
+    //? if >=1.17 {
     @Override
     public void defaultColor(int red, int green, int blue, int alpha) {
         ((BufferBuilder)this.builder).defaultColor(red, green, blue, alpha);

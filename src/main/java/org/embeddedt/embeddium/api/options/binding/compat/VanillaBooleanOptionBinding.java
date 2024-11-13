@@ -23,7 +23,7 @@ public class VanillaBooleanOptionBinding implements OptionBinding<Options, Boole
         return this.option.get();
     }
 }
-//?} else if >=1.18 {
+//?} else if >=1.17 {
 /*import net.minecraft.client.CycleOption;
 
 public class VanillaBooleanOptionBinding implements OptionBinding<Options, Boolean> {

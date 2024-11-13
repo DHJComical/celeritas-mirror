@@ -203,7 +203,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
             return this;
         }
 
-        //? if >=1.18 <1.21 {
+        //? if >=1.17 <1.21 {
 
         @Override
         public void defaultColor(int r, int g, int b, int a) {

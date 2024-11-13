@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.textures.animations.tracking;
 
-//? if <1.18 {
+//? if <1.17 {
 
 /*import com.mojang.blaze3d.systems.RenderSystem;
 import org.embeddedt.embeddium.impl.SodiumClientMod;

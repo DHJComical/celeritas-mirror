@@ -58,7 +58,7 @@ public class WorldUtil {
     }
 
     public static boolean isSectionEmpty(LevelChunkSection section) {
-        //? if >=1.17 {
+        //? if >=1.18 {
         return section == null || section.hasOnlyAir();
         //?} else
         /*return LevelChunkSection.isEmpty(section);*/

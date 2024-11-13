@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.textures.animations.tracking;
 
-//? if >=1.18 {
+//? if >=1.17 {
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.impl.SodiumClientMod;
 import org.embeddedt.embeddium.impl.render.texture.SpriteContentsExtended;

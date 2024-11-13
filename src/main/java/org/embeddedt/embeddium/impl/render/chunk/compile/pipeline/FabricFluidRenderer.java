@@ -31,7 +31,7 @@ public class FabricFluidRenderer {
         // TODO move to a separate class
         boolean overridesRenderFluid = handlersUsingCustomRenderer.computeIfAbsent(handler.getClass(), (Function<? super Class<? extends FluidRenderHandler>, Boolean>) handlerClass -> {
             try {
-                var method = handlerClass.getMethod("renderFluid", BlockPos.class, BlockAndTintGetter.class, VertexConsumer.class, BlockState.class, FluidState.class);
+                var method = handlerClass.getMethod("renderFluid", BlockPos.class, BlockAndTintGetter.class, VertexConsumer.class, /^? if >=1.18 {^/ BlockState.class, /^?}^/ FluidState.class);
                 return method.getDeclaringClass() != FluidRenderHandler.class;
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException("Unable to find renderFluid method. Possibly a mismatched Fabric API version?", e);
@@ -50,7 +50,7 @@ public class FabricFluidRenderer {
         try {
             // Call vanilla fluid renderer and capture the results
             try(var consumer = modelBuffer.asVertexConsumer(material, ctx)) {
-                Minecraft.getInstance().getBlockRenderer().renderLiquid(ctx.pos(), ctx.localSlice(), consumer, /^? if >=1.17 {^/ ctx.state(), /^?}^/ fluidState);
+                Minecraft.getInstance().getBlockRenderer().renderLiquid(ctx.pos(), ctx.localSlice(), consumer, /^? if >=1.18 {^/ ctx.state(), /^?}^/ fluidState);
             }
         } finally {
             renderingCustomFluid = false;

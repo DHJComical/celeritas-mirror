@@ -427,7 +427,7 @@ public class SodiumWorldRenderer {
         double y = cameraPos.y();
         double z = cameraPos.z();
 
-        //? if >=1.18 {
+        //? if >=1.17 {
         BlockEntityRenderDispatcher blockEntityRenderer = Minecraft.getInstance().getBlockEntityRenderDispatcher();
         //?} else
         /*BlockEntityRenderDispatcher blockEntityRenderer = BlockEntityRenderDispatcher.instance;*/

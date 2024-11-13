@@ -172,7 +172,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
 
     @Unique
     private boolean shouldDuplicateVertices() {
-        //? if >=1.18 {
+        //? if >=1.17 {
         return this.mode == VertexFormat.Mode.LINES || this.mode == VertexFormat.Mode.LINE_STRIP;
         //?} else
         /*return false;*/

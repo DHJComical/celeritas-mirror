@@ -15,7 +15,7 @@ public class FogHelper {
     private static final float FAR_PLANE_THRESHOLD_EXP2 = Mth.sqrt(FAR_PLANE_THRESHOLD_EXP);
 
     public static float getFogEnd() {
-        //? if <1.18 {
+        //? if <1.17 {
         /*return GlStateManager.FOG.end;
         *///?} else if <1.21.2 {
         return RenderSystem.getShaderFogEnd();
@@ -24,7 +24,7 @@ public class FogHelper {
     }
 
     public static float getFogStart() {
-        //? if <1.18 {
+        //? if <1.17 {
         /*return GlStateManager.FOG.start;
         *///?} else if <1.21.2 {
         return RenderSystem.getShaderFogStart();
@@ -32,7 +32,7 @@ public class FogHelper {
         /*return RenderSystem.getShaderFog().start();*/
     }
 
-    //? if <1.18 {
+    //? if <1.17 {
     /*public static float getFogDensity() {
         return GlStateManager.FOG.density;
     }
@@ -48,11 +48,11 @@ public class FogHelper {
         *///?} else if >=1.18 {
         return RenderSystem.getShaderFogShape().getIndex();
         //?} else
-        /*return 0;*/ // always zero for 1.16
+        /*return 0;*/ // always zero for 1.17 and older
     }
 
     public static float getFogCutoff() {
-        //? if <1.18 {
+        //? if <1.17 {
         /*int mode = GlStateManager.FOG.mode;
 
         switch (mode) {
@@ -70,7 +70,7 @@ public class FogHelper {
     }
 
     public static float[] getFogColor() {
-        //? if <1.18 {
+        //? if <1.17 {
         /*return new float[]{FogRenderer.fogRed, FogRenderer.fogGreen, FogRenderer.fogBlue, 1.0F};
         *///?} else if <1.21.2 {
         return RenderSystem.getShaderFogColor();
@@ -81,7 +81,7 @@ public class FogHelper {
     }
 
     public static ChunkFogMode getFogMode() {
-        //? if <1.18 {
+        //? if <1.17 {
         /*int mode = GlStateManager.FOG.mode;
 
         if(mode == 0 || !GlStateManager.FOG.enable.enabled)

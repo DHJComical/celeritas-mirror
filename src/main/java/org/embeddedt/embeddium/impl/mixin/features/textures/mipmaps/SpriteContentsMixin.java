@@ -38,7 +38,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
     private NativeImage originalImage;
     //?}
 
-    //? if >=1.18 {
+    //? if >=1.17 {
     @Shadow
     @Mutable
     @Final
@@ -76,7 +76,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
 
         this.originalImage = nativeImage;
     }
-    //?} else if >=1.18 {
+    //?} else if >=1.17 {
     /*@Redirect(method = "<init>", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;name:Lnet/minecraft/resources/ResourceLocation;", opcode = Opcodes.PUTFIELD))
     private void sodium$beforeGenerateMipLevels(TextureAtlasSprite instance, ResourceLocation name, TextureAtlas pAtlas, TextureAtlasSprite.Info pSpriteInfo, int pMipLevel, int pStorageX, int pStorageY, int pX, int pY, NativeImage pImage) {
         // Only fill in transparent colors if mipmaps are on and the texture name does not contain "leaves".

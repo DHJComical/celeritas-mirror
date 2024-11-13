@@ -35,7 +35,7 @@ public class GLRenderDevice implements RenderDevice {
             return;
         }
 
-        //? if >=1.18 {
+        //? if >=1.17 {
         BufferUploader.reset();
         //?} else
         /*VertexBuffer.unbind();*/
@@ -50,7 +50,7 @@ public class GLRenderDevice implements RenderDevice {
             return;
         }
 
-        //? if <1.18
+        //? if <1.17
         /*VertexBuffer.unbind();*/
 
         this.stateTracker.clear();

@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.core.matrix;
 
-//? if <1.18 {
+//? if <1.17 {
 /*import com.mojang.math.Matrix4f;
 import net.minecraft.client.renderer.GameRenderer;
 import org.embeddedt.embeddium.impl.render.chunk.GameRendererContext;

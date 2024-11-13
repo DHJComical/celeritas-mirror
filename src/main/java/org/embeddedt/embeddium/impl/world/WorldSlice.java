@@ -249,7 +249,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         } else {
             var bounds = context.getVolume();
 
-            //? if >=1.18 {
+            //? if >=1.17 {
             int minBlockX = Math.max(bounds.minX(), pos.minBlockX());
             int maxBlockX = Math.min(bounds.maxX(), pos.maxBlockX());
 
@@ -395,14 +395,14 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         return this.biomeColors.getColor(resolver, pos.getX(), pos.getY(), pos.getZ());
     }
 
-    //? if >=1.18 {
+    //? if >=1.17 {
     @Override
     public int getHeight() {
         return this.world.getHeight();
     }
     //?}
 
-    //? if >=1.18 <1.21.2 {
+    //? if >=1.17 <1.21.2 {
     @Override
     public int getMinBuildHeight() {
         return this.world.getMinBuildHeight();

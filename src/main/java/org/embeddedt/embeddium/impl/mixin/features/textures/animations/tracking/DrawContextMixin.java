@@ -52,7 +52,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class DrawContextMixin {
     @Inject(method = "blit(" +
             //? if >=1.16
-            /^"Lcom/mojang/blaze3d/vertex/PoseStack;" +^/
+            "Lcom/mojang/blaze3d/vertex/PoseStack;" +
             "IIIIILnet/minecraft/client/renderer/texture/TextureAtlasSprite;)V", at = @At("HEAD"))
     private static void preDrawSprite(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) TextureAtlasSprite sprite)
     {

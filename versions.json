@@ -35,6 +35,10 @@
       "loaders": ["forge", "fabric"]
     },
     {
+      "friendlyName": "1.17.1",
+      "loaders": ["fabric"]
+    },
+    {
       "friendlyName": "1.15.2",
       "loaders": ["fabric"]
     },

@@ -61,3 +61,7 @@ accessible field net/minecraft/client/renderer/LightTexture lightTextureLocation
 accessible field com/mojang/blaze3d/platform/GlStateManager$BooleanState enabled Z
 accessible field net/minecraft/client/model/geom/ModelPart$Cube polygons [Lnet/minecraft/client/model/geom/ModelPart$Polygon;
 accessible method net/minecraft/client/renderer/block/model/BlockModel getElements ()Ljava/util/List;
+
+accessible class net/minecraft/client/multiplayer/ClientLevel$MarkerParticleStatus
+accessible field net/minecraft/client/multiplayer/ClientLevel$MarkerParticleStatus block Lnet/minecraft/world/level/block/Block;
+accessible field net/minecraft/client/multiplayer/ClientLevel$MarkerParticleStatus particle Lnet/minecraft/core/particles/ParticleOptions;

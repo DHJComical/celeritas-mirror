@@ -179,7 +179,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             BlockEntity entity = slice.getBlockEntity(blockPos);
 
                             if (entity != null) {
-                                //? if >=1.18 {
+                                //? if >=1.17 {
                                 BlockEntityRenderer<BlockEntity> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(entity);
                                 //?} else
                                 /*BlockEntityRenderer<BlockEntity> renderer = BlockEntityRenderDispatcher.instance.getRenderer(entity);*/
@@ -241,7 +241,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         try {
             state = slice.getBlockState(pos);
         } catch (Exception ignored) {}
-        CrashReportCategory.populateBlockDetails(crashReportSection, /*? if >=1.18 {*/ slice, /*?}*/ pos, state);
+        CrashReportCategory.populateBlockDetails(crashReportSection, /*? if >=1.17 {*/ slice, /*?}*/ pos, state);
 
         crashReportSection.setDetail("Chunk section", this.render);
         if (this.renderContext != null) {

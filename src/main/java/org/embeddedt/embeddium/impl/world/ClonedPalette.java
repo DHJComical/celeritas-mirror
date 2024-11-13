@@ -70,6 +70,10 @@ public class ClonedPalette<T> implements Palette<T> {
         return 0;
     }
 
+    public int getSize() {
+        return 0;
+    }
+
     @Override
     public void read(ListTag nbt) {
         throw new UnsupportedOperationException();

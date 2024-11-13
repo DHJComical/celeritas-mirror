@@ -37,7 +37,7 @@ public class BatchedF3Renderer {
                 float y1 = 2 + (height * i);
 
                 font.drawInBatch(string, x1, y1, 0xe0e0e0, false, positionMatrix, immediate,
-                        false, 0, 15728880/^? if >=1.16 {^//^, font.isBidirectional()^//^?}^/);
+                        false, 0, 15728880/^? if >=1.16 {^/, font.isBidirectional()/^?}^/);
             }
         }
 
@@ -61,11 +61,11 @@ public class BatchedF3Renderer {
 
         BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
         //? if >=1.17 {
-        /^bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        ^///?} else
-        bufferBuilder.begin(GL20C.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
+        //?} else
+        /^bufferBuilder.begin(GL20C.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);^/
 
         Matrix4f matrix = matrixStack.last()
                 .pose();
@@ -95,14 +95,14 @@ public class BatchedF3Renderer {
         }
 
         //? if >=1.19 {
-        /^BufferBuilder.RenderedBuffer output = bufferBuilder.end();
+        BufferBuilder.RenderedBuffer output = bufferBuilder.end();
 
         BufferUploader.drawWithShader(output);
-        ^///?} else {
-        bufferBuilder.end();
+        //?} else {
+        /^bufferBuilder.end();
 
         BufferUploader.end(bufferBuilder);
-        //?}
+        ^///?}
         RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }

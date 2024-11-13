@@ -15,6 +15,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 //? if >=1.20 {
@@ -58,9 +59,9 @@ public class WorldRendererMixin {
             PoseStack matrices,
             //? if >=1.21
             /*Matrix4f frustumMatrix,*/
-            //? if >=1.18
+            //? if >=1.17
             Matrix4f projectionMatrix,
-            float tickDelta, /*? if >=1.18 {*/ Camera camera, boolean bl, Runnable runnable, /*?}*/ CallbackInfo ci) {
+            float tickDelta, /*? if >=1.18 {*/ Camera camera, boolean bl, /*?}*/ /*? if >=1.17 {*/ Runnable runnable, /*?}*/ CallbackInfo ci) {
     //?} else {
     /*@Inject(method = "addSkyPass", at = @At("HEAD"), cancellable = true)
     private void preRenderSky(FrameGraphBuilder frameGraphBuilder, Camera camera, float f, FogParameters fogParameters, CallbackInfo ci) {
@@ -82,12 +83,12 @@ public class WorldRendererMixin {
         Vec3 cameraPosition = camera.getPosition();
         Entity cameraEntity = camera.getEntity();
 
-        boolean isSubmersed = !camera.getFluidInCamera().isEmpty();
+        boolean isSubmersed = /^? if >=1.17 {^/ camera.getFluidInCamera() != FogType.NONE /^?} else {^/ /^!camera.getFluidInCamera().isEmpty() ^//^?}^/;
         boolean hasBlindness = cameraEntity instanceof LivingEntity && ((LivingEntity) cameraEntity).hasEffect(MobEffects.BLINDNESS);
         //? if >=1.16 {
-        /^boolean dimensionIsFoggy = this.minecraft.level.effects().isFoggyAt(Mth.floor(cameraPosition.x()), Mth.floor(cameraPosition.y()));
-        ^///?} else
-        boolean dimensionIsFoggy = this.minecraft.level.getDimension().isFoggyAt(Mth.floor(cameraPosition.x()), Mth.floor(cameraPosition.y()));
+        boolean dimensionIsFoggy = this.minecraft.level.effects().isFoggyAt(Mth.floor(cameraPosition.x()), Mth.floor(cameraPosition.y()));
+        //?} else
+        /^boolean dimensionIsFoggy = this.minecraft.level.getDimension().isFoggyAt(Mth.floor(cameraPosition.x()), Mth.floor(cameraPosition.y()));^/
         boolean useThickFog = dimensionIsFoggy || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
 
         if (isSubmersed || hasBlindness || useThickFog) {

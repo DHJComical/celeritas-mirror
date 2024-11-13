@@ -31,7 +31,7 @@ public class JomlHelper {
     }
 
     //? if >=1.18 {
-    /^public static Matrix3f copy(com.mojang.math.Matrix3f src) {
+    public static Matrix3f copy(com.mojang.math.Matrix3f src) {
         Matrix3f dst = new Matrix3f();
         set(dst, src);
 
@@ -47,7 +47,7 @@ public class JomlHelper {
             dst.set(buffer);
         }
     }
-    ^///?}
+    //?}
 
     *///?}
 }

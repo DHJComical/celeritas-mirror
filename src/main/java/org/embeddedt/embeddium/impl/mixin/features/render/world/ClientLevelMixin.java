@@ -86,7 +86,12 @@ public abstract class ClientLevelMixin extends Level {
     private void lambda$doAnimateTick$8(BlockPos.MutableBlockPos pos, AmbientParticleSettings settings) {throw new AssertionError();}
 
     private final Consumer<AmbientParticleSettings> embeddium$particleSettingsConsumer = settings -> lambda$doAnimateTick$8(embeddium$particlePos, settings);
-    //?} else if >=1.16 {
+    //?} else if >=1.17 {
+    /*@Shadow
+    private void lambda$doAnimateTick$5(BlockPos.MutableBlockPos pos, AmbientParticleSettings settings) {throw new AssertionError();}
+
+    private final Consumer<AmbientParticleSettings> embeddium$particleSettingsConsumer = settings -> lambda$doAnimateTick$5(embeddium$particlePos, settings);
+    *///?} else if >=1.16 {
     /*@Shadow
     private void lambda$doAnimateTick$4(BlockPos.MutableBlockPos pos, AmbientParticleSettings settings) {throw new AssertionError();}
 
@@ -115,9 +120,11 @@ public abstract class ClientLevelMixin extends Level {
      */
     @Overwrite
     public void doAnimateTick(int xCenter, int yCenter, int zCenter, int radius, /*$ rng >>*/ RandomSource random,
-                              //? if >=1.17 {
+                              //? if >=1.18 {
                               @Nullable Block markerBlock,
-                              //?} else
+                              //?} else if >=1.17 {
+                              /*@Nullable ClientLevel.MarkerParticleStatus markerParticleStatus,
+                              *///?} else
                               /*boolean showMarker,*/
                               BlockPos.MutableBlockPos pos) {
         int x = xCenter + (random.nextInt(radius) - random.nextInt(radius));
@@ -142,11 +149,15 @@ public abstract class ClientLevelMixin extends Level {
             }
         }
 
-        //? if >=1.17 {
+        //? if >=1.18 {
         if (blockState.getBlock() == markerBlock) {
             this.addParticle(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, blockState), (double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, 0.0D, 0.0D, 0.0D);
         }
-        //?} else {
+        //?} else if >=1.17 {
+        /*if (markerParticleStatus != null && blockState.getBlock() == markerParticleStatus.block) {
+            this.addParticle(markerParticleStatus.particle, (double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, 0.0D, 0.0D, 0.0D);
+        }
+        *///?} else {
         /*if (showMarker && blockState.getBlock() == Blocks.BARRIER) {
             this.addParticle(ParticleTypes.BARRIER, (double)x + 0.5, (double)y + 0.5, (double)z + 0.5, 0.0, 0.0, 0.0);
         }

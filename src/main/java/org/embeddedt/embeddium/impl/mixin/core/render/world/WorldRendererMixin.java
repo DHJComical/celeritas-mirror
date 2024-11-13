@@ -155,7 +155,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      * @author JellySquid
      */
     @Overwrite
-    private void /*? if <1.20.2 {*/ renderChunkLayer /*?} else {*/ /*renderSectionLayer *//*?}*/(RenderType renderLayer, /*? if <1.21 {*/ PoseStack matrices, /*?}*/ double x, double y, double z /*? if >=1.21 {*/ /*,Matrix4f pose *//*?}*/ /*? if >=1.18 {*/, Matrix4f matrix /*?}*/) {
+    private void /*? if <1.20.2 {*/ renderChunkLayer /*?} else {*/ /*renderSectionLayer *//*?}*/(RenderType renderLayer, /*? if <1.21 {*/ PoseStack matrices, /*?}*/ double x, double y, double z /*? if >=1.21 {*/ /*,Matrix4f pose *//*?}*/ /*? if >=1.17 {*/, Matrix4f matrix /*?}*/) {
         RenderDevice.enterManagedCode();
 
         //? if >=1.20 <1.21 {

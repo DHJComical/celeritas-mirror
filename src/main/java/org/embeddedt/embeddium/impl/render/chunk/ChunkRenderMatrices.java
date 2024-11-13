@@ -7,7 +7,7 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 
 public record ChunkRenderMatrices(Matrix4fc projection, Matrix4fc modelView) {
-    //? if <1.18 {
+    //? if <1.17 {
     /*private static com.mojang.math.Matrix4f getProjectionMatrix() {
         return GameRendererContext.PROJECTION_MATRIX;
     }

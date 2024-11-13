@@ -57,7 +57,7 @@ public class ModelPartMixin implements ModelPartData {
     @Shadow
     public boolean visible;
 
-    //? if >=1.18 {
+    //? if >=1.17 {
     @Shadow @Final
     private List<ModelPart.Cube> cubes;
     @Shadow @Final
@@ -86,7 +86,7 @@ public class ModelPartMixin implements ModelPartData {
 
         this.sodium$cuboids = copies;
         this.sodium$children = children
-                //? if >=1.18
+                //? if >=1.17
                 .values()
                 .toArray(ModelPart[]::new);
     }
@@ -144,7 +144,7 @@ public class ModelPartMixin implements ModelPartData {
                 EntityRenderer.renderCuboidFast(matrixPose, writer, simpleCuboid, light, overlay, packedColor);
             } else {
                 // Must use slow path as this cube can't be converted to a simple cuboid
-                //? if >=1.18 {
+                //? if >=1.17 {
                 cube.compile(
                 //?} else
                 /*compileCube(cube,*/
@@ -158,7 +158,7 @@ public class ModelPartMixin implements ModelPartData {
         }
     }
 
-    //? if <1.18 {
+    //? if <1.17 {
     /*private void compileCube(ModelPart.Cube cube, PoseStack.Pose matrixPose, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
         ModelPart.Polygon[] var13 = cube.polygons;
 

@@ -95,7 +95,10 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         this.frame = this.parentFrameBuilder().build();
         //? if >=1.18 {
         this.addRenderableWidget(this.frame);
-        //?} else if >=1.16 {
+        //?} else if >=1.17 {
+        /*this.addRenderableOnly(this.frame);
+        ((List)this.children()).add(this.frame);
+        *///?} else if >=1.16 {
         /*this.addWidget(this.frame);
         *///?} else
         /*this.children.add(this.frame);*/

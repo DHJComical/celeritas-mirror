@@ -45,14 +45,14 @@ public class GuiGraphics {
 
     public int drawString(Font font, String sequence, int x, int y, int color, boolean shadow) {
         if(shadow) {
-            return font.drawShadow(/^? if >=1.16 {^//^stack, ^//^?}^/ sequence, x, y, color);
+            return font.drawShadow(/^? if >=1.16 {^/stack, /^?}^/ sequence, x, y, color);
         } else {
-            return font.draw(/^? if >=1.16 {^//^stack, ^//^?}^/ sequence, x, y, color);
+            return font.draw(/^? if >=1.16 {^/stack, /^?}^/ sequence, x, y, color);
         }
     }
 
     public void fill(int x1, int y1, int x2, int y2, int color) {
-        Gui.fill(/^? if >=1.16 {^//^stack, ^//^?}^/ x1, y1, x2, y2, color);
+        Gui.fill(/^? if >=1.16 {^/stack, /^?}^/ x1, y1, x2, y2, color);
     }
 
     public void enableScissor(int x, int y, int x2, int y2) {
@@ -60,20 +60,20 @@ public class GuiGraphics {
         int height = (y2 - y) + 1;
         double scale = Minecraft.getInstance().getWindow().getGuiScale();
         //? if >=1.16.2 {
-        /^RenderSystem.enableScissor((int) (x * scale), (int) (Minecraft.getInstance().getWindow().getHeight() - (y + height) * scale),
+        RenderSystem.enableScissor((int) (x * scale), (int) (Minecraft.getInstance().getWindow().getHeight() - (y + height) * scale),
                 (int) (width * scale), (int) (height * scale));
-        ^///?} else {
-        GL20C.glEnable(GL20C.GL_SCISSOR_TEST);
+        //?} else {
+        /^GL20C.glEnable(GL20C.GL_SCISSOR_TEST);
         GL20C.glScissor((int) (x * scale), (int) (Minecraft.getInstance().getWindow().getHeight() - (y + height) * scale),
                 (int) (width * scale), (int) (height * scale));
-        //?}
+        ^///?}
     }
 
     public void disableScissor() {
         //? if >=1.16.2 {
-        /^RenderSystem.disableScissor();
-        ^///?} else
-        GL20C.glDisable(GL20C.GL_SCISSOR_TEST);
+        RenderSystem.disableScissor();
+        //?} else
+        /^GL20C.glDisable(GL20C.GL_SCISSOR_TEST);^/
     }
 }
 
