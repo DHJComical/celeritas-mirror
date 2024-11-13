@@ -282,7 +282,7 @@ processResources {
     inputs.property "authors", rootProject.properties.mod_authors.toString()
     inputs.property "fabric_api_modules", rootProject.properties.fabric_api_modules
 
-    filesMatching(["fabric.mod.json", "META-INF/mods.toml", "quilt.mod.json"]) {
+    filesMatching(["fabric.mod.json", "META-INF/mods.toml", "quilt.mod.json", "embeddium.mixins.json"]) {
         def map = [
                 "forgeid": loader == NEOFORGE ? "neoforge" : "forge",
                 "minecraft": dep,
@@ -295,6 +295,7 @@ processResources {
                 "issue_tracker_url": rootProject.properties.issue_tracker_url,
                 "license": rootProject.properties.license,
                 "fabricloader": rootProject.properties.fabricloader,
+                "mixinCompatLevel": stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17") ? "JAVA_8" : "JAVA_17",
                 "contributors": rootProject.properties.mod_contributors.toString().split(","),
                 "authors": rootProject.properties.mod_authors.toString().split(",")
         ]
