@@ -75,7 +75,12 @@ public class ModelPartMixin implements ModelPartData {
     @Unique
     private ModelCuboid[] sodium$cuboids;
 
-    @Inject(method = "/<init>/", at = @At("RETURN"))
+    @Inject(method = {
+            //? if >=1.16
+            "/<init>/"
+            //? if <1.16
+            /*"<init>(Lnet/minecraft/client/model/Model;)V", "<init>(IIII)V"*/
+    }, at = @At("RETURN"))
     private void onInit(CallbackInfo ci) {
         var copies = new ModelCuboid[cubes.size()];
 
