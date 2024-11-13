@@ -12,6 +12,8 @@ import net.minecraft.world.level.LevelReader;
 /*import net.minecraft.world.level.block.EntityBlock;*/
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+//? if forgelike && <1.16
+/*import net.minecraftforge.client.model.pipeline.LightUtil;*/
 
 public class WorldUtil {
     public static int getMinBuildHeight(LevelReader level) {
@@ -113,7 +115,9 @@ public class WorldUtil {
     public static float getShade(BlockAndTintGetter getter, Direction lightFace, boolean shade) {
         //? if >=1.16 {
         return getter.getShade(lightFace, shade);
-        //?} else
+        //?} else if forgelike && <1.16 {
+        /*return shade ? LightUtil.diffuseLight(lightFace) : 1.0f;
+        *///?} else
         /*return 1.0f;*/
     }
 }

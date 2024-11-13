@@ -38,6 +38,12 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     private boolean shade;
     //?}
 
+    //? if forgelike && <1.16 {
+    /*@Shadow
+    @Final
+    private boolean applyDiffuseLighting;
+    *///?}
+
     //? if forgelike && >=1.19 {
     @Shadow(remap = false)
     @Final
@@ -145,7 +151,9 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     public boolean hasShade() {
         //? if >=1.16 {
         return this.shade;
-        //?} else
+        //?} else if forgelike && <1.16 {
+        /*return this.applyDiffuseLighting;
+        *///?} else
         /*return false;*/
     }
 
