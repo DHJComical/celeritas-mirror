@@ -94,7 +94,13 @@ public class WorldSliceLocalGenerator {
 
         Class<?>[] interfaces = WorldSlice.class.getInterfaces();
 
-        classVisitor.visit(MixinEnvironment.getCompatibilityLevel().getClassVersion(), Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, WORLD_SLICE_LOCAL_CLASS_NAME, null, "java/lang/Object",
+        //? if >=1.16 {
+        int version = MixinEnvironment.getCompatibilityLevel().getClassVersion();
+        //?} else {
+        /*int version = Opcodes.V1_8;
+        *///?}
+
+        classVisitor.visit(version, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, WORLD_SLICE_LOCAL_CLASS_NAME, null, "java/lang/Object",
                 Arrays.stream(interfaces).map(Type::getInternalName).toArray(String[]::new));
 
         fieldVisitor = classVisitor.visitField(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL, "view", worldSliceDesc, null, null);

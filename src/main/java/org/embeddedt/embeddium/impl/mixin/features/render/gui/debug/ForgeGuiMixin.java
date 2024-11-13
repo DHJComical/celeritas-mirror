@@ -60,14 +60,16 @@ public abstract class ForgeGuiMixin extends Gui {
         listR.clear();
     }
     //?} else {
-    /*@Inject(method = "renderHUDText", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/eventbus/api/IEventBus;post(Lnet/minecraftforge/eventbus/api/Event;)Z", shift = At.Shift.AFTER), cancellable = true, remap = false)
-    private void embeddium$renderTextFast(int width, int height, PoseStack poseStack, CallbackInfo ci, @Local(ordinal = 0) ArrayList<String> listL, @Local(ordinal = 1) ArrayList<String> listR) {
-        ci.cancel();
-
+    /*@Inject(method = "renderHUDText", at = @At(value = "INVOKE", target = "Lnet/minecraftforge/eventbus/api/IEventBus;post(Lnet/minecraftforge/eventbus/api/Event;)Z", shift = At.Shift.AFTER), remap = false)
+    private void embeddium$renderTextFast(int width, int height, /^? if >=1.16 {^/ PoseStack poseStack, /^?}^/ CallbackInfo ci, @Local(ordinal = 0) ArrayList<String> listL, @Local(ordinal = 1) ArrayList<String> listR) {
+        //? if <1.16
+        /^var poseStack = new PoseStack();^/
         BatchedF3Renderer.renderList(poseStack, listL, false);
         BatchedF3Renderer.renderList(poseStack, listR, true);
 
-        minecraft.getProfiler().pop();
+        // Prevent Forge from rendering any lines
+        listL.clear();
+        listR.clear();
     }
     *///?}
 }

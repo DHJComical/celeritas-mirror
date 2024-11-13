@@ -40,7 +40,7 @@
     },
     {
       "friendlyName": "1.15.2",
-      "loaders": ["fabric"]
+      "loaders": ["forge", "fabric"]
     },
     {
       "friendlyName": "1.16.1",

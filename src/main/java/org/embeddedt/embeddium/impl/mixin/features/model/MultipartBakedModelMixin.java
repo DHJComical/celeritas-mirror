@@ -20,7 +20,7 @@ import net.minecraftforge.client.model.data.ModelData;
 //? if forge && <1.19 {
 /*import net.minecraftforge.client.model.data.IModelData;
 *///?}
-//? if forge
+//? if forge && >=1.16
 import net.minecraftforge.client.model.data.MultipartModelData;
 //? if neoforge {
 /*import net.neoforged.neoforge.client.ChunkRenderTypeSet;
@@ -169,8 +169,8 @@ public class MultipartBakedModelMixin {
      * @author JellySquid
      * @reason Avoid expensive allocations and replace bitfield indirection
      */
-    @Overwrite(/*? if forgelike {*/ remap = false/*?}*/)
-    public List<BakedQuad> getQuads(BlockState state, Direction face, /*$ rng >>*/ RandomSource random/*? if forgelike && >=1.19 {*/, ModelData modelData, RenderType renderLayer /*?}*//*? if forge && <1.19 {*//*, IModelData modelData *//*?}*/) {
+    @Overwrite(/*? if forgelike && >=1.16 {*/ remap = false/*?}*/)
+    public List<BakedQuad> getQuads(BlockState state, Direction face, /*$ rng >>*/ RandomSource random/*? if forgelike && >=1.19 {*/, ModelData modelData, RenderType renderLayer /*?}*//*? if forge && >=1.16 && <1.19 {*//*, IModelData modelData *//*?}*/) {
         if (state == null) {
             //? if <1.19 {
             /*// Embeddium: There needs to be Map#get() and Map#put() calls in this method in order for FerriteCore 1.18
@@ -206,7 +206,7 @@ public class MultipartBakedModelMixin {
             // the return value of getRenderTypes(). To date, only Windowlogged is known to be broken by this change.
             //? if forgelike && >=1.19
             if (!checkSubmodelTypes || renderLayer == null || model.getRenderTypes(state, random, modelData).contains(renderLayer)) {
-                List<BakedQuad> submodelQuads = model.getQuads(state, face, random/*? if forgelike && >=1.19 {*/, MultipartModelData.resolve(modelData, model), renderLayer/*?}*//*? if forge && <1.19 {*//*, MultipartModelData.resolve(model, modelData)*//*?}*/);
+                List<BakedQuad> submodelQuads = model.getQuads(state, face, random/*? if forgelike && >=1.19 {*/, MultipartModelData.resolve(modelData, model), renderLayer/*?}*//*? if forge && >=1.16 && <1.19 {*//*, MultipartModelData.resolve(model, modelData)*//*?}*/);
                 if(models.length == 1) {
                     // Nobody else will return quads, so no need to make a wrapper list
                     return submodelQuads;
@@ -279,7 +279,7 @@ public class MultipartBakedModelMixin {
     }
     *///?}
 
-    //? if forge && <1.19 {
+    //? if forge && >=1.16 && <1.19 {
     /*/^*
      * @author embeddedt
      * @reason use our selector system, avoid creating multipart model data if no submodels use it

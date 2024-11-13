@@ -9,13 +9,12 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
-//? if >=1.18
+//? if >=1.17
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 //? if >=1.20 {

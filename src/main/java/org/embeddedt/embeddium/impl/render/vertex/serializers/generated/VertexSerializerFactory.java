@@ -18,7 +18,12 @@ public class VertexSerializerFactory {
         var name = "org/embeddedt/embeddium/impl/render/vertex/serializers/generated/VertexSerializer$Impl$" + identifier;
 
         ClassWriter classWriter = new ClassWriter(0);
-        classWriter.visit(Opcodes.V17, Opcodes.ACC_FINAL | Opcodes.ACC_PUBLIC, name, null,
+        //? if >=1.17 {
+        int version = Opcodes.V17;
+        //?} else {
+        /*int version = Opcodes.V1_8;
+        *///?}
+        classWriter.visit(version, Opcodes.ACC_FINAL | Opcodes.ACC_PUBLIC, name, null,
                 Type.getInternalName(Object.class),
                 new String[] { Type.getInternalName(VertexSerializer.class) });
 

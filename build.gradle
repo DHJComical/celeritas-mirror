@@ -241,6 +241,12 @@ dependencies {
                 runtimeOnly 'org.ow2.asm:asm-util:' + ASM_VERSION
                 runtimeOnly 'org.ow2.asm:asm-analysis:' + ASM_VERSION
             }
+
+            if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.16")) {
+                // Upgrade CoreMods
+                runtimeOnly 'org.openjdk.nashorn:nashorn-core:15.2'
+                runtimeOnly 'net.minecraftforge:coremods:4.0.6'
+            }
         } else if (loader == NEOFORGE) {
             neoForge "net.neoforged:neoforge:${versionedProperty("neoforge")}"
         }
