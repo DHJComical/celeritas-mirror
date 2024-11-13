@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.render.chunk;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.shader.*;
@@ -71,7 +72,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
     protected void begin(TerrainRenderPass pass) {
         pass.startDrawing();
 
-        ChunkShaderOptions options = new ChunkShaderOptions(ChunkFogMode.SMOOTH, pass, this.vertexType);
+        ChunkShaderOptions options = new ChunkShaderOptions(FogHelper.getFogMode(), pass, this.vertexType);
 
         this.activeProgram = this.compileProgram(options);
         this.activeProgram.bind();
