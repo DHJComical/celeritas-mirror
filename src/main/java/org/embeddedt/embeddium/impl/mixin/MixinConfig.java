@@ -102,7 +102,9 @@ public class MixinConfig {
     }
 
     private void applyBuiltInCompatOverrides() {
-
+        //? if <1.16 {
+        /*disableIfModPresent("lithium", "features.gui.screen");
+        *///?}
     }
 
     private void disableIfModPresent(String modId, String option) {
