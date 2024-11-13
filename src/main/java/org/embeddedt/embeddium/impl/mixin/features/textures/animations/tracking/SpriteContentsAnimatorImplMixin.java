@@ -64,7 +64,7 @@ public class SpriteContentsAnimatorImplMixin {
             this.subFrame++;
             //? if >=1.20 {
             List<SpriteContents.FrameInfo> frames = ((SpriteContentsAnimationAccessor)this.animationInfo).getFrames();
-            int curFrameTime = ((SpriteContentsAnimationFrameAccessor)frames.get(this.frame)).getTime();
+            int curFrameTime = ((SpriteContentsAnimationFrameAccessor)(Object)frames.get(this.frame)).getTime();
             //?} else {
             /*List<TextureAtlasSprite.FrameInfo> frames = this.frames;
             int curFrameTime = frames.get(this.frame).time;
