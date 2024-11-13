@@ -37,5 +37,14 @@ void main() {
     diffuseColor.rgb *= v_Color.a;
 #endif
 
+#ifdef USE_FOG
+#ifdef USE_FOG_EXP2
+    fragColor = _exp2Fog(diffuseColor, v_FragDistance, u_FogColor, u_FogDensity);
+#endif
+#ifdef USE_FOG_SMOOTH
     fragColor = _linearFog(diffuseColor, v_FragDistance, u_FogColor, u_FogStart, u_FogEnd);
+#endif
+#else
+    fragColor = diffuseColor;
+#endif
 }
