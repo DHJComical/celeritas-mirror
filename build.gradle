@@ -73,6 +73,9 @@ repositories {
     maven {
         url = "https://maven.minecraftforge.net/"
     }
+    maven {
+        url = "https://maven.fabricmc.net/"
+    }
     // For CurseForge
     exclusiveContent {
         forRepository {
@@ -150,14 +153,18 @@ unimined.minecraft {
     version ModLoader.getMinecraftVersion(project)
 
     mappings {
-        intermediary()
+        if(configuredModLoader != NEOFORGE) intermediary()
         mojmap()
         if (versionedProperty("parchment_version") != null) {
             def parchmentData = versionedProperty("parchment_version").split(":")
             parchment(parchmentData[0], parchmentData[1])
         }
 
-        devFallbackNamespace "intermediary"
+        if(configuredModLoader != NEOFORGE) {
+            devFallbackNamespace "intermediary"
+        } else {
+            devFallbackNamespace "official"
+        }
 
         if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<=1.14.4")) {
             stub.withMappings("intermediary", ["mojmap"]) {
@@ -187,9 +194,13 @@ unimined.minecraft {
         }
     } else if (configuredModLoader == NEOFORGE) {
         neoForged {
-            loader versionedProperty("neoforge")
+            loader versionedProperty("neoforge").split("\\.")[2]
             mixinConfig "embeddium.mixins.json"
+            project.getLayout().getProjectDirectory().dir("src/main/resources/META-INF").getAsFile().mkdirs()
             accessTransformer aw2at(rootProject.file("src/main/resources/embeddium.accesswidener"))
+        }
+        minecraftRemapper.config {
+            ignoreConflicts(true)
         }
     }
 
@@ -365,7 +376,7 @@ processResources {
                         }
                         try {
                             // ^ means until the next major
-                            parse.depends[s] = "^" + fabricApi.module(s, versionedProperty("fabric_api_version")).getVersion()
+                            parse.depends[s] = "^" + fabricApiModuleFinder.module(s, versionedProperty("fabric_api_version")).getVersion()
                         } catch(Exception ignored) {}
                     }
                 }
@@ -475,6 +486,10 @@ stonecutter.swap("rng_import") {
 
 tasks.named("remapSourcesJar") {
   enabled = false // wastes too much memory
+}
+
+jar {
+    enabled = false
 }
 
 publishing {
