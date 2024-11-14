@@ -160,6 +160,8 @@ unimined.minecraft {
     if (configuredModLoader == FABRIC) {
         fabric {
             loader rootProject.properties.fabricloader
+
+            accessWidener rootProject.file("src/main/resources/embeddium.accesswidener")
         }
     } else if (configuredModLoader == FORGE) {
         minecraftForge {
