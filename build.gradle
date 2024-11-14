@@ -158,6 +158,13 @@ unimined.minecraft {
         }
 
         devFallbackNamespace "intermediary"
+
+        if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<=1.14.4")) {
+            stub.withMappings("intermediary", ["mojmap"]) {
+                c("net/minecraft/class_638", ["net/minecraft/client/multiplayer/ClientLevel"])
+            }
+        }
+
     }
 
     mods {
@@ -194,12 +201,6 @@ unimined.minecraft {
         }
 
         runs.config("client") {
-            // Recommended logging data for a userdev environment
-            jvmArgs += '-Dforge.logging.markers=SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
-            jvmArgs += '-Dforge.logging.console.level=debug'
-
             classpath = downgradeClient.get().outputCollection + files(jvmdg.getDowngradedApi(JavaVersion.VERSION_1_8))
             var downgradedSrc = project.getLayout().getBuildDirectory().dir("tmp/downgradeClient/main").get().asFile.toString()
             environment["MOD_CLASSES"] = "embeddium%%${downgradedSrc}:embeddium%%${downgradedSrc}"
@@ -414,7 +415,7 @@ remapJar {
 }
 
 afterEvaluate {
-    if(stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
+    if(configuredModLoader == FORGE && stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
         tasks.named("preRunClient") {
             dependsOn("downgradeClient")
         }
