@@ -4,6 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import org.embeddedt.embeddium.gradle.DiscordNotifier
+import xyz.wagyourtail.jvmdg.gradle.task.files.DowngradeFiles
 
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -138,6 +139,13 @@ configurations {
     runtimeClasspath.extendsFrom(modLocalRuntime)
 }
 
+sourceSets {
+    mcp
+    main {
+        compileClasspath += sourceSets.mcp.output
+    }
+}
+
 unimined.minecraft {
     version ModLoader.getMinecraftVersion(project)
 
@@ -177,6 +185,20 @@ unimined.minecraft {
             accessTransformer aw2at(rootProject.file("src/main/resources/embeddium.accesswidener"))
         }
     }
+
+    if(configuredModLoader == FORGE && stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
+        def downgradeClient = tasks.register("downgradeClient", DowngradeFiles) {
+            inputCollection = sourceSet.output.classesDirs + sourceSet.runtimeClasspath
+            classpath = project.files()
+            outputCollection.files
+        }
+
+        runs.config("client") {
+            classpath = downgradeClient.get().outputCollection + files(jvmdg.getDowngradedApi(JavaVersion.VERSION_1_8))
+            environment["MOD_CLASSES"] = "embeddium%%${downgradeClient.get().outputCollection}:embeddium%%${sourceSets.main.output.resourcesDir}"
+        }
+    }
+
 }
 
 dependencies {
@@ -381,6 +403,14 @@ remapJar {
     } else {
         dependsOn("shadowJar")
         inputFile = tasks.getByName("shadowJar").archiveFile.get()
+    }
+}
+
+afterEvaluate {
+    if(stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
+        tasks.named("preRunClient") {
+            dependsOn("downgradeClient")
+        }
     }
 }
 
