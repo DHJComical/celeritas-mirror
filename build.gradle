@@ -194,8 +194,15 @@ unimined.minecraft {
         }
 
         runs.config("client") {
+            // Recommended logging data for a userdev environment
+            jvmArgs += '-Dforge.logging.markers=SCAN,REGISTRIES,REGISTRYDUMP'
+
+            // Recommended logging level for the console
+            jvmArgs += '-Dforge.logging.console.level=debug'
+
             classpath = downgradeClient.get().outputCollection + files(jvmdg.getDowngradedApi(JavaVersion.VERSION_1_8))
-            environment["MOD_CLASSES"] = "embeddium%%${downgradeClient.get().outputCollection}:embeddium%%${sourceSets.main.output.resourcesDir}"
+            var downgradedSrc = project.getLayout().getBuildDirectory().dir("tmp/downgradeClient/main").get().asFile.toString()
+            environment["MOD_CLASSES"] = "embeddium%%${downgradedSrc}:embeddium%%${downgradedSrc}"
         }
     }
 
