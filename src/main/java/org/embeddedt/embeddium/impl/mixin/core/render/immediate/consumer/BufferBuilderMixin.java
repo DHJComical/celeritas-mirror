@@ -15,7 +15,6 @@ import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.objectweb.asm.Opcodes;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -50,7 +49,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
     *///?}
 
     @Unique
-    private VertexFormatDescription format;
+    private VertexFormatDescription embeddium$format;
 
     @Unique
     private int stride;
@@ -65,10 +64,10 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
             )
     )
     private void onFormatChanged(VertexFormat format, CallbackInfo ci) {
-        this.format = VertexFormatRegistry.instance()
+        this.embeddium$format = VertexFormatRegistry.instance()
                 .get(format);
         this.stride = format.getVertexSize();
-        this.fastDelegate = this.format.isSimpleFormat() ? new SodiumBufferBuilder(this) : null;
+        this.fastDelegate = this.embeddium$format.isSimpleFormat() ? new SodiumBufferBuilder(this) : null;
     }
 
     @Inject(method = { "discard", "reset", "begin" }, at = @At("RETURN"))
@@ -86,7 +85,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
     private long vertexPointer;
 
     @Unique
-    private VertexFormatDescription format;
+    private VertexFormatDescription embeddium$format;
 
     @Shadow
     @Final
@@ -94,14 +93,14 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onFormatChanged(ByteBufferBuilder buffer, VertexFormat.Mode mode, VertexFormat format, CallbackInfo ci) {
-        this.format = VertexFormatRegistry.instance().get(format);
+        this.embeddium$format = VertexFormatRegistry.instance().get(format);
     }
 
     *///?}
 
     @Override
     public boolean canUseIntrinsics() {
-        return this.format != null && this.format.isSimpleFormat();
+        return this.embeddium$format != null && this.embeddium$format.isSimpleFormat();
     }
 
     @Override
@@ -122,7 +121,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
         long dst = this.buffer.reserve(length);
         *///?}
 
-        if (format == this.format) {
+        if (format == this.embeddium$format) {
             // The layout is the same, so we can just perform a memory copy
             // The stride of a vertex format is always 4 bytes, so this aligned copy is always safe
             MemoryIntrinsics.copyMemory(src, dst, length);
@@ -142,7 +141,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
     @Unique
     private void copySlow(long src, long dst, int count, VertexFormatDescription format) {
         VertexSerializerRegistry.instance()
-                .get(format, this.format)
+                .get(format, this.embeddium$format)
                 .serialize(src, dst, count);
     }
 
@@ -162,7 +161,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
 
     @Override
     public VertexFormatDescription sodium$getFormatDescription() {
-        return this.format;
+        return this.embeddium$format;
     }
 
     @Override
