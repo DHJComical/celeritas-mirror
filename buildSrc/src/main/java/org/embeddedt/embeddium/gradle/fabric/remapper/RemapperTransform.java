@@ -2,10 +2,8 @@ package org.embeddedt.embeddium.gradle.fabric.remapper;
 
 import net.fabricmc.mappingio.MappingReader;
 import net.fabricmc.mappingio.MappingUtil;
-import net.fabricmc.mappingio.extras.MappingTreeRemapper;
 import net.fabricmc.mappingio.format.MappingFormat;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
-import net.fabricmc.mappingio.tree.VisitableMappingTree;
 import org.gradle.api.artifacts.transform.*;
 import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.file.RegularFileProperty;
@@ -90,13 +88,13 @@ abstract public class RemapperTransform implements TransformAction<RemapperTrans
                     if(mappingsEntry == null) {
                         throw new IllegalArgumentException("Cannot find intermediary mappings in jar");
                     }
-                    MappingReader.read(new InputStreamReader(new DigestInputStream(intermediaryFile.getInputStream(mappingsEntry), digest), StandardCharsets.UTF_8), MappingFormat.TINY_2_FILE, intermediaryTree);
+                    MappingReader.read(new InputStreamReader(new DigestInputStream(intermediaryFile.getInputStream(mappingsEntry), digest), StandardCharsets.UTF_8), MappingFormat.TINY_2, intermediaryTree);
                 }
 
                 MemoryMappingTree proguardTree = new MemoryMappingTree();
                 proguardTree.setIndexByDstNames(true);
                 try(FileInputStream stream = new FileInputStream(getParameters().getMojangMappings().get().getAsFile())) {
-                    MappingReader.read(new InputStreamReader(new DigestInputStream(stream, digest), StandardCharsets.UTF_8), MappingFormat.PROGUARD_FILE, proguardTree);
+                    MappingReader.read(new InputStreamReader(new DigestInputStream(stream, digest), StandardCharsets.UTF_8), MappingFormat.PROGUARD, proguardTree);
                 }
 
                 StringBuilder hashBuilder = new StringBuilder();
