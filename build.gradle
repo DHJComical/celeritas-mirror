@@ -153,17 +153,21 @@ unimined.minecraft {
     version ModLoader.getMinecraftVersion(project)
 
     mappings {
-        if(configuredModLoader != NEOFORGE) intermediary()
+        if(configuredModLoader == FABRIC) {
+            intermediary()
+            devFallbackNamespace "intermediary"
+        }
+        if(configuredModLoader == FORGE) {
+            searge()
+            devFallbackNamespace "searge"
+        }
+        if(configuredModLoader == NEOFORGE) {
+            devFallbackNamespace "official"
+        }
         mojmap()
         if (versionedProperty("parchment_version") != null) {
             def parchmentData = versionedProperty("parchment_version").split(":")
             parchment(parchmentData[0], parchmentData[1])
-        }
-
-        if(configuredModLoader != NEOFORGE) {
-            devFallbackNamespace "intermediary"
-        } else {
-            devFallbackNamespace "official"
         }
 
         if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<=1.14.4")) {
