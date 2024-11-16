@@ -11,7 +11,7 @@
     },
     {
       "friendlyName": "1.21.1",
-      "loaders": ["fabric", "forge", "neoforge"]
+      "loaders": ["fabric", "forge"]
     },
     {
       "friendlyName": "1.21.3",
