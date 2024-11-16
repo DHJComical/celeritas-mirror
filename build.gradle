@@ -409,17 +409,12 @@ tasks.named("shadowJar", ShadowJar).configure {
 }
 
 remapJar {
-    /*
-    if (configuredModLoader == FORGE || configuredModLoader == NEOFORGE) {
-        atAccessWideners.add("${rootProject.properties.mod_id}.accesswidener")
+    mixinRemap {
+        enableBaseMixin()
+        enableMixinExtra()
+        disableRefmap() // like fabric-loom 1.6
     }
-    if (configuredModLoader == NEOFORGE) {
-        // Disable remapping as it's a waste of CPU time
-        // This is theoretically useless on Forge too but Arch Loom currently requires it.
-        // (configuredModLoader == FORGE && stonecutter.eval(ModLoader.getMinecraftVersion(project), ">=1.20.6"))
-        sourceNamespace = targetNamespace
-    }
-     */
+
     if(stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
         dependsOn("shadeDowngradedApi")
         inputFile = tasks.getByName("shadeDowngradedApi").archiveFile.get()
