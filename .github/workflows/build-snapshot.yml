@@ -26,21 +26,14 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 21
-#      - name: Initialize caches
-#        uses: actions/cache@v4
-#        with:
-#          path: |
-#            ~/.gradle/caches
-#            ~/.gradle/loom-cache
-#            ~/.gradle/wrapper
-#          key: ${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-${{ hashFiles('settings.gradle') }}
-#          restore-keys: |
-#            ${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-
-#      - name: Initialize remapped mod caches
-#        uses: actions/cache@v4
-#        with:
-#          path: |
-#            .gradle/loom-cache
-#          key: remapped-mods-${{ hashFiles('build.gradle') }}
+      - name: Initialize caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: unimined-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-${{ hashFiles('settings.gradle') }}
+          restore-keys: |
+            unimined-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-
       - name: Build jars
         run: ./gradlew chiseledPublish
