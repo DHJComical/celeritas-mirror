@@ -105,24 +105,6 @@ stonecutter.const("forge", configuredModLoader == FORGE)
 stonecutter.const("neoforge", configuredModLoader == NEOFORGE)
 stonecutter.const("forgelike", configuredModLoader == NEOFORGE || configuredModLoader == FORGE)
 
-/*
-loom {
-    accessWidenerPath = project.rootDir.toPath().resolve("src/main/resources/${E.p.mod_id}.accesswidener").toFile()
-
-    runConfigs.client {
-        ideConfigGenerated(true)
-    }
-}
-// Use vanilla mixin on Forge
-if (configuredModLoader == FORGE) {
-    loom {
-        forge {
-            mixinConfig "${E.p.mod_id}.mixins.json"
-        }
-    }
-}
-
- */
 java {
     withSourcesJar()
     def java = stonecutter.eval(ModLoader.getMinecraftVersion(project), ">=1.20.5") ? JavaVersion.VERSION_21 : JavaVersion.VERSION_17
@@ -222,6 +204,10 @@ unimined.minecraft {
         }
     }
 
+}
+
+tasks.named("runClient") {
+    workingDir = project.getLayout().getProjectDirectory().dir("run").asFile
 }
 
 dependencies {
