@@ -386,7 +386,7 @@ tasks.named("shadowJar", ShadowJar).configure {
     from("COPYING", "COPYING.LESSER", "README.md")
 }
 
-remapJar {
+tasks.named("remapJar") {
     mixinRemap {
         enableBaseMixin()
         enableMixinExtra()
