@@ -6,7 +6,7 @@ from pathlib import Path
 
 from portablemc.fabric import FabricVersion
 from portablemc.forge import ForgeVersion, _NeoForgeVersion
-from portablemc.standard import Context, StreamRunner, XmlStreamEvent
+from portablemc.standard import Context, StreamRunner, Version, XmlStreamEvent
 
 failed = False
 
@@ -37,6 +37,7 @@ elif loader == "neoforge":
 else:
     raise ValueError("unknown loader: " + loader)
 
+version.fixes[Version.FIX_LWJGL] = "3.3.2"
 environment = version.install()
 environment.jvm_args.append("-Dembeddium.auditAndExit=true")
 
