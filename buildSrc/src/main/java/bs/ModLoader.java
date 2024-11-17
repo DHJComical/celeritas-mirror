@@ -16,20 +16,28 @@ public enum ModLoader {
     }
 
     public static ModLoader fromProject(Project project) {
-        if (project.getName().endsWith("fabric")) {
+       return fromName(project.getName());
+    }
+
+    public static ModLoader fromName(String activeName) {
+        if (activeName.endsWith("fabric")) {
             return FABRIC;
         }
-        if (project.getName().endsWith("neoforge")) {
+        if (activeName.endsWith("neoforge")) {
             return NEOFORGE;
         }
-        if (project.getName().endsWith("forge")) {
+        if (activeName.endsWith("forge")) {
             return FORGE;
         }
         return null;
     }
 
     public static String getMinecraftVersion(Project project) {
-        var projectNameComponents = project.getName().split("-");
+        return getMinecraftVersion(project.getName());
+    }
+
+    public static String getMinecraftVersion(String name) {
+        var projectNameComponents = name.split("-");
         return projectNameComponents.length > 0 ? projectNameComponents[0] : "unknown";
     }
 }

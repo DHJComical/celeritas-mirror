@@ -31,6 +31,7 @@ public class CeleritasProjectManagerPlugin implements Plugin<Settings> {
             throw new RuntimeException("Failed to read versions.json", e);
         }
         StonecutterSettings scSettings = (StonecutterSettings)projectSettings.getExtensions().getByName("stonecutter");
+        scSettings.setKotlinController(true);
         scSettings.shared(builder -> {
             Predicate<String> overrideFilter = overrideData.getVersionFilterPredicate();
             versionData.versions.stream().flatMap(Version::streamVersionPermutations).filter(v -> v.name().equals(versionData.vcsVersion) || overrideFilter.test(v.name())).forEach(permutation -> {
