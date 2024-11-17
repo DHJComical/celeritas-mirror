@@ -16,7 +16,7 @@ class MyRunner(StreamRunner):
             print(event.message)
             if event.throwable is not None:
                 print(event.throwable)
-            if "Could not force-load" in event.message or "Mixin apply failed" in event.message:
+            if "Could not force-load" in event.message or "Mixin apply failed" in event.message or "MixinTransformerError" in str(event.throwable):
                 global failed
                 failed = True
 
@@ -40,6 +40,7 @@ else:
 version.fixes[Version.FIX_LWJGL] = "3.3.2"
 environment = version.install()
 environment.jvm_args.append("-Dembeddium.auditAndExit=true")
+environment.jvm_args.append("-XX:TieredStopAtLevel=1")
 
 environment.run(MyRunner())
 
