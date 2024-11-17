@@ -432,7 +432,6 @@ if (stonecutter.current.isActive) {
     tasks.register('testProductionJar', PythonTask) {
         dependsOn(copyJarForProductionTest)
         command = "${project.rootDir}/scripts/test_mod_in_prod.py ${launchDirectory} ${ModLoader.getMinecraftVersion(project)} ${configuredModLoader.friendlyName}  ${launchVersion}"
-        outputs.upToDateWhen { true }
     }
 
     tasks.register("publishPackagesToDiscord") {
