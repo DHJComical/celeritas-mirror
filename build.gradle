@@ -290,6 +290,7 @@ jar {
     from(rootProject.file("LICENSE")) {
         rename { "${it}_${archivesBaseName}"}
     }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 processResources {
@@ -374,18 +375,6 @@ processResources {
     }
 }
 
-tasks.named("shadowJar", ShadowJar).configure {
-    archiveClassifier = "dev-shadow"
-    configurations = [project.configurations.shadow]
-    if (configuredModLoader == FORGE && stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
-        relocate("com.llamalad7.mixinextras", "org.embeddedt.embeddium.impl.shadow.mixinextras")
-        relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml")
-    }
-    mergeServiceFiles()
-
-    from("COPYING", "COPYING.LESSER", "README.md")
-}
-
 tasks.named("remapJar") {
     mixinRemap {
         enableBaseMixin()
@@ -396,10 +385,23 @@ tasks.named("remapJar") {
     if(stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
         dependsOn("shadeDowngradedApi")
         inputFile = tasks.getByName("shadeDowngradedApi").archiveFile.get()
-    } else {
-        dependsOn("shadowJar")
-        inputFile = tasks.getByName("shadowJar").archiveFile.get()
     }
+
+    archiveClassifier = 'remapped-thin'
+}
+
+tasks.create("shadowRemapJar", ShadowJar) {
+    archiveClassifier = ""
+    configurations = [project.configurations.shadow]
+    from(tasks.named("remapJar"))
+    manifest.inheritFrom(tasks.named("remapJar").get().manifest)
+    if (configuredModLoader == FORGE && stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
+        relocate("com.llamalad7.mixinextras", "org.embeddedt.embeddium.impl.shadow.mixinextras")
+        relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml")
+    }
+    mergeServiceFiles()
+
+    from("COPYING", "COPYING.LESSER", "README.md")
 }
 
 afterEvaluate {
@@ -425,8 +427,8 @@ if (stonecutter.current.isActive) {
     def copyJarForProductionTest = tasks.register("copyJarForProductionTest", Copy) {
         into("${launchDirectory}/mods")
         rename { String fileName -> "embeddium.jar" }
-        dependsOn(remapJar)
-        from(remapJar.archiveFile)
+        dependsOn(tasks.named("shadowRemapJar"))
+        from(tasks.named("shadowRemapJar").get().archiveFile)
     }
 
     tasks.register('testProductionJar', PythonTask) {
@@ -446,10 +448,6 @@ tasks.named("remapSourcesJar") {
   enabled = false // wastes too much memory
 }
 
-jar {
-    enabled = false
-}
-
 publishing {
     tasks.publish {
         dependsOn(tasks.build)
@@ -457,7 +455,7 @@ publishing {
     publications {
         create("mavenJava", MavenPublication) {
             artifactId = archivesBaseName
-            artifact(tasks.named("remapJar"))
+            artifact(tasks.named("shadowRemapJar"))
             artifact(tasks.named("sourcesJar"))
         }
     }
@@ -479,7 +477,7 @@ publishing {
 
 
 afterEvaluate {
-    packageJar.dependsOn(remapJar)
-    packageJar.from(remapJar.archiveFile)
+    packageJar.dependsOn(tasks.named("shadowRemapJar"))
+    packageJar.from(tasks.named("shadowRemapJar").get().archiveFile)
     build.finalizedBy(packageJar)
 }
