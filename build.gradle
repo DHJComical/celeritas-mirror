@@ -271,7 +271,7 @@ dependencies {
         // Forge-like
         if (configuredModLoader == FORGE) {
             if (rootProject.properties.mixinextras) {
-                compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:$rootProject.properties.mixinextras"))
+                compileOnly("io.github.llamalad7:mixinextras-common:$rootProject.properties.mixinextras")
 
                 if(stonecutter.eval(ModLoader.getMinecraftVersion(project), ">=1.17")) {
                     implementation(include("io.github.llamalad7:mixinextras-$configuredModLoader.friendlyName:$rootProject.properties.mixinextras"))
