@@ -103,6 +103,10 @@ public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer
     public void onInitializeClient() {
         MOD_VERSION = FabricLoader.getInstance().getModContainer(MODID).orElseThrow().getMetadata().getVersion().toString();
         FlawlessFrames.onClientInitialization();
+
+        if (Boolean.getBoolean("embeddium.auditAndExit")) {
+            MixinAuditUtil.auditAndExit();
+        }
     }
     *///?}
 
