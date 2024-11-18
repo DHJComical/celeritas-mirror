@@ -36,7 +36,7 @@ jobs:
           restore-keys: |
             unimined-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-
       - name: Build jars
-        run: ./gradlew chiseledBuild
+        run: ./gradlew chiseledBuild --no-daemon
       - name: Initialize smoke test caches
         uses: actions/cache@v4
         with:
@@ -50,6 +50,6 @@ jobs:
       - name: Run smoke tests
         uses: coactions/setup-xvfb@v1
         with:
-          run: ./gradlew chiseledTestProductionJar --no-daemon
+          run: ulimit -n 10000; ./gradlew chiseledTestProductionJar --no-daemon
       - name: Publish
         run: ./gradlew chiseledPublish
