@@ -188,10 +188,11 @@ public class FluidRenderer {
         var meshBuilder = buffers.get(material);
         Fluid fluid = fluidState.getType();
 
-        //? if fabric && >=1.17 {
-        /*var fabricFluidHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid);
+        //? if fabric
+        /*var fabricFluidHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid);*/
 
-        if (fabricFluidRenderer.renderCustomFluid(ctx, fabricFluidHandler, fluidState, buffers, material)) {
+        //? if fabric && >=1.17 {
+        /*if (fabricFluidRenderer.renderCustomFluid(ctx, fabricFluidHandler, fluidState, buffers, material)) {
             return;
         }
         *///?}
