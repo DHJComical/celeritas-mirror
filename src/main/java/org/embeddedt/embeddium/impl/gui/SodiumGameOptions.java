@@ -51,7 +51,7 @@ public class SodiumGameOptions {
         public boolean useEntityCulling = true;
         public boolean useFogOcclusion = true;
         public boolean useBlockFaceCulling = true;
-        public boolean useCompactVertexFormat = true;
+        public boolean useCompactVertexFormat = false;
         @SerializedName("use_translucent_face_sorting_v2")
         public boolean useTranslucentFaceSorting = true;
         public boolean useRenderPassOptimization = true;
