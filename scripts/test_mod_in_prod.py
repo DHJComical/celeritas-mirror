@@ -16,7 +16,8 @@ class MyRunner(StreamRunner):
             print(event.message)
             if event.throwable is not None:
                 print(event.throwable)
-            if "Could not force-load" in event.message or "Mixin apply failed" in event.message or "MixinTransformerError" in str(event.throwable):
+            throwable_str = str(event.throwable)
+            if "Could not force-load" in event.message or "Mixin apply failed" in event.message or "MixinTransformerError" in throwable_str or "MixinInitialisationError" in throwable_str:
                 global failed
                 failed = True
 

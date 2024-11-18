@@ -413,36 +413,37 @@ afterEvaluate {
 }
 
 if (stonecutter.current.isActive) {
-    def launchVersion
-    if (configuredModLoader == FABRIC) {
-        launchVersion = fabricloader
-    } else if (configuredModLoader == FORGE) {
-        launchVersion = versionedProperty("forge")
-    } else if (configuredModLoader == NEOFORGE) {
-        launchVersion = versionedProperty("neoforge")
-    }
-
-    def launchDirectory = "${project.layout.buildDirectory.get()}/testProduction"
-
-    def copyJarForProductionTest = tasks.register("copyJarForProductionTest", Copy) {
-        into("${launchDirectory}/mods")
-        rename { String fileName -> "embeddium.jar" }
-        dependsOn(tasks.named("shadowRemapJar"))
-        from(tasks.named("shadowRemapJar").get().archiveFile)
-    }
-
-    tasks.register('testProductionJar', PythonTask) {
-        dependsOn(copyJarForProductionTest)
-        outputs.dir(rootProject.getLayout().getProjectDirectory().dir(".gradle/minecraft_prod"))
-        command = "${project.rootDir}/scripts/test_mod_in_prod.py ${launchDirectory} ${ModLoader.getMinecraftVersion(project)} ${configuredModLoader.friendlyName}  ${launchVersion}"
-    }
-
     tasks.register("publishPackagesToDiscord") {
         outputs.upToDateWhen { false }
         doLast {
             DiscordNotifier.publishEmbeddiumJar(project)
         }
     }
+}
+
+def launchVersion
+if (configuredModLoader == FABRIC) {
+    launchVersion = fabricloader
+} else if (configuredModLoader == FORGE) {
+    launchVersion = versionedProperty("forge")
+} else if (configuredModLoader == NEOFORGE) {
+    launchVersion = versionedProperty("neoforge")
+}
+
+def launchDirectory = "${project.layout.buildDirectory.get()}/testProduction"
+
+def copyJarForProductionTest = tasks.register("copyJarForProductionTest", Copy) {
+    into("${launchDirectory}/mods")
+    rename { String fileName -> "embeddium.jar" }
+    dependsOn(tasks.named("shadowRemapJar"))
+    from(tasks.named("shadowRemapJar").get().archiveFile)
+}
+
+tasks.register('testProductionJar', PythonTask) {
+    dependsOn(copyJarForProductionTest)
+    outputs.dir(rootProject.getLayout().getProjectDirectory().dir(".gradle/minecraft_prod"))
+    outputs.upToDateWhen { false }
+    command = "${project.rootDir}/scripts/test_mod_in_prod.py ${launchDirectory} ${ModLoader.getMinecraftVersion(project)} ${configuredModLoader.friendlyName}  ${launchVersion}"
 }
 
 publishing {
