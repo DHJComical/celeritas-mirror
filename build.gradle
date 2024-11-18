@@ -315,6 +315,14 @@ processResources {
     inputs.property "fabric_api_modules", rootProject.properties.fabric_api_modules
 
     filesMatching(["fabric.mod.json", "META-INF/mods.toml", "quilt.mod.json", "embeddium.mixins.json"]) {
+        def mixinCompatLevel
+        if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
+            mixinCompatLevel = "JAVA_8"
+        } else if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.18")) {
+            mixinCompatLevel = "JAVA_16"
+        } else {
+            mixinCompatLevel = "JAVA_17"
+        }
         def map = [
                 "forgeid": configuredModLoader == NEOFORGE ? "neoforge" : "forge",
                 "minecraft": dep,
@@ -327,7 +335,7 @@ processResources {
                 "issue_tracker_url": rootProject.properties.issue_tracker_url,
                 "license": rootProject.properties.license,
                 "fabricloader": rootProject.properties.fabricloader,
-                "mixinCompatLevel": stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17") ? "JAVA_8" : "JAVA_17",
+                "mixinCompatLevel": mixinCompatLevel,
                 "contributors": rootProject.properties.mod_contributors.toString().split(","),
                 "authors": rootProject.properties.mod_authors.toString().split(",")
         ]
@@ -375,6 +383,10 @@ processResources {
     }
 }
 
+if(stonecutter.eval(ModLoader.getMinecraftVersion(project), ">=1.17")) {
+    jvmdg.downgradeTo = JavaVersion.VERSION_16
+}
+
 tasks.named("remapJar") {
     mixinRemap {
         enableBaseMixin()
@@ -382,7 +394,7 @@ tasks.named("remapJar") {
         disableRefmap() // like fabric-loom 1.6
     }
 
-    if(stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
+    if(stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.18")) {
         dependsOn("shadeDowngradedApi")
         inputFile = tasks.getByName("shadeDowngradedApi").archiveFile.get()
     }
