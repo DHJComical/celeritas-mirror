@@ -1,9 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
-import org.embeddedt.embeddium.impl.SodiumClientMod;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import org.embeddedt.embeddium.impl.model.EpsilonizableBlockElement;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
 //? if >=1.20
 import org.joml.Vector3f;
 //? if <1.20
@@ -27,9 +25,6 @@ public class BlockElementMixin implements EpsilonizableBlockElement {
     public synchronized void embeddium$epsilonize() {
         if(!embeddium$hasEpsilonized) {
             embeddium$hasEpsilonized = true;
-            if (!PlatformUtil.isLoadValid() || !SodiumClientMod.options().performance.useCompactVertexFormat) {
-                return;
-            }
             embeddium$epsilonize(from);
             embeddium$epsilonize(to);
         }
