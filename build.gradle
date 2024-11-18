@@ -402,6 +402,10 @@ tasks.named("remapJar") {
     archiveClassifier = 'remapped-thin'
 }
 
+tasks.named("shadowJar", ShadowJar) {
+    configurations = []
+}
+
 tasks.create("shadowRemapJar", ShadowJar) {
     archiveClassifier = ""
     configurations = [project.configurations.shadow]
