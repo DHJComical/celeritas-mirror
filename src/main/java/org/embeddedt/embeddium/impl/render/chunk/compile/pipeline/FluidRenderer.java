@@ -83,7 +83,7 @@ public class FluidRenderer {
 
     private final ChunkColorWriter colorEncoder = ChunkColorWriter.get();
 
-    //? if fabric
+    //? if fabric && >=1.17
     /*private final FabricFluidRenderer fabricFluidRenderer = new FabricFluidRenderer();*/
 
     public FluidRenderer(ColorProviderRegistry colorProviderRegistry, LightPipelineProvider lighters) {
@@ -188,7 +188,7 @@ public class FluidRenderer {
         var meshBuilder = buffers.get(material);
         Fluid fluid = fluidState.getType();
 
-        //? if fabric {
+        //? if fabric && >=1.17 {
         /*var fabricFluidHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid);
 
         if (fabricFluidRenderer.renderCustomFluid(ctx, fabricFluidHandler, fluidState, buffers, material)) {
