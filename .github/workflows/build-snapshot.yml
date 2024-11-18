@@ -50,6 +50,6 @@ jobs:
       - name: Run smoke tests
         uses: coactions/setup-xvfb@v1
         with:
-          run: ulimit -n 10000; ./gradlew chiseledTestProductionJar --no-daemon
+          run: bash -c 'ulimit -n 10000; ./gradlew chiseledTestProductionJar --no-daemon'
       - name: Publish
         run: ./gradlew chiseledPublish
