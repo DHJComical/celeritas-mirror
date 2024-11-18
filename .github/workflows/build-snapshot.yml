@@ -45,6 +45,8 @@ jobs:
           key: smoketest-${{ hashFiles('versions.json') }}
           restore-keys: |
             smoketest-
+      - name: Update packages
+        run: sudo apt-get update
       - name: Run smoke tests
         uses: coactions/setup-xvfb@v1
         with:
