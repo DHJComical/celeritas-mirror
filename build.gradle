@@ -444,10 +444,6 @@ if (stonecutter.current.isActive) {
     }
 }
 
-tasks.named("remapSourcesJar") {
-  enabled = false // wastes too much memory
-}
-
 publishing {
     tasks.publish {
         dependsOn(tasks.build)
