@@ -433,6 +433,7 @@ if (stonecutter.current.isActive) {
 
     tasks.register('testProductionJar', PythonTask) {
         dependsOn(copyJarForProductionTest)
+        outputs.dir(rootProject.getLayout().getProjectDirectory().dir(".gradle/minecraft_prod"))
         command = "${project.rootDir}/scripts/test_mod_in_prod.py ${launchDirectory} ${ModLoader.getMinecraftVersion(project)} ${configuredModLoader.friendlyName}  ${launchVersion}"
     }
 
