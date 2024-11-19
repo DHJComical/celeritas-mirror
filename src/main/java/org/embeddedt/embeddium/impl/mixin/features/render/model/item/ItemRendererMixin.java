@@ -127,7 +127,14 @@ public class ItemRendererMixin {
                 color = ColorARGB.toABGR(colorProviderColor/*? if <1.20.5 {*/, 255/*?}*/);
             }
 
-            BakedModelEncoder.writeQuadVertices(writer, matrices, quad, color, light, overlay, true);
+            boolean shouldReadExistingColor;
+
+            //? if forgelike {
+            shouldReadExistingColor = true;
+            //?} else
+            /*shouldReadExistingColor = false;*/
+
+            BakedModelEncoder.writeQuadVertices(writer, matrices, quad, color, light, overlay, shouldReadExistingColor);
 
             SpriteUtil.markSpriteActive(quad.getSprite());
         }
