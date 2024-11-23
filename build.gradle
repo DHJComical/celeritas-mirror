@@ -90,6 +90,16 @@ repositories {
     maven {
         url = "https://maven.su5ed.dev/releases"
     }
+    maven {
+        name 'Maven for PR #14' // https://github.com/neoforged/AccessTransformers/pull/14
+        url 'https://prmaven.neoforged.net/AccessTransformers/pr14'
+        content {
+            includeModule('net.neoforged.accesstransformers', 'at-modlauncher')
+            includeModule('net.neoforged.accesstransformers', 'at-cli')
+            includeModule('net.neoforged', 'accesstransformers')
+            includeModule('net.neoforged.accesstransformers', 'at-parser')
+        }
+    }
 }
 apply plugin: 'xyz.wagyourtail.unimined'
 apply plugin: 'embeddium-fabric-remapper'
@@ -179,7 +189,11 @@ unimined.minecraft {
             mixinConfig "embeddium.mixins.json"
             project.getLayout().getProjectDirectory().dir("src/main/resources/META-INF").getAsFile().mkdirs()
             accessTransformer aw2at(rootProject.file("src/main/resources/embeddium.accesswidener"))
-        }
+
+            // workaround till PR #14 is merged
+            dependency = project.dependencies.create("net.neoforged.accesstransformers:at-cli:11.0.3")
+            atMainClass = "net.neoforged.accesstransformer.cli.TransformerProcessor"
+     }
         minecraftRemapper.config {
             ignoreConflicts(true)
         }
