@@ -37,7 +37,7 @@ public enum ModLoader {
     }
 
     public static String getMinecraftVersion(String name) {
-        var projectNameComponents = name.split("-");
-        return projectNameComponents.length > 0 ? projectNameComponents[0] : "unknown";
+        int lastIdx = name.lastIndexOf('-');
+        return lastIdx == -1 ? "unknown" : name.substring(0, lastIdx);
     }
 }

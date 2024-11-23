@@ -295,6 +295,9 @@ jar {
 
 processResources {
     def dep = versionedProperty("minecraft_dependency")
+    if (dep == null) {
+        dep = stonecutter.current.version
+    }
     if (configuredModLoader == FORGE || configuredModLoader == NEOFORGE) {
         dep = SemverUtils.convertSemverPredicateToMavenPredicate(dep)
     }
