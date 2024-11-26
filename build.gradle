@@ -189,10 +189,6 @@ unimined.minecraft {
             mixinConfig "embeddium.mixins.json"
             project.getLayout().getProjectDirectory().dir("src/main/resources/META-INF").getAsFile().mkdirs()
             accessTransformer aw2at(rootProject.file("src/main/resources/embeddium.accesswidener"))
-
-            // workaround till PR #14 is merged
-            dependency = project.dependencies.create("net.neoforged.accesstransformers:at-cli:11.0.3")
-            atMainClass = "net.neoforged.accesstransformer.cli.TransformerProcessor"
      }
         minecraftRemapper.config {
             ignoreConflicts(true)
