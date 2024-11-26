@@ -423,7 +423,7 @@ tasks.create("shadowRemapJar", ShadowJar) {
     archiveClassifier = ""
     configurations = [project.configurations.shadow]
     from(tasks.named("remapJar"))
-    manifest.inheritFrom(tasks.named("remapJar").get().manifest)
+    manifest.inheritFrom(tasks.named("jar").get().manifest)
     if (configuredModLoader == FORGE && stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
         relocate("com.llamalad7.mixinextras", "org.embeddedt.embeddium.impl.shadow.mixinextras")
         relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml")
