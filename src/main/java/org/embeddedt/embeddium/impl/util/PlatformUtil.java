@@ -61,9 +61,9 @@ import net.neoforged.fml.loading.FMLPaths;
 public class PlatformUtil {
     public static boolean isLoadValid() {
         //? if >=1.20.6 {
-        return !FMLLoader.getLoadingModList().hasErrors();
-        //?} else
-        /^return FMLLoader.getLoadingModList().getErrors().isEmpty();^/
+        /^return !FMLLoader.getLoadingModList().hasErrors();
+        ^///?} else
+        return FMLLoader.getLoadingModList().getErrors().isEmpty();
     }
 
     public static boolean modPresent(String modid) {
