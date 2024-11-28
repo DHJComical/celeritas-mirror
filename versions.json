@@ -18,8 +18,8 @@
       "loaders": ["fabric","neoforge"]
     },
     {
-      "friendlyName": "1.21.4-pre1",
-      "semanticName": "1.21.4-beta.1",
+      "friendlyName": "1.21.4-rc1",
+      "semanticName": "1.21.4-rc.1",
       "loaders": ["fabric"]
     },
     {
