@@ -415,6 +415,17 @@ tasks.named("remapJar") {
     archiveClassifier = 'remapped-thin'
 }
 
+if (configuredModLoader == FABRIC) {
+    tasks.named("jar", Jar) {
+        manifest {
+            attributes([
+                "Fabric-Loom-Mixin-Remap-Type": "static",
+                "Fabric-Mapping-Namespace": "intermediary"
+            ])
+        }
+    }
+}
+
 tasks.named("shadowJar", ShadowJar) {
     configurations = []
 }
