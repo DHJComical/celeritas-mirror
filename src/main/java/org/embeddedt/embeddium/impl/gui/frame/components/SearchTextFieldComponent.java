@@ -249,6 +249,11 @@ public class SearchTextFieldComponent extends AbstractWidget {
         return this.dim.width() - 12;
     }
 
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return this.dim.containsCursor(mouseX, mouseY);
+    }
+
     //? if >=1.20 {
     @Override
     public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation) {

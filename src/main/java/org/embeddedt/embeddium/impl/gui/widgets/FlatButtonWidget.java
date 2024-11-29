@@ -162,6 +162,11 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
         return this.dim;
     }
 
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return this.dim.containsCursor(mouseX, mouseY);
+    }
+
     public static class Style {
         public int bgHovered, bgDefault, bgDisabled;
         public int textDefault, textDisabled;
