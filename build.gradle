@@ -251,7 +251,11 @@ dependencies {
         for (String module in rootProject.properties.fabric_api_modules.split(",") as String[]) {
             try {
                 if(configuredModLoader == FABRIC && !skippedFabricApiModules.contains(module)) {
-                    modApi fabricApiModuleFinder.module(configuredModLoader, module, fabric_api_version), {
+                    def moduleDep = fabricApiModuleFinder.module(configuredModLoader, module, fabric_api_version)
+                    modApi(moduleDep) {
+                        exclude group: 'net.fabricmc', module: 'fabric-loader'
+                    }
+                    include(moduleDep) {
                         exclude group: 'net.fabricmc', module: 'fabric-loader'
                     }
                 } else {
