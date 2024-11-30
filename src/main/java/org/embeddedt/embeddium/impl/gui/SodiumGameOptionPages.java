@@ -470,7 +470,7 @@ public class SodiumGameOptionPages {
                         .setImpact(OptionImpact.LOW)
                         .setBinding((opts, value) -> opts.performance.useFasterClouds = value, opts -> opts.performance.useFasterClouds)
                         .build())
-                //? }
+                //?}
                 .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
                         .setId(StandardOptions.Option.NO_ERROR_CONTEXT)
                         .setName(ComponentUtil.translatable("sodium.options.use_no_error_context.name"))
