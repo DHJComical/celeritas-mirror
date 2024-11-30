@@ -1,3 +1,4 @@
+//? if >=1.15 {
 package org.embeddedt.embeddium.impl.mixin.core.render.immediate.consumer;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -93,3 +94,4 @@ public class SpriteTexturedVertexConsumerMixin implements VertexBufferWriter {
         }
     }
 }
+//?}

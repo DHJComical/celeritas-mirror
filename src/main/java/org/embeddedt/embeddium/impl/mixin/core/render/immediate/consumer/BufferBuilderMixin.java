@@ -1,10 +1,10 @@
 package org.embeddedt.embeddium.impl.mixin.core.render.immediate.consumer;
 
-//? if <1.21 {
+//? if >=1.15 <1.21 {
 import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
 import org.embeddedt.embeddium.impl.render.vertex.buffer.ExtendedBufferBuilder;
 import org.embeddedt.embeddium.impl.render.vertex.buffer.SodiumBufferBuilder;
-//?} else {
+//?} else if >=1.21 {
 /*import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 *///?}
 import org.embeddedt.embeddium.api.memory.MemoryIntrinsics;
@@ -27,7 +27,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import java.nio.ByteBuffer;
 
 @Mixin(BufferBuilder.class)
-public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVertexConsumer /*?}*/ implements VertexBufferWriter /*? if <1.21 {*/ , ExtendedBufferBuilder /*?}*/ {
+public abstract class BufferBuilderMixin /*? if >=1.15 <1.21 {*/ extends DefaultedVertexConsumer /*?}*/ implements VertexBufferWriter /*? if >=1.15 <1.21 {*/ , ExtendedBufferBuilder /*?}*/ {
     @Shadow
     private int vertices;
 
@@ -35,8 +35,10 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
     @Shadow
     private ByteBuffer buffer;
 
+    //? if >=1.15 {
     @Shadow
     private int nextElementByte;
+    //?}
 
     @Shadow
     protected abstract void ensureCapacity(int size);
@@ -49,34 +51,41 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
     private int mode;
     *///?}
 
+    @Shadow
+    private VertexFormat format;
     @Unique
     private VertexFormatDescription embeddium$format;
 
     @Unique
     private int stride;
 
+    //? if >=1.15
     private SodiumBufferBuilder fastDelegate;
 
-    @Inject(method = "switchFormat",
+    @Inject(method = /*? if >=1.15 {*/ "switchFormat" /*?} else {*/ /*{ "begin", "restoreState" } *//*?}*/,
             at = @At(
                     value = "FIELD",
                     target = "Lcom/mojang/blaze3d/vertex/BufferBuilder;format:Lcom/mojang/blaze3d/vertex/VertexFormat;",
-                    opcode = Opcodes.PUTFIELD
+                    opcode = Opcodes.PUTFIELD,
+                    shift = At.Shift.AFTER
             )
     )
-    private void onFormatChanged(VertexFormat format, CallbackInfo ci) {
+    private void onFormatChanged(CallbackInfo ci) {
         this.embeddium$format = VertexFormatRegistry.instance()
                 .get(format);
         this.stride = format.getVertexSize();
+        //? if >=1.15
         this.fastDelegate = this.embeddium$format.isSimpleFormat() ? new SodiumBufferBuilder(this) : null;
     }
 
+    //? if >=1.15 {
     @Inject(method = { "discard", "reset", "begin" }, at = @At("RETURN"))
     private void resetDelegate(CallbackInfo ci) {
         if (this.fastDelegate != null) {
             this.fastDelegate.reset();
         }
     }
+    //?}
     //?} else {
     /*@Shadow
     @Final
@@ -114,7 +123,11 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
 
         // The buffer may change in the even, so we need to make sure that the
         // pointer is retrieved *after* the resize
+        //? if >=1.15 {
         var dst = MemoryUtil.memAddress(this.buffer, this.nextElementByte);
+        //?} else {
+        /*var dst = MemoryUtil.memAddress(this.buffer, this.vertices * this.format.getVertexSize());
+        *///?}
         //?} else {
         /*var length = count * this.vertexSize;
 
@@ -146,7 +159,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
                 .serialize(src, dst, count);
     }
 
-    //? if <1.21 {
+    //? if >=1.15 <1.21 {
 
     // Begin ExtendedBufferBuilder impls
 

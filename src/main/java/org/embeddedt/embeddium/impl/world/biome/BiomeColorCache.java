@@ -1,12 +1,16 @@
 package org.embeddedt.embeddium.impl.world.biome;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.core.BlockPos;
 import org.embeddedt.embeddium.impl.util.color.BoxBlur;
 import org.embeddedt.embeddium.impl.util.color.BoxBlur.ColorBuffer;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.util.Mth;
+//? if >=1.15 {
 import net.minecraft.world.level.ColorResolver;
+//?} else
+/*import net.minecraft.client.renderer.BiomeColors.ColorResolver;*/
 import net.minecraft.world.level.biome.Biome;
 
 public class BiomeColorCache {
@@ -90,6 +94,9 @@ public class BiomeColorCache {
     private void updateColorBuffers(int relY, ColorResolver resolver, Slice slice) {
         int worldY = this.minY + relY;
 
+        //? if <1.15
+        /*BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();*/
+
         for (int worldZ = this.minZ; worldZ <= this.maxZ; worldZ++) {
             for (int worldX = this.minX; worldX <= this.maxX; worldX++) {
                 Biome biome = this.biomeData.getBiome(worldX, worldY, worldZ)/*? if >=1.18.2 {*/ .value() /*?}*/;
@@ -97,7 +104,12 @@ public class BiomeColorCache {
                 int relativeX = worldX - this.minX;
                 int relativeZ = worldZ - this.minZ;
 
+                //? if >=1.15 {
                 slice.buffer.set(relativeX, relativeZ, resolver.getColor(biome, worldX, worldZ));
+                //?} else {
+                /*pos.set(worldX, worldY, worldZ);
+                slice.buffer.set(relativeX, relativeZ, resolver.getColor(biome, pos));
+                *///?}
             }
         }
 

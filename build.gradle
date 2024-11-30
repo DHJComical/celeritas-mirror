@@ -160,6 +160,7 @@ unimined.minecraft {
         if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<=1.14.4")) {
             stub.withMappings("intermediary", ["mojmap"]) {
                 c("net/minecraft/class_638", ["net/minecraft/client/multiplayer/ClientLevel"])
+                c("net/minecraft/class_1920", ["net/minecraft/world/level/BlockAndTintGetter"])
             }
         }
 

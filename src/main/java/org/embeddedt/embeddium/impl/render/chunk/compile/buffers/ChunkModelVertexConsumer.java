@@ -1,3 +1,4 @@
+//? if >=1.15 {
 package org.embeddedt.embeddium.impl.render.chunk.compile.buffers;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -11,3 +12,4 @@ public interface ChunkModelVertexConsumer extends VertexConsumer, AutoCloseable 
 
     void embeddium$setOffset(Vector3fc offset);
 }
+//?}

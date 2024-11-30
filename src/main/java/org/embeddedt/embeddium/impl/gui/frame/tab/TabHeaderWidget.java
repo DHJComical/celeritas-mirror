@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.gui.frame.tab;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+//? if >=1.20
 import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.loader.common.ModLogoUtil;

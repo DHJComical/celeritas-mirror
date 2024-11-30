@@ -38,11 +38,13 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
         this.renderData.addSprite(sprite);
     }
 
+    //? if >=1.15 {
     @Override
     public ChunkModelVertexConsumer asVertexConsumer(Material material, BlockRenderContext ctx) {
         this.vertexConsumer.initialize(material, ctx);
         return this.vertexConsumer;
     }
+    //?}
 
     public void destroy() {
         for (ChunkMeshBufferBuilder builder : this.vertexBuffers) {

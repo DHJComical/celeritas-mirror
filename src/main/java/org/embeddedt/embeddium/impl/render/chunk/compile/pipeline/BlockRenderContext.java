@@ -102,12 +102,14 @@ public class BlockRenderContext {
         return this.state;
     }
 
+    //? if >=1.15 {
     /**
      * @return A PoseStack for custom renderers
      */
     public PoseStack stack() {
         return this.stack;
     }
+    //?}
 
     /**
      * @return The model used for this block

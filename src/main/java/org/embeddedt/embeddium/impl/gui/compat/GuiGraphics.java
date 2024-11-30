@@ -1,18 +1,22 @@
 package org.embeddedt.embeddium.impl.gui.compat;
 
 //? if <1.20 {
-/*import com.mojang.blaze3d.systems.RenderSystem;
+/*//? if >=1.16.2
+import com.mojang.blaze3d.systems.RenderSystem;
+//? if >=1.15 {
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.MultiBufferSource;
+//?}
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.lwjgl.opengl.GL20C;
 
 public class GuiGraphics {
+    //? if >=1.15 {
     public final PoseStack stack;
 
     public GuiGraphics() {
@@ -30,6 +34,9 @@ public class GuiGraphics {
     public PoseStack pose() {
         return this.stack;
     }
+    //?} else {
+    /^public GuiGraphics() {}
+    ^///?}
 
     public void flush() {
 

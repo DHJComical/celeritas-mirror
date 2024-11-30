@@ -1,8 +1,10 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+//? if forgelike && >=1.19 {
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
+//?}
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.MultiPartBakedModel;

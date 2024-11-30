@@ -17,6 +17,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 /*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
 *///?}
 import net.minecraft.client.gui.screens.Screen;
+//? if >=1.20
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;

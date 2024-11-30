@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.api.math;
 
+//? if >=1.15
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.api.util.NormI8;
 import net.minecraft.core.Direction;
@@ -145,9 +146,11 @@ public class MatrixHelper {
     }
 
     //? if <1.20 {
-    /*public static int transformNormal(com.mojang.math.Matrix3f matrix, Direction direction) {
+    /*//? if >=1.15 {
+    public static int transformNormal(com.mojang.math.Matrix3f matrix, Direction direction) {
         return org.embeddedt.embeddium.api.math.Matrix3fExtended.get(matrix).computeNormal(direction);
     }
+    //?}
 
     public static float transformPositionX(com.mojang.math.Matrix4f mat, float x, float y, float z) {
         return Matrix4fExtended.get(mat).transformVecX(x, y, z);

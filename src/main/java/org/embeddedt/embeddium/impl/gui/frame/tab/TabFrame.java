@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.impl.gui.frame.tab;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
-import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;

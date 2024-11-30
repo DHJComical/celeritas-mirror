@@ -1,7 +1,10 @@
 package org.embeddedt.embeddium.impl.world.biome;
 
 import net.minecraft.client.renderer.BiomeColors;
+//? if >=1.15 {
 import net.minecraft.world.level.ColorResolver;
+ //?} else
+/*import net.minecraft.client.renderer.BiomeColors.ColorResolver;*/
 
 public enum BiomeColorSource {
     GRASS,

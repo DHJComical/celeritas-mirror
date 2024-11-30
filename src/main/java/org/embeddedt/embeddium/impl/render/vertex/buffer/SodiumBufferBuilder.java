@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.render.vertex.buffer;
 
-//? if <1.21 {
+//? if >=1.15 <1.21 {
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;

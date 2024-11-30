@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.gl.compat;
 
+//? if >=1.17
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.lwjgl.opengl.GL20;
 

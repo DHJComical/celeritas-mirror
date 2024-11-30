@@ -65,3 +65,11 @@ accessible method net/minecraft/client/renderer/block/model/BlockModel getElemen
 accessible class net/minecraft/client/multiplayer/ClientLevel$MarkerParticleStatus
 accessible field net/minecraft/client/multiplayer/ClientLevel$MarkerParticleStatus block Lnet/minecraft/world/level/block/Block;
 accessible field net/minecraft/client/multiplayer/ClientLevel$MarkerParticleStatus particle Lnet/minecraft/core/particles/ParticleOptions;
+
+# 1.14
+
+accessible class net/minecraft/client/renderer/BiomeColors$ColorResolver
+accessible field net/minecraft/client/renderer/BiomeColors GRASS_COLOR_RESOLVER Lnet/minecraft/client/renderer/BiomeColors$ColorResolver;
+accessible field net/minecraft/client/renderer/BiomeColors FOLIAGE_COLOR_RESOLVER Lnet/minecraft/client/renderer/BiomeColors$ColorResolver;
+accessible field net/minecraft/client/renderer/BiomeColors WATER_COLOR_RESOLVER Lnet/minecraft/client/renderer/BiomeColors$ColorResolver;
+accessible field net/minecraft/client/renderer/BiomeColors WATER_FOG_COLOR_RESOLVER Lnet/minecraft/client/renderer/BiomeColors$ColorResolver;

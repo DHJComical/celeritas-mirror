@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.api.math;
 
-//? if <1.20 {
+//? if >=1.15 <1.20 {
 /*import com.mojang.math.Matrix3f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;

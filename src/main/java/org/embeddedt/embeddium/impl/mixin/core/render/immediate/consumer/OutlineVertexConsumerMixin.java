@@ -1,3 +1,4 @@
+//? if >=1.15 {
 package org.embeddedt.embeddium.impl.mixin.core.render.immediate.consumer;
 
 //? if <1.21
@@ -77,3 +78,4 @@ public abstract class OutlineVertexConsumerMixin /*? if <1.21 {*/ extends Defaul
     }
 
 }
+//?}
