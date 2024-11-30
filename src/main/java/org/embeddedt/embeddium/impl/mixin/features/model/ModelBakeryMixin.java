@@ -7,7 +7,7 @@ import net.minecraft.client.resources.model.ModelBakery;
 /*import net.minecraft.client.resources.model.ModelDiscovery;*/
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.resources.ResourceLocation;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.model.EpsilonizableBlockElement;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ModelBakeryMixin {
     @Inject(method = "loadBlockModel", at = @At("RETURN"))
     private void epsilonizeBlockModel(ResourceLocation pLocation, CallbackInfoReturnable<UnbakedModel> cir) {
-        if (!PlatformUtil.isLoadValid() || !SodiumClientMod.options().performance.useCompactVertexFormat) {
+        if (!PlatformUtil.isLoadValid() || !Celeritas.options().performance.useCompactVertexFormat) {
             return;
         }
         if(pLocation.getPath().startsWith("block/")) {

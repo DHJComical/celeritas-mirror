@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.api.options.storage;
 
 import org.embeddedt.embeddium.api.options.structure.OptionStorage;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 
@@ -21,7 +21,7 @@ public class MinecraftOptionsStorage implements OptionStorage<Options> {
     public void save() {
         this.getData().save();
 
-        SodiumClientMod.logger().info("Flushed changes to Minecraft configuration");
+        Celeritas.logger().info("Flushed changes to Minecraft configuration");
     }
 
     public static int getMipmapLevels() {

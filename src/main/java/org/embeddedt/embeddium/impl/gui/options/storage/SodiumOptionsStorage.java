@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.gui.options.storage;
 
 import org.embeddedt.embeddium.api.options.structure.OptionStorage;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ public class SodiumOptionsStorage implements OptionStorage<SodiumGameOptions> {
     private final SodiumGameOptions options;
 
     public SodiumOptionsStorage() {
-        this.options = SodiumClientMod.options();
+        this.options = Celeritas.options();
     }
 
     @Override
@@ -26,6 +26,6 @@ public class SodiumOptionsStorage implements OptionStorage<SodiumGameOptions> {
             throw new RuntimeException("Couldn't save configuration changes", e);
         }
 
-        SodiumClientMod.logger().info("Flushed changes to Embeddium configuration");
+        Celeritas.logger().info("Flushed changes to Embeddium configuration");
     }
 }

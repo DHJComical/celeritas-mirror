@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.mixin.features.textures.animations.tracking
 
 //? if >=1.17 {
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.render.texture.SpriteContentsExtended;
 //? if >=1.20
 import net.minecraft.client.renderer.texture.SpriteContents;
@@ -58,7 +58,7 @@ public class SpriteContentsAnimatorImplMixin {
     private void preTick(CallbackInfo ci) {
         SpriteContentsExtended parent = (SpriteContentsExtended) this.parent;
 
-        boolean onDemand = SodiumClientMod.options().performance.animateOnlyVisibleTextures;
+        boolean onDemand = Celeritas.options().performance.animateOnlyVisibleTextures;
 
         if (onDemand && !parent.sodium$isActive()) {
             this.subFrame++;

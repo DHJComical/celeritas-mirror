@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.core;
 
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.embeddedt.embeddium.impl.util.ProfilerUtil;
@@ -26,7 +26,7 @@ public class MinecraftClientMixin {
         ProfilerFiller profiler = ProfilerUtil.get();
         profiler.push("wait_for_gpu");
 
-        while (this.fences.size() > SodiumClientMod.options().advanced.cpuRenderAheadLimit) {
+        while (this.fences.size() > Celeritas.options().advanced.cpuRenderAheadLimit) {
             var fence = this.fences.dequeueLong();
             // We do a ClientWaitSync here instead of a WaitSync to not allow the CPU to get too far ahead of the GPU.
             // This is also needed to make sure that our persistently-mapped staging buffers function correctly, rather

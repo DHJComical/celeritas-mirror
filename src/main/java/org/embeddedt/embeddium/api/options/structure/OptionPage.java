@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.api.options.structure;
 
 import com.google.common.collect.ImmutableList;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import net.minecraft.network.chat.Component;
 //? if >=1.19 {
 import net.minecraft.network.chat.contents.TranslatableContents;
@@ -13,7 +13,7 @@ import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import java.util.List;
 
 public class OptionPage {
-    public static final OptionIdentifier<Void> DEFAULT_ID = OptionIdentifier.create(SodiumClientMod.MODID, "empty");
+    public static final OptionIdentifier<Void> DEFAULT_ID = OptionIdentifier.create(Celeritas.MODID, "empty");
 
     private final OptionIdentifier<Void> id;
     private final Component name;

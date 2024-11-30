@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.render.chunk.region;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.arena.PendingUpload;
 import org.embeddedt.embeddium.impl.gl.arena.staging.FallbackStagingBuffer;
 import org.embeddedt.embeddium.impl.gl.arena.staging.MappedStagingBuffer;
@@ -210,7 +210,7 @@ public class RenderRegionManager {
 
 
     private static StagingBuffer createStagingBuffer(CommandList commandList) {
-        if (SodiumClientMod.options().advanced.useAdvancedStagingBuffers && MappedStagingBuffer.isSupported(RenderDevice.INSTANCE)) {
+        if (Celeritas.options().advanced.useAdvancedStagingBuffers && MappedStagingBuffer.isSupported(RenderDevice.INSTANCE)) {
             return new MappedStagingBuffer(commandList);
         }
 

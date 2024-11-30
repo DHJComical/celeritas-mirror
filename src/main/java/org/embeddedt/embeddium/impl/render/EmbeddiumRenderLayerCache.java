@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.render;
 
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +87,7 @@ public class EmbeddiumRenderLayerCache<STATE, LAYER> {
 
     static {
         if(DISABLE_CACHE) {
-            SodiumClientMod.logger().warn("Render layer cache is disabled, performance will be affected.");
+            Celeritas.logger().warn("Render layer cache is disabled, performance will be affected.");
         }
     }
 }

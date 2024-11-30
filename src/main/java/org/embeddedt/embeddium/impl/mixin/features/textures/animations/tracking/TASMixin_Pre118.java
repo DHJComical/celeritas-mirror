@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.mixin.features.textures.animations.tracking
 //? if <1.17 {
 
 /*import com.mojang.blaze3d.systems.RenderSystem;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.render.texture.SpriteContentsExtended;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
@@ -44,7 +44,7 @@ public abstract class TASMixin_Pre118 {
     public void cycleFrames() {
         this.subFrame++;
 
-        boolean onDemand = SodiumClientMod.options().performance.animateOnlyVisibleTextures;
+        boolean onDemand = Celeritas.options().performance.animateOnlyVisibleTextures;
 
         if (!onDemand || ((SpriteContentsExtended)this).sodium$isActive()) {
             this.uploadTexture();

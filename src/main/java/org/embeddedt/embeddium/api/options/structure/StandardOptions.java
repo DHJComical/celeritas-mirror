@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.api.options.structure;
 
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
@@ -13,18 +13,18 @@ public final class StandardOptions {
         public static final ResourceLocation GRAPHICS = ResourceLocationUtil.make("minecraft", "graphics");
         public static final ResourceLocation MIPMAPS = ResourceLocationUtil.make("minecraft", "mipmaps");
         public static final ResourceLocation DETAILS = ResourceLocationUtil.make("minecraft", "details");
-        public static final ResourceLocation CHUNK_UPDATES = ResourceLocationUtil.make(SodiumClientMod.MODID, "chunk_updates");
-        public static final ResourceLocation RENDERING_CULLING = ResourceLocationUtil.make(SodiumClientMod.MODID, "rendering_culling");
-        public static final ResourceLocation CPU_SAVING = ResourceLocationUtil.make(SodiumClientMod.MODID, "cpu_saving");
-        public static final ResourceLocation SORTING = ResourceLocationUtil.make(SodiumClientMod.MODID, "sorting");
-        public static final ResourceLocation LIGHTING = ResourceLocationUtil.make(SodiumClientMod.MODID, "lighting");
+        public static final ResourceLocation CHUNK_UPDATES = ResourceLocationUtil.make(Celeritas.MODID, "chunk_updates");
+        public static final ResourceLocation RENDERING_CULLING = ResourceLocationUtil.make(Celeritas.MODID, "rendering_culling");
+        public static final ResourceLocation CPU_SAVING = ResourceLocationUtil.make(Celeritas.MODID, "cpu_saving");
+        public static final ResourceLocation SORTING = ResourceLocationUtil.make(Celeritas.MODID, "sorting");
+        public static final ResourceLocation LIGHTING = ResourceLocationUtil.make(Celeritas.MODID, "lighting");
     }
 
     public static class Pages {
-        public static final OptionIdentifier<Void> GENERAL = OptionIdentifier.create(SodiumClientMod.MODID, "general");
-        public static final OptionIdentifier<Void> QUALITY = OptionIdentifier.create(SodiumClientMod.MODID, "quality");
-        public static final OptionIdentifier<Void> PERFORMANCE = OptionIdentifier.create(SodiumClientMod.MODID, "performance");
-        public static final OptionIdentifier<Void> ADVANCED = OptionIdentifier.create(SodiumClientMod.MODID, "advanced");
+        public static final OptionIdentifier<Void> GENERAL = OptionIdentifier.create(Celeritas.MODID, "general");
+        public static final OptionIdentifier<Void> QUALITY = OptionIdentifier.create(Celeritas.MODID, "quality");
+        public static final OptionIdentifier<Void> PERFORMANCE = OptionIdentifier.create(Celeritas.MODID, "performance");
+        public static final OptionIdentifier<Void> ADVANCED = OptionIdentifier.create(Celeritas.MODID, "advanced");
     }
 
     public static class Option {
@@ -51,20 +51,20 @@ public final class StandardOptions {
         public static final ResourceLocation ENTITY_SHADOWS = ResourceLocationUtil.make("minecraft", "entity_shadows");
         public static final ResourceLocation VIGNETTE = ResourceLocationUtil.make("minecraft", "vignette");
         public static final ResourceLocation MIPMAP_LEVEL = ResourceLocationUtil.make("minecraft", "mipmap_levels");
-        public static final ResourceLocation CHUNK_UPDATE_THREADS = ResourceLocationUtil.make(SodiumClientMod.MODID, "chunk_update_threads");
-        public static final ResourceLocation DEFFER_CHUNK_UPDATES = ResourceLocationUtil.make(SodiumClientMod.MODID, "defer_chunk_updates");
-        public static final ResourceLocation BLOCK_FACE_CULLING = ResourceLocationUtil.make(SodiumClientMod.MODID, "block_face_culling");
-        public static final ResourceLocation COMPACT_VERTEX_FORMAT = ResourceLocationUtil.make(SodiumClientMod.MODID, "compact_vertex_format");
-        public static final ResourceLocation FOG_OCCLUSION = ResourceLocationUtil.make(SodiumClientMod.MODID, "fog_occlusion");
-        public static final ResourceLocation ENTITY_CULLING = ResourceLocationUtil.make(SodiumClientMod.MODID, "entity_culling");
-        public static final ResourceLocation ANIMATE_VISIBLE_TEXTURES = ResourceLocationUtil.make(SodiumClientMod.MODID, "animate_only_visible_textures");
-        public static final ResourceLocation NO_ERROR_CONTEXT = ResourceLocationUtil.make(SodiumClientMod.MODID, "no_error_context");
-        public static final ResourceLocation PERSISTENT_MAPPING = ResourceLocationUtil.make(SodiumClientMod.MODID, "persistent_mapping");
-        public static final ResourceLocation CPU_FRAMES_AHEAD = ResourceLocationUtil.make(SodiumClientMod.MODID, "cpu_render_ahead_limit");
-        public static final ResourceLocation TRANSLUCENT_FACE_SORTING = ResourceLocationUtil.make(SodiumClientMod.MODID, "translucent_face_sorting");
-        public static final ResourceLocation USE_QUAD_NORMALS_FOR_LIGHTING = ResourceLocationUtil.make(SodiumClientMod.MODID, "use_quad_normals_for_lighting");
-        public static final ResourceLocation RENDER_PASS_OPTIMIZATION = ResourceLocationUtil.make(SodiumClientMod.MODID, "render_pass_optimization");
-        public static final ResourceLocation RENDER_PASS_CONSOLIDATION = ResourceLocationUtil.make(SodiumClientMod.MODID, "render_pass_consolidation");
-        public static final ResourceLocation USE_FASTER_CLOUDS = ResourceLocationUtil.make(SodiumClientMod.MODID, "use_faster_clouds");
+        public static final ResourceLocation CHUNK_UPDATE_THREADS = ResourceLocationUtil.make(Celeritas.MODID, "chunk_update_threads");
+        public static final ResourceLocation DEFFER_CHUNK_UPDATES = ResourceLocationUtil.make(Celeritas.MODID, "defer_chunk_updates");
+        public static final ResourceLocation BLOCK_FACE_CULLING = ResourceLocationUtil.make(Celeritas.MODID, "block_face_culling");
+        public static final ResourceLocation COMPACT_VERTEX_FORMAT = ResourceLocationUtil.make(Celeritas.MODID, "compact_vertex_format");
+        public static final ResourceLocation FOG_OCCLUSION = ResourceLocationUtil.make(Celeritas.MODID, "fog_occlusion");
+        public static final ResourceLocation ENTITY_CULLING = ResourceLocationUtil.make(Celeritas.MODID, "entity_culling");
+        public static final ResourceLocation ANIMATE_VISIBLE_TEXTURES = ResourceLocationUtil.make(Celeritas.MODID, "animate_only_visible_textures");
+        public static final ResourceLocation NO_ERROR_CONTEXT = ResourceLocationUtil.make(Celeritas.MODID, "no_error_context");
+        public static final ResourceLocation PERSISTENT_MAPPING = ResourceLocationUtil.make(Celeritas.MODID, "persistent_mapping");
+        public static final ResourceLocation CPU_FRAMES_AHEAD = ResourceLocationUtil.make(Celeritas.MODID, "cpu_render_ahead_limit");
+        public static final ResourceLocation TRANSLUCENT_FACE_SORTING = ResourceLocationUtil.make(Celeritas.MODID, "translucent_face_sorting");
+        public static final ResourceLocation USE_QUAD_NORMALS_FOR_LIGHTING = ResourceLocationUtil.make(Celeritas.MODID, "use_quad_normals_for_lighting");
+        public static final ResourceLocation RENDER_PASS_OPTIMIZATION = ResourceLocationUtil.make(Celeritas.MODID, "render_pass_optimization");
+        public static final ResourceLocation RENDER_PASS_CONSOLIDATION = ResourceLocationUtil.make(Celeritas.MODID, "render_pass_consolidation");
+        public static final ResourceLocation USE_FASTER_CLOUDS = ResourceLocationUtil.make(Celeritas.MODID, "use_faster_clouds");
     }
 }

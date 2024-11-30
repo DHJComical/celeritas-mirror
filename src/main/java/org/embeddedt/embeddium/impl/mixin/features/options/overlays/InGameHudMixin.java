@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.options.overlays;
 
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import net.minecraft.client.gui.Gui;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,6 +10,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class InGameHudMixin {
     @Redirect(method = /*? if <1.21 {*/ "render" /*?} else {*/ /*"renderCameraOverlays" *//*?}*/, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;useFancyGraphics()Z"))
     private boolean redirectFancyGraphicsVignette() {
-        return SodiumClientMod.options().quality.enableVignette;
+        return Celeritas.options().quality.enableVignette;
     }
 }

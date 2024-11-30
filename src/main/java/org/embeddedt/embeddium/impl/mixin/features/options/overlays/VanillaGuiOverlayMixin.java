@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.options.overlays;
 
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -13,7 +13,7 @@ public class VanillaGuiOverlayMixin {
 
     @Redirect(method = "lambda$static$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;useFancyGraphics()Z"))
     private static boolean redirectFancyGraphicsVignette() {
-        return SodiumClientMod.options().quality.enableVignette;
+        return Celeritas.options().quality.enableVignette;
     }
 
 }
@@ -25,7 +25,7 @@ public class VanillaGuiOverlayMixin {
 
     @Redirect(method = "lambda$static$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;useFancyGraphics()Z"))
     private static boolean redirectFancyGraphicsVignette() {
-        return SodiumClientMod.options().quality.enableVignette;
+        return Celeritas.options().quality.enableVignette;
     }
 
 }
@@ -42,7 +42,7 @@ public class VanillaGuiOverlayMixin {
             /^"render"^/
     }, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;useFancyGraphics()Z"))
     private /^? if >=1.18 {^/ static /^?}^/ boolean redirectFancyGraphicsVignette() {
-        return SodiumClientMod.options().quality.enableVignette;
+        return Celeritas.options().quality.enableVignette;
     }
 
 }

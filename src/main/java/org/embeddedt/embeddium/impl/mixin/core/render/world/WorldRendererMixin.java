@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.*;
 /*import net.neoforged.neoforge.client.ClientHooks;*/
 import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
-import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;
+import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
 import net.minecraft.client.Camera;
@@ -74,7 +74,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     private Minecraft minecraft;
 
     @Unique
-    private SodiumWorldRenderer renderer;
+    private CeleritasWorldRenderer renderer;
 
     @Unique
     private int frame;
@@ -96,7 +96,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     //?}
 
     @Override
-    public SodiumWorldRenderer sodium$getWorldRenderer() {
+    public CeleritasWorldRenderer sodium$getWorldRenderer() {
         return this.renderer;
     }
 
@@ -113,7 +113,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void init(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) Minecraft client) {
-        this.renderer = new SodiumWorldRenderer(client);
+        this.renderer = new CeleritasWorldRenderer(client);
     }
 
     @Inject(method = "setLevel", at = @At("RETURN"))

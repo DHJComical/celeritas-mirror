@@ -8,7 +8,7 @@ import org.embeddedt.embeddium.impl.platform.windows.WindowsCommandLine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.embeddedt.embeddium.impl.SodiumClientMod.MODNAME;
+import static org.embeddedt.embeddium.impl.Celeritas.MODNAME;
 
 public class NvidiaWorkarounds {
     private static final Logger LOGGER = LoggerFactory.getLogger(MODNAME + "-NvidiaWorkarounds");

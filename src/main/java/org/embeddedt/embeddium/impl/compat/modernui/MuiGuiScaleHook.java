@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.compat.modernui;
 
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import net.minecraft.client.Minecraft;
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
@@ -33,7 +33,7 @@ public class MuiGuiScaleHook {
             }
         }).findFirst().orElse(null);
         if(calcGuiScalesMethod != null)
-            SodiumClientMod.logger().info("Found ModernUI GUI scale hook");
+            Celeritas.logger().info("Found ModernUI GUI scale hook");
     }
     public static int getMaxGuiScale() {
         if(calcGuiScalesMethod != null) {

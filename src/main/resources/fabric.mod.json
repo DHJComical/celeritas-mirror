@@ -17,7 +17,7 @@
   ],
   "entrypoints": {
     "client": [
-      "org.embeddedt.embeddium.impl.SodiumClientMod::onInitializeClient"
+      "org.embeddedt.embeddium.impl.Celeritas::onInitializeClient"
     ]
   },
   "depends": {

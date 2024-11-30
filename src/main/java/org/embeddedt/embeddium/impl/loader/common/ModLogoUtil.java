@@ -11,7 +11,7 @@ import net.minecraftforge.fml.ModList;
 //?}
 //? if neoforge
 /*import net.neoforged.fml.ModList;*/
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class ModLogoUtil {
                 texture = handleIoSupplier(modId, Files.newInputStream(logoPath.get()));
             } catch(IOException e) {
                 erroredLogos.add(modId);
-                SodiumClientMod.logger().error("Exception reading logo for " + modId, e);
+                Celeritas.logger().error("Exception reading logo for " + modId, e);
             }
         }
         return texture;
@@ -51,7 +51,7 @@ public class ModLogoUtil {
                 }
             } catch(IOException e) {
                 erroredLogos.add(modId);
-                SodiumClientMod.logger().error("Exception reading logo for " + modId, e);
+                Celeritas.logger().error("Exception reading logo for " + modId, e);
             }
         }
         return texture;
@@ -69,7 +69,7 @@ public class ModLogoUtil {
                 logo.close();
                 throw new IOException("Logo for " + modId + " is not square");
             }
-            ResourceLocation texture = ResourceLocationUtil.make(SodiumClientMod.MODID, "logo/" + modId);
+            ResourceLocation texture = ResourceLocationUtil.make(Celeritas.MODID, "logo/" + modId);
             Minecraft.getInstance().getTextureManager().register(texture, new DynamicTexture(logo));
             return texture;
         } else {

@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static org.embeddedt.embeddium.impl.SodiumClientMod.MODNAME;
+import static org.embeddedt.embeddium.impl.Celeritas.MODNAME;
 
 public class Workarounds {
     private static final Logger LOGGER = LoggerFactory.getLogger(MODNAME + "-Workarounds");

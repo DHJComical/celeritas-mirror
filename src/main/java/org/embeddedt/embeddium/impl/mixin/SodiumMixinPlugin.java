@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.embeddedt.embeddium.impl.SodiumClientMod.MODNAME;
+import static org.embeddedt.embeddium.impl.Celeritas.MODNAME;
 
 @SuppressWarnings("unused")
 public class SodiumMixinPlugin implements IMixinConfigPlugin {

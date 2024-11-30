@@ -24,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.api.render.clouds.ModifyCloudRenderingEvent;
 import org.embeddedt.embeddium.api.vertex.format.common.LineVertex;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
-import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;
+import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -132,7 +132,7 @@ public class CloudRenderer {
         double cloudCenterX = (cameraX + cloudTime);
         double cloudCenterZ = (cameraZ) + 3.96D;
 
-        int renderDistance = SodiumWorldRenderer.getEffectiveRenderDistance();
+        int renderDistance = CeleritasWorldRenderer.getEffectiveRenderDistance();
         // This insanity (as opposed to just wrapping the call) is necessary to preserve the original assignment for mixin compat
         renderDistance = fireModifyCloudRenderDistanceEvent(renderDistance);
         int cloudDistance = Math.max(this.cloudDistanceMinimum, (renderDistance * this.cloudDistanceMaximum) + 9);

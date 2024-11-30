@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.model.light.flat;
 
 //? if forgelike && <1.19
 /*import net.minecraftforge.client.model.pipeline.LightUtil;*/
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.embeddedt.embeddium.impl.model.light.data.QuadLightData;
@@ -38,7 +38,7 @@ public class FlatLightPipeline implements LightPipeline {
 
     public FlatLightPipeline(LightDataAccess lightCache) {
         this.lightCache = lightCache;
-        this.useQuadNormalsForShading = SodiumClientMod.options().quality.useQuadNormalsForShading;
+        this.useQuadNormalsForShading = Celeritas.options().quality.useQuadNormalsForShading;
     }
 
     @Override

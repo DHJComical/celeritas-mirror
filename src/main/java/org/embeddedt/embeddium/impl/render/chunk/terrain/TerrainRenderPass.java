@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 
 /**
@@ -61,7 +61,7 @@ public class TerrainRenderPass {
 
 
     public boolean isSorted() {
-        return this.useTranslucencySorting && SodiumClientMod.canApplyTranslucencySorting();
+        return this.useTranslucencySorting && Celeritas.canApplyTranslucencySorting();
     }
 
     public void startDrawing() {

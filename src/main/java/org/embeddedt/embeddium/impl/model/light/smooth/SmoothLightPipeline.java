@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.model.light.smooth;
 
 //? if forgelike && <1.19
 /*import net.minecraftforge.client.model.pipeline.LightUtil;*/
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.embeddedt.embeddium.impl.model.light.data.QuadLightData;
@@ -74,7 +74,7 @@ public class SmoothLightPipeline implements LightPipeline {
             this.cachedFaceData[i] = new AoFaceData();
         }
 
-        this.useQuadNormalsForShading = SodiumClientMod.options().quality.useQuadNormalsForShading;
+        this.useQuadNormalsForShading = Celeritas.options().quality.useQuadNormalsForShading;
     }
 
     @Override

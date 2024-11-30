@@ -12,7 +12,7 @@ import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import lombok.Getter;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
@@ -56,7 +56,7 @@ import java.util.function.Consumer;
 /**
  * Provides an extension to vanilla's {@link LevelRenderer}.
  */
-public class SodiumWorldRenderer {
+public class CeleritasWorldRenderer {
     private static final boolean ENABLE_BLOCKENTITY_CULLING = PlatformUtil.modPresent("valkyrienskies");
 
     private final Minecraft client;
@@ -76,9 +76,9 @@ public class SodiumWorldRenderer {
     private RenderSectionManager renderSectionManager;
 
     /**
-     * @return The SodiumWorldRenderer based on the current dimension
+     * @return The CeleritasWorldRenderer based on the current dimension
      */
-    public static SodiumWorldRenderer instance() {
+    public static CeleritasWorldRenderer instance() {
         var instance = instanceNullable();
 
         if (instance == null) {
@@ -89,9 +89,9 @@ public class SodiumWorldRenderer {
     }
 
     /**
-     * @return The SodiumWorldRenderer based on the current dimension, or null if none is attached
+     * @return The CeleritasWorldRenderer based on the current dimension, or null if none is attached
      */
-    public static SodiumWorldRenderer instanceNullable() {
+    public static CeleritasWorldRenderer instanceNullable() {
         var world = Minecraft.getInstance().levelRenderer;
 
         if (world instanceof WorldRendererExtended) {
@@ -101,7 +101,7 @@ public class SodiumWorldRenderer {
         return null;
     }
 
-    public SodiumWorldRenderer(Minecraft client) {
+    public CeleritasWorldRenderer(Minecraft client) {
         this.client = client;
     }
 
@@ -182,7 +182,7 @@ public class SodiumWorldRenderer {
 
         this.processChunkEvents();
 
-        this.useEntityCulling = SodiumClientMod.options().performance.useEntityCulling;
+        this.useEntityCulling = Celeritas.options().performance.useEntityCulling;
 
         if (getEffectiveRenderDistance() != this.renderDistance) {
             this.reload();
@@ -322,7 +322,7 @@ public class SodiumWorldRenderer {
      * {@return an iterator over all visible block entities}
      * <p>
      * Note that this method performs significantly more allocations and will generally be less efficient than
-     * {@link SodiumWorldRenderer#forEachVisibleBlockEntity(Consumer)}. It is intended only for situations where using
+     * {@link CeleritasWorldRenderer#forEachVisibleBlockEntity(Consumer)}. It is intended only for situations where using
      * that method is not feasible.
      */
     public Iterator<BlockEntity> blockEntityIterator() {
@@ -570,7 +570,7 @@ public class SodiumWorldRenderer {
             if (!entity.isRemoved()) {
                 throw e;
             } else {
-                SodiumClientMod.logger().error("Suppressing crash from removed block entity", e);
+                Celeritas.logger().error("Suppressing crash from removed block entity", e);
             }
         }
 

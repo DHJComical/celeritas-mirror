@@ -6,7 +6,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 //? if >=1.21 {
 /*import net.minecraft.world.entity.Leashable;
 *///?}
-import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;
+import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.world.entity.Entity;
@@ -29,7 +29,7 @@ public abstract class EntityRendererMixin<T extends Entity> {
             return false;
         }
 
-        var renderer = SodiumWorldRenderer.instanceNullable();
+        var renderer = CeleritasWorldRenderer.instanceNullable();
 
         return renderer == null || renderer.isEntityVisible(entity, (EntityRenderer)(Object)this);
     }
@@ -41,7 +41,7 @@ public abstract class EntityRendererMixin<T extends Entity> {
             return false;
         }
 
-        var renderer = SodiumWorldRenderer.instanceNullable();
+        var renderer = CeleritasWorldRenderer.instanceNullable();
 
         return renderer == null || renderer.isEntityVisible(leashable.getLeashHolder(), this.entityRenderDispatcher.getRenderer(leashable.getLeashHolder()));
     }

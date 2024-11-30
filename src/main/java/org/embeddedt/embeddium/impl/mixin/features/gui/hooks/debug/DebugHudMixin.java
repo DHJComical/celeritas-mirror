@@ -1,8 +1,8 @@
 package org.embeddedt.embeddium.impl.mixin.features.gui.hooks.debug;
 
 import com.google.common.collect.Lists;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
-import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;
+import org.embeddedt.embeddium.impl.Celeritas;
+import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import org.embeddedt.embeddium.impl.util.MathUtil;
 import org.embeddedt.embeddium.impl.util.NativeBuffer;
 import net.minecraft.ChatFormatting;
@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 
-import static org.embeddedt.embeddium.impl.SodiumClientMod.MODNAME;
+import static org.embeddedt.embeddium.impl.Celeritas.MODNAME;
 
 @Mixin(DebugScreenOverlay.class)
 public abstract class DebugHudMixin {
@@ -24,14 +24,14 @@ public abstract class DebugHudMixin {
     private ArrayList<String> redirectRightTextEarly(Object[] elements) {
         ArrayList<String> strings = Lists.newArrayList((String[]) elements);
         strings.add("");
-        strings.add("%s%s Renderer (%s)".formatted(ChatFormatting.GREEN, MODNAME, SodiumClientMod.getVersion()));
+        strings.add("%s%s Renderer (%s)".formatted(ChatFormatting.GREEN, MODNAME, Celeritas.getVersion()));
 
         // Embeddium: Show a lot less with reduced debug info
         if(Minecraft.getInstance().showOnlyReducedInfo()) {
            return strings;
         }
 
-        var renderer = SodiumWorldRenderer.instanceNullable();
+        var renderer = CeleritasWorldRenderer.instanceNullable();
 
         if (renderer != null) {
             strings.addAll(renderer.getDebugStrings());

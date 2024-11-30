@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.render.vertex.serializers;
 
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.render.vertex.serializers.generated.VertexSerializerFactory;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
 import org.embeddedt.embeddium.api.vertex.serializer.VertexSerializer;
@@ -116,7 +116,7 @@ public class VertexSerializerRegistryImpl implements VertexSerializerRegistry {
         try {
             Files.write(path, bytecode.copy());
         } catch (IOException e) {
-            SodiumClientMod.logger().warn("Could not dump bytecode to location: {}", path, e);
+            Celeritas.logger().warn("Could not dump bytecode to location: {}", path, e);
         }
     }
 

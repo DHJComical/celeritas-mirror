@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.util;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.MemoryUtil;
@@ -86,7 +86,7 @@ public class NativeBuffer {
     }
 
     private static StackTraceElement[] getStackTrace() {
-        return SodiumClientMod.options().advanced.enableMemoryTracing ? Thread.currentThread()
+        return Celeritas.options().advanced.enableMemoryTracing ? Thread.currentThread()
                 .getStackTrace() : null;
     }
 

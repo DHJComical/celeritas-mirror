@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.model.color.ColorProvider;
 import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
@@ -101,7 +101,7 @@ public class BlockRenderer {
         //?} else {
         /*this.fabricModelRenderingHandler = null;
         *///?}
-        this.useRenderPassOptimization = SodiumClientMod.options().performance.useRenderPassOptimization && !ShaderModBridge.areShadersEnabled();
+        this.useRenderPassOptimization = Celeritas.options().performance.useRenderPassOptimization && !ShaderModBridge.areShadersEnabled();
     }
 
     /**

@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.options.render_layers;
 
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 //? if >=1.16
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -25,6 +25,6 @@ public class RenderLayersMixin {
 
     @Inject(method = "setFancy", at = @At("RETURN"))
     private static void onSetFancyGraphicsOrBetter(boolean fancyGraphicsOrBetter, CallbackInfo ci) {
-        leavesFancy = SodiumClientMod.options().quality.leavesQuality.isFancy(/*? if >=1.16 {*/ fancyGraphicsOrBetter? GraphicsStatus.FANCY : GraphicsStatus.FAST /*?} else {*/ /*fancyGraphicsOrBetter *//*?}*/);
+        leavesFancy = Celeritas.options().quality.leavesQuality.isFancy(/*? if >=1.16 {*/ fancyGraphicsOrBetter? GraphicsStatus.FANCY : GraphicsStatus.FAST /*?} else {*/ /*fancyGraphicsOrBetter *//*?}*/);
     }
 }

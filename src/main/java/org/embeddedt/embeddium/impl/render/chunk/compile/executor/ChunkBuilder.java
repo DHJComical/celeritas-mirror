@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.executor;
 
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
@@ -131,7 +131,7 @@ public class ChunkBuilder {
     }
 
     private static int getThreadCount() {
-        int requested = SodiumClientMod.options().performance.chunkBuilderThreads;
+        int requested = Celeritas.options().performance.chunkBuilderThreads;
         return requested == 0 ? getOptimalThreadCount() : Math.min(requested, getMaxThreadCount());
     }
 

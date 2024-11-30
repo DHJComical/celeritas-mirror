@@ -6,7 +6,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.client.Minecraft;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gui.options.TextProvider;
 //? if >=1.16
 import net.minecraft.client.GraphicsStatus;
@@ -21,7 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import static org.embeddedt.embeddium.impl.SodiumClientMod.MODID;
+import static org.embeddedt.embeddium.impl.Celeritas.MODID;
 
 public class SodiumGameOptions {
     private static final String DEFAULT_FILE_NAME = MODID + "-options.json";
@@ -142,7 +142,7 @@ public class SodiumGameOptions {
             } catch (IOException e) {
                 throw new RuntimeException("Could not parse config", e);
             } catch (JsonSyntaxException e) {
-                SodiumClientMod.logger().error("Could not parse config, will fallback to default settings", e);
+                Celeritas.logger().error("Could not parse config, will fallback to default settings", e);
                 config = new SodiumGameOptions();
                 resaveConfig = false;
             }

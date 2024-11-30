@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk;
 
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeBinding;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
@@ -54,7 +54,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
                        CameraTransform camera) {
         super.begin(renderPass);
 
-        boolean useBlockFaceCulling = SodiumClientMod.options().performance.useBlockFaceCulling;
+        boolean useBlockFaceCulling = Celeritas.options().performance.useBlockFaceCulling;
 
         ChunkShaderInterface shader = this.activeProgram.getInterface();
         shader.setProjectionMatrix(matrices.projection());

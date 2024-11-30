@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.render.chunk.config;
 import com.google.common.collect.ImmutableListMultimap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.client.renderer.RenderType;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
@@ -50,7 +50,7 @@ public class ModernRenderPassConfigurationBuilder {
         vanillaRenderStages.put(RenderType.solid(), solidPass);
         vanillaRenderStages.put(RenderType.translucent(), translucentPass);
 
-        if(SodiumClientMod.options().performance.useRenderPassConsolidation) {
+        if(Celeritas.options().performance.useRenderPassConsolidation) {
             cutoutMaterial = new Material(cutoutMippedPass, AlphaCutoffParameter.ONE_TENTH, false);
             tripwireMaterial = cutoutMippedMaterial;
             // Render cutout immediately after solid geometry
@@ -93,7 +93,7 @@ public class ModernRenderPassConfigurationBuilder {
 
         for(RenderType type : RenderType.chunkBufferLayers()) {
             if(!renderTypeToMaterialMap.containsKey(type)) {
-                SodiumClientMod.logger().warn("RenderType {} is not recognized by Embeddium. Treating it as cutout_mipped.", type);
+                Celeritas.logger().warn("RenderType {} is not recognized by Embeddium. Treating it as cutout_mipped.", type);
                 renderTypeToMaterialMap.put(type, cutoutMippedMaterial);
             }
         }

@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.render.frapi;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 //? if ffapi
 import net.fabricmc.fabric.api.renderer.v1.model.SpriteFinder;
 import net.minecraft.client.Minecraft;
@@ -33,7 +33,7 @@ import java.lang.invoke.*;
  * Provides a mechanism for retrieving sprites by location on the atlas.
  */
 //? if forge
-@Mod.EventBusSubscriber(modid = SodiumClientMod.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = Celeritas.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class SpriteFinderCache {
     private static final Finder NULL_FINDER = (u, v) -> null;
     private static final MethodHandle SPRITE_FINDER_HANDLE;

@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2ReferenceMaps;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
@@ -106,7 +106,7 @@ public class RenderSectionManager {
     private final Set<TerrainRenderPass> disabledRenderPasses;
 
     public RenderSectionManager(ClientLevel world, int renderDistance, CommandList commandList) {
-        ChunkVertexType vertexType = SodiumClientMod.canUseVanillaVertices() ? ChunkMeshFormats.VANILLA_LIKE : ChunkMeshFormats.COMPACT;
+        ChunkVertexType vertexType = Celeritas.canUseVanillaVertices() ? ChunkMeshFormats.VANILLA_LIKE : ChunkMeshFormats.COMPACT;
 
         this.chunkRenderer = new DefaultChunkRenderer(RenderDevice.INSTANCE, vertexType);
 
@@ -134,7 +134,7 @@ public class RenderSectionManager {
 
         this.disabledRenderPasses = new ReferenceArraySet<>();
 
-        this.translucencySorting = SodiumClientMod.canApplyTranslucencySorting();
+        this.translucencySorting = Celeritas.canApplyTranslucencySorting();
     }
 
     private static RenderPassConfiguration<?> createRenderPassConfiguration(ChunkVertexType vertexType) {
@@ -250,7 +250,7 @@ public class RenderSectionManager {
         float distance;
 
         // TODO: does *every* shaderpack really disable fog?
-        if (SodiumClientMod.options().performance.useFogOcclusion && !ShaderModBridge.areShadersEnabled()) {
+        if (Celeritas.options().performance.useFogOcclusion && !ShaderModBridge.areShadersEnabled()) {
             distance = this.getEffectiveRenderDistance();
         } else {
             distance = this.getRenderDistance();
@@ -643,7 +643,7 @@ public class RenderSectionManager {
     }
 
     private static boolean allowImportantRebuilds() {
-        return !SodiumClientMod.options().performance.alwaysDeferChunkUpdates;
+        return !Celeritas.options().performance.alwaysDeferChunkUpdates;
     }
 
     private float getEffectiveRenderDistance() {

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import static org.embeddedt.embeddium.impl.SodiumClientMod.MODNAME;
+import static org.embeddedt.embeddium.impl.Celeritas.MODNAME;
 
 
 @SuppressWarnings("CanBeFinal")

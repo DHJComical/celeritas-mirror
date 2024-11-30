@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.api.options.structure;
 
 import com.google.common.collect.ImmutableList;
-import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.Celeritas;
 import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.api.OptionGroupConstructionEvent;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class OptionGroup {
-    public static final OptionIdentifier<Void> DEFAULT_ID = OptionIdentifier.create(SodiumClientMod.MODID, "empty");
+    public static final OptionIdentifier<Void> DEFAULT_ID = OptionIdentifier.create(Celeritas.MODID, "empty");
 
     private final ImmutableList<Option<?>> options;
 
@@ -65,13 +65,13 @@ public class OptionGroup {
 
         public OptionGroup build() {
             if (this.options.isEmpty()) {
-                SodiumClientMod.logger().warn("OptionGroup must contain at least one option. ignoring empty group...");
+                Celeritas.logger().warn("OptionGroup must contain at least one option. ignoring empty group...");
             }
 
             if (this.id == null) {
                 this.id = OptionGroup.DEFAULT_ID;
                 // FIXME Actually enforce IDs on groups
-                //SodiumClientMod.logger().warn("Id must be specified in OptionGroup which contains {}, this might throw a exception on a next release", this.options.get(0).getName().getString());
+                //Celeritas.logger().warn("Id must be specified in OptionGroup which contains {}, this might throw a exception on a next release", this.options.get(0).getName().getString());
             }
 
             OptionGroupConstructionEvent.BUS.post(new OptionGroupConstructionEvent(this.id, this.options));

@@ -52,8 +52,8 @@ import org.apache.logging.log4j.LogManager;
 import java.io.IOException;
 
 //? if forgelike
-@Mod(SodiumClientMod.MODID)
-public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer *//*?}*/
+@Mod(Celeritas.MODID)
+public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?}*/
 {
     public static final String MODID = EmbeddiumConstants.MODID;
     public static final String MODNAME = EmbeddiumConstants.MODNAME;
@@ -67,7 +67,7 @@ public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer
     private static String MOD_VERSION;
 
     //? if forgelike {
-    public SodiumClientMod(/*? if neoforge {*/ /*IEventBus modEventBus *//*?}*/) {
+    public Celeritas(/*? if neoforge {*/ /*IEventBus modEventBus *//*?}*/) {
         MOD_VERSION = ModList.get().getModContainerById(MODID).get().getModInfo().getVersion().toString();
         //? if forge && >=1.18 && <1.20.2
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
@@ -159,10 +159,10 @@ public class SodiumClientMod /*? if fabric {*/ /*implements ClientModInitializer
     }
 
     public static boolean canUseVanillaVertices() {
-        return !SodiumClientMod.options().performance.useCompactVertexFormat && !ShaderModBridge.areShadersEnabled();
+        return !Celeritas.options().performance.useCompactVertexFormat && !ShaderModBridge.areShadersEnabled();
     }
 
     public static boolean canApplyTranslucencySorting() {
-        return SodiumClientMod.options().performance.useTranslucentFaceSorting && !ShaderModBridge.isNvidiumEnabled();
+        return Celeritas.options().performance.useTranslucentFaceSorting && !ShaderModBridge.isNvidiumEnabled();
     }
 }

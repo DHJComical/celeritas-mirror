@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.modcompat.brandonscore;
 
 import com.brandon3055.brandonscore.client.BCClientEventHandler;
-import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;
+import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,6 +15,6 @@ import java.util.Set;
 public class BCClientEventHandlerMixin {
     @Redirect(method = "renderLevelStage", slice = @Slice(from = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;globalBlockEntities:Ljava/util/Set;", ordinal = 0)), at = @At(value = "INVOKE", target = "Ljava/util/Set;iterator()Ljava/util/Iterator;", ordinal = 0), require = 0)
     private Iterator<BlockEntity> useEmbeddiumBEIterator(Set instance) {
-        return SodiumWorldRenderer.instance().blockEntityIterator();
+        return CeleritasWorldRenderer.instance().blockEntityIterator();
     }
 }
