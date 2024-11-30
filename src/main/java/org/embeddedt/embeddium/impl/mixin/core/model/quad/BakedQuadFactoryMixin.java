@@ -25,11 +25,13 @@ public class BakedQuadFactoryMixin {
     //? if <1.21.4-alpha.24.45.a {
     @ModifyReturnValue(method = "bakeQuad", at = @At("RETURN"))
     private BakedQuad setMaterialClassification(BakedQuad quad, @Local(ordinal = 0, argsOnly = true) BlockElementFace face, @Local(ordinal = 0, argsOnly = true) TextureAtlasSprite sprite) {
+        handleMaterialClassifications(quad, sprite, face);
         return quad;
     }
     //?} else {
     /*@ModifyReturnValue(method = "bakeQuad", at = @At("RETURN"))
     private static BakedQuad setMaterialClassification(BakedQuad quad, @Local(ordinal = 0, argsOnly = true) BlockElementFace face, @Local(ordinal = 0, argsOnly = true) TextureAtlasSprite sprite) {
+        handleMaterialClassifications(quad, sprite, face);
         return quad;
     }
     *///?}
