@@ -15,6 +15,16 @@ vec4 _linearFog(vec4 fragColor, float fragDistance, vec4 fogColor, float fogStar
 #endif
 }
 
+float _linearFogFade(float fragDistance, float fogStart, float fogEnd) {
+    if (fragDistance <= fogStart) {
+        return 1.0;
+    } else if (fragDistance >= fogEnd) {
+        return 0.0;
+    }
+
+    return smoothstep(fogEnd, fogStart, fragDistance);
+}
+
 vec4 _exp2Fog(vec4 fragColor, float fragDistance, vec4 fogColor, float fogDensity) {
 #ifdef USE_FOG
     float dist = fragDistance * fogDensity;

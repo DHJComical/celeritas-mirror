@@ -1,6 +1,6 @@
 #version 150
 
-#moj_import <fog.glsl>
+#import <sodium:include/fog.glsl>
 
 uniform mat4 ProjMat;
 uniform vec4 ColorModulator;
@@ -23,7 +23,7 @@ void main() {
 
     float width = FogEnd - FogStart;
     float newWidth = width * 4.0;
-    float fade = linear_fog_fade(vertexDistance, FogStart, FogStart + newWidth) * FogColor.a;
+    float fade = _linearFogFade(vertexDistance, FogStart, FogStart + newWidth) * FogColor.a;
     fragColor = vec4(mix(FogColor.rgb, color.rgb, 0.7), clamp(color.a * fade, 0.0, 1.0));
 }
 

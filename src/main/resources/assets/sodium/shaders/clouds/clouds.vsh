@@ -1,5 +1,4 @@
 #version 150
-#moj_import <fog.glsl>
 
 in vec3 Position;
 in vec4 Color;

@@ -19,7 +19,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.FogRenderer;
-import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -93,7 +92,7 @@ public class CloudRenderer {
 
     private VertexBuffer vertexBuffer;
     private CloudEdges edges;
-    private ShaderInstance shader;
+    private CloudShader shader;
     private final FogRenderer.FogData fogData = new FogRenderer.FogData(FogRenderer.FogMode.FOG_TERRAIN);
 
     private int prevCenterCellX, prevCenterCellY, cachedRenderDistance;
@@ -208,8 +207,6 @@ public class CloudRenderer {
             RenderSystem.enableCull();
         }
 
-        RenderSystem.setShaderColor((float) color.x, (float) color.y, (float) color.z, 0.8f);
-
         modelViewMatrix = new Matrix4f(modelViewMatrix);
         //? if >=1.20 {
         modelViewMatrix.translate(-translateX, cloudHeight - (float) cameraY + 0.33F, -translateZ);
@@ -225,7 +222,9 @@ public class CloudRenderer {
         /*RenderType.cloudsDepthOnly().setupRenderState();
         *///?}
 
-        this.vertexBuffer.drawWithShader(modelViewMatrix, projectionMatrix, this.shader);
+        this.shader.prepareForDraw(modelViewMatrix, projectionMatrix, (float) color.x, (float) color.y, (float) color.z, 0.8f);
+        this.vertexBuffer.draw();
+        this.shader.clear();
         //? if >=1.21
         /*RenderType.cloudsDepthOnly().clearRenderState();*/
 
@@ -242,7 +241,9 @@ public class CloudRenderer {
         /*RenderType.clouds().setupRenderState();
         *///?}
 
-        this.vertexBuffer.drawWithShader(modelViewMatrix, projectionMatrix, this.shader);
+        this.shader.prepareForDraw(modelViewMatrix, projectionMatrix, (float) color.x, (float) color.y, (float) color.z, 0.8f);
+        this.vertexBuffer.draw();
+        this.shader.clear();
 
         //? if >=1.21
         /*RenderType.clouds().clearRenderState();*/
@@ -442,11 +443,7 @@ public class CloudRenderer {
         this.cloudDistanceMinimum = (int) (width * CLOUD_PIXELS_TO_MINIMUM_RENDER_DISTANCE);
         this.cloudDistanceMaximum = (int) (width * CLOUD_PIXELS_TO_MAXIMUM_RENDER_DISTANCE);
 
-        try {
-            this.shader = new ShaderInstance(factory, "clouds", DefaultVertexFormat.POSITION_COLOR);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.shader = new CloudShader();
     }
 
     public void destroy() {

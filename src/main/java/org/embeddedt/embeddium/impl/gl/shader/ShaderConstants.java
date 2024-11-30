@@ -3,6 +3,8 @@ package org.embeddedt.embeddium.impl.gl.shader;
 import java.util.*;
 
 public class ShaderConstants {
+    public static final ShaderConstants EMPTY = ShaderConstants.builder().build();
+
     private final List<String> defines;
 
     private ShaderConstants(List<String> defines) {
