@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.world.clouds;
 
-//? if >=1.19 <1.21.2 {
+//? if >=1.17 <1.21.2 {
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.render.immediate.CloudRenderer;
@@ -48,7 +48,11 @@ public class WorldRendererMixin {
             //? if <1.21 {
             Matrix4f modelViewMatrix = matrices.last().pose();
             //?}
+            //? if >=1.19.3 {
             this.cloudRenderer.render(this.level, this.minecraft.player, modelViewMatrix, projectionMatrix, this.ticks, tickDelta, x, y, z);
+            //?} else {
+            /*this.cloudRenderer.render(this.level, this.minecraft.player, JomlHelper.copy(modelViewMatrix), JomlHelper.copy(projectionMatrix), this.ticks, tickDelta, x, y, z);
+            *///?}
             ci.cancel();
         }
     }

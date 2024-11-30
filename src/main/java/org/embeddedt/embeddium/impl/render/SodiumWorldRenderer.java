@@ -163,11 +163,11 @@ public class SodiumWorldRenderer {
         return this.renderSectionManager.getBuilder().isBuildQueueEmpty();
     }
 
-    private int getEffectiveRenderDistance() {
+    public static int getEffectiveRenderDistance() {
         //? if >=1.18 {
-        return this.client.options.getEffectiveRenderDistance();
+        return Minecraft.getInstance().options.getEffectiveRenderDistance();
         //?} else
-        /*return this.client.options.renderDistance;*/
+        /*return Minecraft.getInstance().options.renderDistance;*/
     }
 
     /**

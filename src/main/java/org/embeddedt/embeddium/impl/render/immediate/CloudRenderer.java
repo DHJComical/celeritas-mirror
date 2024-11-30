@@ -1,9 +1,8 @@
 package org.embeddedt.embeddium.impl.render.immediate;
 
-//? if >=1.19 <1.21.2 {
+//? if >=1.17 <1.21.2 {
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.renderer.RenderType;
@@ -12,34 +11,24 @@ import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.api.util.ColorMixer;
 import org.embeddedt.embeddium.api.util.NormI8;
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
-import org.embeddedt.embeddium.api.vertex.format.common.ColorVertex;
-import net.minecraft.client.Camera;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.Mth;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.api.render.clouds.ModifyCloudRenderingEvent;
 import org.embeddedt.embeddium.api.vertex.format.common.LineVertex;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
+import org.embeddedt.embeddium.impl.render.SodiumWorldRenderer;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
-//? if >=1.20 {
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-//?} else {
-/*import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
-*///?}
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.system.MemoryStack;
 
@@ -93,7 +82,6 @@ public class CloudRenderer {
     private VertexBuffer vertexBuffer;
     private CloudEdges edges;
     private CloudShader shader;
-    private final FogRenderer.FogData fogData = new FogRenderer.FogData(FogRenderer.FogMode.FOG_TERRAIN);
 
     private int prevCenterCellX, prevCenterCellY, cachedRenderDistance;
     private float cloudSizeX, cloudSizeZ, fogDistanceMultiplier;
@@ -109,6 +97,21 @@ public class CloudRenderer {
         var event = new ModifyCloudRenderingEvent(distance);
         ModifyCloudRenderingEvent.BUS.post(event);
         return event.getCloudRenderDistance();
+    }
+
+    private void drawVertexBuffer() {
+        //? if <1.19 {
+        /*BufferUploader.reset();
+        this.vertexBuffer.bindVertexArray();
+        this.vertexBuffer.bind();
+        this.vertexBuffer.getFormat().setupBufferState();
+        *///?}
+        this.vertexBuffer.draw();
+        //? if <1.19 {
+        /*this.vertexBuffer.getFormat().clearBufferState();
+        VertexBuffer.unbind();
+        VertexBuffer.unbindVertexArray();
+        *///?}
     }
 
     public void render(@Nullable ClientLevel world, LocalPlayer player, Matrix4f modelViewMatrix, Matrix4f projectionMatrix, float ticks, float tickDelta, double cameraX, double cameraY, double cameraZ) {
@@ -129,7 +132,7 @@ public class CloudRenderer {
         double cloudCenterX = (cameraX + cloudTime);
         double cloudCenterZ = (cameraZ) + 3.96D;
 
-        int renderDistance = Minecraft.getInstance().options.getEffectiveRenderDistance();
+        int renderDistance = SodiumWorldRenderer.getEffectiveRenderDistance();
         // This insanity (as opposed to just wrapping the call) is necessary to preserve the original assignment for mixin compat
         renderDistance = fireModifyCloudRenderDistanceEvent(renderDistance);
         int cloudDistance = Math.max(this.cloudDistanceMinimum, (renderDistance * this.cloudDistanceMaximum) + 9);
@@ -155,7 +158,9 @@ public class CloudRenderer {
 
             this.vertexBuffer.bind();
             //? if <1.21 {
-            this.vertexBuffer.upload(bufferBuilder.end());
+            //? if <1.19
+            /*bufferBuilder.end();*/
+            this.vertexBuffer.upload(bufferBuilder /*? if >=1.19 {*/ .end() /*?}*/);
             this.hasCloudGeometry = true;
             //?} else {
             /*MeshData meshData = bufferBuilder.build();
@@ -180,17 +185,6 @@ public class CloudRenderer {
             return;
         }
 
-        float previousEnd = RenderSystem.getShaderFogEnd();
-        float previousStart = RenderSystem.getShaderFogStart();
-        this.fogData.end = cloudDistance * this.fogDistanceMultiplier;
-        this.fogData.start = (cloudDistance * this.fogDistanceMultiplier) - 16;
-
-        applyFogModifiers(world, this.fogData, player, (int)(cloudDistance * this.fogDistanceMultiplier), tickDelta);
-
-
-        RenderSystem.setShaderFogEnd(this.fogData.end);
-        RenderSystem.setShaderFogStart(this.fogData.start);
-
         float translateX = (float) (cloudCenterX - (centerCellX * this.cloudSizeX));
         float translateZ = (float) (cloudCenterZ - (centerCellZ * this.cloudSizeZ));
 
@@ -208,10 +202,7 @@ public class CloudRenderer {
         }
 
         modelViewMatrix = new Matrix4f(modelViewMatrix);
-        //? if >=1.20 {
         modelViewMatrix.translate(-translateX, cloudHeight - (float) cameraY + 0.33F, -translateZ);
-        //?} else
-        /*modelViewMatrix.multiplyWithTranslation(-translateX, cloudHeight - (float) cameraY + 0.33F, -translateZ);*/
 
         // PASS 1: Set up depth buffer
         //? if <1.21 {
@@ -223,7 +214,7 @@ public class CloudRenderer {
         *///?}
 
         this.shader.prepareForDraw(modelViewMatrix, projectionMatrix, (float) color.x, (float) color.y, (float) color.z, 0.8f);
-        this.vertexBuffer.draw();
+        this.drawVertexBuffer();
         this.shader.clear();
         //? if >=1.21
         /*RenderType.cloudsDepthOnly().clearRenderState();*/
@@ -242,7 +233,7 @@ public class CloudRenderer {
         *///?}
 
         this.shader.prepareForDraw(modelViewMatrix, projectionMatrix, (float) color.x, (float) color.y, (float) color.z, 0.8f);
-        this.vertexBuffer.draw();
+        this.drawVertexBuffer();
         this.shader.clear();
 
         //? if >=1.21
@@ -257,57 +248,6 @@ public class CloudRenderer {
         RenderSystem.enableCull();
         //?}
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-        RenderSystem.setShaderFogEnd(previousEnd);
-        RenderSystem.setShaderFogStart(previousStart);
-    }
-
-    private void applyFogModifiers(ClientLevel world, FogRenderer.FogData fogData, LocalPlayer player, int cloudDistance, float tickDelta) {
-        if (Minecraft.getInstance().gameRenderer == null || Minecraft.getInstance().gameRenderer.getMainCamera() == null) {
-            return;
-        }
-
-        Camera camera = Minecraft.getInstance().gameRenderer.getMainCamera();
-        FogType cameraSubmersionType = camera.getFluidInCamera();
-        if (cameraSubmersionType == FogType.LAVA) {
-            if (player.isSpectator()) {
-                fogData.start = -8.0f;
-                fogData.end = (cloudDistance) * 0.5f;
-            } else if (player.hasEffect(MobEffects.FIRE_RESISTANCE)) {
-                fogData.start = 0.0f;
-                fogData.end = 3.0f;
-            } else {
-                fogData.start = 0.25f;
-                fogData.end = 1.0f;
-            }
-        } else if (cameraSubmersionType == FogType.POWDER_SNOW) {
-            if (player.isSpectator()) {
-                fogData.start = -8.0f;
-                fogData.end = (cloudDistance) * 0.5f;
-            } else {
-                fogData.start = 0.0f;
-                fogData.end = 2.0f;
-            }
-        } else if (cameraSubmersionType == FogType.WATER) {
-            fogData.start = -8.0f;
-            fogData.end = 96.0f;
-            fogData.end *= Math.max(0.25f, player.getWaterVision());
-            if (fogData.end > (cloudDistance)) {
-                fogData.end = cloudDistance;
-                fogData.shape = FogShape.CYLINDER;
-            }
-        } else if (world.effects().isFoggyAt(Mth.floor(camera.getPosition().x), Mth.floor(camera.getPosition().z)) || Minecraft.getInstance().gui.getBossOverlay().shouldCreateWorldFog()) {
-            fogData.start = (cloudDistance) * 0.05f;
-            fogData.end = Math.min((cloudDistance), 192.0f) * 0.5f;
-        }
-
-        FogRenderer.MobEffectFogFunction fogModifier = FogRenderer.getPriorityFogFunction(player, tickDelta);
-        if (fogModifier != null) {
-            MobEffectInstance statusEffectInstance = player.getEffect(fogModifier.getMobEffect());
-            if (statusEffectInstance != null) {
-                fogModifier.setupFog(fogData, player, statusEffectInstance, cloudDistance, tickDelta);
-            }
-        }
     }
 
     private void rebuildGeometry(BufferBuilder bufferBuilder, int cloudDistance, int centerCellX, int centerCellZ) {
@@ -460,12 +400,19 @@ public class CloudRenderer {
 
     private static CloudEdges createCloudEdges() {
         ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
-        Resource resource = resourceManager.getResource(CLOUDS_TEXTURE_ID)
-                .orElseThrow();
 
-        try (InputStream inputStream = resource.open()){
-            try (NativeImage nativeImage = NativeImage.read(inputStream)) {
-                return new CloudEdges(nativeImage);
+        try {
+            //? if >=1.19 {
+            Resource resource = resourceManager.getResource(CLOUDS_TEXTURE_ID)
+                    .orElseThrow();
+            try (InputStream inputStream = resource.open()){
+            //?} else {
+            /*Resource resource = resourceManager.getResource(CLOUDS_TEXTURE_ID);
+            try (InputStream inputStream = resource.getInputStream()){
+            *///?}
+                try (NativeImage nativeImage = NativeImage.read(inputStream)) {
+                    return new CloudEdges(nativeImage);
+                }
             }
         } catch (IOException ex) {
             throw new RuntimeException("Failed to load texture data", ex);
