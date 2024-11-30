@@ -28,11 +28,11 @@ public class ShaderConstants {
 
         }
 
-        public void add(String name) {
-            this.add(name, EMPTY_VALUE);
+        public ShaderConstants.Builder add(String name) {
+            return this.add(name, EMPTY_VALUE);
         }
 
-        public void add(String name, String value) {
+        public ShaderConstants.Builder add(String name, String value) {
             String prev = this.constants.get(name);
 
             if (prev != null) {
@@ -40,6 +40,7 @@ public class ShaderConstants {
             }
 
             this.constants.put(name, value);
+            return this;
         }
 
         public ShaderConstants build() {
@@ -59,10 +60,11 @@ public class ShaderConstants {
             return new ShaderConstants(Collections.unmodifiableList(defines));
         }
 
-        public void addAll(List<String> defines) {
+        public ShaderConstants.Builder addAll(List<String> defines) {
             for (String value : defines) {
                 this.add(value);
             }
+            return this;
         }
     }
 }

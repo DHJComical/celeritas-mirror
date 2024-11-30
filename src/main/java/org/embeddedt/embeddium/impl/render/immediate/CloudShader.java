@@ -14,16 +14,18 @@ public class CloudShader implements AutoCloseable {
 
     private final GlProgram<CloudShaderInterface> program;
 
+    private static final ShaderConstants CLOUD_CONSTANTS = ShaderConstants.builder().add("USE_FOG").build();
+
     public CloudShader() {
         this.program = createShader();
     }
 
     private GlProgram<CloudShaderInterface> createShader() {
         GlShader vertShader = ShaderLoader.loadShader(ShaderType.VERTEX,
-                ResourceLocationUtil.make("sodium", "clouds/clouds.vsh"), ShaderConstants.EMPTY);
+                ResourceLocationUtil.make("sodium", "clouds/clouds.vsh"), CLOUD_CONSTANTS);
 
         GlShader fragShader = ShaderLoader.loadShader(ShaderType.FRAGMENT,
-                ResourceLocationUtil.make("sodium", "clouds/clouds.fsh"), ShaderConstants.EMPTY);
+                ResourceLocationUtil.make("sodium", "clouds/clouds.fsh"), CLOUD_CONSTANTS);
 
         try {
             return GlProgram.builder(ResourceLocationUtil.make("celeritas", "cloud_shader"))
