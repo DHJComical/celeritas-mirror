@@ -461,6 +461,16 @@ public class SodiumGameOptionPages {
                         .setBinding((opts, value) -> opts.performance.useRenderPassOptimization = value, opts -> opts.performance.useRenderPassOptimization)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
+                //? if <1.21.2 {
+                .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
+                        .setId(StandardOptions.Option.USE_FASTER_CLOUDS)
+                        .setName(ComponentUtil.translatable("embeddium.options.use_faster_clouds.name"))
+                        .setTooltip(ComponentUtil.translatable("embeddium.options.use_faster_clouds.tooltip"))
+                        .setControl(TickBoxControl::new)
+                        .setImpact(OptionImpact.LOW)
+                        .setBinding((opts, value) -> opts.performance.useFasterClouds = value, opts -> opts.performance.useFasterClouds)
+                        .build())
+                //? }
                 .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
                         .setId(StandardOptions.Option.NO_ERROR_CONTEXT)
                         .setName(ComponentUtil.translatable("sodium.options.use_no_error_context.name"))

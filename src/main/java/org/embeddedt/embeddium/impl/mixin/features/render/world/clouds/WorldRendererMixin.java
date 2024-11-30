@@ -3,6 +3,8 @@ package org.embeddedt.embeddium.impl.mixin.features.render.world.clouds;
 //? if >=1.17 <1.21.2 {
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.api.math.JomlHelper;
+import org.embeddedt.embeddium.impl.SodiumClientMod;
+import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 import org.embeddedt.embeddium.impl.render.immediate.CloudRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -42,7 +44,7 @@ public class WorldRendererMixin {
             this.cloudRenderer = new CloudRenderer(this.minecraft.getResourceManager());
         }
 
-        boolean renderFasterClouds = true; //!Screen.hasAltDown()
+        boolean renderFasterClouds = SodiumClientMod.options().performance.useFasterClouds;
 
         if (renderFasterClouds) {
             //? if <1.21 {

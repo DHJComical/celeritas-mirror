@@ -65,5 +65,6 @@ public final class StandardOptions {
         public static final ResourceLocation USE_QUAD_NORMALS_FOR_LIGHTING = ResourceLocationUtil.make(SodiumClientMod.MODID, "use_quad_normals_for_lighting");
         public static final ResourceLocation RENDER_PASS_OPTIMIZATION = ResourceLocationUtil.make(SodiumClientMod.MODID, "render_pass_optimization");
         public static final ResourceLocation RENDER_PASS_CONSOLIDATION = ResourceLocationUtil.make(SodiumClientMod.MODID, "render_pass_consolidation");
+        public static final ResourceLocation USE_FASTER_CLOUDS = ResourceLocationUtil.make(SodiumClientMod.MODID, "use_faster_clouds");
     }
 }

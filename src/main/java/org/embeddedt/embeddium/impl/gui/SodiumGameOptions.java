@@ -56,6 +56,7 @@ public class SodiumGameOptions {
         public boolean useTranslucentFaceSorting = true;
         public boolean useRenderPassOptimization = true;
         public boolean useRenderPassConsolidation = true;
+        public boolean useFasterClouds = true;
         public boolean useNoErrorGLContext = true;
     }
 
