@@ -7,10 +7,11 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 //?} else {
-/*import com.mojang.blaze3d.vertex.PoseStack;
-import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
+/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
 import org.embeddedt.embeddium.impl.gui.compat.Renderable;
 *///?}
+//? if >=1.15
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.events.GuiEventListener;

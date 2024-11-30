@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
 
+//? if >=1.15
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,6 +8,7 @@ import lombok.experimental.Accessors;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
+//? if >=1.15
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
@@ -34,6 +36,7 @@ public class BlockRenderContext {
 
     private final Vector3f origin = new Vector3f();
 
+    //? if >=1.15
     private final PoseStack stack = new PoseStack();
 
     private BlockState state;
@@ -49,6 +52,8 @@ public class BlockRenderContext {
     private ModelData modelData;
     //? if forgelike && <1.19.1
     /*private IModelData modelData;*/
+
+    //? if >=1.15
     private RenderType renderLayer;
 
     private int lightValue = -1;
@@ -143,12 +148,14 @@ public class BlockRenderContext {
     }
     *///?}
 
+    //? if >=1.15 {
     /**
      * @return The render layer for model rendering
      */
     public RenderType renderLayer() {
         return this.renderLayer;
     }
+    //?}
 
     /**
      * @return The light emission of the current block

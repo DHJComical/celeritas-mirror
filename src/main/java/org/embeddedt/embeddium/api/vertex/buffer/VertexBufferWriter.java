@@ -1,12 +1,16 @@
 package org.embeddedt.embeddium.api.vertex.buffer;
 
+//? if >=1.15 {
 import com.mojang.blaze3d.vertex.VertexConsumer;
+//?} else
+/*import com.mojang.blaze3d.vertex.BufferBuilder;*/
 import org.embeddedt.embeddium.api.memory.MemoryIntrinsics;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryStack;
 
 public interface VertexBufferWriter {
+    //? if >=1.15 {
     /**
      * Converts a {@link VertexConsumer} into a {@link VertexBufferWriter}.
      *
@@ -45,6 +49,11 @@ public interface VertexBufferWriter {
         return new IllegalArgumentException(("The class %s does not implement interface VertexBufferWriter, " +
                 "which is required for compatibility with Sodium (see: https://github.com/CaffeineMC/sodium-fabric/issues/1620)").formatted(name));
     }
+    //?} else {
+    /*static VertexBufferWriter of(BufferBuilder bufferBuilder) {
+        return (VertexBufferWriter)bufferBuilder;
+    }
+    *///?}
 
     /**
      * Copy the vertices from the source buffer and pushes them into this vertex buffer. The vertex buffer

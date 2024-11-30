@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.buffers;
 
+//? if >=1.15
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
@@ -17,6 +18,7 @@ import org.joml.Vector3fc;
 public class BakedChunkModelBuilder implements ChunkModelBuilder {
     private final ChunkMeshBufferBuilder[] vertexBuffers;
     private final boolean splitBySide;
+    //? if >=1.15
     private final MojangVertexConsumer vertexConsumer = new MojangVertexConsumer();
 
     private BuiltSectionInfo.Builder renderData;
@@ -60,6 +62,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
         }
     }
 
+    //? if >=1.15 {
     class MojangVertexConsumer implements ChunkModelVertexConsumer {
         private final ChunkVertexEncoder.Vertex[] vertices = ChunkVertexEncoder.Vertex.uninitializedQuad();
         private ChunkVertexEncoder.Vertex currentVertexObj;
@@ -225,4 +228,5 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
         }
         //?}
     }
+    //?}
 }

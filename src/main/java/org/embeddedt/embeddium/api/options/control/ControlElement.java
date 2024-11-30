@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.api.options.control;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.api.options.structure.Option;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;

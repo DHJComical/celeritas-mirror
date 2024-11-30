@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.gui.widgets;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 //? if >=1.20 {
 import net.minecraft.client.gui.ComponentPath;

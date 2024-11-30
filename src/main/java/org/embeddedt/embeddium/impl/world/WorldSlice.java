@@ -28,8 +28,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
+//? if >=1.15 {
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.ColorResolver;
+//?}
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
@@ -316,11 +318,13 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     }
     //?}
 
+    //? if >=1.15 {
     @Override
     public LevelLightEngine getLightEngine() {
         // Not thread-safe to access lighting data from off-thread, even if Minecraft allows it.
         throw new UnsupportedOperationException();
     }
+    //?}
 
     @Override
     public int getBrightness(LightLayer type, BlockPos pos) {
@@ -343,7 +347,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     }
 
     @Override
-    public int getRawBrightness(BlockPos pos, int ambientDarkness) {
+    public int /*? if >=1.15 {*/ getRawBrightness /*?} else {*/ /*getLightColor *//*?}*/ (BlockPos pos, int ambientDarkness) {
         int relX = pos.getX() - this.originX;
         int relY = pos.getY() - this.originY;
         int relZ = pos.getZ() - this.originZ;
@@ -390,10 +394,17 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         return blockEntities.get(getLocalBlockIndex(relX & 15, relY & 15, relZ & 15));
     }
 
+    //? if >=1.15 {
     @Override
     public int getBlockTint(BlockPos pos, ColorResolver resolver) {
         return this.biomeColors.getColor(resolver, pos.getX(), pos.getY(), pos.getZ());
     }
+    //?} else {
+    /*@Override
+    public Biome getBiome(BlockPos pos) {
+        return this.biomeSlice.getBiome(pos.getX(), pos.getY(), pos.getZ());
+    }
+    *///?}
 
     //? if >=1.17 {
     @Override

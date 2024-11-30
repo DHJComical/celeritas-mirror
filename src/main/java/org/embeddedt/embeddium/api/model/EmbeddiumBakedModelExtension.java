@@ -1,3 +1,4 @@
+//? if >=1.15 {
 package org.embeddedt.embeddium.api.model;
 
 import net.minecraft.client.renderer.RenderType;
@@ -8,3 +9,4 @@ public interface EmbeddiumBakedModelExtension {
         return false;
     }
 }
+//?}
