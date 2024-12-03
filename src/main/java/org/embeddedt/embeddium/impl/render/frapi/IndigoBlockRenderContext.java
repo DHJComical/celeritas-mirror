@@ -40,37 +40,6 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
 
     private int cullChecked, cullValue;
 
-    private static final MethodHandle FABRIC_RENDER_HANDLE, FORGIFIED_RENDER_HANDLE;
-
-    static {
-        MethodHandle fabricHandle = null, forgeHandle = null;
-        ReflectiveOperationException forgeException = null, fabricException = null;
-        try {
-            fabricHandle = MethodHandles.lookup().findVirtual(BlockRenderContext.class, "render", MethodType.methodType(void.class, BlockAndTintGetter.class, BakedModel.class, BlockState.class, BlockPos.class, PoseStack.class, VertexConsumer.class, boolean.class, RandomSource.class, long.class, int.class));
-        } catch(ReflectiveOperationException e) {
-            fabricException = e;
-        }
-        //? if forgelike {
-        try {
-            forgeHandle = MethodHandles.lookup().findVirtual(BlockRenderContext.class, "render", MethodType.methodType(void.class, BlockAndTintGetter.class, BakedModel.class, BlockState.class, BlockPos.class, PoseStack.class, VertexConsumer.class, boolean.class, RandomSource.class, long.class, int.class, ModelData.class, RenderType.class));
-        } catch(ReflectiveOperationException e) {
-            forgeException = e;
-        }
-        //?}
-        if(fabricHandle == null && forgeHandle == null) {
-            var ex = new IllegalStateException("Failed to find render method on BlockRenderContext.");
-            if(fabricException != null) {
-                ex.addSuppressed(fabricException);
-            }
-            if(forgeException != null) {
-                ex.addSuppressed(forgeException);
-            }
-            throw ex;
-        }
-        FABRIC_RENDER_HANDLE = fabricHandle;
-        FORGIFIED_RENDER_HANDLE = forgeHandle;
-    }
-
     public IndigoBlockRenderContext(BlockOcclusionCache occlusionCache, LightDataAccess lightDataAccess) {
         this.occlusionCache = occlusionCache;
         this.lightDataAccess = lightDataAccess;
@@ -92,6 +61,7 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
         };
     }
 
+    //? if <1.21.4-rc.3 {
     @Override
     public boolean isFaceCulled(@Nullable Direction face) {
         if (face == null) {
@@ -113,6 +83,7 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
             return flag;
         }
     }
+    //?}
 
     @Override
     protected VertexConsumer getVertexConsumer(RenderType layer) {
@@ -152,14 +123,7 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
         // We unfortunately have no choice but to push a pose here since FRAPI now mutates the given stack
         mStack.pushPose();
         try {
-            if(FABRIC_RENDER_HANDLE != null) {
-                FABRIC_RENDER_HANDLE.invokeExact((BlockRenderContext)this, (BlockAndTintGetter)ctx.localSlice(), ctx.model(), ctx.state(), ctx.pos(), mStack, (VertexConsumer)null, true, random, ctx.seed(), OverlayTexture.NO_OVERLAY);
-            }
-            //? if forgelike {
-            else if(FORGIFIED_RENDER_HANDLE != null) {
-                FORGIFIED_RENDER_HANDLE.invokeExact((BlockRenderContext)this, (BlockAndTintGetter)ctx.localSlice(), ctx.model(), ctx.state(), ctx.pos(), mStack, (VertexConsumer)null, true, random, ctx.seed(), OverlayTexture.NO_OVERLAY, ctx.modelData(), ctx.renderLayer());
-            }
-            //?}
+            this.render(ctx.localSlice(), ctx.model(), ctx.state(), ctx.pos(), mStack, null, true, random, ctx.seed(), OverlayTexture.NO_OVERLAY /*? if forgelike {*/ , ctx.modelData(), ctx.renderLayer() /*?}*/);
         } catch(Throwable e) {
             throw processException(e);
         } finally {
