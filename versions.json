@@ -20,7 +20,7 @@
     {
       "friendlyName": "1.21.4-rc3",
       "semanticName": "1.21.4-rc.3",
-      "loaders": ["fabric"]
+      "loaders": ["fabric", "neoforge"]
     },
     {
       "friendlyName": "1.19.2",

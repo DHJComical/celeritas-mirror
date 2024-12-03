@@ -186,7 +186,7 @@ unimined.minecraft {
         }
     } else if (configuredModLoader == NEOFORGE) {
         neoForged {
-            loader versionedProperty("neoforge").split("\\.")[2]
+            loader "net.neoforged:neoforge:${versionedProperty("neoforge")}:universal"
             mixinConfig "embeddium.mixins.json"
             project.getLayout().getProjectDirectory().dir("src/main/resources/META-INF").getAsFile().mkdirs()
             accessTransformer aw2at(rootProject.file("src/main/resources/embeddium.accesswidener"))

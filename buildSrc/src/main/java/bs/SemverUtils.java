@@ -1,5 +1,6 @@
 package bs;
 
+import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.api.VersionParsingException;
 import net.fabricmc.loader.api.metadata.version.VersionInterval;
 import net.fabricmc.loader.api.metadata.version.VersionPredicate;
@@ -10,19 +11,28 @@ public class SemverUtils {
         return toMavenString(predicate.getInterval());
     }
 
+    private static String normalizeMc(Version mc) {
+        if (mc == null) {
+            return null;
+        } else {
+            return mc.toString().replace("rc.", "rc").replace("pre.", "pre");
+        }
+    }
 
     private static String toMavenString(VersionInterval interval) {
-        if (interval.getMin() == null) {
-            if (interval.getMax() == null) {
+        String min = normalizeMc(interval.getMin());
+        String max = normalizeMc(interval.getMax());
+        if (min == null) {
+            if (max == null) {
                 return "*";
             } else {
-                return String.format("(,%s%c", interval.getMax(), interval.isMaxInclusive() ? ']' : ')');
+                return String.format("(,%s%c", max, interval.isMaxInclusive() ? ']' : ')');
             }
-        } else if (interval.getMax() == null) {
-            return String.format("%c%s,)", interval.isMinInclusive() ? '[' : '(', interval.getMin());
+        } else if (max == null) {
+            return String.format("%c%s,)", interval.isMinInclusive() ? '[' : '(', min);
         } else {
-            if (interval.getMin().equals(interval.getMax())) return String.format("[%s]", interval.getMin());
-            return String.format("%c%s,%s%c", interval.isMinInclusive() ? '[' : '(', interval.getMin(), interval.getMax(), interval.isMaxInclusive() ? ']' : ')');
+            if (min.equals(max)) return String.format("[%s]", min);
+            return String.format("%c%s,%s%c", interval.isMinInclusive() ? '[' : '(', min, max, interval.isMaxInclusive() ? ']' : ')');
         }
     }
 }
