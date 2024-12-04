@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.gl.buffer;
 
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
-import org.embeddedt.embeddium.impl.util.NativeBuffer;
+import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 
 /**
  * Helper type for tagging the vertex format alongside the raw buffer data.

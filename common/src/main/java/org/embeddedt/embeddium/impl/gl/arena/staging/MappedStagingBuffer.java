@@ -8,7 +8,7 @@ import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.functions.BufferStorageFunctions;
 import org.embeddedt.embeddium.impl.gl.sync.GlFence;
 import org.embeddedt.embeddium.impl.gl.util.EnumBitField;
-import org.embeddedt.embeddium.impl.util.MathUtil;
+import org.embeddedt.embeddium.impl.common.util.MathUtil;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

@@ -7,7 +7,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.util.NativeBuffer;
+import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 

@@ -1,11 +1,8 @@
 package org.embeddedt.embeddium.impl.gl.shader;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniform;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformBlock;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ShaderBindingContext;
-import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL20C;
@@ -32,7 +29,7 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
         return this.shaderInterface;
     }
 
-    public static Builder builder(ResourceLocation identifier) {
+    public static Builder builder(String identifier) {
         return new Builder(identifier);
     }
 
@@ -75,10 +72,10 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
     }
 
     public static class Builder {
-        private final ResourceLocation name;
+        private final String name;
         private final int program;
 
-        public Builder(ResourceLocation name) {
+        public Builder(String name) {
             this.name = name;
             this.program = GL20C.glCreateProgram();
         }
@@ -107,7 +104,7 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
                 LOGGER.warn("Program link log for " + this.name + ": " + log);
             }
 
-            int result = GlStateManager.glGetProgrami(this.program, GL20C.GL_LINK_STATUS);
+            int result = GL20C.glGetProgrami(this.program, GL20C.GL_LINK_STATUS);
 
             if (result != GL20C.GL_TRUE) {
                 throw new RuntimeException("Shader program linking failed, see log for details");

@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.world.biome;
 
 //? if >=1.18 <1.20
 /*import net.minecraft.data.BuiltinRegistries;*/
-import org.embeddedt.embeddium.impl.util.MathUtil;
+import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.world.BiomeSeedProvider;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;

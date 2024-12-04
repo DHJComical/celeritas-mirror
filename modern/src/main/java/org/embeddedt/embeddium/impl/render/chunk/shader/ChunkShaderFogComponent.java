@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.shader;
 
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat4v;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformInt;

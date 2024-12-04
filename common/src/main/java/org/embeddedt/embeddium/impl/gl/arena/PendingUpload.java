@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.gl.arena;
 
-import org.embeddedt.embeddium.impl.util.NativeBuffer;
+import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 
 public class PendingUpload {
     private final NativeBuffer data;

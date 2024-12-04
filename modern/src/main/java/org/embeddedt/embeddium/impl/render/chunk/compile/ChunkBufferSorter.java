@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.render.chunk.compile;
 
 import com.google.common.primitives.Floats;
 import it.unimi.dsi.fastutil.ints.IntArrays;
-import org.embeddedt.embeddium.impl.util.NativeBuffer;
+import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;

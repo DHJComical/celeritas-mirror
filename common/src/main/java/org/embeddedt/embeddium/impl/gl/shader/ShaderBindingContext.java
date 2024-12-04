@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.render.chunk.shader;
+package org.embeddedt.embeddium.impl.gl.shader;
 
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniform;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformBlock;

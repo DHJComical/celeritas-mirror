@@ -12,7 +12,7 @@ import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.builder.ChunkMeshBufferBuilder;
-import org.embeddedt.embeddium.impl.util.NativeBuffer;
+import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 
 import java.nio.ByteBuffer;

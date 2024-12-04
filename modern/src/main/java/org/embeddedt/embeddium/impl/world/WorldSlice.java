@@ -7,7 +7,7 @@ import net.minecraftforge.client.model.data.ModelData;
 /*import net.neoforged.neoforge.client.model.data.ModelData;*/
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.model.ModelDataSnapshotter;
-import org.embeddedt.embeddium.impl.util.MathUtil;
+import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorCache;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorSource;

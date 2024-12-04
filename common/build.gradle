@@ -1,0 +1,23 @@
+plugins {
+    id 'java-library'
+}
+
+group = "org.embeddedt"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    def lwjglVersion = "3.3.1"
+    compileOnly "org.lwjgl:lwjgl:${lwjglVersion}"
+    compileOnly "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
+    compileOnly "org.joml:joml:1.10.5"
+    compileOnly "it.unimi.dsi:fastutil:8.5.12"
+    compileOnly "org.apache.logging.log4j:log4j-api:2.19.0"
+}

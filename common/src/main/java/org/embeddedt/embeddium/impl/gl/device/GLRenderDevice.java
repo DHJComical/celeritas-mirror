@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.gl.device;
 
-import com.mojang.blaze3d.vertex.VertexBuffer;
 import org.embeddedt.embeddium.impl.gl.array.GlVertexArray;
 import org.embeddedt.embeddium.impl.gl.buffer.*;
 import org.embeddedt.embeddium.impl.gl.functions.DeviceFunctions;
@@ -9,7 +8,6 @@ import org.embeddedt.embeddium.impl.gl.sync.GlFence;
 import org.embeddedt.embeddium.impl.gl.tessellation.*;
 import org.embeddedt.embeddium.impl.gl.util.EnumBitField;
 import org.lwjgl.opengl.*;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import java.nio.ByteBuffer;
 
 public class GLRenderDevice implements RenderDevice {
@@ -21,6 +19,9 @@ public class GLRenderDevice implements RenderDevice {
 
     private boolean isActive;
     private GlTessellation activeTessellation;
+
+    // TODO replace this with something less ugly
+    public static Runnable VANILLA_STATE_RESETTER = () -> {};
 
     @Override
     public CommandList createCommandList() {
@@ -35,10 +36,7 @@ public class GLRenderDevice implements RenderDevice {
             return;
         }
 
-        //? if >=1.17 {
-        BufferUploader.reset();
-        //?} else
-        /*VertexBuffer.unbind();*/
+        VANILLA_STATE_RESETTER.run();
 
         this.stateTracker.clear();
         this.isActive = true;

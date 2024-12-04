@@ -10,7 +10,7 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.util.MathUtil;
+import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import net.minecraft.core.SectionPos;
 import org.apache.commons.lang3.Validate;
 

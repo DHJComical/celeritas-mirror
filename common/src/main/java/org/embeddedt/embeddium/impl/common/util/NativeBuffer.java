@@ -1,9 +1,8 @@
-package org.embeddedt.embeddium.impl.util;
+package org.embeddedt.embeddium.impl.common.util;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
-import org.embeddedt.embeddium.impl.Celeritas;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.MemoryUtil;
@@ -25,6 +24,8 @@ public class NativeBuffer {
     private static long ALLOCATED = 0L;
 
     private final BufferReference ref;
+
+    public static boolean ENABLE_MEMORY_TRACING = false;
 
     public NativeBuffer(int capacity) {
         this.ref = allocate(capacity);
@@ -86,8 +87,7 @@ public class NativeBuffer {
     }
 
     private static StackTraceElement[] getStackTrace() {
-        return Celeritas.options().advanced.enableMemoryTracing ? Thread.currentThread()
-                .getStackTrace() : null;
+        return ENABLE_MEMORY_TRACING ? Thread.currentThread().getStackTrace() : null;
     }
 
     private static final int MAX_ALLOCATION_ATTEMPTS = 3;

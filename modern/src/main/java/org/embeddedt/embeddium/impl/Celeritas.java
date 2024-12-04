@@ -36,6 +36,7 @@ import net.neoforged.fml.loading.FMLLoader;
 *///?}
 
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
+import org.embeddedt.embeddium.impl.gl.device.GLRenderDevice;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.util.MixinAuditUtil;
 import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
@@ -75,6 +76,13 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         if (!FMLLoader.getDist().isClient()) {
             return;
         }
+
+        GLRenderDevice.VANILLA_STATE_RESETTER = () -> {
+            //? if >=1.17 {
+            com.mojang.blaze3d.vertex.BufferUploader.reset();
+            //?} else
+            /*com.mojang.blaze3d.vertex.VertexBuffer.unbind();*/
+        };
 
         if (Boolean.getBoolean("embeddium.auditAndExit")) {
             MixinAuditUtil.auditAndExit();

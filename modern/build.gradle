@@ -136,7 +136,11 @@ sourceSets {
     }
 }
 
+evaluationDependsOn(":common")
+
 unimined.minecraft {
+    combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
+
     version ModLoader.getMinecraftVersion(project)
 
     mappings {

@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.render.immediate;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.shader.*;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.*;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ShaderBindingContext;
+import org.embeddedt.embeddium.impl.render.shader.ShaderLoader;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.joml.Matrix4f;
 
@@ -28,7 +28,7 @@ public class CloudShader implements AutoCloseable {
                 ResourceLocationUtil.make("sodium", "clouds/clouds.fsh"), CLOUD_CONSTANTS);
 
         try {
-            return GlProgram.builder(ResourceLocationUtil.make("celeritas", "cloud_shader"))
+            return GlProgram.builder("celeritas:cloud_shader")
                     .attachShader(vertShader)
                     .attachShader(fragShader)
                     .bindAttribute("Position", ATTRIBUTE_POSITION)

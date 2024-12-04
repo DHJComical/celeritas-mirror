@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.data;
 
 import org.embeddedt.embeddium.impl.gl.util.VertexRange;
-import org.embeddedt.embeddium.impl.util.NativeBuffer;
+import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 import org.jetbrains.annotations.Nullable;
 

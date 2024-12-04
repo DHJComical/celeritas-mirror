@@ -5,27 +5,26 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.minecraft.resources.ResourceLocation;
-import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 public class ShaderParser {
-    public static String parseShader(String src, ShaderConstants constants) {
-        List<String> lines = parseShader(src);
+    public static String parseShader(String src, Function<String, String> sourceProvider, ShaderConstants constants) {
+        List<String> lines = parseShader(src, sourceProvider);
         lines.addAll(1, constants.getDefineStrings());
 
         return String.join("\n", lines);
     }
 
-    public static List<String> parseShader(String src) {
+    public static List<String> parseShader(String src, Function<String, String> sourceProvider) {
         List<String> builder = new LinkedList<>();
         String line;
 
         try (BufferedReader reader = new BufferedReader(new StringReader(src))) {
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("#import")) {
-                    builder.addAll(resolveImport(line));
+                    builder.addAll(resolveImport(line, sourceProvider));
                 } else {
                     builder.add(line);
                 }
@@ -39,7 +38,7 @@ public class ShaderParser {
 
     private static final Pattern IMPORT_PATTERN = Pattern.compile("#import <(?<namespace>.*):(?<path>.*)>");
 
-    private static List<String> resolveImport(String line) {
+    private static List<String> resolveImport(String line, Function<String, String> sourceProvider) {
         Matcher matcher = IMPORT_PATTERN.matcher(line);
 
         if (!matcher.matches()) {
@@ -49,9 +48,8 @@ public class ShaderParser {
         String namespace = matcher.group("namespace");
         String path = matcher.group("path");
 
-        ResourceLocation identifier = ResourceLocationUtil.make(namespace, path);
-        String source = ShaderLoader.getShaderSource(identifier);
+        String source = sourceProvider.apply(namespace + ":" + path);
 
-        return ShaderParser.parseShader(source);
+        return ShaderParser.parseShader(source, sourceProvider);
     }
 }

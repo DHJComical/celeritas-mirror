@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.gl.shader;
+package org.embeddedt.embeddium.impl.render.shader;
 
 import org.apache.commons.io.IOUtils;
 
@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import net.minecraft.resources.ResourceLocation;
+import org.embeddedt.embeddium.impl.gl.shader.GlShader;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderConstants;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderParser;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 public class ShaderLoader {
     /**
@@ -19,7 +24,12 @@ public class ShaderLoader {
      * @return An OpenGL shader object compiled with the given user defines
      */
     public static GlShader loadShader(ShaderType type, ResourceLocation name, ShaderConstants constants) {
-        return new GlShader(type, name, ShaderParser.parseShader(getShaderSource(name), constants));
+        return new GlShader(type, name.toString(), ShaderParser.parseShader(getShaderSource(name), ShaderLoader::getShaderSource, constants));
+    }
+
+    public static String getShaderSource(String name) {
+        String[] splitStr = name.split(":");
+        return getShaderSource(ResourceLocationUtil.make(splitStr[0], splitStr[1]));
     }
 
     public static String getShaderSource(ResourceLocation name) {

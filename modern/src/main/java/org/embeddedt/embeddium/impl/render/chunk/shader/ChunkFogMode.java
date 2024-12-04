@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.shader;
 
 import com.google.common.collect.ImmutableList;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
 
 import java.util.List;
 import java.util.function.Function;

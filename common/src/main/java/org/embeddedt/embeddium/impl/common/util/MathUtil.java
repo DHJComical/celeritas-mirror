@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.util;
+package org.embeddedt.embeddium.impl.common.util;
 
 public class MathUtil {
     /**
