@@ -39,6 +39,9 @@ public class CeleritasProjectManagerPlugin implements Plugin<Settings> {
             });
             builder.setVcsVersion(versionData.vcsVersion);
         });
-        scSettings.create(projectSettings.getRootProject());
+        // Create the modern subproject
+        projectSettings.include("modern");
+        // Create the versioned subprojects under modern
+        scSettings.create(projectSettings.project(":modern"));
     }
 }

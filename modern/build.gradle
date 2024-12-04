@@ -171,25 +171,27 @@ unimined.minecraft {
         remap(configurations.modApi)
     }
 
+    def embeddiumAccessWidener = project(":modern").file("src/main/resources/embeddium.accesswidener")
+
     if (configuredModLoader == FABRIC) {
         fabric {
             loader rootProject.properties.fabricloader
 
-            accessWidener rootProject.file("src/main/resources/embeddium.accesswidener")
+            accessWidener embeddiumAccessWidener
         }
     } else if (configuredModLoader == FORGE) {
         minecraftForge {
             loader versionedProperty("forge").split("-")[1]
             mixinConfig "embeddium.mixins.json"
             project.getLayout().getProjectDirectory().dir("src/main/resources/META-INF").getAsFile().mkdirs()
-            accessTransformer aw2at(rootProject.file("src/main/resources/embeddium.accesswidener"))
+            accessTransformer aw2at(embeddiumAccessWidener)
         }
     } else if (configuredModLoader == NEOFORGE) {
         neoForged {
             loader "net.neoforged:neoforge:${versionedProperty("neoforge")}:universal"
             mixinConfig "embeddium.mixins.json"
             project.getLayout().getProjectDirectory().dir("src/main/resources/META-INF").getAsFile().mkdirs()
-            accessTransformer aw2at(rootProject.file("src/main/resources/embeddium.accesswidener"))
+            accessTransformer aw2at(embeddiumAccessWidener)
      }
         minecraftRemapper.config {
             ignoreConflicts(true)
