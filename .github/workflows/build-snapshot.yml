@@ -32,7 +32,8 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: unimined-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-${{ hashFiles('settings.gradle') }}
+            modern/versions/**/.gradle/unimined
+          key: unimined-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-${{ hashFiles('settings.gradle', 'versions.json') }}
           restore-keys: |
             unimined-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-
       - name: Build jars
