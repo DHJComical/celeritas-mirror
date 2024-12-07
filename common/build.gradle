@@ -20,4 +20,5 @@ dependencies {
     compileOnly "org.joml:joml:1.10.5"
     compileOnly "it.unimi.dsi:fastutil:8.5.12"
     compileOnly "org.apache.logging.log4j:log4j-api:2.19.0"
+    compileOnly "org.jetbrains:annotations:24.1.0"
 }
