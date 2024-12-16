@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.impl.render.chunk.compile.executor;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
-import net.minecraft.util.Mth;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -124,7 +123,14 @@ public class ChunkBuilder {
      * thread.
      */
     private static int getOptimalThreadCount() {
-        return Mth.clamp(Math.max(getMaxThreadCount() / 3, getMaxThreadCount() - 6), 1, 10);
+        int desiredThreads = Math.max(getMaxThreadCount() / 3, getMaxThreadCount() - 6);
+        if (desiredThreads < 1) {
+            return 1;
+        } else if (desiredThreads > 10) {
+            return 10;
+        } else {
+            return desiredThreads;
+        }
     }
 
     private static int getThreadCount() {
