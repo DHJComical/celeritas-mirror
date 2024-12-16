@@ -20,6 +20,7 @@ import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
 import org.embeddedt.embeddium.impl.model.color.ColorProvider;
 import org.embeddedt.embeddium.impl.model.color.DefaultColorProviders;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
@@ -162,7 +163,7 @@ public class FluidRenderer {
 
     private void renderVanilla(EmbeddiumBlockAndTintGetter world, FluidState fluidState, BlockPos blockPos, ChunkModelBuilder buffers, Material material) {
         // Call vanilla fluid renderer and capture the results
-        var context = Objects.requireNonNull(GlobalChunkBuildContext.get());
+        var context = (ModernChunkBuildContext)Objects.requireNonNull(GlobalChunkBuildContext.get());
         context.setCaptureAdditionalSprites(true);
         try(var consumer = buffers.asVertexConsumer(material, null)) {
             Minecraft.getInstance().getBlockRenderer().renderLiquid(blockPos, world, consumer, /*? if >=1.18 {*/ world.getBlockState(blockPos),/*?}*/ fluidState);

@@ -1,12 +1,8 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.executor;
 
 import org.embeddedt.embeddium.impl.Celeritas;
-import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
-import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class ChunkBuilder {
     static final Logger LOGGER = LogManager.getLogger("ChunkBuilder");
@@ -41,13 +38,13 @@ public class ChunkBuilder {
 
     private final ChunkBuildContext localContext;
 
-    public ChunkBuilder(ClientLevel world, RenderPassConfiguration renderPassConfiguration) {
+    public ChunkBuilder(Supplier<ChunkBuildContext> contextSupplier) {
         GlobalChunkBuildContext.setMainThread();
 
         int count = getThreadCount();
 
         for (int i = 0; i < count; i++) {
-            ChunkBuildContext context = new ChunkBuildContext(world, renderPassConfiguration);
+            ChunkBuildContext context = contextSupplier.get();
             WorkerRunnable worker = new WorkerRunnable(context);
 
             Thread thread = new WorkerThread(worker, "Chunk Render Task Executor #" + i, context);
@@ -59,7 +56,7 @@ public class ChunkBuilder {
 
         LOGGER.info("Started {} worker threads", this.threads.size());
 
-        this.localContext = new ChunkBuildContext(world, renderPassConfiguration);
+        this.localContext = contextSupplier.get();
     }
 
     /**

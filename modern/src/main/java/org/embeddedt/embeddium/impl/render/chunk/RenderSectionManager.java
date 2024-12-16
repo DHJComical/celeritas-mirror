@@ -11,7 +11,9 @@ import net.minecraft.world.phys.HitResult;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobResult;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobCollector;
@@ -115,7 +117,7 @@ public class RenderSectionManager {
         this.vertexType = vertexType;
 
         this.world = world;
-        this.builder = new ChunkBuilder(world, this.renderPassConfiguration);
+        this.builder = new ChunkBuilder(() -> new ModernChunkBuildContext(world, this.renderPassConfiguration));
 
         this.needsUpdate = true;
         this.renderDistance = renderDistance;

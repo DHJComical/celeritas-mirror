@@ -4,10 +4,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
-import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBufferSorter;
-import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
-import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
-import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
+import org.embeddedt.embeddium.impl.render.chunk.compile.*;
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderCache;
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.GeometryCategory;
@@ -81,7 +78,8 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     }
 
     @Override
-    public ChunkBuildOutput execute(ChunkBuildContext buildContext, CancellationToken cancellationToken) {
+    public ChunkBuildOutput execute(ChunkBuildContext jobContext, CancellationToken cancellationToken) {
+        ModernChunkBuildContext buildContext = (ModernChunkBuildContext)jobContext;
         BuiltSectionInfo.Builder renderData = new BuiltSectionInfo.Builder();
         VisGraph occluder = new VisGraph();
 

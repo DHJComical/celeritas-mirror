@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.api.render.texture;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.impl.render.chunk.compile.GlobalChunkBuildContext;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.texture.SpriteContentsExtended;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,8 +22,8 @@ public class SpriteUtil {
         if(hasAnimation(sprite)) {
             var context = GlobalChunkBuildContext.get();
 
-            if (context != null) {
-                context.captureAdditionalSprite(sprite);
+            if (context instanceof ModernChunkBuildContext modernContext) {
+                modernContext.captureAdditionalSprite(sprite);
             }
         }
     }
