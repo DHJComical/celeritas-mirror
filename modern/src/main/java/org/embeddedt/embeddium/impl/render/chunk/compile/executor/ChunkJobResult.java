@@ -1,7 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.executor;
 
-import net.minecraft.ReportedException;
-
 public class ChunkJobResult<OUTPUT> {
     private final OUTPUT output;
     private final Throwable throwable;
@@ -20,8 +18,8 @@ public class ChunkJobResult<OUTPUT> {
     }
 
     public OUTPUT unwrap() {
-        if (this.throwable instanceof ReportedException crashException) {
-            // Propagate CrashExceptions directly to provide extra information
+        if (this.throwable instanceof RuntimeException crashException) {
+            // Propagate RuntimeExceptions directly to provide extra information if they are a vanilla crash exception
             throw crashException;
         } else if (this.throwable != null) {
             throw new RuntimeException("Exception thrown while executing job", this.throwable);
