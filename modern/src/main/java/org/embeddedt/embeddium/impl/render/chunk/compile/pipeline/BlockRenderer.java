@@ -13,6 +13,8 @@ import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadOrientation;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
+import org.embeddedt.embeddium.impl.modern.render.chunk.MojangVertexConsumer;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
@@ -89,6 +91,7 @@ public class BlockRenderer {
     private final ChunkColorWriter colorEncoder = ChunkColorWriter.get();
 
     private final boolean useRenderPassOptimization;
+    private final MojangVertexConsumer vertexConsumer = new MojangVertexConsumer();
 
     public BlockRenderer(ColorProviderRegistry colorRegistry, LightPipelineProvider lighters) {
         this.colorProviderRegistry = colorRegistry;
@@ -134,7 +137,7 @@ public class BlockRenderer {
 
         if(!customRenderers.isEmpty()) {
             for (BlockRendererRegistry.Renderer customRenderer : customRenderers) {
-                try(var consumer = meshBuilder.asVertexConsumer(material, ctx)) {
+                try(var consumer = vertexConsumer.initialize(buffers.get(material), material, ctx)) {
                     consumer.embeddium$setOffset(ctx.origin());
                     BlockRendererRegistry.RenderResult result = customRenderer.renderBlock(ctx, random, consumer);
                     if (result == BlockRendererRegistry.RenderResult.OVERRIDE) {
@@ -273,7 +276,7 @@ public class BlockRenderer {
             TextureAtlasSprite sprite = quad.getSprite();
 
             if (sprite != null) {
-                builder.addSprite(sprite);
+                builder.getSectionContextBundle().getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
             }
         }
     }

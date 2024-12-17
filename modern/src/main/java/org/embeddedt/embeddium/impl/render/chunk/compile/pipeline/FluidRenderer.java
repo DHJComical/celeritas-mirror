@@ -19,6 +19,8 @@ import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
 import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
 import org.embeddedt.embeddium.impl.model.color.ColorProvider;
 import org.embeddedt.embeddium.impl.model.color.DefaultColorProviders;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
+import org.embeddedt.embeddium.impl.modern.render.chunk.MojangVertexConsumer;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
@@ -83,6 +85,7 @@ public class FluidRenderer {
     private final EmbeddiumFluidSpriteCache fluidSpriteCache = new EmbeddiumFluidSpriteCache();
 
     private final ChunkColorWriter colorEncoder = ChunkColorWriter.get();
+    private final MojangVertexConsumer vertexConsumer = new MojangVertexConsumer();
 
     //? if fabric && >=1.17
     /*private final FabricFluidRenderer fabricFluidRenderer = new FabricFluidRenderer();*/
@@ -165,7 +168,7 @@ public class FluidRenderer {
         // Call vanilla fluid renderer and capture the results
         var context = (ModernChunkBuildContext)Objects.requireNonNull(GlobalChunkBuildContext.get());
         context.setCaptureAdditionalSprites(true);
-        try(var consumer = buffers.asVertexConsumer(material, null)) {
+        try(var consumer = vertexConsumer.initialize(buffers, material, null)) {
             Minecraft.getInstance().getBlockRenderer().renderLiquid(blockPos, world, consumer, /*? if >=1.18 {*/ world.getBlockState(blockPos),/*?}*/ fluidState);
         }
 
@@ -173,7 +176,7 @@ public class FluidRenderer {
 
         for(TextureAtlasSprite sprite : sprites) {
             if (sprite != null) {
-                buffers.addSprite(sprite);
+                buffers.getSectionContextBundle().getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
             }
         }
 
@@ -565,7 +568,7 @@ public class FluidRenderer {
         TextureAtlasSprite sprite = quad.getSprite();
 
         if (sprite != null) {
-            builder.addSprite(sprite);
+            builder.getSectionContextBundle().getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
         }
 
         var vertexBuffer = builder.getVertexBuffer(facing);
