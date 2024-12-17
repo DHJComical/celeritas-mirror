@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "plugin": "org.taumc.celeritas.mixin.CeleritasVintageMixinPlugin",
+  "package": "org.taumc.celeritas.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,55 @@
+apply plugin: 'xyz.wagyourtail.unimined'
+
+repositories {
+    maven {
+        name = "wagyourtail releases"
+        url = "https://maven.wagyourtail.xyz/releases"
+    }
+    maven {
+        name = "sponge"
+        url = "https://repo.spongepowered.org/maven"
+    }
+    mavenCentral()
+}
+
+evaluationDependsOn(":common")
+
+unimined.minecraft {
+    combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
+
+    version "1.12.2"
+
+    mappings {
+        mcp("stable", "39-1.12")
+    }
+
+    cleanroom {
+        loader "0.2.2-alpha"
+        mixinConfig "mixins.celeritas.json"
+    }
+
+    runs.config("client") {
+        systemProperty("fml.coreMods.load", "org.taumc.celeritas.core.CeleritasLoadingPlugin")
+    }
+}
+
+dependencies {}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("mcmod.info") {
+        expand "version": project.version
+    }
+}
+
+jar {
+    manifest {
+        attributes([
+                "FMLCorePlugin": "org.taumc.celeritas.core.CeleritasLoadingPlugin",
+                "FMLCorePluginContainsFMLMod": "true",
+                "FMLAT": "celeritas_at.cfg",
+                "ForceLoadAsMod": "true"
+        ])
+    }
+}

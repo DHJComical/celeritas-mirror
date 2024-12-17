@@ -1,12 +1,12 @@
 package org.embeddedt.embeddium.impl.mixin;
 
-import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import org.embeddedt.embeddium.impl.SodiumPreLaunch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.asm.AnnotationProcessingEngine;
 import org.embeddedt.embeddium.impl.config.ConfigMigrator;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
+import org.embeddedt.embeddium.impl.util.MixinClassValidator;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;

@@ -1,16 +1,14 @@
-package org.embeddedt.embeddium.impl.mixin;
+package org.embeddedt.embeddium.impl.util;
 
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
-import org.spongepowered.asm.mixin.Mixin;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class MixinClassValidator {
-    private static final String MIXIN_DESC = Type.getDescriptor(Mixin.class);
+    private static final String MIXIN_DESC = "Lorg/spongepowered/asm/mixin/Mixin;";
 
     public static boolean isMixinClass(Path classPath) {
         byte[] bytecode;
