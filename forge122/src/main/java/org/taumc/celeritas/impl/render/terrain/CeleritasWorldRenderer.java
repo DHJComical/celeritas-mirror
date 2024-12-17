@@ -248,8 +248,8 @@ public class CeleritasWorldRenderer {
      */
     public void drawChunkLayer(BlockRenderLayer renderLayer, double x, double y, double z) {
         ChunkRenderMatrices matrices = new ChunkRenderMatrices(
-                new Matrix4f(ActiveRenderInfoAccessor.getModelViewMatrix()),
-                new Matrix4f(ActiveRenderInfoAccessor.getProjectionMatrix())
+                new Matrix4f(ActiveRenderInfoAccessor.getProjectionMatrix()),
+                new Matrix4f(ActiveRenderInfoAccessor.getModelViewMatrix())
         );
 
         Collection<TerrainRenderPass> passes = this.renderSectionManager.getRenderPassConfiguration().vanillaRenderStages().get(renderLayer);
