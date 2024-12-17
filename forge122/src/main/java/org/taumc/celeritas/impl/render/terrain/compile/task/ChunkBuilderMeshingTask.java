@@ -28,6 +28,7 @@ import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.joml.Vector3d;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageRenderSectionBuiltInfo;
+import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
 
 import java.util.*;
 
@@ -35,11 +36,13 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     private final RenderSection render;
     private final int buildTime;
     private final Vector3d camera;
+    private final ChunkRenderContext renderContext;
 
-    public ChunkBuilderMeshingTask(RenderSection render, int time, Vector3d camera) {
+    public ChunkBuilderMeshingTask(RenderSection render, ChunkRenderContext context, int time, Vector3d camera) {
         this.render = render;
         this.buildTime = time;
         this.camera = camera;
+        this.renderContext = context;
     }
 
     @Override
@@ -63,8 +66,8 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         // Initialise with minX/minY/minZ so initial getBlockState crash context is correct
         BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos(minX, minY, minZ);
 
-        // TODO
-        IBlockAccess slice = Minecraft.getMinecraft().world;
+        var slice = buildContext.getWorldSlice();
+        slice.copyData(this.renderContext);
 
         var dispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher();
 

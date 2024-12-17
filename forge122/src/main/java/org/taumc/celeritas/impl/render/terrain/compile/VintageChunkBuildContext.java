@@ -1,5 +1,7 @@
 package org.taumc.celeritas.impl.render.terrain.compile;
 
+import lombok.Getter;
+import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.BlockRenderLayer;
@@ -12,6 +14,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.lwjgl3.opengl.GL11C;
 import org.lwjgl3.system.MemoryUtil;
+import org.taumc.celeritas.impl.world.WorldSlice;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -22,9 +25,12 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
     private final BufferBuilder[] worldRenderers = new BufferBuilder[LAYERS.length];
     private final boolean[] usedWorldRenderers = new boolean[LAYERS.length];
     private int offX, offY, offZ;
+    @Getter
+    private final WorldSlice worldSlice;
 
-    public VintageChunkBuildContext(RenderPassConfiguration renderPassConfiguration) {
+    public VintageChunkBuildContext(WorldClient world, RenderPassConfiguration renderPassConfiguration) {
         super(renderPassConfiguration);
+        this.worldSlice = new WorldSlice(world);
     }
 
     public void setupTranslation(int x, int y, int z) {

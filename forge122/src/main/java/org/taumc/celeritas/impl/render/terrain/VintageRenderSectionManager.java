@@ -13,20 +13,27 @@ import org.embeddedt.embeddium.impl.render.chunk.*;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.embeddedt.embeddium.impl.util.position.SectionPos;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3i;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageRenderSectionBuiltInfo;
 import org.taumc.celeritas.impl.render.terrain.compile.task.ChunkBuilderMeshingTask;
+import org.taumc.celeritas.impl.world.WorldSlice;
+import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
+import org.taumc.celeritas.impl.world.cloned.ClonedChunkSectionCache;
 
 import java.util.Collection;
 
 public class VintageRenderSectionManager extends RenderSectionManager {
     private final WorldClient world;
     private final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
+    private final ClonedChunkSectionCache sectionCache;
 
     public VintageRenderSectionManager(RenderPassConfiguration<?> configuration, WorldClient world, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
-        super(configuration, () -> new VintageChunkBuildContext(configuration), VintageChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
+        super(configuration, () -> new VintageChunkBuildContext(world, configuration), VintageChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
         this.world = world;
+        this.sectionCache = new ClonedChunkSectionCache(world);
     }
 
     public static VintageRenderSectionManager create(ChunkVertexType vertexType, WorldClient world, int renderDistance, CommandList commandList) {
@@ -75,7 +82,13 @@ public class VintageRenderSectionManager extends RenderSectionManager {
 
     @Override
     protected @Nullable ChunkBuilderTask<ChunkBuildOutput> createRebuildTask(RenderSection render, int frame) {
-        return new ChunkBuilderMeshingTask(render, frame, this.cameraPosition);
+        ChunkRenderContext context = WorldSlice.prepare(this.world, new SectionPos(render.getChunkX(), render.getChunkY(), render.getChunkZ()), this.sectionCache);
+
+        if (context == null) {
+            return null;
+        }
+
+        return new ChunkBuilderMeshingTask(render, context, frame, this.cameraPosition);
     }
 
     @Override
@@ -102,5 +115,17 @@ public class VintageRenderSectionManager extends RenderSectionManager {
 
     public Collection<RenderSection> getSectionsWithGlobalEntities() {
         return ReferenceSets.unmodifiable(this.sectionsWithGlobalEntities);
+    }
+
+    @Override
+    protected void scheduleSectionForRebuild(int x, int y, int z, boolean important) {
+        this.sectionCache.invalidate(x, y, z);
+        super.scheduleSectionForRebuild(x, y, z, important);
+    }
+
+    @Override
+    public void updateChunks(boolean updateImmediately) {
+        this.sectionCache.cleanup();
+        super.updateChunks(updateImmediately);
     }
 }
