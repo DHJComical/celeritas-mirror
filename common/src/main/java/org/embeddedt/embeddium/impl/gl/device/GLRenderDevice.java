@@ -51,6 +51,8 @@ public class GLRenderDevice implements RenderDevice {
         //? if <1.17
         /*VertexBuffer.unbind();*/
 
+        VANILLA_STATE_RESETTER.run();
+
         this.stateTracker.clear();
         this.isActive = false;
     }

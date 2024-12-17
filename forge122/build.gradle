@@ -26,6 +26,7 @@ unimined.minecraft {
     cleanroom {
         loader "0.2.2-alpha"
         mixinConfig "mixins.celeritas.json"
+        accessTransformer(file("src/main/resources/META-INF/celeritas_at.cfg"))
     }
 
     runs.config("client") {
@@ -33,7 +34,11 @@ unimined.minecraft {
     }
 }
 
-dependencies {}
+dependencies {
+    implementation("org.joml:joml:1.10.5")
+    compileOnly("org.projectlombok:lombok:1.18.30")
+    annotationProcessor("org.projectlombok:lombok:1.18.30")
+}
 
 processResources {
     inputs.property "version", project.version

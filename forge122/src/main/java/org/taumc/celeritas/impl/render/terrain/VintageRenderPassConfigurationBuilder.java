@@ -1,0 +1,75 @@
+package org.taumc.celeritas.impl.render.terrain;
+
+import com.google.common.collect.ImmutableListMultimap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.util.BlockRenderLayer;
+import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+
+import java.util.Map;
+
+public class VintageRenderPassConfigurationBuilder {
+
+    private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(BlockRenderLayer chunkRenderType) {
+        return TerrainRenderPass.builder().setupState(() -> {}).clearState(() -> {});
+    }
+
+    public static RenderPassConfiguration<BlockRenderLayer> build(ChunkVertexType vertexType) {
+        // First, build the main passes
+        TerrainRenderPass solidPass, cutoutMippedPass, translucentPass;
+
+        solidPass = builderForRenderType(BlockRenderLayer.SOLID)
+                .name("solid")
+                .fragmentDiscard(false)
+                .useReverseOrder(false)
+                .build();
+        cutoutMippedPass = builderForRenderType(BlockRenderLayer.CUTOUT_MIPPED)
+                .name("cutout_mipped")
+                .fragmentDiscard(true)
+                .useReverseOrder(false)
+                .build();
+        translucentPass = builderForRenderType(BlockRenderLayer.TRANSLUCENT)
+                .name("translucent")
+                .fragmentDiscard(false)
+                .useReverseOrder(true)
+                .useTranslucencySorting(true) // TODO allow disabling
+                .build();
+
+        ImmutableListMultimap.Builder<BlockRenderLayer, TerrainRenderPass> vanillaRenderStages = ImmutableListMultimap.builder();
+
+        // Build the materials for the vanilla render passes
+        Material solidMaterial, cutoutMaterial, cutoutMippedMaterial, translucentMaterial;
+        solidMaterial = new Material(solidPass, AlphaCutoffParameter.ZERO, true);
+        translucentMaterial = new Material(translucentPass, AlphaCutoffParameter.ZERO, true);
+        cutoutMippedMaterial = new Material(cutoutMippedPass, AlphaCutoffParameter.ONE_TENTH, true);
+
+        vanillaRenderStages.put(BlockRenderLayer.SOLID, solidPass);
+        vanillaRenderStages.put(BlockRenderLayer.TRANSLUCENT, translucentPass);
+        vanillaRenderStages.put(BlockRenderLayer.SOLID, cutoutMippedPass);
+
+        cutoutMaterial = new Material(cutoutMippedPass, AlphaCutoffParameter.ONE_TENTH, false);
+
+        // Now build the material map
+        Map<BlockRenderLayer, Material> renderTypeToMaterialMap = new Reference2ReferenceOpenHashMap<>(4,
+                Reference2ReferenceOpenHashMap.VERY_FAST_LOAD_FACTOR);
+
+        renderTypeToMaterialMap.put(BlockRenderLayer.SOLID, solidMaterial);
+        renderTypeToMaterialMap.put(BlockRenderLayer.CUTOUT, cutoutMaterial);
+        renderTypeToMaterialMap.put(BlockRenderLayer.CUTOUT_MIPPED, cutoutMippedMaterial);
+        renderTypeToMaterialMap.put(BlockRenderLayer.TRANSLUCENT, translucentMaterial);
+
+        var vanillaRenderStageMap = vanillaRenderStages.build();
+        var allPasses = vanillaRenderStageMap.values().stream().distinct().toList();
+
+        return new RenderPassConfiguration<>(vertexType,
+                allPasses,
+                renderTypeToMaterialMap,
+                vanillaRenderStageMap.asMap(),
+                solidMaterial,
+                cutoutMippedMaterial,
+                translucentMaterial);
+    }
+}

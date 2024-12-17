@@ -32,7 +32,7 @@ public class ShaderLoader {
         }
         String path = String.format("/assets/%s/shaders/%s", splitStr[0], splitStr[1]);
 
-        try (InputStream in = ShaderLoader.class /*? if forgelike && >=1.17 {*/.getClassLoader()/*?}*/.getResourceAsStream(path)) {
+        try (InputStream in = ShaderLoader.class.getResourceAsStream(path)) {
             if (in == null) {
                 throw new RuntimeException("Shader not found: " + path);
             }

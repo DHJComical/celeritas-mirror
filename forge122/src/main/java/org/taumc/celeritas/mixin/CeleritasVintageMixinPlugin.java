@@ -6,23 +6,29 @@ import org.embeddedt.embeddium.impl.util.MixinClassValidator;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
+import org.taumc.celeritas.core.CeleritasLWJGLRelocationTransformer;
+import top.outlands.foundation.TransformerDelegate;
+import top.outlands.foundation.boot.TransformerHolder;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
-    private static final Logger LOGGER = LogManager.getLogger("CeleritasMixins");
+    public static final Logger LOGGER = LogManager.getLogger("CeleritasMixins");
 
     @Override
     public void onLoad(String mixinPackage) {
         LOGGER.info("Loaded Celeritas mixin plugin");
+        var newTransformerList = new LinkedList<>(TransformerHolder.transformers);
+        newTransformerList.add(new CeleritasLWJGLRelocationTransformer());
+        TransformerHolder.transformers = newTransformerList;
     }
 
     @Override
@@ -37,7 +43,6 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) {
-
     }
 
     private static String mixinClassify(Path baseFolder, Path path) {
