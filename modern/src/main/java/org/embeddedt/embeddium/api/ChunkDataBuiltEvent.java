@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.api;
 
-import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionInfo;
 import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
 import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
@@ -10,9 +9,9 @@ import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
  */
 public class ChunkDataBuiltEvent extends EmbeddiumEvent {
     public static final EventHandlerRegistrar<ChunkDataBuiltEvent> BUS = new EventHandlerRegistrar<>();
-    private final BuiltSectionInfo.Builder dataBuilder;
+    private final SectionInfoBuilder dataBuilder;
 
-    public ChunkDataBuiltEvent(BuiltSectionInfo.Builder dataBuilder) {
+    public ChunkDataBuiltEvent(SectionInfoBuilder dataBuilder) {
         this.dataBuilder = dataBuilder;
     }
 

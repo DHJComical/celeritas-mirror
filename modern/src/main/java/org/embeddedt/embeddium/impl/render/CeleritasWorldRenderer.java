@@ -12,12 +12,14 @@ import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import lombok.Getter;
 import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraftforge.fml.common.Mod;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.model.quad.blender.BlendedColorProvider;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
@@ -346,24 +348,24 @@ public class CeleritasWorldRenderer {
                 var renderSectionId = renderSectionIterator.nextByteAsInt();
                 var renderSection = renderRegion.getSection(renderSectionId);
 
-                var blockEntities = renderSection.getCulledBlockEntities();
+                var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
 
-                if (blockEntities == null) {
+                if (blockEntities.isEmpty()) {
                     continue;
                 }
 
-                iterators.add(Iterators.forArray(blockEntities));
+                iterators.add(blockEntities.iterator());
             }
         }
 
         for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
-            var blockEntities = renderSection.getGlobalBlockEntities();
+            var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
 
-            if (blockEntities == null) {
+            if (blockEntities.isEmpty()) {
                 continue;
             }
 
-            iterators.add(Iterators.forArray(blockEntities));
+            iterators.add(blockEntities.iterator());
         }
 
         if(iterators.isEmpty()) {
@@ -391,28 +393,14 @@ public class CeleritasWorldRenderer {
                 var renderSectionId = renderSectionIterator.nextByteAsInt();
                 var renderSection = renderRegion.getSection(renderSectionId);
 
-                var blockEntities = renderSection.getCulledBlockEntities();
-
-                if (blockEntities == null) {
-                    continue;
-                }
-
-                for (BlockEntity blockEntity : blockEntities) {
-                    consumer.accept(blockEntity);
-                }
+                var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
+                blockEntities.forEach(consumer);
             }
         }
 
         for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
-            var blockEntities = renderSection.getGlobalBlockEntities();
-
-            if (blockEntities == null) {
-                continue;
-            }
-
-            for (var blockEntity : blockEntities) {
-                consumer.accept(blockEntity);
-            }
+            var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
+            blockEntities.forEach(consumer);
         }
     }
 
@@ -465,9 +453,9 @@ public class CeleritasWorldRenderer {
                 var renderSectionId = renderSectionIterator.nextByteAsInt();
                 var renderSection = renderRegion.getSection(renderSectionId);
 
-                var blockEntities = renderSection.getCulledBlockEntities();
+                var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
 
-                if (blockEntities == null) {
+                if (blockEntities.isEmpty()) {
                     continue;
                 }
 
@@ -499,9 +487,9 @@ public class CeleritasWorldRenderer {
                                            double z,
                                            BlockEntityRenderDispatcher blockEntityRenderer) {
         for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
-            var blockEntities = renderSection.getGlobalBlockEntities();
+            var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
 
-            if (blockEntities == null) {
+            if (blockEntities.isEmpty()) {
                 continue;
             }
 

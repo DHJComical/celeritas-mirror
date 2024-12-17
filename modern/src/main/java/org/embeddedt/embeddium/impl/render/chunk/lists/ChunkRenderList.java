@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.lists;
 
+import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionFlags;
 import org.embeddedt.embeddium.impl.util.iterator.ByteIterator;
@@ -7,6 +8,8 @@ import org.embeddedt.embeddium.impl.util.iterator.ReversibleByteArrayIterator;
 import org.embeddedt.embeddium.impl.util.iterator.ByteArrayIterator;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public class ChunkRenderList {
     private final RenderRegion region;
@@ -37,6 +40,11 @@ public class ChunkRenderList {
         this.lastVisibleFrame = frame;
     }
 
+    private static final int HAS_BLOCK_GEOMETRY = ModernRenderSectionBuiltInfo.HAS_BLOCK_GEOMETRY.id;
+    private static final int ANIMATED_SPRITES = ModernRenderSectionBuiltInfo.HAS_BLOCK_GEOMETRY.id;
+    private static final int GLOBAL_BLOCK_ENTITIES = ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES.id;
+    private static final int CULLED_BLOCK_ENTITIES = ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES.id;
+
     public void add(RenderSection render) {
         if (this.size >= RenderRegion.REGION_SIZE) {
             throw new ArrayIndexOutOfBoundsException("Render list is full");
@@ -45,16 +53,18 @@ public class ChunkRenderList {
         this.size++;
 
         int index = render.getSectionIndex();
-        int flags = render.getFlags();
+        var contextData = Objects.requireNonNull(render.getBuiltContext());
+        var flags = contextData.getPopulatedIds();
 
         this.sectionsWithGeometry[this.sectionsWithGeometryCount] = (byte) index;
-        this.sectionsWithGeometryCount += (flags >>> RenderSectionFlags.HAS_BLOCK_GEOMETRY) & 1;
+        this.sectionsWithGeometryCount += (int)(flags >>> HAS_BLOCK_GEOMETRY) & 1;
 
         this.sectionsWithSprites[this.sectionsWithSpritesCount] = (byte) index;
-        this.sectionsWithSpritesCount += (flags >>> RenderSectionFlags.HAS_ANIMATED_SPRITES) & 1;
+        this.sectionsWithSpritesCount += (int)(flags >>> ANIMATED_SPRITES) & 1;
 
         this.sectionsWithEntities[this.sectionsWithEntitiesCount] = (byte) index;
-        this.sectionsWithEntitiesCount += (flags >>> RenderSectionFlags.HAS_BLOCK_ENTITIES) & 1;
+        this.sectionsWithEntitiesCount += (int)(flags >>> CULLED_BLOCK_ENTITIES) & 1;
+        this.sectionsWithEntitiesCount += (int)(flags >>> GLOBAL_BLOCK_ENTITIES) & 1;
     }
 
     public @Nullable ByteIterator sectionsWithGeometryIterator(boolean reverse) {

@@ -8,9 +8,11 @@ import lombok.Getter;
 import org.embeddedt.embeddium.impl.Celeritas;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ModernChunkBuildContext;
@@ -21,7 +23,6 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderMeshi
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderSortTask;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.render.chunk.config.ModernRenderPassConfigurationBuilder;
-import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionInfo;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
@@ -303,7 +304,7 @@ public class RenderSectionManager {
 
         boolean isEmpty = WorldUtil.isSectionEmpty(section) && ChunkMeshEvent.post(this.world, SectionPos.of(x, y, z)).isEmpty();
         if (isEmpty) {
-            this.updateSectionInfo(renderSection, BuiltSectionInfo.EMPTY);
+            this.updateSectionInfo(renderSection, ContextBundle.empty());
         } else {
             renderSection.setPendingUpdate(ChunkUpdateType.INITIAL_BUILD);
         }
@@ -367,9 +368,9 @@ public class RenderSectionManager {
                     continue;
                 }
 
-                var sprites = section.getAnimatedSprites();
+                var sprites = section.getContextOrDefault(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES);
 
-                if (sprites == null) {
+                if (sprites.isEmpty()) {
                     continue;
                 }
 
@@ -459,10 +460,10 @@ public class RenderSectionManager {
         render.setTranslucencySortStates(sortStates.isEmpty() ? Collections.emptyMap() : sortStates);
     }
 
-    private void updateSectionInfo(RenderSection render, BuiltSectionInfo info) {
+    private void updateSectionInfo(RenderSection render, ContextBundle<RenderSection> info) {
         render.setInfo(info);
 
-        if (info == null || ArrayUtils.isEmpty(info.globalBlockEntities)) {
+        if (info == null || info.getContext(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES).isEmpty()) {
             this.sectionsWithGlobalEntities.remove(render);
         } else {
             this.sectionsWithGlobalEntities.add(render);
@@ -535,7 +536,7 @@ public class RenderSectionManager {
                     section.setTranslucencySortStates(Collections.emptyMap());
                 }
             } else {
-                var result = ChunkJobResult.successfully(new ChunkBuildOutput(section, BuiltSectionInfo.EMPTY, Collections.emptyMap(), frame));
+                var result = ChunkJobResult.successfully(new ChunkBuildOutput(section, ContextBundle.empty(), Collections.emptyMap(), frame));
                 this.buildResults.add(result);
 
                 section.setBuildCancellationToken(null);
@@ -547,7 +548,7 @@ public class RenderSectionManager {
     }
 
     public @Nullable ChunkBuilderMeshingTask createRebuildTask(RenderSection render, int frame) {
-        ChunkRenderContext context = WorldSlice.prepare(this.world, render.getPosition(), this.sectionCache);
+        ChunkRenderContext context = WorldSlice.prepare(this.world, SectionPos.of(render.getChunkX(), render.getChunkY(), render.getChunkZ()), this.sectionCache);
 
         if (context == null) {
             return null;

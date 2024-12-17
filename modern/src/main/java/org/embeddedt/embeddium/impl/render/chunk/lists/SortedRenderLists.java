@@ -44,7 +44,7 @@ public class SortedRenderLists implements ChunkRenderListIterable {
             }
 
             // Only add the section to the render list if it actually contains render objects
-            if (section.getFlags() != 0) {
+            if (section.hasAnythingToRender()) {
                 list.add(section);
             }
         }

@@ -1,17 +1,14 @@
 package org.embeddedt.embeddium.impl.render.chunk;
 
 import lombok.Getter;
-import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionInfo;
+import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirectionSet;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +31,10 @@ public class RenderSection {
     // Occlusion Culling State
     private long visibilityData = VisibilityEncoding.NULL;
 
+    // We must use EVERYTHING here for the default visibility encoding, so that ContextBundle.empty() would correspond
+    // to the data generated for an empty section.
+    public static ContextBundle.Key<RenderSection, Long> VISIBILITY_DATA = new ContextBundle.Key<>(RenderSection.class, VisibilityEncoding.EVERYTHING);
+
     private int incomingDirections;
     private int lastVisibleFrame = -1;
 
@@ -49,10 +50,7 @@ public class RenderSection {
 
     // Rendering State
     private boolean built = false; // merge with the flags?
-    private int flags = RenderSectionFlags.NONE;
-    private BlockEntity @Nullable[] globalBlockEntities;
-    private BlockEntity @Nullable[] culledBlockEntities;
-    private TextureAtlasSprite @Nullable[] animatedSprites;
+    private ContextBundle<RenderSection> contextData;
 
     /**
      * A mapping from translucent render passes to the sort state for that particular pass (which contains data needed
@@ -97,6 +95,8 @@ public class RenderSection {
         this.sectionIndex = LocalSectionIndex.pack(rX, rY, rZ);
 
         this.region = region;
+
+        this.contextData = null;
     }
 
     public RenderSection getAdjacent(int direction) {
@@ -148,7 +148,7 @@ public class RenderSection {
         this.disposed = true;
     }
 
-    public void setInfo(@Nullable BuiltSectionInfo info) {
+    public void setInfo(@Nullable ContextBundle<RenderSection> info) {
         if (info != null) {
             this.setRenderState(info);
         } else {
@@ -156,29 +156,16 @@ public class RenderSection {
         }
     }
 
-    private void setRenderState(@NotNull BuiltSectionInfo info) {
+    private void setRenderState(@NotNull ContextBundle<RenderSection> info) {
         this.built = true;
-        this.flags = info.flags;
-        this.visibilityData = info.visibilityData;
-        this.globalBlockEntities = info.globalBlockEntities;
-        this.culledBlockEntities = info.culledBlockEntities;
-        this.animatedSprites = info.animatedSprites;
+        this.visibilityData = info.getContext(VISIBILITY_DATA);
+        this.contextData = info;
     }
 
     private void clearRenderState() {
         this.built = false;
-        this.flags = RenderSectionFlags.NONE;
         this.visibilityData = VisibilityEncoding.NULL;
-        this.globalBlockEntities = null;
-        this.culledBlockEntities = null;
-        this.animatedSprites = null;
-    }
-
-    /**
-     * Returns the chunk section position which this render refers to in the world.
-     */
-    public SectionPos getPosition() {
-        return SectionPos.of(this.chunkX, this.chunkY, this.chunkZ);
+        this.contextData = null;
     }
 
     /**
@@ -298,13 +285,6 @@ public class RenderSection {
         this.incomingDirections = directions;
     }
 
-    /**
-     * Returns a bitfield containing the {@link RenderSectionFlags} for this built section.
-     */
-    public int getFlags() {
-        return this.flags;
-    }
-
     public boolean isAlignedWithSectionOnGrid(int otherX, int otherY, int otherZ) {
         return this.chunkX == otherX || this.chunkY == otherY || this.chunkZ == otherZ;
     }
@@ -316,26 +296,21 @@ public class RenderSection {
         return this.visibilityData;
     }
 
-    /**
-     * Returns the collection of animated sprites contained by this rendered chunk section.
-     */
-    public TextureAtlasSprite @Nullable[] getAnimatedSprites() {
-        return this.animatedSprites;
+    public @Nullable ContextBundle<RenderSection> getBuiltContext() {
+        return this.contextData;
     }
 
-    /**
-     * Returns the collection of block entities contained by this rendered chunk.
-     */
-    public BlockEntity @Nullable[] getCulledBlockEntities() {
-        return this.culledBlockEntities;
+    public <T> T getContextOrDefault(ContextBundle.Key<RenderSection, T> key) {
+        var ctx = this.contextData;
+        if (ctx != null) {
+            return ctx.getContext(key);
+        } else {
+            return key.defaultValue;
+        }
     }
 
-    /**
-     * Returns the collection of block entities contained by this rendered chunk, which are not part of its culling
-     * volume. These entities should always be rendered regardless of the render being visible in the frustum.
-     */
-    public BlockEntity @Nullable[] getGlobalBlockEntities() {
-        return this.globalBlockEntities;
+    public boolean hasAnythingToRender() {
+        return this.contextData != null && this.contextData.hasAnyContext();
     }
 
     @Deprecated

@@ -2,12 +2,13 @@ package org.embeddedt.embeddium.impl.render.chunk.compile;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import lombok.Getter;
+import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.gl.util.VertexRange;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
+import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.BakedChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
-import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionInfo;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
@@ -45,7 +46,7 @@ public class ChunkBuildBuffers {
         }
     }
 
-    public void init(BuiltSectionInfo.Builder renderData, int sectionIndex) {
+    public void init(ContextBundle<RenderSection> renderData, int sectionIndex) {
         for (var builder : this.builders.values()) {
             builder.begin(renderData, sectionIndex);
         }

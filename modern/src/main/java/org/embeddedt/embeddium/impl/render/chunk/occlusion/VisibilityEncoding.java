@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class VisibilityEncoding {
     public static final long NULL = 0L;
+    public static final long EVERYTHING = everything();
 
     public static <T> long encode(@NotNull DataHolder holder) {
         long visibilityData = 0;
@@ -28,6 +29,18 @@ public class VisibilityEncoding {
 
     private static int bit(int from, int to) {
         return (from * 8) + to;
+    }
+
+    private static long everything() {
+        long visibilityData = 0;
+
+        for (int from = 0; from < GraphDirection.COUNT; from++) {
+            for (int to = 0; to < GraphDirection.COUNT; to++) {
+                visibilityData |= 1L << bit(from, to);
+            }
+        }
+
+        return visibilityData;
     }
 
     // Returns a merged bit-field of the outgoing directions for each incoming direction

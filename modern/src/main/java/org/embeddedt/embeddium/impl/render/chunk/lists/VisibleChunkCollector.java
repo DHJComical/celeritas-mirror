@@ -44,7 +44,7 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
             this.sortedRenderLists.add(renderList);
         }
 
-        if (visible && section.getFlags() != 0) {
+        if (visible && section.hasAnythingToRender()) {
             renderList.add(section);
         }
 

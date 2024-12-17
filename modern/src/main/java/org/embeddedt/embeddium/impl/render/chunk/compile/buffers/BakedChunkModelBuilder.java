@@ -2,12 +2,14 @@ package org.embeddedt.embeddium.impl.render.chunk.compile.buffers;
 
 //? if >=1.15
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
+import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.builder.ChunkMeshBufferBuilder;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionInfo;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.frapi.SpriteFinderCache;
 import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
@@ -21,7 +23,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
     //? if >=1.15
     private final MojangVertexConsumer vertexConsumer = new MojangVertexConsumer();
 
-    private BuiltSectionInfo.Builder renderData;
+    private ContextBundle<RenderSection> renderData;
 
     public BakedChunkModelBuilder(ChunkMeshBufferBuilder[] vertexBuffers, boolean splitBySide) {
         this.vertexBuffers = vertexBuffers;
@@ -35,7 +37,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
 
     @Override
     public void addSprite(TextureAtlasSprite sprite) {
-        this.renderData.addSprite(sprite);
+        this.renderData.getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
     }
 
     //? if >=1.15 {
@@ -54,7 +56,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
         }
     }
 
-    public void begin(BuiltSectionInfo.Builder renderData, int sectionIndex) {
+    public void begin(ContextBundle<RenderSection> renderData, int sectionIndex) {
         this.renderData = renderData;
 
         for (var vertexBuffer : this.vertexBuffers) {
