@@ -41,7 +41,6 @@ import net.minecraft.world.level.block.state.BlockState;
 //? if >=1.18
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.phys.Vec3;
 //? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelData;
 //? if forge && <1.19
@@ -53,6 +52,7 @@ import org.embeddedt.embeddium.impl.chunk.MeshAppenderRenderer;
 //? if forgelike
 import org.embeddedt.embeddium.impl.model.ModelDataSnapshotter;
 import org.embeddedt.embeddium.impl.model.UnwrappableBakedModel;
+import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,10 +78,10 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     private final ChunkRenderContext renderContext;
 
     private final int buildTime;
-    private final Vec3 camera;
+    private final Vector3d camera;
 
 
-    public ChunkBuilderMeshingTask(RenderSection render, ChunkRenderContext renderContext, int time, Vec3 camera) {
+    public ChunkBuilderMeshingTask(RenderSection render, ChunkRenderContext renderContext, int time, Vector3d camera) {
         this.render = render;
         this.renderContext = renderContext;
         this.buildTime = time;

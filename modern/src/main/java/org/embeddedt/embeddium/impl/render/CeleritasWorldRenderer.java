@@ -20,7 +20,9 @@ import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.model.quad.blender.BlendedColorProvider;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
+import org.embeddedt.embeddium.impl.render.chunk.PositionedViewport;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
@@ -29,6 +31,8 @@ import org.embeddedt.embeddium.impl.render.chunk.map.ChunkStatus;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTracker;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.*;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
@@ -52,6 +56,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Vector3d;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -234,7 +239,9 @@ public class CeleritasWorldRenderer {
         if (this.renderSectionManager.needsUpdate()) {
             profiler.popPush("chunk_render_lists");
 
-            this.renderSectionManager.update(camera, viewport, frame, spectator);
+            var camPosition = new Vector3d(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
+
+            this.renderSectionManager.update(new PositionedViewport(viewport, camPosition), frame, spectator);
         }
 
         if (updateChunksImmediately) {
@@ -300,7 +307,9 @@ public class CeleritasWorldRenderer {
 
         this.renderDistance = getEffectiveRenderDistance();
 
-        this.renderSectionManager = new RenderSectionManager(this.world, this.renderDistance, commandList);
+        ChunkVertexType vertexType = Celeritas.canUseVanillaVertices() ? ChunkMeshFormats.VANILLA_LIKE : ChunkMeshFormats.COMPACT;
+
+        this.renderSectionManager = ModernRenderSectionManager.create(vertexType, this.world, this.renderDistance, commandList);
 
         var tracker = ChunkTrackerHolder.get(this.world);
         ChunkTracker.forEachChunk(tracker.getReadyChunks(), this.renderSectionManager::onChunkAdded);

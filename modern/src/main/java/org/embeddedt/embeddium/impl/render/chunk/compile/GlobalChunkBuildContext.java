@@ -1,19 +1,15 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile;
 
-import org.embeddedt.embeddium.impl.mixin.core.render.MinecraftAccessor;
-import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;
 
 public final class GlobalChunkBuildContext {
     private static ChunkBuildContext mainThreadContext;
-    private static final Thread mainThread = ((MinecraftAccessor) Minecraft.getInstance()).embeddium$getGameThread();
+    private static Thread mainThread;
 
     private GlobalChunkBuildContext() {}
 
     public static void setMainThread() {
-        if(mainThread != Thread.currentThread()) {
-            throw new IllegalStateException("Global chunk build context captured wrong thread");
-        }
+        mainThread = Thread.currentThread();
     }
 
     @Nullable

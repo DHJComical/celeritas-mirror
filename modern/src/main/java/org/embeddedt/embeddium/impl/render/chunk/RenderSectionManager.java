@@ -6,19 +6,16 @@ import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
 import org.embeddedt.embeddium.impl.Celeritas;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
-import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobResult;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobCollector;
-import org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks.ChunkBuilderMeshingTask;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderSortTask;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.modern.render.chunk.config.ModernRenderPassConfigurationBuilder;
@@ -33,42 +30,28 @@ import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegionManager;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
-import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
-import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.util.iterator.ByteIterator;
-import org.embeddedt.embeddium.impl.world.WorldSlice;
-import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
-import org.embeddedt.embeddium.impl.world.cloned.ClonedChunkSectionCache;
-import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
-import net.minecraft.util.Mth;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraft.world.phys.Vec3;
-import org.embeddedt.embeddium.api.ChunkMeshEvent;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3d;
+import org.joml.Vector3i;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Supplier;
 
-public class RenderSectionManager {
+public abstract class RenderSectionManager {
     private final ChunkBuilder builder;
 
     private final Thread renderThread = Thread.currentThread();
 
     private final RenderRegionManager regions;
-    private final ClonedChunkSectionCache sectionCache;
 
     private final Long2ReferenceMap<RenderSection> sectionByPosition = new Long2ReferenceOpenHashMap<>();
 
@@ -76,8 +59,6 @@ public class RenderSectionManager {
     private final ConcurrentLinkedDeque<Runnable> asyncSubmittedTasks = new ConcurrentLinkedDeque<>();
 
     private final ChunkRenderer chunkRenderer;
-
-    private final ClientLevel world;
 
     private final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
 
@@ -97,8 +78,8 @@ public class RenderSectionManager {
 
     private boolean needsUpdate;
 
-    private @Nullable BlockPos lastCameraPosition;
-    private Vec3 cameraPosition = Vec3.ZERO;
+    protected @Nullable Vector3i lastCameraPosition;
+    protected Vector3d cameraPosition = new Vector3d();
 
     private final boolean translucencySorting;
 
@@ -107,26 +88,25 @@ public class RenderSectionManager {
 
     private final Set<TerrainRenderPass> disabledRenderPasses;
 
-    public RenderSectionManager(ClientLevel world, int renderDistance, CommandList commandList) {
-        ChunkVertexType vertexType = Celeritas.canUseVanillaVertices() ? ChunkMeshFormats.VANILLA_LIKE : ChunkMeshFormats.COMPACT;
+    private final int minSection, maxSection;
 
-        this.chunkRenderer = new DefaultChunkRenderer(RenderDevice.INSTANCE, vertexType);
+    public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier, int renderDistance, CommandList commandList, int minSection, int maxSection) {
+        this.chunkRenderer = new DefaultChunkRenderer(RenderDevice.INSTANCE, configuration.vertexType());
 
-        this.renderPassConfiguration = createRenderPassConfiguration(vertexType);
+        this.renderPassConfiguration = configuration;
+        this.vertexType = configuration.vertexType();
 
-        this.vertexType = vertexType;
-
-        this.world = world;
-        this.builder = new ChunkBuilder(() -> new ModernChunkBuildContext(world, this.renderPassConfiguration));
+        this.builder = new ChunkBuilder(contextSupplier);
 
         this.needsUpdate = true;
         this.renderDistance = renderDistance;
 
         this.regions = new RenderRegionManager(commandList, this.renderPassConfiguration);
-        this.sectionCache = new ClonedChunkSectionCache(this.world);
 
         this.renderLists = SortedRenderLists.empty();
-        this.occlusionCuller = new OcclusionCuller(Long2ReferenceMaps.unmodifiable(this.sectionByPosition), WorldUtil.getMinSection(this.world), WorldUtil.getMaxSection(this.world));
+        this.minSection = minSection;
+        this.maxSection = maxSection;
+        this.occlusionCuller = new OcclusionCuller(Long2ReferenceMaps.unmodifiable(this.sectionByPosition), this.minSection, this.maxSection);
 
         this.rebuildLists = new EnumMap<>(ChunkUpdateType.class);
 
@@ -151,11 +131,11 @@ public class RenderSectionManager {
         }
     }
 
-    public void update(Camera camera, Viewport viewport, int frame, boolean spectator) {
-        this.lastCameraPosition = camera.getBlockPosition();
-        this.cameraPosition = camera.getPosition();
+    public void update(PositionedViewport positionedViewport, int frame, boolean spectator) {
+        this.lastCameraPosition = positionedViewport.blockPosition();
+        this.cameraPosition = positionedViewport.position();
 
-        this.createTerrainRenderList(camera, viewport, frame, spectator);
+        this.createTerrainRenderList(positionedViewport, frame, spectator);
 
         this.needsUpdate = false;
         this.lastUpdatedFrame = frame;
@@ -232,15 +212,15 @@ public class RenderSectionManager {
         }
     }
 
-    private void createTerrainRenderList(Camera camera, Viewport viewport, int frame, boolean spectator) {
+    private void createTerrainRenderList(PositionedViewport positionedViewport, int frame, boolean spectator) {
         this.resetRenderLists();
 
         final var searchDistance = this.getSearchDistance();
-        final var useOcclusionCulling = this.shouldUseOcclusionCulling(camera, spectator);
+        final var useOcclusionCulling = this.shouldUseOcclusionCulling(positionedViewport, spectator);
 
         var visitor = new VisibleChunkCollector(frame);
 
-        this.occlusionCuller.findVisible(visitor, viewport, searchDistance, useOcclusionCulling, frame);
+        this.occlusionCuller.findVisible(visitor, positionedViewport.viewport(), searchDistance, useOcclusionCulling, frame);
 
         this.renderLists = visitor.createRenderLists();
         this.rebuildLists = visitor.getRebuildLists();
@@ -261,19 +241,7 @@ public class RenderSectionManager {
         return distance;
     }
 
-    private boolean shouldUseOcclusionCulling(Camera camera, boolean spectator) {
-        final boolean useOcclusionCulling;
-        BlockPos origin = camera.getBlockPosition();
-
-        if (spectator && this.world.getBlockState(origin)
-                .isSolidRender(/*? if <1.21.2 {*/this.world, origin/*?}*/))
-        {
-            useOcclusionCulling = false;
-        } else {
-            useOcclusionCulling = Minecraft.getInstance().smartCull;
-        }
-        return useOcclusionCulling;
-    }
+    protected abstract boolean shouldUseOcclusionCulling(PositionedViewport positionedViewport, boolean spectator);
 
     private void resetRenderLists() {
         this.renderLists = SortedRenderLists.empty();
@@ -282,6 +250,8 @@ public class RenderSectionManager {
             list.clear();
         }
     }
+
+    protected abstract boolean isSectionVisuallyEmpty(int x, int y, int z);
 
     public void onSectionAdded(int x, int y, int z) {
         long key = PositionUtil.packSection(x, y, z);
@@ -297,11 +267,7 @@ public class RenderSectionManager {
 
         this.sectionByPosition.put(key, renderSection);
 
-        ChunkAccess chunk = this.world.getChunk(x, z);
-        LevelChunkSection section = chunk.getSections()[WorldUtil.getSectionIndexFromSectionY(this.world, y)];
-
-        boolean isEmpty = WorldUtil.isSectionEmpty(section) && ChunkMeshEvent.post(this.world, SectionPos.of(x, y, z)).isEmpty();
-        if (isEmpty) {
+        if (this.isSectionVisuallyEmpty(x, y, z)) {
             this.updateSectionInfo(renderSection, ContextBundle.empty());
         } else {
             renderSection.setPendingUpdate(ChunkUpdateType.INITIAL_BUILD);
@@ -346,39 +312,6 @@ public class RenderSectionManager {
         commandList.flush();
     }
 
-    public void tickVisibleRenders() {
-        Iterator<ChunkRenderList> it = this.renderLists.iterator();
-
-        while (it.hasNext()) {
-            ChunkRenderList renderList = it.next();
-
-            var region = renderList.getRegion();
-            var iterator = renderList.sectionsWithSpritesIterator();
-
-            if (iterator == null) {
-                continue;
-            }
-
-            while (iterator.hasNext()) {
-                var section = region.getSection(iterator.nextByteAsInt());
-
-                if (section == null) {
-                    continue;
-                }
-
-                var sprites = section.getContextOrDefault(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES);
-
-                if (sprites.isEmpty()) {
-                    continue;
-                }
-
-                for (TextureAtlasSprite sprite : sprites) {
-                    SpriteUtil.markSpriteActive(sprite);
-                }
-            }
-        }
-    }
-
     public boolean isSectionVisible(int x, int y, int z) {
         RenderSection render = this.getRenderSection(x, y, z);
 
@@ -390,7 +323,6 @@ public class RenderSectionManager {
     }
 
     public void updateChunks(boolean updateImmediately) {
-        this.sectionCache.cleanup();
         this.regions.update();
 
         var blockingRebuilds = new ChunkJobCollector(Integer.MAX_VALUE, this.buildResults::add);
@@ -422,6 +354,10 @@ public class RenderSectionManager {
         }
 
         this.needsUpdate = true;
+    }
+
+    public void tickVisibleRenders() {
+
     }
 
     private void processChunkBuildResults(ArrayList<ChunkBuildOutput> results) {
@@ -545,15 +481,7 @@ public class RenderSectionManager {
         }
     }
 
-    public @Nullable ChunkBuilderMeshingTask createRebuildTask(RenderSection render, int frame) {
-        ChunkRenderContext context = WorldSlice.prepare(this.world, SectionPos.of(render.getChunkX(), render.getChunkY(), render.getChunkZ()), this.sectionCache);
-
-        if (context == null) {
-            return null;
-        }
-
-        return new ChunkBuilderMeshingTask(render, context, frame, this.cameraPosition);
-    }
+    protected abstract @Nullable ChunkBuilderTask<ChunkBuildOutput> createRebuildTask(RenderSection render, int frame);
 
     public ChunkBuilderSortTask createSortTask(RenderSection render, int frame) {
         Map<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> sortStates = render.getTranslucencySortStates();
@@ -607,17 +535,19 @@ public class RenderSectionManager {
     }
 
     private void scheduleRebuildOffThread(int x, int y, int z, boolean important) {
-        asyncSubmittedTasks.add(() -> this.scheduleRebuild(x, y, z, important));
+        asyncSubmittedTasks.add(() -> this.scheduleSectionForRebuild(x, y, z, important));
     }
 
-    public void scheduleRebuild(int x, int y, int z, boolean important) {
+    public final void scheduleRebuild(int x, int y, int z, boolean important) {
         if (Thread.currentThread() != renderThread) {
             this.scheduleRebuildOffThread(x, y, z, important);
             return;
         }
 
-        this.sectionCache.invalidate(x, y, z);
+        this.scheduleSectionForRebuild(x, y, z, important);
+    }
 
+    protected void scheduleSectionForRebuild(int x, int y, int z, boolean important) {
         RenderSection section = this.sectionByPosition.get(PositionUtil.packSection(x, y, z));
 
         if (section != null) {
@@ -641,7 +571,7 @@ public class RenderSectionManager {
     private static final float NEARBY_REBUILD_DISTANCE = MathUtil.square(16.0f);
 
     private boolean shouldPrioritizeRebuild(RenderSection section) {
-        return this.lastCameraPosition != null && section.getSquaredDistanceFromBlockCenter(this.lastCameraPosition.getX(), this.lastCameraPosition.getY(), this.lastCameraPosition.getZ()) < NEARBY_REBUILD_DISTANCE;
+        return this.lastCameraPosition != null && section.getSquaredDistanceFromBlockCenter(this.lastCameraPosition.x(), this.lastCameraPosition.y(), this.lastCameraPosition.z()) < NEARBY_REBUILD_DISTANCE;
     }
 
     private static boolean allowImportantRebuilds() {
@@ -656,7 +586,7 @@ public class RenderSectionManager {
         var renderDistance = this.getRenderDistance();
 
         // The fog must be fully opaque in order to skip rendering of chunks behind it
-        if (!Mth.equal(alpha, 1.0f)) {
+        if (Math.abs(alpha - 1.0f) >= 1.0E-5F) {
             return renderDistance;
         }
 
@@ -732,18 +662,6 @@ public class RenderSectionManager {
 
         list.add(sb.toString());
 
-        var cameraEntity = Minecraft.getInstance().getCameraEntity();
-        if(cameraEntity != null) {
-            var hitResult = cameraEntity.pick(20, 0, false);
-            if(hitResult != null && hitResult.getType() == HitResult.Type.BLOCK) {
-                var pos = ((BlockHitResult)hitResult).getBlockPos();
-                var self = this.getRenderSection(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
-                if(self != null && !self.getTranslucencySortStates().isEmpty() && self.getTranslucencySortStates().keySet().stream().anyMatch(TerrainRenderPass::isSorted)) {
-                    list.add("Targeted Section: " + self.getHighestSortingLevel().name());
-                }
-            }
-        }
-
         return list;
     }
 
@@ -814,13 +732,13 @@ public class RenderSectionManager {
     }
 
     public void onChunkAdded(int x, int z) {
-        for (int y = WorldUtil.getMinSection(this.world); y < WorldUtil.getMaxSection(this.world); y++) {
+        for (int y = this.minSection; y < this.maxSection; y++) {
             this.onSectionAdded(x, y, z);
         }
     }
 
     public void onChunkRemoved(int x, int z) {
-        for (int y = WorldUtil.getMinSection(this.world); y < WorldUtil.getMaxSection(this.world); y++) {
+        for (int y = this.minSection; y < this.maxSection; y++) {
             this.onSectionRemoved(x, y, z);
         }
     }
