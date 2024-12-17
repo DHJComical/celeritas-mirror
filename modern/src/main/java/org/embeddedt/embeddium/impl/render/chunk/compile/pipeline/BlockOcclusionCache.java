@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.embeddedt.embeddium.impl.util.PositionUtil;
+import org.embeddedt.embeddium.impl.util.ModernBlockPosUtil;
 
 /**
  * The block occlusion cache is responsible for performing occlusion testing of neighboring block faces.
@@ -36,7 +36,7 @@ public class BlockOcclusionCache {
         // self = occluded block
         // adj = occluding block
 
-        BlockPos.MutableBlockPos adjPos = PositionUtil.setWithOffset(this.cpos, pos, facing);
+        BlockPos.MutableBlockPos adjPos = ModernBlockPosUtil.setWithOffset(this.cpos, pos, facing);
 
         BlockState adjState = view.getBlockState(adjPos);
 

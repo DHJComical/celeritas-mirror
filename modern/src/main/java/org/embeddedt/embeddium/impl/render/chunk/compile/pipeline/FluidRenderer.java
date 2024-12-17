@@ -48,7 +48,7 @@ import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 import org.embeddedt.embeddium.impl.render.fluid.EmbeddiumFluidSpriteCache;
 //? if >=1.18
 import org.embeddedt.embeddium.impl.tags.EmbeddiumTags;
-import org.embeddedt.embeddium.impl.util.PositionUtil;
+import org.embeddedt.embeddium.impl.util.ModernBlockPosUtil;
 import org.joml.Vector3fc;
 
 import java.util.Objects;
@@ -249,10 +249,10 @@ public class FluidRenderer {
             northEastHeight = 1.0f;
         } else {
             var scratchPos = new BlockPos.MutableBlockPos();
-            float heightNorth = this.fluidHeight(world, fluid, PositionUtil.setWithOffset(scratchPos, blockPos, Direction.NORTH), Direction.NORTH);
-            float heightSouth = this.fluidHeight(world, fluid, PositionUtil.setWithOffset(scratchPos, blockPos, Direction.SOUTH), Direction.SOUTH);
-            float heightEast = this.fluidHeight(world, fluid, PositionUtil.setWithOffset(scratchPos, blockPos, Direction.EAST), Direction.EAST);
-            float heightWest = this.fluidHeight(world, fluid, PositionUtil.setWithOffset(scratchPos, blockPos, Direction.WEST), Direction.WEST);
+            float heightNorth = this.fluidHeight(world, fluid, ModernBlockPosUtil.setWithOffset(scratchPos, blockPos, Direction.NORTH), Direction.NORTH);
+            float heightSouth = this.fluidHeight(world, fluid, ModernBlockPosUtil.setWithOffset(scratchPos, blockPos, Direction.SOUTH), Direction.SOUTH);
+            float heightEast = this.fluidHeight(world, fluid, ModernBlockPosUtil.setWithOffset(scratchPos, blockPos, Direction.EAST), Direction.EAST);
+            float heightWest = this.fluidHeight(world, fluid, ModernBlockPosUtil.setWithOffset(scratchPos, blockPos, Direction.WEST), Direction.WEST);
             northWestHeight = this.fluidCornerHeight(world, fluid, fluidHeight, heightNorth, heightWest, scratchPos.set(blockPos)
                     .move(Direction.NORTH)
                     .move(Direction.WEST));
