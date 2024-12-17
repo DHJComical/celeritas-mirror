@@ -8,6 +8,14 @@ public class PositionUtil {
         return (((long)z & MAX_UNSIGNED_32BIT_INT) << 32L) | ((long)x & MAX_UNSIGNED_32BIT_INT);
     }
 
+    public static int unpackChunkX(long key) {
+        return (int)(key & MAX_UNSIGNED_32BIT_INT);
+    }
+
+    public static int unpackChunkZ(long key) {
+        return (int)((key >>> 32) & MAX_UNSIGNED_32BIT_INT);
+    }
+
     public static long packSection(int x, int y, int z) {
         return (((long)x & SECTION_XZ_MASK) << 42L) | (((long)y & SECTION_Y_MASK) << 0L) | (((long)z & SECTION_XZ_MASK) << 20L);
     }
