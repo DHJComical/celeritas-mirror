@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.render.chunk.compile.tasks;
+package org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -14,6 +14,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.*;
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderCache;
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.GeometryCategory;
+import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
