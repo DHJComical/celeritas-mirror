@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.data;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import org.embeddedt.embeddium.impl.modern.render.chunk.occlusion.ModernGraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionFlags;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -56,7 +57,7 @@ public class BuiltSectionInfo {
 
         this.flags = flags;
 
-        this.visibilityData = VisibilityEncoding.encode(occlusionData);
+        this.visibilityData = VisibilityEncoding.encode((from, to) -> occlusionData.visibilityBetween(ModernGraphDirection.toEnum(from), ModernGraphDirection.toEnum(to)));
     }
 
     public static class Builder implements SectionInfoBuilder {

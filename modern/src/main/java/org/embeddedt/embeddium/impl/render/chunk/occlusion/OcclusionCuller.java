@@ -1,16 +1,14 @@
 package org.embeddedt.embeddium.impl.render.chunk.occlusion;
 
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
+import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
-import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.util.collections.DoubleBufferedQueue;
 import org.embeddedt.embeddium.impl.util.collections.ReadQueue;
 import org.embeddedt.embeddium.impl.util.collections.WriteQueue;
-import net.minecraft.util.Mth;
-import net.minecraft.world.level.Level;
 import org.embeddedt.embeddium.api.render.chunk.RenderSectionDistanceFilter;
 import org.embeddedt.embeddium.api.render.chunk.RenderSectionDistanceFilterEvent;
 import org.jetbrains.annotations.NotNull;
@@ -20,15 +18,16 @@ import java.util.Objects;
 
 public class OcclusionCuller {
     private final Long2ReferenceMap<RenderSection> sections;
-    private final Level world;
+    private final int minSectionY, maxSectionY;
 
     private final DoubleBufferedQueue<RenderSection> queue = new DoubleBufferedQueue<>();
 
     private boolean isCameraInUnloadedSection;
 
-    public OcclusionCuller(Long2ReferenceMap<RenderSection> sections, Level world) {
+    public OcclusionCuller(Long2ReferenceMap<RenderSection> sections, int minSectionY, int maxSectionY) {
         this.sections = sections;
-        this.world = world;
+        this.minSectionY = minSectionY;
+        this.maxSectionY = maxSectionY;
     }
 
     public void findVisible(Visitor visitor,
@@ -204,14 +203,14 @@ public class OcclusionCuller {
     {
         var origin = viewport.getChunkCoord();
 
-        if (origin.y() < WorldUtil.getMinSection(this.world)) {
+        if (origin.y() < this.minSectionY) {
             // below the world
             this.initOutsideWorldHeight(queue, viewport, searchDistance, frame,
-                    WorldUtil.getMinSection(this.world), GraphDirectionSet.of(GraphDirection.DOWN));
-        } else if (origin.y() >= WorldUtil.getMaxSection(this.world)) {
+                    this.minSectionY, GraphDirectionSet.of(GraphDirection.DOWN));
+        } else if (origin.y() >= this.maxSectionY) {
             // above the world
             this.initOutsideWorldHeight(queue, viewport, searchDistance, frame,
-                    WorldUtil.getMaxSection(this.world) - 1, GraphDirectionSet.of(GraphDirection.UP));
+                    this.maxSectionY - 1, GraphDirectionSet.of(GraphDirection.UP));
         } else if(this.getRenderSection(origin.x(), origin.y(), origin.z()) == null) {
             // inside the world height-wise, but in an unloaded section
             this.initOutsideWorldHeight(queue, viewport, searchDistance, frame,
@@ -258,7 +257,7 @@ public class OcclusionCuller {
                                         int direction)
     {
         var origin = viewport.getChunkCoord();
-        var radius = Mth.floor(searchDistance / 16.0f);
+        var radius = MathUtil.mojfloor(searchDistance / 16.0f);
 
         // Layer 0
         this.tryVisitNode(queue, origin.x(), height, origin.z(), direction, frame, viewport);

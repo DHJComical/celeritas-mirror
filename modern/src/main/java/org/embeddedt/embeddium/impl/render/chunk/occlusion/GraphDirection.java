@@ -1,7 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk.occlusion;
 
-import net.minecraft.core.Direction;
-
 public class GraphDirection {
     public static final int DOWN    = 0;
     public static final int UP      = 1;
@@ -10,10 +8,8 @@ public class GraphDirection {
     public static final int WEST    = 4;
     public static final int EAST    = 5;
 
-
     public static final int COUNT   = 6;
 
-    private static final Direction[] ENUMS;
     private static final int[] OPPOSITE;
     private static final int[] X, Y, Z;
 
@@ -37,14 +33,6 @@ public class GraphDirection {
         Z = new int[COUNT];
         Z[NORTH] = -1;
         Z[SOUTH] = 1;
-
-        ENUMS = new Direction[COUNT];
-        ENUMS[DOWN] = Direction.DOWN;
-        ENUMS[UP] = Direction.UP;
-        ENUMS[NORTH] = Direction.NORTH;
-        ENUMS[SOUTH] = Direction.SOUTH;
-        ENUMS[WEST] = Direction.WEST;
-        ENUMS[EAST] = Direction.EAST;
     }
 
     public static int opposite(int direction) {
@@ -61,9 +49,5 @@ public class GraphDirection {
 
     public static int z(int direction) {
         return Z[direction];
-    }
-
-    public static Direction toEnum(int direction) {
-        return ENUMS[direction];
     }
 }

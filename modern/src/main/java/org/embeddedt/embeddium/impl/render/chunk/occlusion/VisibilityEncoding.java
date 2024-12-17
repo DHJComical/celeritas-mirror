@@ -1,24 +1,29 @@
 package org.embeddedt.embeddium.impl.render.chunk.occlusion;
 
-
-import net.minecraft.client.renderer.chunk.VisibilitySet;
 import org.jetbrains.annotations.NotNull;
 
 public class VisibilityEncoding {
     public static final long NULL = 0L;
 
-    public static long encode(@NotNull VisibilitySet occlusionData) {
+    public static <T> long encode(@NotNull DataHolder holder) {
         long visibilityData = 0;
 
         for (int from = 0; from < GraphDirection.COUNT; from++) {
             for (int to = 0; to < GraphDirection.COUNT; to++) {
-                if (occlusionData.visibilityBetween(GraphDirection.toEnum(from), GraphDirection.toEnum(to))) {
+                if (holder.canFaceSeeFace(from, to)) {
                     visibilityData |= 1L << bit(from, to);
                 }
             }
         }
 
         return visibilityData;
+    }
+
+    public interface DataHolder {
+        /**
+         * {@return true if looking through the given GraphDirection allows seeing out to the other GraphDirection}
+         */
+        boolean canFaceSeeFace(int fromDir, int toDir);
     }
 
     private static int bit(int from, int to) {

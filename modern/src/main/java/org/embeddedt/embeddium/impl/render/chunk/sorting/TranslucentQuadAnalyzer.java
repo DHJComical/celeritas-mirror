@@ -2,7 +2,6 @@ package org.embeddedt.embeddium.impl.render.chunk.sorting;
 
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
-import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 
 import java.util.BitSet;
@@ -85,7 +84,7 @@ public class TranslucentQuadAnalyzer {
         for(int quadIdx = 1; quadIdx < nQuads; quadIdx++) {
             int centerOff = quadIdx * 3;
             float candidateD = a * centerArray[centerOff + 0] + b * centerArray[centerOff + 1] + c * centerArray[centerOff + 2];
-            if(!Mth.equal(candidateD, d)) {
+            if(Math.abs(candidateD - d) >= 1.0E-5F) {
                 // Different planes
                 return false;
             }

@@ -127,7 +127,7 @@ public class RenderSectionManager {
         this.sectionCache = new ClonedChunkSectionCache(this.world);
 
         this.renderLists = SortedRenderLists.empty();
-        this.occlusionCuller = new OcclusionCuller(Long2ReferenceMaps.unmodifiable(this.sectionByPosition), this.world);
+        this.occlusionCuller = new OcclusionCuller(Long2ReferenceMaps.unmodifiable(this.sectionByPosition), WorldUtil.getMinSection(this.world), WorldUtil.getMaxSection(this.world));
 
         this.rebuildLists = new EnumMap<>(ChunkUpdateType.class);
 

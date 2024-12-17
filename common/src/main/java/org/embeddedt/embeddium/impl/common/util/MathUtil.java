@@ -19,4 +19,9 @@ public class MathUtil {
     public static float square(float f) {
         return f * f;
     }
+
+    public static int mojfloor(float f) {
+        int truncated = (int)f;
+        return truncated < (float)truncated ? truncated - 1 : truncated;
+    }
 }
