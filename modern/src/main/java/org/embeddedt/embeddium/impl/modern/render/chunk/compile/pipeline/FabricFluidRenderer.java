@@ -12,6 +12,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
+import org.embeddedt.embeddium.impl.modern.render.chunk.MojangVertexConsumer;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 
@@ -21,6 +23,8 @@ public class FabricFluidRenderer {
     private final Reference2BooleanOpenHashMap<Class<? extends FluidRenderHandler>> handlersUsingCustomRenderer = new Reference2BooleanOpenHashMap<>();
 
     private boolean renderingCustomFluid = false;
+
+    private final MojangVertexConsumer mojangConsumer = new MojangVertexConsumer();
 
     public boolean renderCustomFluid(BlockRenderContext ctx, FluidRenderHandler handler, FluidState fluidState, ChunkBuildBuffers buffers, Material material) {
         // Re-entrancy check - if fluid rendering calls super
@@ -49,7 +53,7 @@ public class FabricFluidRenderer {
         renderingCustomFluid = true;
         try {
             // Call vanilla fluid renderer and capture the results
-            try(var consumer = modelBuffer.asVertexConsumer(material, ctx)) {
+            try(var consumer = mojangConsumer.initialize(modelBuffer, material, ctx)) {
                 Minecraft.getInstance().getBlockRenderer().renderLiquid(ctx.pos(), ctx.localSlice(), consumer, /^? if >=1.18 {^/ ctx.state(), /^?}^/ fluidState);
             }
         } finally {
@@ -58,9 +62,10 @@ public class FabricFluidRenderer {
 
         // Mark fluid sprites as being used in rendering
         TextureAtlasSprite[] sprites = handler.getFluidSprites(ctx.localSlice(), ctx.pos(), fluidState);
+        var spriteList = modelBuffer.getSectionContextBundle().getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES);
         for(TextureAtlasSprite sprite : sprites) {
             if (sprite != null) {
-                modelBuffer.addSprite(sprite);
+                spriteList.add(sprite);
             }
         }
 

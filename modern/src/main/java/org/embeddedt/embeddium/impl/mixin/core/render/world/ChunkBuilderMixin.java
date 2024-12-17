@@ -4,7 +4,7 @@ package org.embeddedt.embeddium.impl.mixin.core.render.world;
 
 /*import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.SectionBufferBuilderPool;
-import org.embeddedt.embeddium.impl.render.chunk.NonStoringBuilderPool;
+import org.embeddedt.embeddium.impl.modern.render.chunk.NonStoringBuilderPool;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;

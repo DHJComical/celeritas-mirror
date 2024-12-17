@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin;
 
+//? if forge && <1.17
+/*import com.llamalad7.mixinextras.MixinExtrasBootstrap;*/
 import org.embeddedt.embeddium.impl.SodiumPreLaunch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

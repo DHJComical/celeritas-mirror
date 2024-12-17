@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.mixin.core.matrix;
 //? if <1.17 {
 /*import com.mojang.math.Matrix4f;
 import net.minecraft.client.renderer.GameRenderer;
-import org.embeddedt.embeddium.impl.render.chunk.GameRendererContext;
+import org.embeddedt.embeddium.impl.modern.render.chunk.GameRendererContext;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
