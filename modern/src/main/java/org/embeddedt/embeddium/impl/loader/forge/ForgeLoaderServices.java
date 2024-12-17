@@ -20,7 +20,7 @@ import org.embeddedt.embeddium.impl.model.light.LightMode;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 //? if >=1.19
-import org.embeddedt.embeddium.impl.render.chunk.light.ForgeLightPipeline;
+import org.embeddedt.embeddium.impl.modern.render.chunk.light.ForgeLightPipeline;
 
 public final class ForgeLoaderServices implements LoaderServices {
     @Override

@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
+package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -334,7 +334,7 @@ public class BlockRenderer {
         }
 
         var vertexBuffer = builder.getVertexBuffer(normalFace);
-        vertexBuffer.push(vertices, material, ctx);
+        vertexBuffer.push(vertices, material);
     }
 
     //? if forge || fabric {

@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.render.chunk.config;
+package org.embeddedt.embeddium.impl.modern.render.chunk.config;
 
 import com.google.common.collect.ImmutableListMultimap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;

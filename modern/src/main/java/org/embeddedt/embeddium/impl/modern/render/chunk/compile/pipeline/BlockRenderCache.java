@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
+package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
 import lombok.Getter;
 import net.minecraft.world.level.block.state.BlockState;

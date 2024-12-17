@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
+package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
 import it.unimi.dsi.fastutil.objects.Object2ByteLinkedOpenHashMap;
 import net.minecraft.core.BlockPos;

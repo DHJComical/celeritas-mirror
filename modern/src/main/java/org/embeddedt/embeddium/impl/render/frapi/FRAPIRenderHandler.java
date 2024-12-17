@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.render.frapi;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
-import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
+import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext;
 //$ rng_import
 import net.minecraft.util.RandomSource;
 

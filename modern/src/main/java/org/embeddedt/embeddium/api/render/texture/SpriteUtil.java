@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.api.render.texture;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.impl.render.chunk.compile.GlobalChunkBuildContext;
-import org.embeddedt.embeddium.impl.render.chunk.compile.ModernChunkBuildContext;
+import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.texture.SpriteContentsExtended;
 import org.jetbrains.annotations.Nullable;
 

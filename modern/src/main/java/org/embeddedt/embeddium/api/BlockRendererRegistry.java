@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.api;
 
-import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
+import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext;
 //? if >=1.19
 import net.minecraft.util.RandomSource;
 import com.mojang.blaze3d.vertex.VertexConsumer;

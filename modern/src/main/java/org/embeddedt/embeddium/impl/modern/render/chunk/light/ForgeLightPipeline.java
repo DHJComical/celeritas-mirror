@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.render.chunk.light;
+package org.embeddedt.embeddium.impl.modern.render.chunk.light;
 
 //? if forgelike && >=1.19 {
 import com.mojang.blaze3d.vertex.PoseStack;

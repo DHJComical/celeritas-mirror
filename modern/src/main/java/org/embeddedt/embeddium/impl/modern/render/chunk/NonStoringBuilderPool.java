@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.render.chunk;
+package org.embeddedt.embeddium.impl.modern.render.chunk;
 
 //? if >=1.20.4 {
 /*import org.jetbrains.annotations.Nullable;

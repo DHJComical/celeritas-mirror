@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.modern.render.chunk;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelVertexConsumer;
-import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext;
+import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.frapi.SpriteFinderCache;
@@ -56,7 +56,7 @@ public class MojangVertexConsumer implements ChunkModelVertexConsumer {
         var n = computedNormal;
         ModelQuadUtil.calculateNormal(vertices, n);
         var facing = ModelQuadUtil.findNormalFace(n.x, n.y, n.z);
-        this.targetBuilder.getVertexBuffer(facing).push(vertices, material, ctx);
+        this.targetBuilder.getVertexBuffer(facing).push(vertices, material);
         currentIndex = -1;
     }
 

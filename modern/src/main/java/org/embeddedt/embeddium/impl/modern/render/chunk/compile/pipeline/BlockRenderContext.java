@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
+package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
 //? if >=1.15
 import com.mojang.blaze3d.vertex.PoseStack;

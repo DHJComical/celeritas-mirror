@@ -9,7 +9,7 @@ import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.embeddedt.embeddium.impl.modern.render.chunk.MojangVertexConsumer;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelVertexConsumer;
-import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockOcclusionCache;
+import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockOcclusionCache;
 import net.fabricmc.fabric.impl.client.indigo.renderer.aocalc.AoCalculator;
 import net.fabricmc.fabric.impl.client.indigo.renderer.render.BlockRenderContext;
 import net.fabricmc.fabric.impl.client.indigo.renderer.render.BlockRenderInfo;
@@ -36,7 +36,7 @@ import java.lang.invoke.MethodType;
  * Adaptation of Indigo's {@link BlockRenderContext} that delegates back to the Sodium renderer.
  */
 public class IndigoBlockRenderContext extends BlockRenderContext implements FRAPIRenderHandler {
-    private org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext currentContext;
+    private org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext currentContext;
     private ChunkBuildBuffers currentBuffers;
     private final BlockOcclusionCache occlusionCache;
     private final LightDataAccess lightDataAccess;
@@ -124,7 +124,7 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
         }
     }
 
-    public void renderEmbeddium(org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BlockRenderContext ctx,
+    public void renderEmbeddium(org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext ctx,
                                 ChunkBuildBuffers buffers,
                                 PoseStack mStack,
                                 RandomSource random) {

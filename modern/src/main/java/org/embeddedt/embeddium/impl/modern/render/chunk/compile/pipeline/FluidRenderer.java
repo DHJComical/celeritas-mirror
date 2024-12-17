@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.render.chunk.compile.pipeline;
+package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
 //? if fabric
 /*import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;*/
@@ -22,7 +22,7 @@ import org.embeddedt.embeddium.impl.model.color.DefaultColorProviders;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.modern.render.chunk.MojangVertexConsumer;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
-import org.embeddedt.embeddium.impl.render.chunk.compile.ModernChunkBuildContext;
+import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
@@ -572,7 +572,7 @@ public class FluidRenderer {
         }
 
         var vertexBuffer = builder.getVertexBuffer(facing);
-        vertexBuffer.push(vertices, material, ctx);
+        vertexBuffer.push(vertices, material);
     }
 
     private static void setVertex(ModelQuadViewMutable quad, int i, float x, float y, float z, float u, float v) {
