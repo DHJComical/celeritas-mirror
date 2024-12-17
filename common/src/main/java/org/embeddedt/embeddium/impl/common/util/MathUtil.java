@@ -24,4 +24,9 @@ public class MathUtil {
         int truncated = (int)f;
         return truncated < (float)truncated ? truncated - 1 : truncated;
     }
+
+    public static int mojfloor(double f) {
+        int truncated = (int)f;
+        return truncated < (double)truncated ? truncated - 1 : truncated;
+    }
 }

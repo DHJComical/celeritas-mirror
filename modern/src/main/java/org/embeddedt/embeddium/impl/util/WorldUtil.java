@@ -86,18 +86,6 @@ public class WorldUtil {
         *///?}
     }
 
-    public static int posToSectionCoord(double coord) {
-        return posToSectionCoord(Mth.floor(coord));
-    }
-
-    public static int posToSectionCoord(int coord) {
-        return coord >> 4;
-    }
-
-    public static int sectionToBlockCoord(int sec, int block) {
-        return (sec << 4) + block;
-    }
-
     public static boolean isDebug(Level level) {
         //? if >=1.16 {
         return level.isDebug();

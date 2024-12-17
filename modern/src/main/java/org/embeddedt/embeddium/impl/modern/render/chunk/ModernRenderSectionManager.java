@@ -1,5 +1,8 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk;
 
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ReferenceSet;
+import it.unimi.dsi.fastutil.objects.ReferenceSets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
@@ -11,6 +14,7 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import org.embeddedt.embeddium.api.ChunkMeshEvent;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.Celeritas;
+import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks.ChunkBuilderMeshingTask;
@@ -19,26 +23,36 @@ import org.embeddedt.embeddium.impl.render.chunk.PositionedViewport;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
-import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
+import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
 import org.embeddedt.embeddium.impl.world.cloned.ClonedChunkSectionCache;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Iterator;
 
 public class ModernRenderSectionManager extends RenderSectionManager {
     private final ClientLevel world;
     private final ClonedChunkSectionCache sectionCache;
 
+    private final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
+
     protected ModernRenderSectionManager(RenderPassConfiguration<RenderType> configuration, ClientLevel world, int renderDistance, CommandList commandList) {
-        super(configuration, () -> new ModernChunkBuildContext(world, configuration), renderDistance, commandList, WorldUtil.getMinSection(world), WorldUtil.getMaxSection(world));
+        super(configuration,
+                () -> new ModernChunkBuildContext(world, configuration),
+                ModernChunkRenderer::new,
+                renderDistance,
+                commandList,
+                WorldUtil.getMinSection(world),
+                WorldUtil.getMaxSection(world),
+                Celeritas.options().performance.chunkBuilderThreads);
         this.world = world;
         this.sectionCache = new ClonedChunkSectionCache(this.world);
+        this.translucencySorting = Celeritas.canApplyTranslucencySorting();
     }
 
     public static ModernRenderSectionManager create(ChunkVertexType vertexType, ClientLevel world, int renderDistance, CommandList commandList) {
@@ -124,5 +138,41 @@ public class ModernRenderSectionManager extends RenderSectionManager {
                 }
             }
         }
+    }
+
+    @Override
+    protected void updateSectionInfo(RenderSection render, ContextBundle<RenderSection> info) {
+        super.updateSectionInfo(render, info);
+
+        if (info == null || info.getContext(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES).isEmpty()) {
+            this.sectionsWithGlobalEntities.remove(render);
+        } else {
+            this.sectionsWithGlobalEntities.add(render);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        this.sectionsWithGlobalEntities.clear();
+    }
+
+    public Collection<RenderSection> getSectionsWithGlobalEntities() {
+        return ReferenceSets.unmodifiable(this.sectionsWithGlobalEntities);
+    }
+
+    @Override
+    protected boolean useFogOcclusion() {
+        return Celeritas.options().performance.useFogOcclusion;
+    }
+
+    @Override
+    protected boolean allowImportantRebuilds() {
+        return !Celeritas.options().performance.alwaysDeferChunkUpdates;
+    }
+
+    @Override
+    protected boolean shouldRespectUpdateTaskQueueSizeLimit() {
+        return !FlawlessFrames.isActive();
     }
 }

@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.gl.compat;
 
 //? if >=1.17
 import com.mojang.blaze3d.systems.RenderSystem;
+import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
 import org.lwjgl.opengl.GL20;
 
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -11,11 +12,11 @@ import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkFogMode;
 /*import net.minecraft.client.renderer.FogRenderer;*/
 import net.minecraft.util.Mth;
 
-public class FogHelper {
+public class FogHelper implements FogService {
     private static final float FAR_PLANE_THRESHOLD_EXP = (float) Math.log(1.0f / 0.0019f);
     private static final float FAR_PLANE_THRESHOLD_EXP2 = Mth.sqrt(FAR_PLANE_THRESHOLD_EXP);
 
-    public static float getFogEnd() {
+    public float getFogEnd() {
         //? if <1.17 {
         /*return GlStateManager.FOG.end;
         *///?} else if <1.21.2 {
@@ -24,7 +25,7 @@ public class FogHelper {
         /*return RenderSystem.getShaderFog().end();*/
     }
 
-    public static float getFogStart() {
+    public float getFogStart() {
         //? if <1.17 {
         /*return GlStateManager.FOG.start;
         *///?} else if <1.21.2 {
@@ -34,16 +35,16 @@ public class FogHelper {
     }
 
     //? if <1.17 {
-    /*public static float getFogDensity() {
+    /*public float getFogDensity() {
         return GlStateManager.FOG.density;
     }
     *///?} else {
-    public static float getFogDensity() {
+    public float getFogDensity() {
         throw new UnsupportedOperationException();
     }
     //?}
 
-    public static int getFogShapeIndex() {
+    public int getFogShapeIndex() {
         //? if >=1.21.2 {
         /*return RenderSystem.getShaderFog().shape().getIndex();
         *///?} else if >=1.18 {
@@ -52,7 +53,7 @@ public class FogHelper {
         /*return 0;*/ // always zero for 1.17 and older
     }
 
-    public static float getFogCutoff() {
+    public float getFogCutoff() {
         //? if <1.17 {
         /*int mode = GlStateManager.FOG.mode;
 
@@ -70,7 +71,7 @@ public class FogHelper {
         return getFogEnd();
     }
 
-    public static float[] getFogColor() {
+    public float[] getFogColor() {
         //? if <1.17 {
         /*return new float[]{FogRenderer.fogRed, FogRenderer.fogGreen, FogRenderer.fogBlue, 1.0F};
         *///?} else if <1.21.2 {
@@ -81,7 +82,7 @@ public class FogHelper {
         *///?}
     }
 
-    public static ChunkFogMode getFogMode() {
+    public ChunkFogMode getFogMode() {
         //? if <1.17 {
         /*int mode = GlStateManager.FOG.mode;
 

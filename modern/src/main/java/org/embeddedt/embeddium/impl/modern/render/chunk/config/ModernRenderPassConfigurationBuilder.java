@@ -36,7 +36,7 @@ public class ModernRenderPassConfigurationBuilder {
                 .name("translucent")
                 .fragmentDiscard(false)
                 .useReverseOrder(true)
-                .useTranslucencySorting(true)
+                .useTranslucencySorting(Celeritas.canApplyTranslucencySorting())
                 .build();
 
         ImmutableListMultimap.Builder<RenderType, TerrainRenderPass> vanillaRenderStages = ImmutableListMultimap.builder();

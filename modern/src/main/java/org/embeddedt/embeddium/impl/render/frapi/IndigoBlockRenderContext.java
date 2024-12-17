@@ -8,7 +8,6 @@ import net.fabricmc.fabric.impl.client.indigo.renderer.mesh.MutableQuadViewImpl;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.embeddedt.embeddium.impl.modern.render.chunk.MojangVertexConsumer;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
-import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelVertexConsumer;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockOcclusionCache;
 import net.fabricmc.fabric.impl.client.indigo.renderer.aocalc.AoCalculator;
 import net.fabricmc.fabric.impl.client.indigo.renderer.render.BlockRenderContext;
@@ -106,7 +105,7 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
     @Override
     protected void bufferQuad(MutableQuadViewImpl quad, VertexConsumer vertexConsumer) {
         super.bufferQuad(quad, vertexConsumer);
-        if(vertexConsumer instanceof ChunkModelVertexConsumer modelConsumer) {
+        if(vertexConsumer instanceof MojangVertexConsumer modelConsumer) {
             modelConsumer.close();
         }
     }

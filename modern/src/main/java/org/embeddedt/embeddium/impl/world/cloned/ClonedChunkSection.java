@@ -8,6 +8,7 @@ import net.minecraft.Util;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.chunk.*;
 import org.embeddedt.embeddium.impl.model.ModelDataSnapshotter;
+import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.ChunkBiomeContainerExtended;
 import org.embeddedt.embeddium.impl.world.ReadableContainerExtended;
@@ -179,7 +180,7 @@ public class ClonedChunkSection {
             // Set the blocks at relative Y 6 (world Y 70) to the appropriate state from the generator
             for (int z = 0; z < 16; z++) {
                 for (int x = 0; x < 16; x++) {
-                    container.getAndSetUnchecked(x, 6, z, DebugLevelSource.getBlockStateFor(WorldUtil.sectionToBlockCoord(pos.getX(), x), WorldUtil.sectionToBlockCoord(pos.getZ(), z)));
+                    container.getAndSetUnchecked(x, 6, z, DebugLevelSource.getBlockStateFor(PositionUtil.sectionToBlockCoord(pos.getX(), x), PositionUtil.sectionToBlockCoord(pos.getZ(), z)));
                 }
             }
         }

@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.util;
 
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
+import org.embeddedt.embeddium.impl.model.quad.ModernQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.api.util.NormI8;
@@ -60,7 +61,7 @@ public class ModelQuadUtil {
         }
 
         if (closestFace != null && Mth.equal(maxDot, 1.0f)) {
-            return ModelQuadFacing.fromDirection(closestFace);
+            return ModernQuadFacing.fromDirection(closestFace);
         }
 
         return ModelQuadFacing.UNASSIGNED;

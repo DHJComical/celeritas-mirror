@@ -20,6 +20,7 @@ import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.model.quad.blender.BlendedColorProvider;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ChunkRenderMatricesBuilder;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
@@ -31,6 +32,7 @@ import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkStatus;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTracker;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
+import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
@@ -82,7 +84,7 @@ public class CeleritasWorldRenderer {
     private Viewport currentViewport;
 
     @Getter
-    private RenderSectionManager renderSectionManager;
+    private ModernRenderSectionManager renderSectionManager;
 
     /**
      * @return The CeleritasWorldRenderer based on the current dimension
@@ -209,7 +211,7 @@ public class CeleritasWorldRenderer {
         Vec3 pos = camera.getPosition();
         float pitch = camera.getXRot();
         float yaw = camera.getYRot();
-        float fogDistance = FogHelper.getFogCutoff();
+        float fogDistance = ChunkShaderFogComponent.FOG_SERVICE.getFogCutoff();
 
         boolean dirty = pos.x != this.lastCameraX || pos.y != this.lastCameraY || pos.z != this.lastCameraZ ||
                 pitch != this.lastCameraPitch || yaw != this.lastCameraYaw || fogDistance != this.lastFogDistance;
@@ -279,7 +281,7 @@ public class CeleritasWorldRenderer {
      * Performs a render pass for the given {@link RenderType} and draws all visible chunks for it.
      */
     public void drawChunkLayer(RenderType renderLayer, Matrix4f pose, double x, double y, double z) {
-        ChunkRenderMatrices matrices = ChunkRenderMatrices.from(pose);
+        ChunkRenderMatrices matrices = ChunkRenderMatricesBuilder.from(pose);
 
         Collection<TerrainRenderPass> passes = this.renderSectionManager.getRenderPassConfiguration().vanillaRenderStages().get(renderLayer);
 
@@ -635,13 +637,13 @@ public class CeleritasWorldRenderer {
             return true;
         }
 
-        int minX = WorldUtil.posToSectionCoord(x1 - 0.5D);
-        int minY = WorldUtil.posToSectionCoord(y1 - 0.5D);
-        int minZ = WorldUtil.posToSectionCoord(z1 - 0.5D);
+        int minX = PositionUtil.posToSectionCoord(x1 - 0.5D);
+        int minY = PositionUtil.posToSectionCoord(y1 - 0.5D);
+        int minZ = PositionUtil.posToSectionCoord(z1 - 0.5D);
 
-        int maxX = WorldUtil.posToSectionCoord(x2 + 0.5D);
-        int maxY = WorldUtil.posToSectionCoord(y2 + 0.5D);
-        int maxZ = WorldUtil.posToSectionCoord(z2 + 0.5D);
+        int maxX = PositionUtil.posToSectionCoord(x2 + 0.5D);
+        int maxY = PositionUtil.posToSectionCoord(y2 + 0.5D);
+        int maxZ = PositionUtil.posToSectionCoord(z2 + 0.5D);
 
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {

@@ -14,6 +14,7 @@ import org.embeddedt.embeddium.impl.model.light.data.QuadLightData;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuad;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadViewMutable;
+import org.embeddedt.embeddium.impl.model.quad.ModernQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
 import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
@@ -512,7 +513,7 @@ public class FluidRenderer {
 
                 float br = dir.getAxis() == Direction.Axis.Z ? 0.8F : 0.6F;
 
-                ModelQuadFacing facing = ModelQuadFacing.fromDirection(dir);
+                ModelQuadFacing facing = ModernQuadFacing.fromDirection(dir);
 
                 this.updateQuad(quad, world, blockPos, lighter, dir, br, colorProvider, fluidState);
                 this.writeQuad(meshBuilder, material, offset, quad, facing, false, ctx);

@@ -1,0 +1,30 @@
+package org.embeddedt.embeddium.impl.model.quad.properties;
+
+public enum ModelQuadFacing {
+    POS_X,
+    POS_Y,
+    POS_Z,
+    NEG_X,
+    NEG_Y,
+    NEG_Z,
+    UNASSIGNED;
+
+    public static final ModelQuadFacing[] VALUES = ModelQuadFacing.values();
+
+    public static final int COUNT = VALUES.length;
+
+    public static final int NONE = 0;
+    public static final int ALL = (1 << COUNT) - 1;
+
+    public ModelQuadFacing getOpposite() {
+        return switch (this) {
+            case POS_Y -> NEG_Y;
+            case NEG_Y -> POS_Y;
+            case POS_X -> NEG_X;
+            case NEG_X -> POS_X;
+            case POS_Z -> NEG_Z;
+            case NEG_Z -> POS_Z;
+            default -> UNASSIGNED;
+        };
+    }
+}

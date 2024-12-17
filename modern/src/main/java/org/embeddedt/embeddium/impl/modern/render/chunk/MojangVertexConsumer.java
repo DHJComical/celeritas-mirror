@@ -2,7 +2,6 @@ package org.embeddedt.embeddium.impl.modern.render.chunk;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
-import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelVertexConsumer;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
@@ -13,7 +12,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 //? if >=1.15 {
-public class MojangVertexConsumer implements ChunkModelVertexConsumer {
+public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
     private final ChunkVertexEncoder.Vertex[] vertices = ChunkVertexEncoder.Vertex.uninitializedQuad();
     private ChunkVertexEncoder.Vertex currentVertexObj;
     private int currentIndex = -1;
@@ -84,7 +83,6 @@ public class MojangVertexConsumer implements ChunkModelVertexConsumer {
         return nextIndex;
     }
 
-    @Override
     public void embeddium$setOffset(Vector3fc offset) {
         xOff = offset.x();
         yOff = offset.y();
