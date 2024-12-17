@@ -21,11 +21,9 @@ public class CloudShader implements AutoCloseable {
     }
 
     private GlProgram<CloudShaderInterface> createShader() {
-        GlShader vertShader = ShaderLoader.loadShader(ShaderType.VERTEX,
-                ResourceLocationUtil.make("sodium", "clouds/clouds.vsh"), CLOUD_CONSTANTS);
+        GlShader vertShader = ShaderLoader.loadShader(ShaderType.VERTEX, "sodium:clouds/clouds.vsh", CLOUD_CONSTANTS);
 
-        GlShader fragShader = ShaderLoader.loadShader(ShaderType.FRAGMENT,
-                ResourceLocationUtil.make("sodium", "clouds/clouds.fsh"), CLOUD_CONSTANTS);
+        GlShader fragShader = ShaderLoader.loadShader(ShaderType.FRAGMENT, "sodium:clouds/clouds.fsh", CLOUD_CONSTANTS);
 
         try {
             return GlProgram.builder("celeritas:cloud_shader")

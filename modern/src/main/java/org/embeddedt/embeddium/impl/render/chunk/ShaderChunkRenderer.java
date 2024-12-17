@@ -13,7 +13,6 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshAttribute;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.shader.ShaderLoader;
-import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 import java.util.Map;
 
@@ -47,10 +46,10 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         ShaderConstants constants = options.constants();
 
         GlShader vertShader = ShaderLoader.loadShader(ShaderType.VERTEX,
-                ResourceLocationUtil.make("sodium", path + ".vsh"), constants);
+                "sodium:" + path + ".vsh", constants);
         
         GlShader fragShader = ShaderLoader.loadShader(ShaderType.FRAGMENT,
-                ResourceLocationUtil.make("sodium", path + ".fsh"), constants);
+                "sodium:" + path + ".fsh", constants);
 
         try {
             return GlProgram.builder("sodium:chunk_shader")

@@ -2,7 +2,6 @@ package org.embeddedt.embeddium.impl.render.viewport;
 
 import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum;
-import net.minecraft.world.phys.AABB;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.joml.RoundingMode;
 import org.joml.Vector3d;
@@ -29,18 +28,14 @@ public final class Viewport {
         this.blockCoords = new Vector3i(position.x, position.y, position.z, RoundingMode.FLOOR);
     }
 
-    public boolean isBoxVisible(AABB box) {
-        if (!LoaderServices.INSTANCE.isCullableAABB(box)) {
-            return true;
-        }
-
+    public boolean isBoxVisible(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
         return this.frustum.testAab(
-                (float)(box.minX - this.transform.intX) - this.transform.fracX,
-                (float)(box.minY - this.transform.intY) - this.transform.fracY,
-                (float)(box.minZ - this.transform.intZ) - this.transform.fracZ,
-                (float)(box.maxX - this.transform.intX) - this.transform.fracX,
-                (float)(box.maxY - this.transform.intY) - this.transform.fracY,
-                (float)(box.maxZ - this.transform.intZ) - this.transform.fracZ
+                (float)(minX - this.transform.intX) - this.transform.fracX,
+                (float)(minY - this.transform.intY) - this.transform.fracY,
+                (float)(minZ - this.transform.intZ) - this.transform.fracZ,
+                (float)(maxX - this.transform.intX) - this.transform.fracX,
+                (float)(maxY - this.transform.intY) - this.transform.fracY,
+                (float)(maxZ - this.transform.intZ) - this.transform.fracZ
         );
     }
 

@@ -18,6 +18,7 @@ import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.model.quad.blender.BlendedColorProvider;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionManager;
@@ -436,6 +437,14 @@ public class CeleritasWorldRenderer {
         this.renderGlobalBlockEntities(poseStack, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer);
     }
 
+    private static boolean isBoxVisible(Viewport viewport, AABB box) {
+        if (!LoaderServices.INSTANCE.isCullableAABB(box)) {
+            return true;
+        }
+
+        return viewport.isBoxVisible(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
+    }
+
     private void renderBlockEntities(PoseStack matrices,
                                      RenderBuffers bufferBuilders,
                                      Long2ObjectMap<SortedSet<BlockDestructionProgress>> blockBreakingProgressions,
@@ -470,7 +479,7 @@ public class CeleritasWorldRenderer {
 
                 for (BlockEntity blockEntity : blockEntities) {
                     //? if forge {
-                    if(ENABLE_BLOCKENTITY_CULLING && !currentViewport.isBoxVisible(blockEntity.getRenderBoundingBox()))
+                    if(ENABLE_BLOCKENTITY_CULLING && !isBoxVisible(currentViewport, blockEntity.getRenderBoundingBox()))
                         continue;
                     //?}
 
@@ -504,7 +513,7 @@ public class CeleritasWorldRenderer {
 
             for (var blockEntity : blockEntities) {
                 //? if forge {
-                if(ENABLE_BLOCKENTITY_CULLING && !currentViewport.isBoxVisible(blockEntity.getRenderBoundingBox()))
+                if(ENABLE_BLOCKENTITY_CULLING && !isBoxVisible(currentViewport, blockEntity.getRenderBoundingBox()))
                     continue;
                 //?}
 
