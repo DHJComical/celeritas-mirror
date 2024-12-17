@@ -12,7 +12,6 @@ import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import lombok.Getter;
 import net.minecraft.client.renderer.entity.EntityRenderer;
-import net.minecraftforge.fml.common.Mod;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;

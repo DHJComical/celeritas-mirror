@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraftforge.fml.common.Mod;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
 import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
