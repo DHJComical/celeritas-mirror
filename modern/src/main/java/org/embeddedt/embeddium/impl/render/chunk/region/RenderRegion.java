@@ -11,8 +11,8 @@ import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
-import net.minecraft.core.SectionPos;
 import org.apache.commons.lang3.Validate;
+import org.embeddedt.embeddium.impl.util.PositionUtil;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -61,7 +61,7 @@ public class RenderRegion {
     }
 
     public static long key(int x, int y, int z) {
-        return SectionPos.asLong(x, y, z);
+        return PositionUtil.packSection(x, y, z);
     }
 
     public int getChunkX() {

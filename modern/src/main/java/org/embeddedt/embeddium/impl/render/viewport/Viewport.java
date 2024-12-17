@@ -2,34 +2,31 @@ package org.embeddedt.embeddium.impl.render.viewport;
 
 import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 import net.minecraft.world.phys.AABB;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
+import org.joml.RoundingMode;
 import org.joml.Vector3d;
+import org.joml.Vector3i;
+import org.joml.Vector3ic;
 
 public final class Viewport {
     private final Frustum frustum;
     private final CameraTransform transform;
 
-    private final SectionPos chunkCoords;
-    private final BlockPos blockCoords;
+    private final Vector3i chunkCoords;
+    private final Vector3i blockCoords;
 
     public Viewport(Frustum frustum, Vector3d position) {
         this.frustum = frustum;
         this.transform = new CameraTransform(position.x, position.y, position.z);
 
-        this.chunkCoords = SectionPos.of(
+        this.chunkCoords = new Vector3i(
                 WorldUtil.posToSectionCoord(position.x),
                 WorldUtil.posToSectionCoord(position.y),
                 WorldUtil.posToSectionCoord(position.z)
         );
 
-        //? if >=1.20 {
-        this.blockCoords = BlockPos.containing
-        //?} else
-        /*this.blockCoords = new BlockPos*/
-                (position.x, position.y, position.z);
+        this.blockCoords = new Vector3i(position.x, position.y, position.z, RoundingMode.FLOOR);
     }
 
     public boolean isBoxVisible(AABB box) {
@@ -71,11 +68,11 @@ public final class Viewport {
         return this.transform;
     }
 
-    public SectionPos getChunkCoord() {
+    public Vector3ic getChunkCoord() {
         return this.chunkCoords;
     }
 
-    public BlockPos getBlockCoord() {
+    public Vector3ic getBlockCoord() {
         return this.blockCoords;
     }
 }

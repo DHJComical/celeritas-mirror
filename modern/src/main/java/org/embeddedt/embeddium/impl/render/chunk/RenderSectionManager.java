@@ -37,6 +37,7 @@ import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
+import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.util.iterator.ByteIterator;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
@@ -284,7 +285,7 @@ public class RenderSectionManager {
     }
 
     public void onSectionAdded(int x, int y, int z) {
-        long key = SectionPos.asLong(x, y, z);
+        long key = PositionUtil.packSection(x, y, z);
 
         if (this.sectionByPosition.containsKey(key)) {
             return;
@@ -313,7 +314,7 @@ public class RenderSectionManager {
     }
 
     public void onSectionRemoved(int x, int y, int z) {
-        RenderSection section = this.sectionByPosition.remove(SectionPos.asLong(x, y, z));
+        RenderSection section = this.sectionByPosition.remove(PositionUtil.packSection(x, y, z));
 
         if (section == null) {
             return;
@@ -618,7 +619,7 @@ public class RenderSectionManager {
 
         this.sectionCache.invalidate(x, y, z);
 
-        RenderSection section = this.sectionByPosition.get(SectionPos.asLong(x, y, z));
+        RenderSection section = this.sectionByPosition.get(PositionUtil.packSection(x, y, z));
 
         if (section != null) {
             ChunkUpdateType pendingUpdate;
@@ -692,7 +693,7 @@ public class RenderSectionManager {
     }
 
     private RenderSection getRenderSection(int x, int y, int z) {
-        return this.sectionByPosition.get(SectionPos.asLong(x, y, z));
+        return this.sectionByPosition.get(PositionUtil.packSection(x, y, z));
     }
 
     private Collection<String> getSortingStrings() {
