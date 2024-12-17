@@ -643,7 +643,7 @@ public class RenderSectionManager {
     private static final float NEARBY_REBUILD_DISTANCE = MathUtil.square(16.0f);
 
     private boolean shouldPrioritizeRebuild(RenderSection section) {
-        return this.lastCameraPosition != null && section.getSquaredDistance(this.lastCameraPosition) < NEARBY_REBUILD_DISTANCE;
+        return this.lastCameraPosition != null && section.getSquaredDistanceFromBlockCenter(this.lastCameraPosition.getX(), this.lastCameraPosition.getY(), this.lastCameraPosition.getZ()) < NEARBY_REBUILD_DISTANCE;
     }
 
     private static boolean allowImportantRebuilds() {

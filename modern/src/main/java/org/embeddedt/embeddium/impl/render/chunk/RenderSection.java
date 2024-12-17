@@ -8,7 +8,6 @@ import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
-import net.minecraft.core.BlockPos;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -193,8 +192,8 @@ public class RenderSection {
      * @return The squared distance from the center of this chunk in the world to the center of the block position
      * given by {@param pos}
      */
-    public float getSquaredDistance(BlockPos pos) {
-        return this.getSquaredDistance(pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f);
+    public float getSquaredDistanceFromBlockCenter(int x, int y, int z) {
+        return this.getSquaredDistance(x + 0.5f, y + 0.5f, z + 0.5f);
     }
 
     /**
