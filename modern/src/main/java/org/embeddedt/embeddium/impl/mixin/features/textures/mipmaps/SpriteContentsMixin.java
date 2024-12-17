@@ -12,7 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
-import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevelHolder;
+import org.embeddedt.embeddium.impl.modern.render.chunk.sprite.SpriteTransparencyLevelHolder;
 import org.lwjgl.system.MemoryUtil;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;

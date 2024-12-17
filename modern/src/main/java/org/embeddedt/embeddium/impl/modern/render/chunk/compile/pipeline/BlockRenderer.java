@@ -35,7 +35,7 @@ import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.api.BlockRendererRegistry;
 import org.embeddedt.embeddium.api.model.EmbeddiumBakedModelExtension;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
-import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevelHolder;
+import org.embeddedt.embeddium.impl.modern.render.chunk.sprite.SpriteTransparencyLevelHolder;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 import org.embeddedt.embeddium.impl.render.frapi.FRAPIModelUtils;
