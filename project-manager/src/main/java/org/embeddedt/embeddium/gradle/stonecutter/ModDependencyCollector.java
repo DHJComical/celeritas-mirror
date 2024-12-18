@@ -32,6 +32,12 @@ public class ModDependencyCollector {
                     new DependencyCondition("=1.19.2", "4965330"),
                     new DependencyCondition("=1.18.2", "4607274"),
                     new DependencyCondition("=1.16.5", "3681973")
+            )),
+            "flywheel",
+            new Dependency("curse.maven:flywheel-486392:", List.of(
+                    new DependencyCondition("=1.19.2", "4341471"),
+                    new DependencyCondition("=1.18.2", "4341461"),
+                    new DependencyCondition("=1.16.5", "3535459")
             ))
     );
 

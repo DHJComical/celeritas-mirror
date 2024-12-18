@@ -255,9 +255,6 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     }
 
     private static void postSectionDataBuiltEvent(ContextBundle<RenderSection> renderData) {
-        renderData.mapContext(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES, List::copyOf);
         ChunkDataBuiltEvent.BUS.post(new ChunkDataBuiltEvent(new SectionInfoBuilder() {
             @Override
             public void addSprite(TextureAtlasSprite sprite) {
@@ -275,6 +272,9 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                 renderData.getContext(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES).removeIf(filter);
             }
         }));
+        renderData.mapContext(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, List::copyOf);
+        renderData.mapContext(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, List::copyOf);
+        renderData.mapContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES, List::copyOf);
     }
 
     private ReportedException fillCrashInfo(CrashReport report, WorldSlice slice, BlockPos pos) {
