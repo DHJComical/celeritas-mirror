@@ -4,8 +4,10 @@ import dev.kikugie.stonecutter.build.StonecutterBuild;
 import dev.kikugie.stonecutter.controller.StonecutterController;
 import org.gradle.api.Project;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ModDependencyCollector {
     record Dependency(String cursePrefix, List<DependencyCondition> versionConditions) {
@@ -27,7 +29,7 @@ public class ModDependencyCollector {
             )),
             "codechickenlib",
             new Dependency("curse.maven:codechickenlib-242818:", List.of(
-                    new DependencyCondition("=1.20.4", "5826640"),
+                    //new DependencyCondition("=1.20.4", "5826640"),
                     new DependencyCondition("=1.20.1", "5753868"),
                     new DependencyCondition("=1.19.2", "4965330"),
                     new DependencyCondition("=1.18.2", "4607274"),
@@ -56,9 +58,18 @@ public class ModDependencyCollector {
     public static void defineConsts(StonecutterController scController) {
         scController.parameters(params -> {
             var mcVersion = params.getMetadata().getVersion();
-            dependencyMap(params.getMetadata().getProject()).forEach((key, dep) -> {
+            var depMap = dependencyMap(params.getMetadata().getProject());
+            depMap.forEach((key, dep) -> {
                 params.getConsts().set(key, dep.versionConditions.stream().anyMatch(c -> scController.eval(mcVersion, c.evalCondition)));
             });
+            Set<String> allKeys = new HashSet<>();
+            allKeys.addAll(FORGELIKE_DEPENDENCY_MAP.keySet());
+            allKeys.addAll(FABRIC_DEPENDENCY_MAP.keySet());
+            for (String key : allKeys) {
+                if (!depMap.containsKey(key)) {
+                    params.getConsts().set(key, false);
+                }
+            }
         });
     }
 
