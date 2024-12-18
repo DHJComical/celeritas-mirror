@@ -1,4 +1,5 @@
 import bs.ModLoader
+import org.embeddedt.embeddium.gradle.stonecutter.ModDependencyCollector
 
 plugins {
     id("dev.kikugie.stonecutter")
@@ -82,3 +83,5 @@ stonecutter.parameters {
         if(stonecutter.compare(metadata.version, "1.19") >= 0) "import net.minecraft.util.RandomSource;" else "import java.util.Random;"
     }
 }
+
+ModDependencyCollector.defineConsts(stonecutter)

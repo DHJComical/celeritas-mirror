@@ -1,4 +1,6 @@
-package org.embeddedt.embeddium.compat.immersive;
+package org.embeddedt.embeddium.impl.modern.compat.immersive;
+
+//? if >=1.18.2 && immersiveengineering {
 
 import blusunrize.immersiveengineering.api.utils.ResettableLazy;
 import blusunrize.immersiveengineering.api.wires.Connection;
@@ -234,3 +236,5 @@ public class ImmersiveConnectionRenderer implements ResourceManagerReloadListene
         }
     }
 }
+
+//?}

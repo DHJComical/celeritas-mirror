@@ -1,4 +1,6 @@
-package org.embeddedt.embeddium.compat.immersive;
+package org.embeddedt.embeddium.impl.modern.compat.immersive;
+
+//? if >=1.18.2 && immersiveengineering {
 
 import org.embeddedt.embeddium.impl.Celeritas;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,3 +27,5 @@ public class ImmersiveCompat {
         }
     }
 }
+
+//?}

@@ -1,4 +1,6 @@
-package org.embeddedt.embeddium.compat.immersive;
+package org.embeddedt.embeddium.impl.modern.compat.immersive;
+
+//? if >=1.18.2 && immersiveengineering {
 
 import blusunrize.immersiveengineering.api.wires.GlobalWireNetwork;
 import blusunrize.immersiveengineering.api.wires.WireCollisionData.ConnectionSegments;
@@ -13,3 +15,5 @@ public class ImmersiveEmptyChunkChecker {
         return wiresInSection != null && !wiresInSection.isEmpty();
     }
 }
+
+//?}

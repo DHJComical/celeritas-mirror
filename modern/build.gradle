@@ -4,6 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import org.embeddedt.embeddium.gradle.DiscordNotifier
+import org.embeddedt.embeddium.gradle.stonecutter.ModDependencyCollector
 import xyz.wagyourtail.jvmdg.gradle.task.files.DowngradeFiles
 
 import java.nio.file.Files
@@ -307,6 +308,9 @@ dependencies {
 
         compileOnly "net.fabricmc:fabric-loader:$rootProject.properties.fabricloader"
     }
+
+    // Mod compat dependencies
+    ModDependencyCollector.addModDependencies(project)
 }
 
 jar {
