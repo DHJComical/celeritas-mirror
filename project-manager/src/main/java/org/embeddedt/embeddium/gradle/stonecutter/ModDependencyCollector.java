@@ -15,29 +15,29 @@ public class ModDependencyCollector {
     private static final Map<String, Dependency> DEPENDENCY_MAP = Map.of(
             "immersiveengineering",
             new Dependency("curse.maven:immersiveengineering-231951:", List.of(
-                    new DependencyCondition("=1.20.1", "4782978"),
-                    new DependencyCondition("=1.19.2", "4193176"),
-                    new DependencyCondition("=1.18.2", "4412849")
+                    new DependencyCondition("forge && =1.20.1", "4782978"),
+                    new DependencyCondition("forge && =1.19.2", "4193176"),
+                    new DependencyCondition("forge && =1.18.2", "4412849")
             )),
             "brandonscore",
             new Dependency("curse.maven:brandonscore-231382:", List.of(
-                    new DependencyCondition("=1.20.4", "5981781"),
-                    new DependencyCondition("=1.20.1", "5422013"),
-                    new DependencyCondition("=1.18.2", "4790968")
+                    new DependencyCondition("forge && =1.20.4", "5981781"),
+                    new DependencyCondition("forge && =1.20.1", "5422013"),
+                    new DependencyCondition("forge && =1.18.2", "4790968")
             )),
             "codechickenlib",
             new Dependency("curse.maven:codechickenlib-242818:", List.of(
-                    new DependencyCondition("=1.20.4", "5826640"),
-                    new DependencyCondition("=1.20.1", "5753868"),
-                    new DependencyCondition("=1.19.2", "4965330"),
-                    new DependencyCondition("=1.18.2", "4607274"),
-                    new DependencyCondition("=1.16.5", "3681973")
+                    new DependencyCondition("forge && =1.20.4", "5826640"),
+                    new DependencyCondition("forge && =1.20.1", "5753868"),
+                    new DependencyCondition("forge && =1.19.2", "4965330"),
+                    new DependencyCondition("forge && =1.18.2", "4607274"),
+                    new DependencyCondition("forge && =1.16.5", "3681973")
             )),
             "flywheel",
             new Dependency("curse.maven:flywheel-486392:", List.of(
-                    new DependencyCondition("=1.19.2", "4341471"),
-                    new DependencyCondition("=1.18.2", "4341461"),
-                    new DependencyCondition("=1.16.5", "3535459")
+                    new DependencyCondition("forge && =1.19.2", "4341471"),
+                    new DependencyCondition("forge && =1.18.2", "4341461"),
+                    new DependencyCondition("forge && =1.16.5", "3535459")
             ))
     );
 
