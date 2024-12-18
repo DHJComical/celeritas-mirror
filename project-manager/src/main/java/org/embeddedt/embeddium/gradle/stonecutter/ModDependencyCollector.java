@@ -15,7 +15,9 @@ public class ModDependencyCollector {
     private static final Map<String, Dependency> DEPENDENCY_MAP = Map.of(
             "immersiveengineering",
             new Dependency("curse.maven:immersiveengineering-231951:", List.of(
-                    new DependencyCondition("=1.20.1", "4782978")
+                    new DependencyCondition("=1.20.1", "4782978"),
+                    new DependencyCondition("=1.19.2", "4193176"),
+                    new DependencyCondition("=1.18.2", "4412849")
             ))
     );
 
