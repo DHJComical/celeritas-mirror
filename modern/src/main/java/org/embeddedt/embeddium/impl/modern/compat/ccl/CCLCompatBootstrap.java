@@ -1,4 +1,6 @@
-package org.embeddedt.embeddium.compat.ccl;
+package org.embeddedt.embeddium.impl.modern.compat.ccl;
+
+//? if codechickenlib {
 
 import org.embeddedt.embeddium.impl.Celeritas;
 import net.minecraftforge.api.distmarker.Dist;
@@ -16,3 +18,5 @@ public class CCLCompatBootstrap {
         }
     }
 }
+
+//?}
