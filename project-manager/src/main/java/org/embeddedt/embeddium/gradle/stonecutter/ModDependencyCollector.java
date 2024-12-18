@@ -18,6 +18,12 @@ public class ModDependencyCollector {
                     new DependencyCondition("=1.20.1", "4782978"),
                     new DependencyCondition("=1.19.2", "4193176"),
                     new DependencyCondition("=1.18.2", "4412849")
+            )),
+            "brandonscore",
+            new Dependency("curse.maven:brandonscore-231382:", List.of(
+                    new DependencyCondition("=1.20.4", "5981781"),
+                    new DependencyCondition("=1.20.1", "5422013"),
+                    new DependencyCondition("=1.18.2", "4790968")
             ))
     );
 
