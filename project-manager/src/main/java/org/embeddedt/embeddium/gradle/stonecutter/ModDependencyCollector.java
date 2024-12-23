@@ -45,7 +45,7 @@ public class ModDependencyCollector {
 
     private static final Map<String, Dependency> FABRIC_DEPENDENCY_MAP = Map.of();
 
-    private static final boolean LOAD_IN_DEV = true;
+    private static final boolean LOAD_IN_DEV = false;
 
     private static Map<String, Dependency> dependencyMap(String ver) {
         if (ver.contains("forge")) {
