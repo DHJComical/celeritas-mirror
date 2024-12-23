@@ -68,6 +68,13 @@ public class FluidRenderer {
     private static final float EPSILON = 0.001f;
     private static final float ALIGNED_EQUALS_EPSILON = 0.011f;
 
+    //? if <1.20.2 {
+    private static final float SPRITE_UV_SCALING_RANGE = 16f;
+    //?} else {
+    /*private static final float SPRITE_UV_SCALING_RANGE = 1f;
+    *///?}
+
+
     private final BlockPos.MutableBlockPos scratchPos = new BlockPos.MutableBlockPos();
     private final MutableFloat scratchHeight = new MutableFloat(0);
     private final MutableInt scratchSamples = new MutableInt();
@@ -298,13 +305,8 @@ public class FluidRenderer {
                 u1 = sprite.getU(0);
                 v1 = sprite.getV(0);
                 u2 = u1;
-                //? if <1.20.2 {
-                v2 = sprite.getV(16.0D);
-                u3 = sprite.getU(16.0D);
-                //?} else {
-                /*v2 = sprite.getV(1.0F);
-                u3 = sprite.getU(1.0F);
-                *///?}
+                v2 = sprite.getV(SPRITE_UV_SCALING_RANGE);
+                u3 = sprite.getU(SPRITE_UV_SCALING_RANGE);
                 v3 = v2;
                 u4 = u3;
                 v4 = v1;
@@ -314,25 +316,14 @@ public class FluidRenderer {
                 float dir = (float) Mth.atan2(velocity.z, velocity.x) - (1.5707964f);
                 float sin = Mth.sin(dir) * 0.25F;
                 float cos = Mth.cos(dir) * 0.25F;
-                //? if <1.20.2 {
-                u1 = sprite.getU(8.0F + (-cos - sin) * 16.0F);
-                v1 = sprite.getV(8.0F + (-cos + sin) * 16.0F);
-                u2 = sprite.getU(8.0F + (-cos + sin) * 16.0F);
-                v2 = sprite.getV(8.0F + (cos + sin) * 16.0F);
-                u3 = sprite.getU(8.0F + (cos + sin) * 16.0F);
-                v3 = sprite.getV(8.0F + (cos - sin) * 16.0F);
-                u4 = sprite.getU(8.0F + (cos - sin) * 16.0F);
-                v4 = sprite.getV(8.0F + (-cos - sin) * 16.0F);
-                //?} else {
-                /*u1 = sprite.getU(0.5F + (-cos - sin));
-                v1 = sprite.getV(0.5F + -cos + sin);
-                u2 = sprite.getU(0.5F + -cos + sin);
-                v2 = sprite.getV(0.5F + cos + sin);
-                u3 = sprite.getU(0.5F + cos + sin);
-                v3 = sprite.getV(0.5F + (cos - sin));
-                u4 = sprite.getU(0.5F + (cos - sin));
-                v4 = sprite.getV(0.5F + (-cos - sin));
-                *///?}
+                u1 = sprite.getU((SPRITE_UV_SCALING_RANGE/2) + (-cos - sin) * SPRITE_UV_SCALING_RANGE);
+                v1 = sprite.getV((SPRITE_UV_SCALING_RANGE/2) + (-cos + sin) * SPRITE_UV_SCALING_RANGE);
+                u2 = sprite.getU((SPRITE_UV_SCALING_RANGE/2) + (-cos + sin) * SPRITE_UV_SCALING_RANGE);
+                v2 = sprite.getV((SPRITE_UV_SCALING_RANGE/2) + (cos + sin) * SPRITE_UV_SCALING_RANGE);
+                u3 = sprite.getU((SPRITE_UV_SCALING_RANGE/2) + (cos + sin) * SPRITE_UV_SCALING_RANGE);
+                v3 = sprite.getV((SPRITE_UV_SCALING_RANGE/2) + (cos - sin) * SPRITE_UV_SCALING_RANGE);
+                u4 = sprite.getU((SPRITE_UV_SCALING_RANGE/2) + (cos - sin) * SPRITE_UV_SCALING_RANGE);
+                v4 = sprite.getV((SPRITE_UV_SCALING_RANGE/2) + (-cos - sin) * SPRITE_UV_SCALING_RANGE);
             }
 
             float uAvg = (u1 + u2 + u3 + u4) / 4.0F;
@@ -490,19 +481,11 @@ public class FluidRenderer {
                     }
                 }
 
-                //? if <1.20.2 {
-                float u1 = sprite.getU(0.0D);
-                float u2 = sprite.getU(8.0D);
-                float v1 = sprite.getV((1.0F - c1) * 16.0F * 0.5F);
-                float v2 = sprite.getV((1.0F - c2) * 16.0F * 0.5F);
-                float v3 = sprite.getV(8.0D);
-                //?} else {
-                /*float u1 = sprite.getU(0.0F);
-                float u2 = sprite.getU(0.5F);
-                float v1 = sprite.getV((1.0F - c1) * 0.5F);
-                float v2 = sprite.getV((1.0F - c2) * 0.5F);
-                float v3 = sprite.getV(0.5F);
-                *///?}
+                float u1 = sprite.getU(0.0F);
+                float u2 = sprite.getU(SPRITE_UV_SCALING_RANGE / 2);
+                float v1 = sprite.getV((1.0F - c1) * SPRITE_UV_SCALING_RANGE * 0.5F);
+                float v2 = sprite.getV((1.0F - c2) * SPRITE_UV_SCALING_RANGE * 0.5F);
+                float v3 = sprite.getV(SPRITE_UV_SCALING_RANGE / 2);
 
                 quad.setSprite(sprite);
 
