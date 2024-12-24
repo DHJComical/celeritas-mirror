@@ -431,7 +431,7 @@ tasks.named("remapJar") {
     archiveClassifier = 'remapped-thin'
 }
 
-if (configuredModLoader == FABRIC) {
+if (configuredModLoader == FABRIC || configuredModLoader == FORGE) {
     tasks.named("jar", Jar) {
         manifest {
             attributes([
