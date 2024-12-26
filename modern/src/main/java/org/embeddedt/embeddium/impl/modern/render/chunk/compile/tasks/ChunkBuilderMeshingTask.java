@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
@@ -20,6 +21,7 @@ import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
+import org.embeddedt.embeddium.impl.util.collections.SetUtil;
 import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
@@ -246,7 +248,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     private static void initializeContextBundle(ContextBundle<RenderSection> renderData) {
         renderData.setContext(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, new ArrayList<>());
         renderData.setContext(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, new ArrayList<>());
-        renderData.setContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES, new ArrayList<>());
+        renderData.setContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES, new ObjectOpenHashSet<>());
     }
 
     private static void encodeVisibilityData(VisGraph occluder, ContextBundle<RenderSection> renderData) {
@@ -277,7 +279,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         }));
         renderData.mapContext(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, List::copyOf);
         renderData.mapContext(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES, List::copyOf);
+        renderData.mapContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES, SetUtil::copyOf);
     }
 
     private ReportedException fillCrashInfo(CrashReport report, WorldSlice slice, BlockPos pos) {

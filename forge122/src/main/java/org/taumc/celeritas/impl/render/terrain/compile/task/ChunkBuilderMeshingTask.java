@@ -1,5 +1,6 @@
 package org.taumc.celeritas.impl.render.terrain.compile.task;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -24,6 +25,7 @@ import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
+import org.embeddedt.embeddium.impl.util.collections.SetUtil;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.joml.Vector3d;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
@@ -174,7 +176,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     private static void initializeContextBundle(ContextBundle<RenderSection> renderData) {
         renderData.setContext(VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, new ArrayList<>());
         renderData.setContext(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, new ArrayList<>());
-        renderData.setContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES, new ArrayList<>());
+        renderData.setContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES, new ObjectOpenHashSet<>());
     }
 
     private static void encodeVisibilityData(VisGraph occluder, ContextBundle<RenderSection> renderData) {
@@ -183,7 +185,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
         renderData.mapContext(VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, List::copyOf);
         renderData.mapContext(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES, List::copyOf);
+        renderData.mapContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES, SetUtil::copyOf);
     }
 
 }
