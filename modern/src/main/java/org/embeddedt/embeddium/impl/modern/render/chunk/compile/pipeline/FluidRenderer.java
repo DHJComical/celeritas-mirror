@@ -6,6 +6,8 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.material.FlowingFluid;
+import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
@@ -183,7 +185,7 @@ public class FluidRenderer {
         var sprites = context.getAdditionalCapturedSprites();
 
         for(TextureAtlasSprite sprite : sprites) {
-            if (sprite != null) {
+            if (SpriteUtil.hasAnimation(sprite)) {
                 buffers.getSectionContextBundle().getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
             }
         }
@@ -191,12 +193,41 @@ public class FluidRenderer {
         context.setCaptureAdditionalSprites(false);
     }
 
+    /**
+     * Optimized version of FluidState.getFlow that does a fast, allocation-free check first and avoids
+     * calling FluidState.getFlow when not required.
+     */
+    private Vec3 getFlowOptimized(EmbeddiumBlockAndTintGetter world, BlockPos blockPos, FluidState fluidState) {
+        var cursor = this.scratchPos;
+        boolean couldBeAffected = !(fluidState.getType() instanceof FlowingFluid) || fluidState.getValue(FlowingFluid.FALLING);
+        if (!couldBeAffected) {
+            // Scan surrounding fluids and see if their height matches. If so, the flow is going to be zero anyway,
+            // so we can avoid calling FluidState.getFlow.
+            var ownHeight = fluidState.getOwnHeight();
+            for (Direction direction : DirectionUtil.HORIZONTAL_DIRECTIONS) {
+                ModernBlockPosUtil.setWithOffset(cursor, blockPos, direction);
+                var neighborFluidState = world.getFluidState(cursor);
+                var neighborHeight = neighborFluidState.getOwnHeight();
+                if (neighborHeight == 0.0F || neighborHeight != ownHeight) {
+                    couldBeAffected = true;
+                    break;
+                }
+            }
+        }
+
+        if (couldBeAffected) {
+            return fluidState.getFlow(world, blockPos);
+        } else {
+            return Vec3.ZERO;
+        }
+    }
+
     public void render(BlockRenderContext ctx, ChunkBuildBuffers buffers) {
         var fluidState = ctx.state().getFluidState();
         var blockPos = ctx.pos();
         var world = ctx.localSlice();
         var offset = ctx.origin();
-        var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(ItemBlockRenderTypes.getRenderLayer(fluidState));
+        var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(ctx.renderLayer());
         var meshBuilder = buffers.get(material);
         Fluid fluid = fluidState.getType();
 
@@ -259,7 +290,7 @@ public class FluidRenderer {
             southEastHeight = 1.0f;
             northEastHeight = 1.0f;
         } else {
-            var scratchPos = new BlockPos.MutableBlockPos();
+            var scratchPos = this.scratchPos;
             float heightNorth = this.fluidHeight(world, fluid, ModernBlockPosUtil.setWithOffset(scratchPos, blockPos, Direction.NORTH), Direction.NORTH);
             float heightSouth = this.fluidHeight(world, fluid, ModernBlockPosUtil.setWithOffset(scratchPos, blockPos, Direction.SOUTH), Direction.SOUTH);
             float heightEast = this.fluidHeight(world, fluid, ModernBlockPosUtil.setWithOffset(scratchPos, blockPos, Direction.EAST), Direction.EAST);
@@ -292,7 +323,7 @@ public class FluidRenderer {
             southEastHeight -= EPSILON;
             northEastHeight -= EPSILON;
 
-            Vec3 velocity = fluidState.getFlow(world, blockPos);
+            Vec3 velocity = getFlowOptimized(world, blockPos, fluidState);
 
             TextureAtlasSprite sprite;
             ModelQuadFacing facing;
@@ -551,7 +582,7 @@ public class FluidRenderer {
 
         TextureAtlasSprite sprite = quad.getSprite();
 
-        if (sprite != null) {
+        if (SpriteUtil.hasAnimation(sprite)) {
             builder.getSectionContextBundle().getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
         }
 

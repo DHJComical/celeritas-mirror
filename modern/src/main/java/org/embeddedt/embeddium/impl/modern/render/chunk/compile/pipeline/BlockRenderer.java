@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.model.color.ColorProvider;
 import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
@@ -275,7 +276,7 @@ public class BlockRenderer {
 
             TextureAtlasSprite sprite = quad.getSprite();
 
-            if (sprite != null) {
+            if (SpriteUtil.hasAnimation(sprite)) {
                 builder.getSectionContextBundle().getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
             }
         }

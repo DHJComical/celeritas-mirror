@@ -5,6 +5,7 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
+import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
@@ -53,10 +54,7 @@ import org.embeddedt.embeddium.impl.model.ModelDataSnapshotter;
 import org.embeddedt.embeddium.impl.model.UnwrappableBakedModel;
 import org.joml.Vector3d;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -153,11 +151,13 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             random.setSeed(seed);
 
                             //? if forgelike && >=1.19 {
-                            for (RenderType layer : model.getRenderTypes(blockState, random, modelData)) {
-                                context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, model, seed, layer);
+                            // We optimize the asList() call to return a cached ImmutableList, so this will not allocate.
+                            var renderTypeList = model.getRenderTypes(blockState, random, modelData).asList();
+                            //noinspection ForLoopReplaceableByForEach
+                            for (int i = 0; i < renderTypeList.size(); i++) {
+                                context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, model, seed, renderTypeList.get(i));
                                 context.setModelData(modelData);
-                                cache.getBlockRenderer()
-                                        .renderModel(context, buffers);
+                                cache.getBlockRenderer().renderModel(context, buffers);
                             }
                             //?} else if forge && <1.19 {
                             /*for (RenderType layer : cache.getBlockRenderLayerCache().forState(blockState)) {
@@ -258,6 +258,9 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         ChunkDataBuiltEvent.BUS.post(new ChunkDataBuiltEvent(new SectionInfoBuilder() {
             @Override
             public void addSprite(TextureAtlasSprite sprite) {
+                if (!SpriteUtil.hasAnimation(sprite)) {
+                    return;
+                }
                 renderData.getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
             }
 

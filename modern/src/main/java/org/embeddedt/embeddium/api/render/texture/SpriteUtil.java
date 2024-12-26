@@ -30,8 +30,8 @@ public class SpriteUtil {
 
     public static boolean hasAnimation(TextureAtlasSprite sprite) {
         //? if >=1.20 {
-        return ((SpriteContentsExtended) sprite.contents()).sodium$hasAnimation();
+        return sprite != null && ((SpriteContentsExtended) sprite.contents()).sodium$hasAnimation();
         //?} else
-        /*return ((SpriteContentsExtended) sprite).sodium$hasAnimation();*/
+        /*return sprite != null && ((SpriteContentsExtended) sprite).sodium$hasAnimation();*/
     }
 }

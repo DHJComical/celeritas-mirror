@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
@@ -68,7 +69,7 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
             vTotal += vertex.v;
         }
         var sprite = SpriteFinderCache.forBlockAtlas().findNearestSprite(uTotal / 4, vTotal / 4);
-        if(sprite != null) {
+        if (SpriteUtil.hasAnimation(sprite)) {
             this.targetBuilder.getSectionContextBundle().getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
         }
     }

@@ -64,6 +64,9 @@ public class ChunkMeshBufferBuilder {
     }
 
     private void setBufferSize(int capacity) {
+        if (this.capacity == capacity && this.buffer != null) {
+            return; // avoid allocating a new ByteBuffer wrapper when the capacity is not changing
+        }
         this.buffer = MemoryUtil.memRealloc(this.buffer, capacity * this.stride);
         this.capacity = capacity;
     }
