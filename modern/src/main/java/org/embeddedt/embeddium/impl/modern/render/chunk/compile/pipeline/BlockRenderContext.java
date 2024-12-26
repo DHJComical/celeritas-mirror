@@ -37,7 +37,7 @@ public class BlockRenderContext {
     private final Vector3f origin = new Vector3f();
 
     //? if >=1.15
-    private final PoseStack stack = new PoseStack();
+    private PoseStack stack;
 
     private BlockState state;
     private BakedModel model;
@@ -63,7 +63,6 @@ public class BlockRenderContext {
 
     public BlockRenderContext(WorldSlice world) {
         this.localSlice = WorldSliceLocalGenerator.generate(world);
-        ((CachingPoseStack)this.stack).embeddium$setCachingEnabled(true);
     }
 
     public void update(GeometryCategory category, BlockPos pos, BlockPos origin, BlockState state, BakedModel model, long seed, RenderType renderLayer) {
@@ -107,6 +106,10 @@ public class BlockRenderContext {
      * @return A PoseStack for custom renderers
      */
     public PoseStack stack() {
+        if (this.stack == null) {
+            this.stack = new PoseStack();
+            ((CachingPoseStack)this.stack).embeddium$setCachingEnabled(true);
+        }
         return this.stack;
     }
     //?}
