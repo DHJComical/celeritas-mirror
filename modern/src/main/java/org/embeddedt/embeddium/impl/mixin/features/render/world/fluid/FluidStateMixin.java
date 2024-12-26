@@ -38,7 +38,7 @@ public abstract class FluidStateMixin {
             for(int j = -1; j <= 1; ++j) {
                 cursor.set(x + i, y, z + j);
                 FluidState fluidstate = level.getFluidState(cursor);
-                if (!fluidstate.getType().isSame(this.getType()) && !level.getBlockState(cursor).isSolidRender(level, cursor)) {
+                if (!fluidstate.getType().isSame(this.getType()) && !level.getBlockState(cursor).isSolidRender(/*? if <1.21.2 {*/level, cursor/*?}*/)) {
                     return true;
                 }
             }
