@@ -59,6 +59,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * <p>Takes a slice of world state (block states, biome and light data arrays) and copies the data for use in off-thread
@@ -500,18 +503,23 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         if (section != null) {
             return section;
         }
-        section = Minecraft.getInstance().submit(() -> {
-            var renderer = CeleritasWorldRenderer.instanceNullable();
-            if (renderer == null) {
-                return null;
-            }
-            var manager = renderer.getRenderSectionManager();
-            if (manager != null) {
-                return manager.getSectionCache().acquire(sX, sY, sZ);
-            } else {
-                return null;
-            }
-        }).join();
+        try {
+            section = Minecraft.getInstance().submit(() -> {
+                var renderer = CeleritasWorldRenderer.instanceNullable();
+                if (renderer == null) {
+                    return null;
+                }
+                var manager = renderer.getRenderSectionManager();
+                if (manager != null) {
+                    return manager.getSectionCache().acquire(sX, sY, sZ);
+                } else {
+                    return null;
+                }
+            }).get(3, TimeUnit.SECONDS);
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Failed to fetch fallback section", e);
+        } catch (InterruptedException | TimeoutException ignored) {
+        }
         if (section != null) {
             this.extraClonedSections.put(key, section);
         }
