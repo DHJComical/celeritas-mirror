@@ -503,22 +503,27 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         if (section != null) {
             return section;
         }
-        try {
-            section = Minecraft.getInstance().submit(() -> {
-                var renderer = CeleritasWorldRenderer.instanceNullable();
-                if (renderer == null) {
-                    return null;
-                }
-                var manager = renderer.getRenderSectionManager();
-                if (manager != null) {
-                    return manager.getSectionCache().acquire(sX, sY, sZ);
-                } else {
-                    return null;
-                }
-            }).get(3, TimeUnit.SECONDS);
-        } catch (ExecutionException e) {
-            throw new RuntimeException("Failed to fetch fallback section", e);
-        } catch (InterruptedException | TimeoutException ignored) {
+        var sectionFuture = Minecraft.getInstance().submit(() -> {
+            var renderer = CeleritasWorldRenderer.instanceNullable();
+            if (renderer == null) {
+                return null;
+            }
+            var manager = renderer.getRenderSectionManager();
+            if (manager != null) {
+                return manager.getSectionCache().acquire(sX, sY, sZ);
+            } else {
+                return null;
+            }
+        });
+        // The game will discard the future if the player disconnects, so we need to check that they are still connected.
+        while (Minecraft.getInstance().level != null) {
+            try {
+                section = sectionFuture.get(500, TimeUnit.MILLISECONDS);
+                break;
+            } catch (ExecutionException e) {
+                throw new RuntimeException("Failed to fetch fallback section", e);
+            } catch (InterruptedException | TimeoutException ignored) {
+            }
         }
         if (section != null) {
             this.extraClonedSections.put(key, section);
