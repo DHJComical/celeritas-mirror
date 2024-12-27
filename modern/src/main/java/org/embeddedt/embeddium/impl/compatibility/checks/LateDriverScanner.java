@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.logging.log4j.LogManager;
 *///?}
 
-import static org.embeddedt.embeddium.impl.Celeritas.MODNAME;
+import static org.embeddedt.embeddium.api.EmbeddiumConstants.MODNAME;
 
 /**
  * Performs OpenGL driver validation after the game creates an OpenGL context. This runs immediately after OpenGL

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static org.embeddedt.embeddium.impl.Celeritas.MODNAME;
+import static org.embeddedt.embeddium.api.EmbeddiumConstants.MODNAME;
 
 public class GraphicsAdapterProbe {
     private static final Logger LOGGER = LoggerFactory.getLogger(MODNAME + "-GraphicsAdapterProbe");
