@@ -162,7 +162,10 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                                 cache.getBlockRenderer().renderModel(context, buffers);
                             }
                             //?} else if forge && <1.19 {
-                            /*for (RenderType layer : cache.getBlockRenderLayerCache().forState(blockState)) {
+                            /*var renderTypeList = cache.getBlockRenderLayerCache().forState(blockState);
+                            //noinspection ForLoopReplaceableByForEach
+                            for (int i = 0; i < renderTypeList.size(); i++) {
+                                var layer = renderTypeList.get(i);
                                 //? if >=1.17 {
                                 ForgeHooksClient.setRenderType(layer);
                                 //?} else
