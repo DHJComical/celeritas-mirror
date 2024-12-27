@@ -1,6 +1,9 @@
 package org.embeddedt.embeddium.impl.render.frapi;
 
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ReloadableResourceManager;
 import org.embeddedt.embeddium.impl.Celeritas;
@@ -25,6 +28,7 @@ import net.minecraftforge.fml.common.Mod;
 /*import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 *///?}
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.*;
@@ -55,6 +59,26 @@ public class SpriteFinderCache {
         TextureAtlasSprite findNearestSprite(float u, float v);
     }
 
+    private static void reloadHook() {
+        var modelManager = Minecraft.getInstance().getModelManager();
+        Finder finder = NULL_FINDER;
+        //? if ffapi {
+        var fabricFinder = SpriteFinder.get(modelManager.getAtlas(TextureAtlas.LOCATION_BLOCKS));
+        try {
+            MethodType bootstrapType = MethodType.methodType(Finder.class, SpriteFinder.class);
+            MethodType invocationType = MethodType.methodType(TextureAtlasSprite.class, float.class, float.class);
+            // Adapt to our Finder interface
+            finder = (Finder)LambdaMetafactory.metafactory(MethodHandles.lookup(),
+                    "findNearestSprite",
+                    bootstrapType, invocationType,
+                    SPRITE_FINDER_HANDLE, invocationType).getTarget().invokeExact((SpriteFinder)fabricFinder);
+        } catch(Throwable e) {
+            e.printStackTrace();
+        }
+        //?}
+        blockAtlasSpriteFinder = finder;
+    }
+
     //? if forge && <1.18 {
     /*@SubscribeEvent
     public static void onReload(ParticleFactoryRegisterEvent event) {
@@ -65,37 +89,37 @@ public class SpriteFinderCache {
     /*public static void registerListener() {
     *///?}
         if(SPRITE_FINDER_HANDLE != null) {
+            //? if fabric {
+            /*var listener = new SimpleSynchronousResourceReloadListener() {
+                @Override
+                public void onResourceManagerReload(ResourceManager arg) {
+                    reloadHook();
+                }
+
+                @Override
+                public ResourceLocation getFabricId() {
+                    return ResourceLocationUtil.make("celeritas", "sprite_cache");
+                }
+            };
+            net.fabricmc.fabric.api.resource.ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(listener);
+            *///?} else {
             var listener = new SimplePreparableReloadListener<>() {
                 @Override
-                protected Object prepare(ResourceManager pResourceManager, ProfilerFiller pProfiler) {
+                protected Object prepare(ResourceManager arg, ProfilerFiller arg2) {
                     return null;
                 }
 
                 @Override
-                protected void apply(Object pObject, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
-                    var modelManager = Minecraft.getInstance().getModelManager();
-                    Finder finder = NULL_FINDER;
-                    //? if ffapi {
-                    var fabricFinder = SpriteFinder.get(modelManager.getAtlas(TextureAtlas.LOCATION_BLOCKS));
-                    try {
-                        MethodType bootstrapType = MethodType.methodType(Finder.class, SpriteFinder.class);
-                        MethodType invocationType = MethodType.methodType(TextureAtlasSprite.class, float.class, float.class);
-                        // Adapt to our Finder interface
-                        finder = (Finder)LambdaMetafactory.metafactory(MethodHandles.lookup(),
-                                "findNearestSprite",
-                                bootstrapType, invocationType,
-                                SPRITE_FINDER_HANDLE, invocationType).getTarget().invokeExact((SpriteFinder)fabricFinder);
-                    } catch(Throwable e) {
-                        e.printStackTrace();
-                    }
-                    //?}
-                    blockAtlasSpriteFinder = finder;
+                protected void apply(Object object, ResourceManager arg, ProfilerFiller arg2) {
+                    reloadHook();
                 }
             };
-            //? if forgelike && >=1.18
+            //? if >=1.18 {
             event.registerReloadListener(listener);
-            //? if fabric || (forge && <1.18)
-            /*((ReloadableResourceManager)Minecraft.getInstance().getResourceManager()).registerReloadListener(listener);*/
+            //?} else {
+            /*((ReloadableResourceManager)Minecraft.getInstance().getResourceManager()).registerReloadListener(listener);
+            *///?}
+            //?}
         }
     }
 

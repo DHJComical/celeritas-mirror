@@ -137,7 +137,7 @@ public class BlockRenderer {
         }
 
         // Delegate FRAPI models to their pipeline
-        if (FRAPIModelUtils.isFRAPIModel(ctx.model())) {
+        if (this.fabricModelRenderingHandler != null && FRAPIModelUtils.isFRAPIModel(ctx.model())) {
             this.fabricModelRenderingHandler.reset();
             this.fabricModelRenderingHandler.renderEmbeddium(ctx, buffers, ctx.stack(), ctx.random());
             return;
