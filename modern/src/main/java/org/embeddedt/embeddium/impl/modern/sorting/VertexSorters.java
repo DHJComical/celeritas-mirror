@@ -1,7 +1,8 @@
-package org.embeddedt.embeddium.impl.util.sorting;
+package org.embeddedt.embeddium.impl.modern.sorting;
 
 //? if >=1.20 {
 import com.mojang.blaze3d.vertex.VertexSorting;
+import org.embeddedt.embeddium.impl.util.sorting.MergeSort;
 import org.joml.Vector3f;
 
 public class VertexSorters {
