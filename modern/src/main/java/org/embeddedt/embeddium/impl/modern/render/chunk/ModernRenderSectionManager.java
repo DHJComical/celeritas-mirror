@@ -44,7 +44,7 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     private final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
 
     protected ModernRenderSectionManager(RenderPassConfiguration<RenderType> configuration, ClientLevel world, int renderDistance, CommandList commandList) {
-        super(configuration,
+        super(Minecraft.getInstance()::managedBlock, configuration,
                 () -> new ModernChunkBuildContext(world, configuration),
                 ModernChunkRenderer::new,
                 renderDistance,

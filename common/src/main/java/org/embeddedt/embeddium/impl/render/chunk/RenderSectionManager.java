@@ -85,13 +85,13 @@ public abstract class RenderSectionManager {
 
     private final int minSection, maxSection;
 
-    public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier, BiFunction<RenderDevice, ChunkVertexType, ChunkRenderer> chunkRenderer, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
+    public RenderSectionManager(ChunkBuilder.ManagedBlocker blocker, RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier, BiFunction<RenderDevice, ChunkVertexType, ChunkRenderer> chunkRenderer, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
         this.chunkRenderer = chunkRenderer.apply(RenderDevice.INSTANCE, configuration.vertexType());
 
         this.renderPassConfiguration = configuration;
         this.vertexType = configuration.vertexType();
 
-        this.builder = new ChunkBuilder(contextSupplier, requestedThreads);
+        this.builder = new ChunkBuilder(blocker, contextSupplier, requestedThreads);
 
         this.needsUpdate = true;
         this.renderDistance = renderDistance;

@@ -10,6 +10,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.GlobalChunkBuildContext
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -30,13 +31,15 @@ public class ChunkBuilder {
 
     private final ChunkJobQueue queue = new ChunkJobQueue();
 
-    private final List<Thread> threads = new ArrayList<>();
+    private final List<WorkerThread> threads = new ArrayList<>();
 
     private final AtomicInteger busyThreadCount = new AtomicInteger();
 
     private final ChunkBuildContext localContext;
 
-    public ChunkBuilder(Supplier<ChunkBuildContext> contextSupplier, int requestedThreads) {
+    private final ManagedBlocker managedBlocker;
+
+    public ChunkBuilder(ManagedBlocker managedBlocker, Supplier<ChunkBuildContext> contextSupplier, int requestedThreads) {
         GlobalChunkBuildContext.setMainThread();
 
         int count = getThreadCount(requestedThreads);
@@ -45,7 +48,7 @@ public class ChunkBuilder {
             ChunkBuildContext context = contextSupplier.get();
             WorkerRunnable worker = new WorkerRunnable(context);
 
-            Thread thread = new WorkerThread(worker, "Chunk Render Task Executor #" + i, context);
+            WorkerThread thread = new WorkerThread(worker, "Chunk Render Task Executor #" + i, context);
             thread.setPriority(Math.max(0, Thread.NORM_PRIORITY - 2));
             thread.start();
 
@@ -55,6 +58,8 @@ public class ChunkBuilder {
         LOGGER.info("Started {} worker threads", this.threads.size());
 
         this.localContext = contextSupplier.get();
+
+        this.managedBlocker = managedBlocker;
     }
 
     /**
@@ -92,10 +97,8 @@ public class ChunkBuilder {
         LOGGER.info("Stopping worker threads");
 
         // Wait for every remaining thread to terminate
-        for (Thread thread : this.threads) {
-            try {
-                thread.join();
-            } catch (InterruptedException ignored) { }
+        for (WorkerThread thread : this.threads) {
+            this.managedBlocker.managedBlock(() -> !thread.isAlive());
         }
 
         this.threads.clear();
@@ -177,14 +180,13 @@ public class ChunkBuilder {
         return this.threads.size();
     }
 
-    private static class WorkerThread extends Thread implements GlobalChunkBuildContext.Holder {
+    public static final class WorkerThread extends Thread implements GlobalChunkBuildContext.Holder {
         private final ChunkBuildContext context;
 
         public WorkerThread(Runnable runnable, String name, ChunkBuildContext context) {
             super(runnable, name);
             this.context = context;
         }
-
 
         @Override
         public ChunkBuildContext embeddium$getGlobalContext() {
@@ -229,5 +231,18 @@ public class ChunkBuilder {
                 }
             }
         }
+    }
+
+    public interface ManagedBlocker {
+        ManagedBlocker NONE = isDone -> {
+            while (!isDone.getAsBoolean()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ignored) {
+                }
+            }
+        };
+
+        void managedBlock(BooleanSupplier isDone);
     }
 }
