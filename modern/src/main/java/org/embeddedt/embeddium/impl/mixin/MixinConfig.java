@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.mixin;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.embeddedt.embeddium.api.EmbeddiumConstants;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 
 import java.io.*;
@@ -10,12 +11,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import static org.embeddedt.embeddium.impl.Celeritas.MODNAME;
-
 
 @SuppressWarnings("CanBeFinal")
 public class MixinConfig {
-    private static final Logger LOGGER = LogManager.getLogger(MODNAME + "Config");
+    private static final Logger LOGGER = LogManager.getLogger(EmbeddiumConstants.MODNAME + "Config");
 
     private final Map<String, MixinOption> options = new HashMap<>();
 
@@ -259,7 +258,7 @@ public class MixinConfig {
         }
 
         try (Writer writer = new FileWriter(file)) {
-            writer.write("# This is the configuration file for " + MODNAME + ".\n");
+            writer.write("# This is the configuration file for " + EmbeddiumConstants.MODNAME + ".\n");
             writer.write("#\n");
             writer.write("# By default, this file will be empty except for this notice.\n");
         }
