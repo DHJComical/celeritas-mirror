@@ -57,7 +57,7 @@ import java.io.IOException;
 public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?}*/
 {
     public static final String MODID = EmbeddiumConstants.MODID;
-    public static final String MODNAME = EmbeddiumConstants.MODNAME;
+    public static String MODNAME = EmbeddiumConstants.MODNAME;
 
     //? if >=1.18 {
     private static final Logger LOGGER = LoggerFactory.getLogger(MODNAME);
@@ -99,6 +99,12 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         if(!FMLLoader.isProduction()) {
             //? if >=1.18
             mainEventBus.addListener((RegisterClientCommandsEvent event) -> DevCommands.register(event.getDispatcher()));
+        }
+
+        if (options().advanced.enableCeleritasIncognitoMode) {
+            MODNAME = "Embeddium";
+            MOD_VERSION = "1.0.11-beta.420";
+            EmbeddiumConstants.MODNAME = "Embeddium";
         }
     }
 
