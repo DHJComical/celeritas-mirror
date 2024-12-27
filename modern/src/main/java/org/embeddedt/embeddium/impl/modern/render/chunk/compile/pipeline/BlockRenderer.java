@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.Celeritas;
@@ -27,11 +26,7 @@ import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
-//$ rng_import
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
-//? if >=1.18
-import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.api.BlockRendererRegistry;
 import org.embeddedt.embeddium.api.model.EmbeddiumBakedModelExtension;
@@ -43,7 +38,6 @@ import org.embeddedt.embeddium.impl.render.frapi.FRAPIModelUtils;
 import org.embeddedt.embeddium.impl.render.frapi.FRAPIRenderHandler;
 //? if ffapi && >=1.20
 import org.embeddedt.embeddium.impl.render.frapi.IndigoBlockRenderContext;
-import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 
 import java.util.Arrays;
 import java.util.List;
@@ -55,12 +49,6 @@ import java.util.List;
  * This class does not need to be thread-safe, as a separate instance is allocated per meshing thread.
  */
 public class BlockRenderer {
-    private static final PoseStack EMPTY_STACK = new PoseStack();
-    //? if >=1.19 {
-    private final RandomSource random = new SingleThreadedRandomSource(42L);
-    //?} else
-    /*private final Random random = new XoRoShiRoRandom(42L);*/
-
     private final ColorProviderRegistry colorProviderRegistry;
     private final BlockOcclusionCache occlusionCache;
 
@@ -140,7 +128,7 @@ public class BlockRenderer {
             for (BlockRendererRegistry.Renderer customRenderer : customRenderers) {
                 try(var consumer = vertexConsumer.initialize(buffers.get(material), material, ctx)) {
                     consumer.embeddium$setOffset(ctx.origin());
-                    BlockRendererRegistry.RenderResult result = customRenderer.renderBlock(ctx, random, consumer);
+                    BlockRendererRegistry.RenderResult result = customRenderer.renderBlock(ctx, ctx.random(), consumer);
                     if (result == BlockRendererRegistry.RenderResult.OVERRIDE) {
                         return;
                     }
@@ -151,7 +139,7 @@ public class BlockRenderer {
         // Delegate FRAPI models to their pipeline
         if (FRAPIModelUtils.isFRAPIModel(ctx.model())) {
             this.fabricModelRenderingHandler.reset();
-            this.fabricModelRenderingHandler.renderEmbeddium(ctx, buffers, ctx.stack(), random);
+            this.fabricModelRenderingHandler.renderEmbeddium(ctx, buffers, ctx.stack(), ctx.random());
             return;
         }
 
@@ -180,7 +168,7 @@ public class BlockRenderer {
     }
 
     private List<BakedQuad> getGeometry(BlockRenderContext ctx, Direction face) {
-        var random = this.random;
+        var random = ctx.random();
         random.setSeed(ctx.seed());
 
         return ctx.model().getQuads(ctx.state(), face, random/*? if forgelike && >=1.19 {*/, ctx.modelData(), ctx.renderLayer()/*?}*/ /*? if forgelike && <1.19 {*//*, ctx.modelData()*//*?}*/);

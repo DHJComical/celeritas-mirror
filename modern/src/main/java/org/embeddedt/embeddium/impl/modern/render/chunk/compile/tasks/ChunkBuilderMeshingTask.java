@@ -1,9 +1,7 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
@@ -22,7 +20,6 @@ import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.util.collections.SetUtil;
-import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
@@ -30,18 +27,13 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.chunk.VisGraph;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
-//$ rng_import
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-//? if >=1.18
-import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.level.material.FluidState;
 //? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelData;
@@ -67,12 +59,6 @@ import java.util.function.Predicate;
  * array allocations, they are pooled to ensure that the garbage collector doesn't become overloaded.
  */
 public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> {
-
-    //? if >=1.19 {
-    private final RandomSource random = new SingleThreadedRandomSource(42L);
-     //?} else
-    /*private final Random random = new XoRoShiRoRandom(42L);*/
-
     private final RenderSection render;
     private final ChunkRenderContext renderContext;
 
@@ -140,25 +126,28 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         if (blockState.getRenderShape() == RenderShape.MODEL) {
                             BakedModel model = cache.getBlockModels()
                                 .getBlockModel(blockState);
-                            //? if forgelike
-                            var modelData = model.getModelData(context.localSlice(), blockPos, blockState, modelDataGetter.getModelData(blockPos));
 
                             long seed = blockState.getSeed(blockPos);
-                            random.setSeed(seed);
+                            context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, model, seed);
+                            context.random().setSeed(seed);
 
                             // Embeddium: Ideally we'd do this before the call to getModelData, but that requires an
                             // LVT reordering to move "long seed" further up. We will have to do this in 21.
-                            model = UnwrappableBakedModel.unwrapIfPossible(model, random);
+                            model = UnwrappableBakedModel.unwrapIfPossible(model, context.random());
 
-                            random.setSeed(seed);
+                            //? if forgelike {
+                            var modelData = model.getModelData(context.localSlice(), blockPos, blockState, modelDataGetter.getModelData(blockPos));
+                            context.setModelData(modelData);
+
+                            context.random().setSeed(seed); // for render layers
+                            //? }
 
                             //? if forgelike && >=1.19 {
                             // We optimize the asList() call to return a cached ImmutableList, so this will not allocate.
-                            var renderTypeList = model.getRenderTypes(blockState, random, modelData).asList();
+                            var renderTypeList = model.getRenderTypes(blockState, context.random(), modelData).asList();
                             //noinspection ForLoopReplaceableByForEach
                             for (int i = 0; i < renderTypeList.size(); i++) {
-                                context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, model, seed, renderTypeList.get(i));
-                                context.setModelData(modelData);
+                                context.setRenderLayer(renderTypeList.get(i));
                                 cache.getBlockRenderer().renderModel(context, buffers);
                             }
                             //?} else if forge && <1.19 {
@@ -170,13 +159,12 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                                 ForgeHooksClient.setRenderType(layer);
                                 //?} else
                                 /^ForgeHooksClient.setRenderLayer(layer);^/
-                                context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, model, seed, layer);
-                                context.setModelData(modelData);
+                                context.setRenderLayer(layer);
                                 cache.getBlockRenderer()
                                         .renderModel(context, buffers);
                             }
                             *///?} else {
-                            /*context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, model, seed, ItemBlockRenderTypes.getChunkRenderType(blockState));
+                            /*context.setRenderLayer(ItemBlockRenderTypes.getChunkRenderType(blockState));
                             cache.getBlockRenderer()
                                     .renderModel(context, buffers);
                             *///?}
@@ -185,7 +173,8 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         FluidState fluidState = blockState.getFluidState();
 
                         if (!fluidState.isEmpty()) {
-                            context.update(GeometryCategory.FLUID, blockPos, modelOffset, blockState, null, 42L, ItemBlockRenderTypes.getRenderLayer(fluidState));
+                            context.update(GeometryCategory.FLUID, blockPos, modelOffset, blockState, null, 42L);
+                            context.setRenderLayer(ItemBlockRenderTypes.getRenderLayer(fluidState));
                             cache.getFluidRenderer().render(context, buffers);
                         }
 
@@ -196,7 +185,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                                 //? if >=1.17 {
                                 BlockEntityRenderer<BlockEntity> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(entity);
                                 //?} else
-                                /*BlockEntityRenderer<BlockEntity> renderer = BlockEntityRenderDispatcher.instance.getRenderer(entity);*/
+                                /*BlockEntityRenderer<BlockEntity> renderer = net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher.instance.getRenderer(entity);*/
 
                                 if (renderer != null) {
                                     renderData.getContext(renderer.shouldRenderOffScreen(entity) ? ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES : ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES).add(entity);

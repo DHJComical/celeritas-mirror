@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import net.minecraft.util.RandomSource;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
@@ -53,10 +54,19 @@ public class BlockRenderContext {
     //? if forgelike && <1.19.1
     /*private IModelData modelData;*/
 
-    //? if >=1.15
+    //? if >=1.15 {
+    @Setter
+    @Accessors(fluent = false)
     private RenderType renderLayer;
+    //? }
 
     private int lightValue = -1;
+
+    @Getter
+    //? if >=1.19 {
+    private final RandomSource random = new net.minecraft.world.level.levelgen.SingleThreadedRandomSource(42L);
+    //?} else
+    /*private final Random random = new org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom(42L);*/
 
     @Getter
     private GeometryCategory category = GeometryCategory.BLOCK;
@@ -65,7 +75,7 @@ public class BlockRenderContext {
         this.localSlice = WorldSliceLocalGenerator.generate(world);
     }
 
-    public void update(GeometryCategory category, BlockPos pos, BlockPos origin, BlockState state, BakedModel model, long seed, RenderType renderLayer) {
+    public void update(GeometryCategory category, BlockPos pos, BlockPos origin, BlockState state, BakedModel model, long seed) {
         this.category = category;
         this.pos.set(pos);
         this.origin.set(origin.getX(), origin.getY(), origin.getZ());
@@ -76,8 +86,6 @@ public class BlockRenderContext {
         this.seed = seed;
 
         this.lightValue = -1;
-
-        this.renderLayer = renderLayer;
     }
 
     /**
