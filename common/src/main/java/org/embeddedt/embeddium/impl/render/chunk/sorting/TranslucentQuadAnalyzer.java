@@ -33,6 +33,10 @@ public class TranslucentQuadAnalyzer {
         DYNAMIC;
 
         public static final Level[] VALUES = values();
+
+        public boolean requiresDynamicSorting() {
+            return this.ordinal() >= Level.DYNAMIC.ordinal();
+        }
     }
 
     public TranslucentQuadAnalyzer() {
@@ -41,19 +45,23 @@ public class TranslucentQuadAnalyzer {
         }
     }
 
-    public record SortState(Level level, float[] centers, BitSet normalSigns, Vector3f sharedNormal) {
-        public static final SortState NONE = new SortState(Level.NONE, null, null, null);
+    public record SortState(Level level, float[] centers, int centersLength, BitSet normalSigns, Vector3f sharedNormal) {
+        public static final SortState NONE = new SortState(Level.NONE, null, 0, null, null);
 
         public boolean requiresDynamicSorting() {
-            return level.ordinal() >= Level.DYNAMIC.ordinal();
+            return level.requiresDynamicSorting();
         }
 
         public SortState compactForStorage() {
             if(this == NONE || requiresDynamicSorting()) {
                 return this;
             } else {
-                return new SortState(level, null, null, null);
+                return new SortState(level, null, 0, null, null);
             }
+        }
+
+        public static SortState compacted(SortState state) {
+            return state != null ? state.compactForStorage() : null;
         }
     }
 
@@ -97,7 +105,6 @@ public class TranslucentQuadAnalyzer {
 
     public SortState getSortState() {
         if(quadCenters.isEmpty()) {
-            clear();
             return SortState.NONE;
         } else {
             Level sortLevel;
@@ -116,12 +123,14 @@ public class TranslucentQuadAnalyzer {
 
             if (sortLevel == Level.NONE) {
                 finalState = SortState.NONE;
+            } else if (sortLevel.requiresDynamicSorting()) {
+                // Clone everything
+                finalState = new SortState(sortLevel, quadCenters.toArray(new float[0]), quadCenters.size(), cloneBits(normalSigns), new Vector3f(globalNormal));
             } else {
-                //noinspection ToArrayCallWithZeroLengthArrayArgument
-                finalState = new SortState(sortLevel, quadCenters.toArray(new float[quadCenters.size()]), cloneBits(normalSigns), new Vector3f(globalNormal));
+                // Just make a thin wrapper around our backing objects
+                finalState = new SortState(sortLevel, quadCenters.elements(), quadCenters.size(), normalSigns, globalNormal);
             }
 
-            clear();
             return finalState;
         }
     }

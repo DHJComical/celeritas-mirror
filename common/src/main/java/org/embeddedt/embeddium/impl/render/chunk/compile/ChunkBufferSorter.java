@@ -96,12 +96,12 @@ public class ChunkBufferSorter {
     }
 
     public static NativeBuffer sort(NativeBuffer indexBuffer, @Nullable TranslucentQuadAnalyzer.SortState chunkData, float x, float y, float z) {
-        if (chunkData == null || chunkData.level() == TranslucentQuadAnalyzer.Level.NONE || chunkData.centers().length < 3) {
+        if (chunkData == null || chunkData.level() == TranslucentQuadAnalyzer.Level.NONE || chunkData.centersLength() < 3) {
             return indexBuffer;
         }
 
         float[] centers = chunkData.centers();
-        int quadCount = centers.length / 3;
+        int quadCount = chunkData.centersLength() / 3;
         int[] indicesArray = new int[quadCount];
         float[] distanceArray = new float[quadCount];
         boolean isStatic = chunkData.level() == TranslucentQuadAnalyzer.Level.STATIC;

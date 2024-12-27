@@ -86,6 +86,12 @@ public class ChunkMeshBufferBuilder {
         return this.analyzer != null ? this.analyzer.getSortState() : null;
     }
 
+    public void resetSortState() {
+        if (this.analyzer != null) {
+            this.analyzer.clear();
+        }
+    }
+
     public void destroy() {
         if (this.buffer != null) {
             MemoryUtil.memFree(this.buffer);

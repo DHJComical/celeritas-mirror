@@ -65,7 +65,7 @@ public class ChunkBuildBuffers {
      * have been rendered to pass the finished meshes over to the graphics card. This function can be called multiple
      * times to return multiple copies.
      */
-    public BuiltSectionMeshParts createMesh(TerrainRenderPass pass) {
+    public BuiltSectionMeshParts createMesh(TerrainRenderPass pass, float camX, float camY, float camZ) {
         var builder = this.builders.get(pass);
 
         List<ByteBuffer> vertexBuffers = new ArrayList<>();
@@ -121,11 +121,17 @@ public class ChunkBuildBuffers {
 
                 bufOffset += numPrimitives * 6;
             }
+
+            // Do the initial sort now
+            ChunkBufferSorter.sort(mergedIndexBuffer, sortState, camX, camY, camZ);
+
+            // Reset the vertex buffer for next time
+            builder.getVertexBuffer(ModelQuadFacing.UNASSIGNED).resetSortState();
         } else {
             mergedIndexBuffer = null;
         }
 
-        return new BuiltSectionMeshParts(mergedBuffer, mergedIndexBuffer, sortState, vertexRanges);
+        return new BuiltSectionMeshParts(mergedBuffer, mergedIndexBuffer, TranslucentQuadAnalyzer.SortState.compacted(sortState), vertexRanges);
     }
 
     public void destroy() {

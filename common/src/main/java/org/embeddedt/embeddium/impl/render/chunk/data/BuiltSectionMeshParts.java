@@ -1,9 +1,16 @@
 package org.embeddedt.embeddium.impl.render.chunk.data;
 
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.gl.util.VertexRange;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
+import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
 
 public class BuiltSectionMeshParts {
     private final VertexRange[] ranges;
@@ -33,5 +40,19 @@ public class BuiltSectionMeshParts {
 
     public TranslucentQuadAnalyzer.SortState getSortState() {
         return this.sortState;
+    }
+
+    public static Map<TerrainRenderPass, BuiltSectionMeshParts> groupFromBuildBuffers(ChunkBuildBuffers buffers, float relativeCameraX, float relativeCameraY, float relativeCameraZ) {
+        Map<TerrainRenderPass, BuiltSectionMeshParts> meshes = new Reference2ReferenceOpenHashMap<>();
+
+        for (TerrainRenderPass pass : buffers.getRenderPassConfiguration().renderPasses()) {
+            BuiltSectionMeshParts mesh = buffers.createMesh(pass, relativeCameraX, relativeCameraY, relativeCameraZ);
+
+            if (mesh != null) {
+                meshes.put(pass, mesh);
+            }
+        }
+
+        return meshes;
     }
 }

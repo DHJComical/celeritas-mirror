@@ -217,25 +217,10 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
             throw fillCrashInfo(CrashReport.forThrowable(ex, "Encountered exception while building chunk meshes"), slice, blockPos);
         }
 
-        Map<TerrainRenderPass, BuiltSectionMeshParts> meshes = new Reference2ReferenceOpenHashMap<>();
+        Map<TerrainRenderPass, BuiltSectionMeshParts> meshes = BuiltSectionMeshParts.groupFromBuildBuffers(buffers,(float)camera.x - minX, (float)camera.y - minY, (float)camera.z - minZ);
 
-        for (TerrainRenderPass pass : buffers.getRenderPassConfiguration().renderPasses()) {
-            BuiltSectionMeshParts mesh = buffers.createMesh(pass);
-
-            if (mesh != null) {
-                if(pass.isSorted()) {
-                    Objects.requireNonNull(mesh.getIndexData());
-                    ChunkBufferSorter.sort(
-                            mesh.getIndexData(),
-                            mesh.getSortState(),
-                            (float)camera.x - minX,
-                            (float)camera.y - minY,
-                            (float)camera.z - minZ
-                    );
-                }
-                meshes.put(pass, mesh);
-                renderData.setContext(ModernRenderSectionBuiltInfo.HAS_BLOCK_GEOMETRY, true);
-            }
+        if (!meshes.isEmpty()) {
+            renderData.setContext(ModernRenderSectionBuiltInfo.HAS_BLOCK_GEOMETRY, true);
         }
 
         encodeVisibilityData(occluder, renderData);

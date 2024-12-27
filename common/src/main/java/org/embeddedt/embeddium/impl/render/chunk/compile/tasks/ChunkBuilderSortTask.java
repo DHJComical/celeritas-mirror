@@ -41,7 +41,7 @@ public class ChunkBuilderSortTask extends ChunkBuilderTask<ChunkBuildOutput> {
         Map<TerrainRenderPass, BuiltSectionMeshParts> meshes = new Reference2ReferenceOpenHashMap<>();
         for(Map.Entry<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> entry : translucentMeshes.entrySet()) {
             var sortBuffer = entry.getValue();
-            var newIndexBuffer = new NativeBuffer(ChunkBufferSorter.getIndexBufferSize(sortBuffer.centers().length / 3));
+            var newIndexBuffer = new NativeBuffer(ChunkBufferSorter.getIndexBufferSize(sortBuffer.centersLength() / 3));
             ChunkBufferSorter.sort(newIndexBuffer, sortBuffer, cameraX - this.render.getOriginX(), cameraY - this.render.getOriginY(), cameraZ - this.render.getOriginZ());
             meshes.put(entry.getKey(), new BuiltSectionMeshParts(
                     null,
