@@ -132,9 +132,6 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     // The starting point from which this slice captures blocks
     private int originX, originY, originZ;
     
-    // The volume that this WorldSlice contains
-    private BoundingBox volume;
-    
     // A fallback BlockPos object to use when retrieving data from the level directly
     private final BlockPos.MutableBlockPos fallbackPos = new BlockPos.MutableBlockPos();
     
@@ -214,7 +211,6 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         this.originX = (context.getOrigin().getX() - NEIGHBOR_CHUNK_RADIUS) << 4;
         this.originY = (context.getOrigin().getY() - NEIGHBOR_CHUNK_RADIUS) << 4;
         this.originZ = (context.getOrigin().getZ() - NEIGHBOR_CHUNK_RADIUS) << 4;
-        this.volume = context.getVolume();
 
         for (int x = 0; x < SECTION_ARRAY_LENGTH; x++) {
             for (int y = 0; y < SECTION_ARRAY_LENGTH; y++) {
