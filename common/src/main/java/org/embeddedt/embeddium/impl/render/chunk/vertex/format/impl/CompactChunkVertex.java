@@ -7,6 +7,8 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncode
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.lwjgl.system.MemoryUtil;
 
+import java.util.List;
+
 public class CompactChunkVertex implements ChunkVertexType {
     public static final GlVertexFormat<ChunkMeshAttribute> VERTEX_FORMAT = GlVertexFormat.builder(ChunkMeshAttribute.class, 20)
             .addElement(ChunkMeshAttribute.POSITION_MATERIAL_MESH, "a_PosId", 0, GlVertexAttributeFormat.UNSIGNED_SHORT, 4, false, true)
@@ -66,6 +68,11 @@ public class CompactChunkVertex implements ChunkVertexType {
 
             return ptr + STRIDE;
         };
+    }
+
+    @Override
+    public List<String> getDefines() {
+        return List.of("USE_VERTEX_COMPRESSION");
     }
 
     private static short encodePosition(float value) {

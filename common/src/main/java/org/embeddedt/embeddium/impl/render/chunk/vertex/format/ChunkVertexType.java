@@ -2,6 +2,8 @@ package org.embeddedt.embeddium.impl.render.chunk.vertex.format;
 
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 
+import java.util.List;
+
 public interface ChunkVertexType {
     /**
      * @return The scale to be applied to vertex coordinates
@@ -21,4 +23,8 @@ public interface ChunkVertexType {
     GlVertexFormat<ChunkMeshAttribute> getVertexFormat();
 
     ChunkVertexEncoder getEncoder();
+
+    default List<String> getDefines() {
+        return List.of();
+    }
 }
