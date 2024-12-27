@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.render.chunk.compile;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
+import org.embeddedt.embeddium.impl.util.sorting.MergeSort;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
@@ -123,7 +124,7 @@ public class ChunkBufferSorter {
             buildDynamicDistanceArray(centers, distanceArray, quadCount, x, y, z);
         }
 
-        IntArrays.mergeSort(indicesArray, (a, b) -> Float.compare(distanceArray[b], distanceArray[a]));
+        MergeSort.mergeSort(indicesArray, distanceArray);
 
         return generateIndexBuffer(indexBuffer, indicesArray);
     }
