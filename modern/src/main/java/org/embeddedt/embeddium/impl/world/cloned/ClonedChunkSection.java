@@ -320,4 +320,12 @@ public class ClonedChunkSection {
     public void setLastUsedTimestamp(long timestamp) {
         this.lastUsedTimestamp = timestamp;
     }
+
+    public BlockState getBlockState(int x, int y, int z) {
+        if (this.blockData != null) {
+            return this.blockData.get(x, y, z);
+        } else {
+            return Blocks.AIR.defaultBlockState();
+        }
+    }
 }

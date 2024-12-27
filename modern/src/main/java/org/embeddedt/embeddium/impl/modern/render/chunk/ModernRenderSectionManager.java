@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.modern.render.chunk;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSets;
+import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
@@ -37,6 +38,7 @@ import java.util.Iterator;
 
 public class ModernRenderSectionManager extends RenderSectionManager {
     private final ClientLevel world;
+    @Getter
     private final ClonedChunkSectionCache sectionCache;
 
     private final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();

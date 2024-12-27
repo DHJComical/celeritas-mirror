@@ -1,13 +1,18 @@
 package org.embeddedt.embeddium.impl.world;
 
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
+import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
+import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 //? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelData;
 //? if neoforge
 /*import net.neoforged.neoforge.client.model.data.ModelData;*/
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.model.ModelDataSnapshotter;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
+import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
+import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorCache;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorSource;
@@ -79,7 +84,8 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     private static final int SECTION_BLOCK_COUNT = 16 * 16 * 16;
 
     // The radius of blocks around the origin chunk that should be copied.
-    private static final int NEIGHBOR_BLOCK_RADIUS = 2;
+    // This should be at least 16 for parity with 1.18 and newer.
+    private static final int NEIGHBOR_BLOCK_RADIUS = 16;
 
     // The radius of chunks around the origin chunk that should be copied.
     private static final int NEIGHBOR_CHUNK_RADIUS = MathUtil.roundToward(NEIGHBOR_BLOCK_RADIUS, 16) >> 4;
@@ -128,6 +134,12 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     
     // The volume that this WorldSlice contains
     private BoundingBox volume;
+    
+    // A fallback BlockPos object to use when retrieving data from the level directly
+    private final BlockPos.MutableBlockPos fallbackPos = new BlockPos.MutableBlockPos();
+    
+    // Extra cloned chunk sections that the slice needed
+    private final Long2ReferenceMap<ClonedChunkSection> extraClonedSections = new Long2ReferenceOpenHashMap<>();
 
     public static ChunkRenderContext prepare(Level world, SectionPos origin, ClonedChunkSectionCache sectionCache) {
         LevelChunk chunk = world.getChunk(origin.getX(), origin.getZ());
@@ -170,7 +182,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
             }
         }
 
-        return new ChunkRenderContext(origin, sections, volume).withMeshAppenders(meshAppenders);
+        return new ChunkRenderContext(origin, sections, volume, meshAppenders);
     }
 
     @SuppressWarnings("unchecked")
@@ -243,37 +255,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
 
         var container = ReadableContainerExtended.of(section.getBlockData());
 
-        SectionPos origin = context.getOrigin();
-        SectionPos pos = section.getPosition();
-
-        if (origin.equals(pos))  {
-            container.sodium$unpack(blockArray);
-        } else {
-            var bounds = context.getVolume();
-
-            //? if >=1.17 {
-            int minBlockX = Math.max(bounds.minX(), pos.minBlockX());
-            int maxBlockX = Math.min(bounds.maxX(), pos.maxBlockX());
-
-            int minBlockY = Math.max(bounds.minY(), pos.minBlockY());
-            int maxBlockY = Math.min(bounds.maxY(), pos.maxBlockY());
-
-            int minBlockZ = Math.max(bounds.minZ(), pos.minBlockZ());
-            int maxBlockZ = Math.min(bounds.maxZ(), pos.maxBlockZ());
-            //?} else {
-            /*int minBlockX = Math.max(bounds.x0, pos.minBlockX());
-            int maxBlockX = Math.min(bounds.x1, pos.maxBlockX());
-
-            int minBlockY = Math.max(bounds.y0, pos.minBlockY());
-            int maxBlockY = Math.min(bounds.y1, pos.maxBlockY());
-
-            int minBlockZ = Math.max(bounds.z0, pos.minBlockZ());
-            int maxBlockZ = Math.min(bounds.z1, pos.maxBlockZ());
-            *///?}
-
-            container.sodium$unpack(blockArray, minBlockX & 15, minBlockY & 15, minBlockZ & 15,
-                    maxBlockX & 15, maxBlockY & 15, maxBlockZ & 15);
-        }
+        container.sodium$unpack(blockArray);
     }
 
     public void reset() {
@@ -285,6 +267,8 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
 
             this.blockEntityArrays[sectionIndex] = null;
         }
+
+        this.extraClonedSections.clear();
     }
 
     @Override
@@ -298,7 +282,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         int relZ = z - this.originZ;
 
         if (!isInside(relX, relY, relZ)) {
-            return EMPTY_BLOCK_STATE;
+            return this.getBlockStateFallback(x, y, z);
         }
 
         return this.blockArrays[getLocalSectionIndex(relX >> 4, relY >> 4, relZ >> 4)]
@@ -509,6 +493,51 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
     @Override public Object getBlockEntityRenderData(BlockPos pos) { return getBlockEntityAttachment(pos); }
     //?} else if ffapi
     /*@Override public Object getBlockEntityRenderAttachment(BlockPos pos) { return getBlockEntityAttachment(pos); }*/
+
+    @Nullable
+    private ClonedChunkSection fetchFallbackSectionForPos(int x, int y, int z) {
+        int sX = PositionUtil.posToSectionCoord(x);
+        int sY = PositionUtil.posToSectionCoord(y);
+        int sZ = PositionUtil.posToSectionCoord(z);
+        long key = PositionUtil.packSection(sX, sY, sZ);
+        var section = this.extraClonedSections.get(key);
+        if (section != null) {
+            return section;
+        }
+        section = Minecraft.getInstance().submit(() -> {
+            var renderer = CeleritasWorldRenderer.instanceNullable();
+            if (renderer == null) {
+                return null;
+            }
+            var manager = renderer.getRenderSectionManager();
+            if (manager != null) {
+                return manager.getSectionCache().acquire(sX, sY, sZ);
+            } else {
+                return null;
+            }
+        }).join();
+        if (section != null) {
+            this.extraClonedSections.put(key, section);
+        }
+        return section;
+    }
+
+    /**
+     * Read the block state off the main thread (safely) by cloning the needed section.
+     */
+    private BlockState getBlockStateFallback(int x, int y, int z) {
+        if (Minecraft.getInstance().isSameThread()) {
+            this.fallbackPos.set(x, y, z);
+            return this.world.getBlockState(this.fallbackPos);
+        } else {
+            ClonedChunkSection sectionSnapshot = this.fetchFallbackSectionForPos(x, y, z);
+            if (sectionSnapshot != null) {
+                return sectionSnapshot.getBlockState(x & 15, y & 15, z & 15);
+            } else {
+                return EMPTY_BLOCK_STATE;
+            }
+        }
+    }
 
     public static int getLocalBlockIndex(int x, int y, int z) {
         return (y << LOCAL_XYZ_BITS << LOCAL_XYZ_BITS) | (z << LOCAL_XYZ_BITS) | x;
