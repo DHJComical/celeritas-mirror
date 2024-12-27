@@ -1,14 +1,24 @@
 package org.embeddedt.embeddium.impl.gl.attribute;
 
+import lombok.Getter;
+
 public class GlVertexAttribute {
+    @Getter
     private final int format;
+    @Getter
     private final int count;
+    @Getter
     private final int pointer;
+    @Getter
     private final int size;
+    @Getter
     private final int stride;
 
     private final boolean normalized;
     private final boolean intType;
+
+    @Getter
+    private final String name;
 
     /**
      * @param format The format used
@@ -17,11 +27,11 @@ public class GlVertexAttribute {
  *                   as fixed-point values (false)
      * @param pointer The offset to the first component in the attribute
      */
-    public GlVertexAttribute(GlVertexAttributeFormat format, int count, boolean normalized, int pointer, int stride, boolean intType) {
-        this(format.typeId(), format.size() * count, count, normalized, pointer, stride, intType);
+    public GlVertexAttribute(GlVertexAttributeFormat format, String name, int count, boolean normalized, int pointer, int stride, boolean intType) {
+        this(format.typeId(), format.size() * count, count, name, normalized, pointer, stride, intType);
     }
 
-    protected GlVertexAttribute(int format, int size, int count, boolean normalized, int pointer, int stride, boolean intType) {
+    protected GlVertexAttribute(int format, int size, int count, String name, boolean normalized, int pointer, int stride, boolean intType) {
         this.format = format;
         this.size = size;
         this.count = count;
@@ -29,22 +39,7 @@ public class GlVertexAttribute {
         this.pointer = pointer;
         this.stride = stride;
         this.intType = intType;
-    }
-
-    public int getSize() {
-        return this.size;
-    }
-
-    public int getPointer() {
-        return this.pointer;
-    }
-
-    public int getCount() {
-        return this.count;
-    }
-
-    public int getFormat() {
-        return this.format;
+        this.name = name;
     }
 
     public boolean isNormalized() {
@@ -53,9 +48,5 @@ public class GlVertexAttribute {
 
     public boolean isIntType() {
         return this.intType;
-    }
-
-    public int getStride() {
-        return this.stride;
     }
 }

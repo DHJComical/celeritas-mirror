@@ -9,10 +9,10 @@ import org.lwjgl.system.MemoryUtil;
 
 public class CompactChunkVertex implements ChunkVertexType {
     public static final GlVertexFormat<ChunkMeshAttribute> VERTEX_FORMAT = GlVertexFormat.builder(ChunkMeshAttribute.class, 20)
-            .addElement(ChunkMeshAttribute.POSITION_MATERIAL_MESH, 0, GlVertexAttributeFormat.UNSIGNED_SHORT, 4, false, true)
-            .addElement(ChunkMeshAttribute.COLOR_SHADE, 8, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true, false)
-            .addElement(ChunkMeshAttribute.BLOCK_TEXTURE, 12, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, false)
-            .addElement(ChunkMeshAttribute.LIGHT_TEXTURE, 16, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, true)
+            .addElement(ChunkMeshAttribute.POSITION_MATERIAL_MESH, "a_PosId", 0, GlVertexAttributeFormat.UNSIGNED_SHORT, 4, false, true)
+            .addElement(ChunkMeshAttribute.COLOR_SHADE, "a_Color", 8, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true, false)
+            .addElement(ChunkMeshAttribute.BLOCK_TEXTURE, "a_TexCoord", 12, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, false)
+            .addElement(ChunkMeshAttribute.LIGHT_TEXTURE, "a_LightCoord", 16, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, true)
             .build();
 
     public static final int STRIDE = 20;

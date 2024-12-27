@@ -32,8 +32,6 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
 
     private final SharedQuadIndexBuffer sharedIndexBuffer;
 
-    private final GlVertexAttributeBinding[] vertexAttributeBindings;
-
     private boolean isIndexedPass;
 
     protected boolean useBlockFaceCulling;
@@ -43,8 +41,6 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
 
         this.batch = new MultiDrawBatch((ModelQuadFacing.COUNT * RenderRegion.REGION_SIZE) + 1);
         this.sharedIndexBuffer = new SharedQuadIndexBuffer(device.createCommandList(), SharedQuadIndexBuffer.IndexType.INTEGER);
-
-        this.vertexAttributeBindings = getBindingsForType();
     }
 
     @Override
@@ -240,37 +236,20 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
         return tessellation;
     }
 
-    private GlVertexAttributeBinding[] getBindingsForType() {
-        if(this.vertexType == ChunkMeshFormats.COMPACT) {
-            return new GlVertexAttributeBinding[] {
-                    new GlVertexAttributeBinding(ChunkShaderBindingPoints.ATTRIBUTE_POSITION_ID,
-                            this.vertexFormat.getAttribute(ChunkMeshAttribute.POSITION_MATERIAL_MESH)),
-                    new GlVertexAttributeBinding(ChunkShaderBindingPoints.ATTRIBUTE_COLOR,
-                            this.vertexFormat.getAttribute(ChunkMeshAttribute.COLOR_SHADE)),
-                    new GlVertexAttributeBinding(ChunkShaderBindingPoints.ATTRIBUTE_BLOCK_TEXTURE,
-                            this.vertexFormat.getAttribute(ChunkMeshAttribute.BLOCK_TEXTURE)),
-                    new GlVertexAttributeBinding(ChunkShaderBindingPoints.ATTRIBUTE_LIGHT_TEXTURE,
-                            this.vertexFormat.getAttribute(ChunkMeshAttribute.LIGHT_TEXTURE))
-            };
-        } else if(this.vertexType == ChunkMeshFormats.VANILLA_LIKE) {
-            GlVertexFormat<ChunkMeshAttribute> vanillaFormat = this.vertexFormat;
-            return new GlVertexAttributeBinding[] {
-                    new GlVertexAttributeBinding(ChunkShaderBindingPoints.ATTRIBUTE_POSITION_ID,
-                            vanillaFormat.getAttribute(ChunkMeshAttribute.POSITION_MATERIAL_MESH)),
-                    new GlVertexAttributeBinding(ChunkShaderBindingPoints.ATTRIBUTE_COLOR,
-                            vanillaFormat.getAttribute(ChunkMeshAttribute.COLOR_SHADE)),
-                    new GlVertexAttributeBinding(ChunkShaderBindingPoints.ATTRIBUTE_BLOCK_TEXTURE,
-                            vanillaFormat.getAttribute(ChunkMeshAttribute.BLOCK_TEXTURE)),
-                    new GlVertexAttributeBinding(ChunkShaderBindingPoints.ATTRIBUTE_LIGHT_TEXTURE,
-                            vanillaFormat.getAttribute(ChunkMeshAttribute.LIGHT_TEXTURE)),
-            };
-        } else
-            return null; // assume Oculus/Iris will take over
+    private GlVertexAttributeBinding[] generateVertexAttributeBindings() {
+        var attributes = this.vertexFormat.getAttributes();
+        var bindings = new GlVertexAttributeBinding[attributes.size()];
+        int i = 0;
+        for (var attr : attributes) {
+            bindings[i] = new GlVertexAttributeBinding(i, attr);
+            i++;
+        }
+        return bindings;
     }
 
     private GlTessellation createRegionTessellation(CommandList commandList, RenderRegion.DeviceResources resources) {
         return commandList.createTessellation(GlPrimitiveType.TRIANGLES, new TessellationBinding[] {
-                TessellationBinding.forVertexBuffer(resources.getVertexBuffer(), this.vertexAttributeBindings),
+                TessellationBinding.forVertexBuffer(resources.getVertexBuffer(), this.generateVertexAttributeBindings()),
                 TessellationBinding.forElementBuffer(this.isIndexedPass ? resources.getIndexBuffer() : this.sharedIndexBuffer.getBufferObject())
         });
     }

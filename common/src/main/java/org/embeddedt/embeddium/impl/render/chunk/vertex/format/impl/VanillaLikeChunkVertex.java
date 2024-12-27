@@ -16,10 +16,10 @@ public class VanillaLikeChunkVertex implements ChunkVertexType {
     public static final int STRIDE = 28;
 
     public static final GlVertexFormat<ChunkMeshAttribute> VERTEX_FORMAT = GlVertexFormat.builder(ChunkMeshAttribute.class, STRIDE)
-            .addElement(ChunkMeshAttribute.POSITION_MATERIAL_MESH, 0, GlVertexAttributeFormat.FLOAT, 3, false, false)
-            .addElement(ChunkMeshAttribute.COLOR_SHADE, 12, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true, false)
-            .addElement(ChunkMeshAttribute.BLOCK_TEXTURE, 16, GlVertexAttributeFormat.FLOAT, 2, false, false)
-            .addElement(ChunkMeshAttribute.LIGHT_TEXTURE, 24, GlVertexAttributeFormat.UNSIGNED_INT, 1, false, true)
+            .addElement(ChunkMeshAttribute.POSITION_MATERIAL_MESH, "a_PosId", 0, GlVertexAttributeFormat.FLOAT, 3, false, false)
+            .addElement(ChunkMeshAttribute.COLOR_SHADE, "a_Color", 12, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true, false)
+            .addElement(ChunkMeshAttribute.BLOCK_TEXTURE, "a_TexCoord", 16, GlVertexAttributeFormat.FLOAT, 2, false, false)
+            .addElement(ChunkMeshAttribute.LIGHT_TEXTURE, "a_LightCoord", 24, GlVertexAttributeFormat.UNSIGNED_INT, 1, false, true)
             .build();
 
     @Override

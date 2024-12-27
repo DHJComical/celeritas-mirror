@@ -1,5 +1,10 @@
 package org.embeddedt.embeddium.impl.gl.attribute;
 
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
+import lombok.AllArgsConstructor;
+
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 
 /**
@@ -8,17 +13,12 @@ import java.util.EnumMap;
  *
  * @param <T> The enumeration over the vertex attributes
  */
+@AllArgsConstructor
 public class GlVertexFormat<T extends Enum<T>> {
     private final Class<T> attributeEnum;
-    private final EnumMap<T, GlVertexAttribute> attributesKeyed;
+    private final Reference2ReferenceLinkedOpenHashMap<T, GlVertexAttribute> attributesKeyed;
 
     private final int stride;
-
-    public GlVertexFormat(Class<T> attributeEnum, EnumMap<T, GlVertexAttribute> attributesKeyed, int stride) {
-        this.attributeEnum = attributeEnum;
-        this.attributesKeyed = attributesKeyed;
-        this.stride = stride;
-    }
 
     public static <T extends Enum<T>> Builder<T> builder(Class<T> type, int stride) {
         return new Builder<>(type, stride);
@@ -38,6 +38,10 @@ public class GlVertexFormat<T extends Enum<T>> {
         return attr;
     }
 
+    public Collection<GlVertexAttribute> getAttributes() {
+        return Collections.unmodifiableCollection(this.attributesKeyed.values());
+    }
+
     /**
      * @return The stride (or the size of) the vertex format in bytes
      */
@@ -52,18 +56,18 @@ public class GlVertexFormat<T extends Enum<T>> {
     }
 
     public static class Builder<T extends Enum<T>> {
-        private final EnumMap<T, GlVertexAttribute> attributes;
+        private final Reference2ReferenceLinkedOpenHashMap<T, GlVertexAttribute> attributes;
         private final Class<T> type;
         private final int stride;
 
         public Builder(Class<T> type, int stride) {
             this.type = type;
-            this.attributes = new EnumMap<>(type);
+            this.attributes = new Reference2ReferenceLinkedOpenHashMap<>();
             this.stride = stride;
         }
 
-        public Builder<T> addElement(T type, int pointer, GlVertexAttributeFormat format, int count, boolean normalized, boolean intType) {
-            return this.addElement(type, new GlVertexAttribute(format, count, normalized, pointer, this.stride, intType));
+        public Builder<T> addElement(T type, String name, int pointer, GlVertexAttributeFormat format, int count, boolean normalized, boolean intType) {
+            return this.addElement(type, new GlVertexAttribute(format, name, count, normalized, pointer, this.stride, intType));
         }
 
         /**
@@ -98,11 +102,9 @@ public class GlVertexFormat<T extends Enum<T>> {
             for (T key : this.type.getEnumConstants()) {
                 GlVertexAttribute attribute = this.attributes.get(key);
 
-                if (attribute == null) {
-                    throw new NullPointerException("Generic attribute not assigned to enumeration " + key.name());
+                if (attribute != null) {
+                    size = Math.max(size, attribute.getPointer() + attribute.getSize());
                 }
-
-                size = Math.max(size, attribute.getPointer() + attribute.getSize());
             }
 
             // The stride must be large enough to cover all attributes. This still allows for additional padding
