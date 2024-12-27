@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.api.options.storage.MinecraftOptionsStorage;
-import org.embeddedt.embeddium.api.util.ColorABGR;
+import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.impl.util.NativeImageHelper;
 import org.embeddedt.embeddium.impl.util.color.ColorSRGB;
 import net.minecraft.client.Minecraft;
@@ -123,7 +123,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
             long pPixel = ppPixel + (pixelIndex * 4);
 
             int color = MemoryUtil.memGetInt(pPixel);
-            int alpha = ColorABGR.unpackAlpha(color);
+            int alpha = ColorARGB.unpackAlpha(color);
 
             // Ignore all fully-transparent pixels for the purposes of computing an average color.
             if (alpha > 0) {
@@ -137,9 +137,9 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
                     float weight = (float) alpha;
 
                     // Make sure to convert to linear space so that we don't lose brightness.
-                    r += ColorSRGB.srgbToLinear(ColorABGR.unpackRed(color)) * weight;
-                    g += ColorSRGB.srgbToLinear(ColorABGR.unpackGreen(color)) * weight;
-                    b += ColorSRGB.srgbToLinear(ColorABGR.unpackBlue(color)) * weight;
+                    r += ColorSRGB.srgbToLinear(ColorARGB.unpackRed(color)) * weight;
+                    g += ColorSRGB.srgbToLinear(ColorARGB.unpackGreen(color)) * weight;
+                    b += ColorSRGB.srgbToLinear(ColorARGB.unpackBlue(color)) * weight;
 
                     totalWeight += weight;
                 }
@@ -167,7 +167,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
             long pPixel = ppPixel + (pixelIndex * 4);
 
             int color = MemoryUtil.memGetInt(pPixel);
-            int alpha = ColorABGR.unpackAlpha(color);
+            int alpha = ColorARGB.unpackAlpha(color);
 
             // Replace the color values of pixels which are fully transparent, since they have no color data.
             if (alpha == 0) {
