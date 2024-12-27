@@ -140,7 +140,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             context.setModelData(modelData);
 
                             context.random().setSeed(seed); // for render layers
-                            //? }
+                            //?}
 
                             //? if forgelike && >=1.19 {
                             // We optimize the asList() call to return a cached ImmutableList, so this will not allocate.

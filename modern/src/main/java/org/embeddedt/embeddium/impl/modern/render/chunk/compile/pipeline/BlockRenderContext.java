@@ -58,7 +58,7 @@ public class BlockRenderContext {
     @Setter
     @Accessors(fluent = false)
     private RenderType renderLayer;
-    //? }
+    //?}
 
     private int lightValue = -1;
 
