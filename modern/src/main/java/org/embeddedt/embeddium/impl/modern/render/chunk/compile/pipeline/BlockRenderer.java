@@ -15,6 +15,7 @@ import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadOrientation;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.modern.render.chunk.MojangVertexConsumer;
+import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
@@ -220,24 +221,23 @@ public class BlockRenderer {
         return true;
     }
 
-    private ChunkModelBuilder chooseOptimalBuilder(Material defaultMaterial, ChunkBuildBuffers buffers, ChunkModelBuilder defaultBuilder, BakedQuadView quad) {
-        var renderPassConfiguration = buffers.getRenderPassConfiguration();
+    private Material chooseOptimalMaterial(Material defaultMaterial, RenderPassConfiguration<?> renderPassConfiguration, BakedQuadView quad) {
         if (defaultMaterial == renderPassConfiguration.defaultSolidMaterial() || !this.useRenderPassOptimization || (quad.getFlags() & ModelQuadFlags.IS_PASS_OPTIMIZABLE) == 0 || quad.getSprite() == null) {
             // No improvement possible
-            return defaultBuilder;
+            return defaultMaterial;
         }
 
         SpriteTransparencyLevel level = SpriteTransparencyLevelHolder.getTransparencyLevel(quad.getSprite());
 
         if (level == SpriteTransparencyLevel.OPAQUE) {
             // Can use solid with no visual difference
-            return buffers.get(renderPassConfiguration.defaultSolidMaterial());
+            return renderPassConfiguration.defaultSolidMaterial();
         } else if (level == SpriteTransparencyLevel.TRANSPARENT && defaultMaterial == renderPassConfiguration.defaultTranslucentMaterial()) {
             // Can use cutout_mipped with no visual difference
-            return buffers.get(renderPassConfiguration.defaultCutoutMippedMaterial());
+            return renderPassConfiguration.defaultCutoutMippedMaterial();
         } else {
             // Have to use default
-            return defaultBuilder;
+            return defaultMaterial;
         }
     }
 
@@ -250,6 +250,8 @@ public class BlockRenderer {
             this.useReorienting = false;
         }
 
+        var renderPassConfig = buffers.getRenderPassConfiguration();
+
         // This is a very hot allocation, iterate over it manually
         // noinspection ForLoopReplaceableByForEach
         for (int i = 0, quadsSize = quads.size(); i < quadsSize; i++) {
@@ -258,9 +260,10 @@ public class BlockRenderer {
             final var lightData = this.getVertexLight(ctx, quad.hasAmbientOcclusion() ? lighter : this.lighters.getLighter(LightMode.FLAT), cullFace, quad);
             final var vertexColors = this.getVertexColors(ctx, colorizer, quad);
 
-            ChunkModelBuilder builder = this.chooseOptimalBuilder(material, buffers, defaultBuilder, quad);
+            var quadMaterial = this.chooseOptimalMaterial(material, renderPassConfig, quad);
+            ChunkModelBuilder builder = (quadMaterial == material) ? defaultBuilder : buffers.get(quadMaterial);
 
-            this.writeGeometry(ctx, builder, offset, material, quad, vertexColors, lightData);
+            this.writeGeometry(ctx, builder, offset, quadMaterial, quad, vertexColors, lightData);
 
             TextureAtlasSprite sprite = quad.getSprite();
 
