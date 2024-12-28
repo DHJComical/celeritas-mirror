@@ -151,7 +151,9 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
         this.embeddium$transparencyLevel = level;
 
         // Bail if none of the pixels are semi-transparent or we aren't supposed to rewrite colors.
-        if (!shouldRewriteColors || totalWeight == 0.0f) {
+        // We can also bail if the transparency level is OPAQUE, since it indicates none of the pixels
+        // will need to be overwritten.
+        if (!shouldRewriteColors || this.embeddium$transparencyLevel == SpriteTransparencyLevel.OPAQUE || totalWeight == 0.0f) {
             return;
         }
 
