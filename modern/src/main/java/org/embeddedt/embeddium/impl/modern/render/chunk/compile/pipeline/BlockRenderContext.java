@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import net.minecraft.util.RandomSource;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
@@ -64,9 +63,9 @@ public class BlockRenderContext {
 
     @Getter
     //? if >=1.19 {
-    private final RandomSource random = new net.minecraft.world.level.levelgen.SingleThreadedRandomSource(42L);
+    private final net.minecraft.util.RandomSource random = new net.minecraft.world.level.levelgen.SingleThreadedRandomSource(42L);
     //?} else
-    /*private final Random random = new org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom(42L);*/
+    /*private final java.util.Random random = new org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom(42L);*/
 
     @Getter
     private GeometryCategory category = GeometryCategory.BLOCK;
