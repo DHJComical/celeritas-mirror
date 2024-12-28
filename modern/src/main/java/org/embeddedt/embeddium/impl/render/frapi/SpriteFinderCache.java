@@ -1,7 +1,9 @@
 package org.embeddedt.embeddium.impl.render.frapi;
 
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+//? if fabric {
+/*import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+*///?}
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
