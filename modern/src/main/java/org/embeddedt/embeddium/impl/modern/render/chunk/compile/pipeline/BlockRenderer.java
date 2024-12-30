@@ -239,6 +239,10 @@ public class BlockRenderer {
                 }
             }
         }
+
+        if (!this.isRenderPassOptEnabled) {
+            this.quadRenderingFlags &= ~USE_RENDER_PASS_OPTIMIZATION;
+        }
     }
 
     private Material chooseOptimalMaterial(Material defaultMaterial, RenderPassConfiguration<?> renderPassConfiguration, BakedQuadView quad) {
