@@ -64,13 +64,6 @@ public class BlockRenderer {
     private final int[] quadColors = new int[4];
 
     /**
-     * Tracks whether the MC-138211 quad reorienting fix should be applied during emission of quad geometry.
-     * This fix must be disabled with certain modded models that use superimposed quads, as it can alter the triangulation
-     * of some layers but not others, resulting in Z-fighting.
-     */
-    private boolean useReorienting;
-
-    /**
      * The list of registered custom block renderers. These may augment or fully bypass the model system for the
      * block.
      */
@@ -80,8 +73,19 @@ public class BlockRenderer {
 
     private final ChunkColorWriter colorEncoder = ChunkColorWriter.get();
 
-    private final boolean useRenderPassOptimization;
+    private final boolean isRenderPassOptEnabled;
     private final MojangVertexConsumer vertexConsumer = new MojangVertexConsumer();
+
+    /**
+     * Tracks whether the MC-138211 quad reorienting fix should be applied during emission of quad geometry.
+     * This fix must be disabled with certain modded models that use superimposed quads, as it can alter the triangulation
+     * of some layers but not others, resulting in Z-fighting.
+     */
+    private static final int USE_REORIENTING = 0x1;
+    private static final int USE_RENDER_PASS_OPTIMIZATION = 0x2;
+    private static final int USE_ALL_THINGS = 0xFFFFFFFF;
+
+    private int quadRenderingFlags = 0;
 
     public BlockRenderer(ColorProviderRegistry colorRegistry, LightPipelineProvider lighters) {
         this.colorProviderRegistry = colorRegistry;
@@ -94,7 +98,7 @@ public class BlockRenderer {
         //?} else {
         /*this.fabricModelRenderingHandler = null;
         *///?}
-        this.useRenderPassOptimization = Celeritas.options().performance.useRenderPassOptimization && !ShaderModBridge.areShadersEnabled();
+        this.isRenderPassOptEnabled = Celeritas.options().performance.useRenderPassOptimization && !ShaderModBridge.areShadersEnabled();
     }
 
     /**
@@ -144,26 +148,23 @@ public class BlockRenderer {
             return;
         }
 
-        boolean canReorientNullCullface = true;
+        int nullCullFaceFlags = USE_ALL_THINGS;
 
         for (Direction face : DirectionUtil.ALL_DIRECTIONS) {
             List<BakedQuad> quads = this.getGeometry(ctx, face);
 
             if (!quads.isEmpty() && this.isFaceVisible(ctx, face)) {
-                this.useReorienting = true;
+                this.quadRenderingFlags = USE_ALL_THINGS;
                 this.renderQuadList(ctx, material, lighter, colorizer, renderOffset, buffers, meshBuilder, quads, face);
-                if (!this.useReorienting) {
-                    // Reorienting was disabled on this side, make sure it's disabled for the null cullface too, in case
-                    // a mod layers textures in different lists
-                    canReorientNullCullface = false;
-                }
+                // Make sure any flags that are turned off are also turned off for the null cullface
+                nullCullFaceFlags &= this.quadRenderingFlags;
             }
         }
 
         List<BakedQuad> all = this.getGeometry(ctx, null);
 
         if (!all.isEmpty()) {
-            this.useReorienting = canReorientNullCullface;
+            this.quadRenderingFlags = nullCullFaceFlags;
             this.renderQuadList(ctx, material, lighter, colorizer, renderOffset, buffers, meshBuilder, all, null);
         }
     }
@@ -197,32 +198,51 @@ public class BlockRenderer {
         return flag;
     }
 
-    /**
-     * {@return true if all quads in the given list use similar enough lighting configuration that reorientation is
-     * unlikely to lead to z-fighting}
-     */
-    private static boolean checkQuadsHaveSameLightingConfig(List<BakedQuad> quads) {
+    private SpriteTransparencyLevel getQuadTransparencyLevel(BakedQuadView quad) {
+        if ((quad.getFlags() & ModelQuadFlags.IS_PASS_OPTIMIZABLE) == 0 || quad.getSprite() == null) {
+            return SpriteTransparencyLevel.TRANSLUCENT;
+        }
+
+        return SpriteTransparencyLevelHolder.getTransparencyLevel(quad.getSprite());
+    }
+
+    private void scanQuadsAndConfigureForRendering(List<BakedQuad> quads) {
         int quadsSize = quads.size();
 
-        // By definition, singleton or empty lists of quads have a common lighting config. Only check larger lists
+        // By definition, singleton or empty lists of quads have a common config. Only check larger lists
         if (quadsSize >= 2) {
+            // Disable reorienting if quads use different light configurations, as otherwise layered quads
+            // may be triangulated differently from others in the stack, and that will cause z-fighting.
             int flagMask = -1;
+
+            SpriteTransparencyLevel highestSeenLevel = SpriteTransparencyLevel.OPAQUE;
+
             // noinspection ForLoopReplaceableByForEach
             for (int i = 0; i < quadsSize; i++) {
-                int newFlag = computeLightFlagMask(quads.get(i));
+                var quad = quads.get(i);
+
+                int newFlag = computeLightFlagMask(quad);
                 if (flagMask == -1) {
                     flagMask = newFlag;
-                } else if(newFlag != flagMask) {
-                    return false;
+                } else if (newFlag != flagMask) {
+                    // Disable reorienting
+                    this.quadRenderingFlags &= ~USE_REORIENTING;
+                }
+
+                SpriteTransparencyLevel level = getQuadTransparencyLevel((BakedQuadView)quad);
+
+                if (level.ordinal() < highestSeenLevel.ordinal()) {
+                    // Downgrading will result in the quads being rendered in the wrong order, disable
+                    this.quadRenderingFlags &= ~USE_RENDER_PASS_OPTIMIZATION;
+                } else {
+                    highestSeenLevel = level;
                 }
             }
         }
-
-        return true;
     }
 
     private Material chooseOptimalMaterial(Material defaultMaterial, RenderPassConfiguration<?> renderPassConfiguration, BakedQuadView quad) {
-        if (defaultMaterial == renderPassConfiguration.defaultSolidMaterial() || !this.useRenderPassOptimization || (quad.getFlags() & ModelQuadFlags.IS_PASS_OPTIMIZABLE) == 0 || quad.getSprite() == null) {
+        if (defaultMaterial == renderPassConfiguration.defaultSolidMaterial() || (this.quadRenderingFlags & USE_RENDER_PASS_OPTIMIZATION) == 0 || (quad.getFlags() & ModelQuadFlags.IS_PASS_OPTIMIZABLE) == 0 || quad.getSprite() == null) {
             // No improvement possible
             return defaultMaterial;
         }
@@ -244,11 +264,7 @@ public class BlockRenderer {
     private void renderQuadList(BlockRenderContext ctx, Material material, LightPipeline lighter, ColorProvider<BlockState> colorizer, Vec3 offset,
                                 ChunkBuildBuffers buffers, ChunkModelBuilder defaultBuilder, List<BakedQuad> quads, Direction cullFace) {
 
-        if(!checkQuadsHaveSameLightingConfig(quads)) {
-            // Disable reorienting if quads use different light configurations, as otherwise layered quads
-            // may be triangulated differently from others in the stack, and that will cause z-fighting.
-            this.useReorienting = false;
-        }
+        scanQuadsAndConfigureForRendering(quads);
 
         var renderPassConfig = buffers.getRenderPassConfiguration();
 
@@ -304,7 +320,7 @@ public class BlockRenderer {
                                int[] colors,
                                QuadLightData light)
     {
-        ModelQuadOrientation orientation = this.useReorienting ? ModelQuadOrientation.orientByBrightness(light.br, light.lm) : ModelQuadOrientation.NORMAL;
+        ModelQuadOrientation orientation = (this.quadRenderingFlags & USE_REORIENTING) != 0 ? ModelQuadOrientation.orientByBrightness(light.br, light.lm) : ModelQuadOrientation.NORMAL;
         var vertices = this.vertices;
 
         ModelQuadFacing normalFace = quad.getNormalFace();
