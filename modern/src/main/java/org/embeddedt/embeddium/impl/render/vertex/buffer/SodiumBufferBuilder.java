@@ -84,7 +84,6 @@ public class SodiumBufferBuilder implements VertexConsumer, VertexBufferWriter {
     private static boolean checkSupport(VertexFormatDescription vertexFormat) {
         for (VertexFormatElement e : vertexFormat.getElements()) {
             if (!SUPPORTED_ELEMENTS.contains(e)) {
-                Celeritas.logger().warn("Vertex format is simple but cannot be supported in fast path, has unknown element {}", e, new Exception());
                 return false;
             }
         }
