@@ -6,7 +6,6 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshAttribut
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import net.irisshaders.iris.compat.sodium.impl.vertex_format.IrisChunkMeshAttributes;
-import net.irisshaders.iris.compat.sodium.impl.vertex_format.IrisGlVertexAttributeFormat;
 
 /**
  * Like HFPModelVertexType, but extended to support Iris. The extensions aren't particularly efficient right now.
@@ -19,10 +18,10 @@ public class XHFPModelVertexType implements ChunkVertexType {
 		.addElement(ChunkMeshAttribute.BLOCK_TEXTURE, "a_TexCoord", 12, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, false)
 		.addElement(ChunkMeshAttribute.LIGHT_TEXTURE, "a_LightCoord", 16, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, true)
 		.addElement(IrisChunkMeshAttributes.MID_TEX_COORD, "mc_midTexCoord",20, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, false)
-		.addElement(IrisChunkMeshAttributes.TANGENT, "at_tangent", 24, IrisGlVertexAttributeFormat.BYTE, 4, true, false)
-		.addElement(IrisChunkMeshAttributes.NORMAL, "iris_Normal", 28, IrisGlVertexAttributeFormat.BYTE, 3, true, false)
-		.addElement(IrisChunkMeshAttributes.BLOCK_ID, "mc_Entity", 32, IrisGlVertexAttributeFormat.SHORT, 2, false, false)
-		.addElement(IrisChunkMeshAttributes.MID_BLOCK, "at_midBlock", 36, IrisGlVertexAttributeFormat.BYTE, 4, false, false)
+		.addElement(IrisChunkMeshAttributes.TANGENT, "at_tangent", 24, GlVertexAttributeFormat.BYTE, 4, true, false)
+		.addElement(IrisChunkMeshAttributes.NORMAL, "iris_Normal", 28, GlVertexAttributeFormat.BYTE, 3, true, false)
+		.addElement(IrisChunkMeshAttributes.BLOCK_ID, "mc_Entity", 32, GlVertexAttributeFormat.SHORT, 2, false, false)
+		.addElement(IrisChunkMeshAttributes.MID_BLOCK, "at_midBlock", 36, GlVertexAttributeFormat.BYTE, 4, false, false)
 		.build();
 
 	private static final int POSITION_MAX_VALUE = 65536;
