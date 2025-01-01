@@ -125,9 +125,6 @@ public class ChunkBuildBuffers {
 
             // Do the initial sort now
             ChunkBufferSorter.sort(mergedIndexBuffer, sortState, camX, camY, camZ);
-
-            // Reset the vertex buffer for next time
-            builder.getVertexBuffer(ModelQuadFacing.UNASSIGNED).resetSortState();
         } else {
             mergedIndexBuffer = null;
         }

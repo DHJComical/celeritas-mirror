@@ -98,6 +98,8 @@ public class ChunkMeshBufferBuilder {
         }
 
         this.buffer = null;
+
+        this.resetSortState();
     }
 
     public boolean isEmpty() {
