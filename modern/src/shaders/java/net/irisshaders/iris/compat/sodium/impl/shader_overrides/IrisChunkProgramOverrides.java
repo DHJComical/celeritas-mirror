@@ -81,7 +81,7 @@ public class IrisChunkProgramOverrides {
 			return null;
 		}
 
-		return new GlShader(IrisShaderTypes.GEOMETRY, "iris:" +
+		return new GlShader(ShaderType.GEOM, "iris:" +
 			"sodium-terrain-" + pass.toString().toLowerCase(Locale.ROOT) + ".gsh", source);
 	}
 
@@ -106,7 +106,7 @@ public class IrisChunkProgramOverrides {
 			return null;
 		}
 
-		return new GlShader(IrisShaderTypes.TESS_CONTROL, "iris:" +
+		return new GlShader(ShaderType.TESS_CTRL, "iris:" +
 			"sodium-terrain-" + pass.toString().toLowerCase(Locale.ROOT) + ".tcs", source);
 	}
 
@@ -131,7 +131,7 @@ public class IrisChunkProgramOverrides {
 			return null;
 		}
 
-		return new GlShader(IrisShaderTypes.TESS_EVAL, "iris:" +
+		return new GlShader(ShaderType.TESS_EVALUATE, "iris:" +
 			"sodium-terrain-" + pass.toString().toLowerCase(Locale.ROOT) + ".tes", source);
 	}
 
