@@ -44,7 +44,6 @@
     "vertex_format.GlVertexAttributeFormatAccessor",
     "vertex_format.MixinChunkMeshAttribute",
     "vertex_format.MixinCommonVertexAttributes",
-    "vertex_format.MixinGlVertexFormatBuilder",
     "vertex_format.MixinRegionChunkRenderer",
     "vertex_format.MixinRenderSectionManager",
     "vertex_format.MixinSodiumBufferBuilder",
