@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "plugin": "net.irisshaders.iris.compat.dh.mixin.OculusDHCompatMixinPlugin",
+  "package": "net.irisshaders.iris.compat.dh.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "AdvancedShadowCullingFrustumMixin",
+    "BoxCullingFrustumMixin",
+    "CullEverythingFrustumMixin",
+    "NonCullingFrustumMixin"
+  ]
+}

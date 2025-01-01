@@ -39,6 +39,7 @@ public class CeleritasProjectManagerPlugin implements Plugin<Settings> {
             });
             builder.setVcsVersion(versionData.vcsVersion);
         });
+        projectSettings.include("glsl-relocated");
         projectSettings.include("common");
         // Create the modern subproject
         projectSettings.include("modern");

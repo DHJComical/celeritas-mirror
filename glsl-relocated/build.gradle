@@ -1,0 +1,84 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+plugins {
+    id 'java-library'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://maven.taumc.org/releases"
+    }
+    mavenLocal()
+}
+
+configurations {
+    shadowGlsl
+    shadowTransformLib
+    shadowAntlr
+}
+
+dependencies {
+    implementation(shadowTransformLib("org.taumc:glsl-transformation-lib:${glsl_transformation_lib_version}")) {
+        transitive = false
+    }
+    implementation shadow("org.antlr:antlr4-runtime:4.11.1")
+}
+
+tasks.register("shadowAntlrJar", ShadowJar) {
+    configurations = [project.configurations.shadow]
+
+    from jar.archiveFile
+
+    relocate 'org.antlr', 'oculus.org.antlr'
+
+    archiveClassifier.set "shadow-antlr"
+}
+
+tasks.register("shadowGlslJar", ShadowJar) {
+    configurations = [project.configurations.shadowGlsl]
+
+    from jar.archiveFile
+
+    relocate 'org.antlr', 'oculus.org.antlr'
+
+    archiveClassifier.set "shadow-glslt"
+}
+
+tasks.register("shadowTransformLibJar", ShadowJar) {
+    configurations = [project.configurations.shadowTransformLib]
+
+    from jar.archiveFile
+
+    relocate 'org.antlr', 'oculus.org.antlr'
+
+    archiveClassifier.set "shadow-transformlib"
+}
+
+tasks.register("buildRelocatedJars") {
+    dependsOn("shadowTransformLibJar")
+    dependsOn("shadowGlslJar")
+    dependsOn("shadowAntlrJar")
+}
+
+configurations {
+    bundledGlslJar {
+        canBeConsumed = true
+        canBeResolved = false
+    }
+    bundledTransformLibJar {
+        canBeConsumed = true
+        canBeResolved = false
+    }
+    bundledAntlrJar {
+        canBeConsumed = true
+        canBeResolved = false
+    }
+}
+
+artifacts {
+    bundledGlslJar(shadowGlslJar)
+    bundledTransformLibJar(shadowTransformLibJar)
+    bundledAntlrJar(shadowAntlrJar)
+}

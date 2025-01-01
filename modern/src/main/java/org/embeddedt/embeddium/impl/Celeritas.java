@@ -107,6 +107,11 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
             MOD_VERSION = "1.0.11-beta.420";
             EmbeddiumConstants.MODNAME = "Embeddium";
         }
+
+        // TODO remove
+        //? if forge && 1.20.1 {
+        net.irisshaders.iris.Iris.forgeModInit();
+        //? }
     }
 
     public void onClientSetup(final FMLClientSetupEvent event) {

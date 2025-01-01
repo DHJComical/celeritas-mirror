@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "plugin": "net.irisshaders.iris.compat.pixelmon.mixin.OculusPixelmonCompatMixinPlugin",
+  "package": "net.irisshaders.iris.compat.pixelmon.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "MixinNormalizedFace"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

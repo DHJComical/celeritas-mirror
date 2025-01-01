@@ -89,6 +89,13 @@ repositories {
         }
     }
     maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
+    maven {
         url = "https://maven.su5ed.dev/releases"
     }
     maven {
@@ -120,6 +127,8 @@ java {
 
 def skippedFabricApiModules = ["fabric-renderer-api-v1", "fabric-renderer-indigo"]
 
+def shadersEnabled = project.name.equals("1.20.1-forge")
+
 configurations {
     modCompileOnly
     compileClasspath.extendsFrom(modCompileOnly)
@@ -134,10 +143,37 @@ sourceSets {
     mcp
     main {
         compileClasspath += sourceSets.mcp.output
+        if (shadersEnabled) {
+            java {
+                srcDirs += "src/shaders/java"
+            }
+            resources {
+                srcDirs += "src/shaders/resources"
+            }
+        }
     }
 }
 
+def modMixinConfigs = ["embeddium.mixins.json"]
+
+if (shadersEnabled) {
+    modMixinConfigs.addAll([
+            "mixins.oculus.json",
+            "mixins.oculus.fantastic.json",
+            "mixins.oculus.vertexformat.json",
+            "mixins.oculus.bettermipmaps.json",
+            "mixins.oculus.fixes.maxfpscrash.json",
+            "oculus-batched-entity-rendering.mixins.json",
+            "mixins.oculus.compat.sodium.json",
+            "mixins.oculus.compat.indigo.json",
+            "mixins.oculus.compat.indium.json",
+            "mixins.oculus.compat.dh.json",
+            "mixins.oculus.compat.pixelmon.json"
+    ])
+}
+
 evaluationDependsOn(":common")
+evaluationDependsOn(":glsl-relocated")
 
 unimined.minecraft {
     combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
@@ -187,14 +223,14 @@ unimined.minecraft {
     } else if (configuredModLoader == FORGE) {
         minecraftForge {
             loader versionedProperty("forge").split("-")[1]
-            mixinConfig "embeddium.mixins.json"
+            mixinConfig modMixinConfigs
             project.getLayout().getProjectDirectory().dir("src/main/resources/META-INF").getAsFile().mkdirs()
             accessTransformer aw2at(embeddiumAccessWidener)
         }
     } else if (configuredModLoader == NEOFORGE) {
         neoForged {
             loader "net.neoforged:neoforge:${versionedProperty("neoforge")}:universal"
-            mixinConfig "embeddium.mixins.json"
+            mixinConfig modMixinConfigs
             project.getLayout().getProjectDirectory().dir("src/main/resources/META-INF").getAsFile().mkdirs()
             accessTransformer aw2at(embeddiumAccessWidener)
      }
@@ -229,6 +265,21 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 
     shadow(project(":common"))
+
+    if (shadersEnabled) {
+        modCompileOnly("maven.modrinth:distanthorizonsapi:3.0.0")
+
+        def glslAntlr = project(path: ":glsl-relocated", configuration: "bundledAntlrJar")
+        def glslTransformLib = project(path: ":glsl-relocated", configuration: "bundledTransformLibJar")
+        def jcpp = "org.anarres:jcpp:1.4.14"
+        def shaderDeps = [glslAntlr, glslTransformLib, jcpp]
+
+        shaderDeps.forEach {
+            implementation(it)
+            shadow(it)
+            minecraftLibraries(it)
+        }
+    }
 
     if (stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.19.3")) {
         def jomlDep = "org.joml:joml:1.10.5"
