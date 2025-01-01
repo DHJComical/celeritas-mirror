@@ -18,7 +18,6 @@
     "clouds.MixinCloudRenderer",
     "directional_shading.MixinFlatLightPipeline",
     "directional_shading.MixinSmoothLightPipeline",
-    "font.MixinGlyphRenderer",
     "options.MixinSodiumGameOptions",
     "pbr_animation.MixinSpriteContents",
     "shader_overrides.MixinChunkBuilderMeshingTask",
