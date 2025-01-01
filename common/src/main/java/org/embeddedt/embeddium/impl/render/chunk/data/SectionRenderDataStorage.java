@@ -16,6 +16,9 @@ public class SectionRenderDataStorage {
 
     public SectionRenderDataStorage() {
         this.pMeshDataArray = SectionRenderDataUnsafe.allocateHeap(RenderRegion.REGION_SIZE);
+        if (this.pMeshDataArray == 0) {
+            throw new OutOfMemoryError("Failed to allocate mesh data array");
+        }
     }
 
     public void setMeshes(int localSectionIndex,
