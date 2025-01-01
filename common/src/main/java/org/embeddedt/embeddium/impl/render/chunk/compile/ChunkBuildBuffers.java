@@ -37,9 +37,10 @@ public class ChunkBuildBuffers {
 
         for (TerrainRenderPass pass : configuration.renderPasses()) {
             var vertexBuffers = new ChunkMeshBufferBuilder[ModelQuadFacing.COUNT];
+            var vertexType = configuration.getVertexTypeForPass(pass);
 
             for (int facing = 0; facing < ModelQuadFacing.COUNT; facing++) {
-                vertexBuffers[facing] = new ChunkMeshBufferBuilder(configuration.vertexType(), 128 * 1024, pass.isSorted() && facing == ModelQuadFacing.UNASSIGNED.ordinal());
+                vertexBuffers[facing] = new ChunkMeshBufferBuilder(vertexType, 128 * 1024, pass.isSorted() && facing == ModelQuadFacing.UNASSIGNED.ordinal());
             }
 
             this.builders.put(pass, new BakedChunkModelBuilder(vertexBuffers, !pass.isSorted()));
@@ -93,7 +94,7 @@ public class ChunkBuildBuffers {
             return null;
         }
 
-        var mergedBuffer = new NativeBuffer(vertexCount * renderPassConfiguration.vertexType().getVertexFormat().getStride());
+        var mergedBuffer = new NativeBuffer(vertexCount * renderPassConfiguration.getVertexTypeForPass(pass).getVertexFormat().getStride());
         var mergedBufferBuilder = mergedBuffer.getDirectBuffer();
 
         for (var buffer : vertexBuffers) {

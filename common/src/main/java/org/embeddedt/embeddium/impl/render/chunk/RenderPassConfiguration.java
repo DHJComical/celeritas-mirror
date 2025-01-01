@@ -16,6 +16,10 @@ public record RenderPassConfiguration<R>(ChunkVertexType vertexType,
                                       Material defaultSolidMaterial,
                                       Material defaultCutoutMippedMaterial,
                                       Material defaultTranslucentMaterial) {
+    public ChunkVertexType getVertexTypeForPass(TerrainRenderPass pass) {
+        return this.vertexType;
+    }
+
     public Material getMaterialForRenderType(Object type) {
         return Objects.requireNonNull(chunkRenderTypeToMaterialMap.get(type));
     }

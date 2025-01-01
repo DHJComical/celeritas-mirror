@@ -61,8 +61,6 @@ public abstract class RenderSectionManager {
 
     private final int renderDistance;
 
-    private final ChunkVertexType vertexType;
-
     @NotNull
     private SortedRenderLists renderLists;
 
@@ -89,7 +87,6 @@ public abstract class RenderSectionManager {
         this.chunkRenderer = chunkRenderer.apply(RenderDevice.INSTANCE, configuration.vertexType());
 
         this.renderPassConfiguration = configuration;
-        this.vertexType = configuration.vertexType();
 
         this.builder = new ChunkBuilder(blocker, contextSupplier, requestedThreads);
 
@@ -734,9 +731,5 @@ public abstract class RenderSectionManager {
         } else {
             this.disabledRenderPasses.add(pass);
         }
-    }
-
-    public ChunkVertexType getVertexType() {
-        return this.vertexType;
     }
 }
