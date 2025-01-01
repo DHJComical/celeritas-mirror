@@ -36,7 +36,6 @@
     "vertex_format.ChunkMeshAttributeAccessor",
     "vertex_format.GlVertexAttributeFormatAccessor",
     "vertex_format.MixinChunkMeshAttribute",
-    "vertex_format.MixinRegionChunkRenderer",
     "vertex_format.MixinRenderSectionManager",
     "vertex_format.MixinVertexFormatDescriptionImpl",
     "vertex_format.MixinVertexSerializerCache",

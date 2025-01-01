@@ -8,9 +8,7 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkFogMode;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.compat.sodium.impl.IrisChunkShaderBindingPoints;
 import net.irisshaders.iris.gl.GLDebug;
 import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.blending.AlphaTests;
@@ -21,7 +19,6 @@ import net.irisshaders.iris.pipeline.SodiumTerrainPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shadows.ShadowRenderingState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL43C;
 
@@ -240,18 +237,13 @@ public class IrisChunkProgramOverrides {
 				builder.attachShader(tessEShader);
 			}
 
-			return builder.attachShader(vertShader)
-				.attachShader(fragShader)
-				// The following 4 attributes are part of Sodium.
-				.bindAttribute("a_PosId", IrisChunkShaderBindingPoints.ATTRIBUTE_POSITION_ID)
-				.bindAttribute("a_Color", IrisChunkShaderBindingPoints.ATTRIBUTE_COLOR)
-				.bindAttribute("a_TexCoord", IrisChunkShaderBindingPoints.ATTRIBUTE_BLOCK_TEXTURE)
-				.bindAttribute("a_LightCoord", IrisChunkShaderBindingPoints.ATTRIBUTE_LIGHT_TEXTURE)
-				.bindAttribute("mc_Entity", IrisChunkShaderBindingPoints.BLOCK_ID)
-				.bindAttribute("mc_midTexCoord", IrisChunkShaderBindingPoints.MID_TEX_COORD)
-				.bindAttribute("at_tangent", IrisChunkShaderBindingPoints.TANGENT)
-				.bindAttribute("iris_Normal", IrisChunkShaderBindingPoints.NORMAL)
-				.bindAttribute("at_midBlock", IrisChunkShaderBindingPoints.MID_BLOCK)
+			builder.attachShader(vertShader)
+				.attachShader(fragShader);
+            int i = 0;
+            for (var attr : configuration.vertexType().getVertexFormat().getAttributes()) {
+                builder.bindAttribute(attr.getName(), i++);
+            }
+			return builder
 				.link((shader) -> {
 					int handle = ((GlObject) shader).handle();
 					ShaderBindingContextExt contextExt = (ShaderBindingContextExt) shader;
