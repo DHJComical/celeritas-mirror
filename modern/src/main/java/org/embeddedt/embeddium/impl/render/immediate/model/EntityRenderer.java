@@ -63,6 +63,10 @@ public class EntityRenderer {
     private static final int[] CUBE_NORMALS_MIRRORED = new int[NUM_CUBE_FACES];
 
     static {
+        if (SCRATCH_BUFFER == MemoryUtil.NULL) {
+            throw new OutOfMemoryError("Unable to allocate scratch buffer");
+        }
+
         for (int cornerIndex = 0; cornerIndex < NUM_CUBE_VERTICES; cornerIndex++) {
             CUBE_CORNERS[cornerIndex] = new Vector3f();
         }
