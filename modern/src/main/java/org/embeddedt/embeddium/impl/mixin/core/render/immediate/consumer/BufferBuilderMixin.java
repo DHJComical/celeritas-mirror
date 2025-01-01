@@ -75,7 +75,7 @@ public abstract class BufferBuilderMixin /*? if >=1.15 <1.21 {*/ extends Default
                 .get(format);
         this.stride = format.getVertexSize();
         //? if >=1.15
-        this.fastDelegate = this.embeddium$format.isSimpleFormat() ? new SodiumBufferBuilder(this) : null;
+        this.fastDelegate = this.embeddium$format.isSimpleFormat() && SodiumBufferBuilder.canSupport(this.embeddium$format) ? new SodiumBufferBuilder(this) : null;
     }
 
     //? if >=1.15 {

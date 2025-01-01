@@ -4,6 +4,10 @@ package org.embeddedt.embeddium.impl.render.vertex.buffer;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
+import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ByteOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.embeddedt.embeddium.api.util.ColorABGR;
 import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.api.util.NormI8;
@@ -16,20 +20,24 @@ import org.embeddedt.embeddium.api.vertex.attributes.common.PositionAttribute;
 import org.embeddedt.embeddium.api.vertex.attributes.common.TextureAttribute;
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
+import org.embeddedt.embeddium.api.vertex.format.VertexFormatRegistry;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.spongepowered.asm.mixin.Unique;
+
+import java.util.Set;
 
 public class SodiumBufferBuilder implements VertexConsumer, VertexBufferWriter {
     private static final int ATTRIBUTE_NOT_PRESENT = -1;
 
     private static final int
-            ATTRIBUTE_POSITION_BIT  = 1 << CommonVertexAttribute.POSITION.ordinal(),
-            ATTRIBUTE_COLOR_BIT     = 1 << CommonVertexAttribute.COLOR.ordinal(),
-            ATTRIBUTE_TEXTURE_BIT   = 1 << CommonVertexAttribute.TEXTURE.ordinal(),
-            ATTRIBUTE_OVERLAY_BIT   = 1 << CommonVertexAttribute.OVERLAY.ordinal(),
-            ATTRIBUTE_LIGHT_BIT     = 1 << CommonVertexAttribute.LIGHT.ordinal(),
-            ATTRIBUTE_NORMAL_BIT    = 1 << CommonVertexAttribute.NORMAL.ordinal();
+            ATTRIBUTE_POSITION_BIT  = 1 << 0,
+            ATTRIBUTE_COLOR_BIT     = 1 << 1,
+            ATTRIBUTE_TEXTURE_BIT   = 1 << 2,
+            ATTRIBUTE_OVERLAY_BIT   = 1 << 3,
+            ATTRIBUTE_LIGHT_BIT     = 1 << 4,
+            ATTRIBUTE_NORMAL_BIT    = 1 << 5;
 
     private final ExtendedBufferBuilder builder;
 
@@ -44,6 +52,44 @@ public class SodiumBufferBuilder implements VertexConsumer, VertexBufferWriter {
     private int requiredAttributes, writtenAttributes;
 
     private int packedFixedColor;
+
+    private static final Set<VertexFormatElement> SUPPORTED_ELEMENTS = new ReferenceOpenHashSet<>();
+    private static final Int2ByteOpenHashMap SUPPORT_CACHE = new Int2ByteOpenHashMap();
+    private static final byte SUPPORT_NOT_CHECKED = 127;
+
+    static {
+        SUPPORTED_ELEMENTS.add(CommonVertexAttribute.POSITION);
+        SUPPORTED_ELEMENTS.add(CommonVertexAttribute.TEXTURE);
+        SUPPORTED_ELEMENTS.add(CommonVertexAttribute.OVERLAY);
+        SUPPORTED_ELEMENTS.add(CommonVertexAttribute.LIGHT);
+        SUPPORTED_ELEMENTS.add(CommonVertexAttribute.NORMAL);
+        SUPPORTED_ELEMENTS.add(CommonVertexAttribute.COLOR);
+
+        SUPPORT_CACHE.defaultReturnValue(SUPPORT_NOT_CHECKED);
+    }
+
+    public static boolean canSupport(VertexFormatDescription vertexFormat) {
+        // We cache this info for speed
+        int id = vertexFormat.id();
+        synchronized (SUPPORT_CACHE) {
+            byte res = SUPPORT_CACHE.get(id);
+            if (res == SUPPORT_NOT_CHECKED) {
+                res = (byte)(checkSupport(vertexFormat) ? 1 : 0);
+                SUPPORT_CACHE.put(id, res);
+            }
+            return res == 1;
+        }
+    }
+
+    private static boolean checkSupport(VertexFormatDescription vertexFormat) {
+        for (VertexFormatElement e : vertexFormat.getElements()) {
+            if (!SUPPORTED_ELEMENTS.contains(e)) {
+                Celeritas.logger().warn("Vertex format is simple but cannot be supported in fast path, has unknown element {}", e, new Exception());
+                return false;
+            }
+        }
+        return true;
+    }
 
     public SodiumBufferBuilder(ExtendedBufferBuilder builder) {
         this.builder = builder;

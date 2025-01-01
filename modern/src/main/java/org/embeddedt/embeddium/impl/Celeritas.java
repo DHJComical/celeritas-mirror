@@ -111,7 +111,7 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         // TODO remove
         //? if forge && 1.20.1 {
         net.irisshaders.iris.Iris.forgeModInit();
-        //? }
+        //?}
     }
 
     public void onClientSetup(final FMLClientSetupEvent event) {

@@ -174,12 +174,7 @@ public class VertexSerializerFactory {
     private static List<MemoryTransfer> createMemoryTransferList(VertexFormatDescription srcVertexFormat, VertexFormatDescription dstVertexFormat) {
         var ops = new ArrayList<MemoryTransfer>();
 
-        for (var elementType : CommonVertexAttribute.values()) {
-            // Check if we need to transfer the element into the destination format
-            if (!dstVertexFormat.containsElement(elementType)) {
-                continue;
-            }
-
+        for (var elementType : dstVertexFormat.getElements()) {
             // If the destination format has the element, then the source format needs to have it as well
             if (!srcVertexFormat.containsElement(elementType)) {
                 throw new RuntimeException("Source format is missing element %s as required by destination format".formatted(elementType));
@@ -188,7 +183,9 @@ public class VertexSerializerFactory {
             var srcOffset = srcVertexFormat.getElementOffset(elementType);
             var dstOffset = dstVertexFormat.getElementOffset(elementType);
 
-            ops.add(new MemoryTransfer(srcOffset, dstOffset, elementType.getByteLength()));
+            int byteLength = elementType.getByteSize();
+
+            ops.add(new MemoryTransfer(srcOffset, dstOffset, byteLength));
         }
 
         return mergeAdjacentMemoryTransfers(ops);
