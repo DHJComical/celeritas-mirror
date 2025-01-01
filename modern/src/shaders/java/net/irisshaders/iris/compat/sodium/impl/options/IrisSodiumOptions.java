@@ -5,18 +5,28 @@ import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 import net.minecraft.client.Options;
 import net.minecraft.network.chat.Component;
+import org.embeddedt.embeddium.api.OptionGroupConstructionEvent;
 import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
 import org.embeddedt.embeddium.api.options.control.CyclingControl;
 import org.embeddedt.embeddium.api.options.control.SliderControl;
 import org.embeddedt.embeddium.api.options.storage.MinecraftOptionsStorage;
-import org.embeddedt.embeddium.api.options.structure.OptionFlag;
-import org.embeddedt.embeddium.api.options.structure.OptionImpact;
-import org.embeddedt.embeddium.api.options.structure.OptionImpl;
+import org.embeddedt.embeddium.api.options.structure.*;
+import org.embeddedt.embeddium.impl.gui.SodiumGameOptionPages;
 
 import java.io.IOException;
 
 public class IrisSodiumOptions {
-	public static OptionImpl<Options, Integer> createMaxShadowDistanceSlider(MinecraftOptionsStorage vanillaOpts) {
+    public static void init() {
+        OptionGroupConstructionEvent.BUS.addListener(ev -> {
+            if(ev.getId().matches(StandardOptions.Group.RENDERING)) {
+                ev.getOptions().add(1, createMaxShadowDistanceSlider(SodiumGameOptionPages.getVanillaOpts()));
+            } else if(ev.getId().matches(StandardOptions.Group.GRAPHICS)) {
+                ev.getOptions().add(createColorSpaceButton(SodiumGameOptionPages.getVanillaOpts()));
+            }
+        });
+    }
+
+	public static OptionImpl<Options, Integer> createMaxShadowDistanceSlider(OptionStorage<Options> vanillaOpts) {
 		OptionImpl<Options, Integer> maxShadowDistanceSlider = OptionImpl.createBuilder(int.class, vanillaOpts)
 			.setName(Component.translatable("options.iris.shadowDistance"))
 			.setTooltip(Component.translatable("options.iris.shadowDistance.sodium_tooltip"))
@@ -37,7 +47,7 @@ public class IrisSodiumOptions {
 		return maxShadowDistanceSlider;
 	}
 
-	public static OptionImpl<Options, ColorSpace> createColorSpaceButton(MinecraftOptionsStorage vanillaOpts) {
+	public static OptionImpl<Options, ColorSpace> createColorSpaceButton(OptionStorage<Options> vanillaOpts) {
 		OptionImpl<Options, ColorSpace> colorSpace = OptionImpl.createBuilder(ColorSpace.class, vanillaOpts)
 			.setName(Component.translatable("options.iris.colorSpace"))
 			.setTooltip(Component.translatable("options.iris.colorSpace.sodium_tooltip"))

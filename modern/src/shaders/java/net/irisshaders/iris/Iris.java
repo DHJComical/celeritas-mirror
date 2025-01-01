@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.mojang.blaze3d.platform.GlDebug;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.irisshaders.iris.compat.dh.DHCompat;
+import net.irisshaders.iris.compat.sodium.impl.options.IrisSodiumOptions;
 import net.irisshaders.iris.config.IrisConfig;
 import net.irisshaders.iris.gl.GLDebug;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
@@ -176,6 +177,8 @@ public class Iris {
 		// See: https://github.com/IrisShaders/Iris/issues/323
 		lastDimension = DimensionId.OVERWORLD;
 		Iris.getPipelineManager().preparePipeline(DimensionId.OVERWORLD);
+
+        IrisSodiumOptions.init();
 	}
 
 	public static void handleKeybinds(Minecraft minecraft) {

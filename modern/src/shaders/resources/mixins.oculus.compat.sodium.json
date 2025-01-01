@@ -19,8 +19,6 @@
     "directional_shading.MixinFlatLightPipeline",
     "directional_shading.MixinSmoothLightPipeline",
     "font.MixinGlyphRenderer",
-    "options.MixinRenderSectionManager",
-    "options.MixinSodiumGameOptionPages",
     "options.MixinSodiumGameOptions",
     "pbr_animation.MixinSpriteContents",
     "shader_overrides.MixinChunkBuilderMeshingTask",
