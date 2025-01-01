@@ -20,10 +20,19 @@ public final class MultiDrawBatch {
 
     public MultiDrawBatch(int capacity) {
         this.pElementPointer = MemoryUtil.nmemAlignedAlloc(32, (long) capacity * Pointer.POINTER_SIZE);
+        if (this.pElementPointer == MemoryUtil.NULL) {
+            throw new OutOfMemoryError("Failed to allocate element pointer array");
+        }
         MemoryUtil.memSet(this.pElementPointer, 0x0, (long) capacity * Pointer.POINTER_SIZE);
 
         this.pElementCount = MemoryUtil.nmemAlignedAlloc(32, (long) capacity * Integer.BYTES);
+        if (this.pElementCount == MemoryUtil.NULL) {
+            throw new OutOfMemoryError("Failed to allocate element count array");
+        }
         this.pBaseVertex = MemoryUtil.nmemAlignedAlloc(32, (long) capacity * Integer.BYTES);
+        if (this.pBaseVertex == MemoryUtil.NULL) {
+            throw new OutOfMemoryError("Failed to allocate base vertex array");
+        }
 
         this.capacity = capacity;
     }
