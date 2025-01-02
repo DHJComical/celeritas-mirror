@@ -1,6 +1,8 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.level.block.Block;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.model.color.ColorProvider;
@@ -39,9 +41,11 @@ import org.embeddedt.embeddium.impl.render.frapi.FRAPIModelUtils;
 import org.embeddedt.embeddium.impl.render.frapi.FRAPIRenderHandler;
 //? if ffapi && >=1.20
 import org.embeddedt.embeddium.impl.render.frapi.IndigoBlockRenderContext;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The Embeddium equivalent to vanilla's ModelBlockRenderer. This is the primary component of the chunk meshing logic;
@@ -87,9 +91,12 @@ public class BlockRenderer {
 
     private int quadRenderingFlags = 0;
 
-    public BlockRenderer(ColorProviderRegistry colorRegistry, LightPipelineProvider lighters) {
+    private final Map<Block, RenderType> renderTypeOverrides;
+
+    public BlockRenderer(ColorProviderRegistry colorRegistry, LightPipelineProvider lighters, @Nullable Map<Block, RenderType> renderTypeOverrides) {
         this.colorProviderRegistry = colorRegistry;
         this.lighters = lighters;
+        this.renderTypeOverrides = renderTypeOverrides;
 
         this.occlusionCache = new BlockOcclusionCache();
         this.useAmbientOcclusion = Minecraft.useAmbientOcclusion();
@@ -107,7 +114,18 @@ public class BlockRenderer {
      * @param buffers the buffer to output geometry to
      */
     public void renderModel(BlockRenderContext ctx, ChunkBuildBuffers buffers) {
-        var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(ctx.renderLayer());
+        int defaultQuadRenderingFlags = USE_ALL_THINGS;
+        RenderType blockRenderType = ctx.renderLayer();
+
+        if (this.renderTypeOverrides != null) {
+            RenderType type = this.renderTypeOverrides.get(ctx.state().getBlock());
+            if (type != null) {
+                blockRenderType = type;
+                defaultQuadRenderingFlags &= ~USE_RENDER_PASS_OPTIMIZATION;
+            }
+        }
+
+        var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(blockRenderType);
         var meshBuilder = buffers.get(material);
 
         ColorProvider<BlockState> colorizer = this.colorProviderRegistry.getColorProvider(ctx.state().getBlock());
@@ -148,13 +166,13 @@ public class BlockRenderer {
             return;
         }
 
-        int nullCullFaceFlags = USE_ALL_THINGS;
+        int nullCullFaceFlags = defaultQuadRenderingFlags;
 
         for (Direction face : DirectionUtil.ALL_DIRECTIONS) {
             List<BakedQuad> quads = this.getGeometry(ctx, face);
 
             if (!quads.isEmpty() && this.isFaceVisible(ctx, face)) {
-                this.quadRenderingFlags = USE_ALL_THINGS;
+                this.quadRenderingFlags = defaultQuadRenderingFlags;
                 this.renderQuadList(ctx, material, lighter, colorizer, renderOffset, buffers, meshBuilder, quads, face);
                 // Make sure any flags that are turned off are also turned off for the null cullface
                 nullCullFaceFlags &= this.quadRenderingFlags;

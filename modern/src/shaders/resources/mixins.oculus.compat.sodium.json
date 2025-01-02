@@ -20,7 +20,7 @@
     "directional_shading.MixinSmoothLightPipeline",
     "options.MixinSodiumGameOptions",
     "pbr_animation.MixinSpriteContents",
-    "shader_overrides.MixinChunkBuilderMeshingTask",
+    "shader_overrides.MixinBlockRenderCache",
     "shader_overrides.MixinGlProgram",
     "shader_overrides.MixinGlRenderDevice",
     "shader_overrides.MixinRegionChunkRenderer",

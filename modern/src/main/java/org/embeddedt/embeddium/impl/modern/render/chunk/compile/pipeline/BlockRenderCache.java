@@ -47,7 +47,7 @@ public class BlockRenderCache {
 
         var colorRegistry = new ColorProviderRegistry(client.getBlockColors());
 
-        this.blockRenderer = new BlockRenderer(colorRegistry, lightPipelineProvider);
+        this.blockRenderer = new BlockRenderer(colorRegistry, lightPipelineProvider, null);
         this.fluidRenderer = new FluidRenderer(colorRegistry, lightPipelineProvider);
         this.lightPipelineProvider = lightPipelineProvider;
 
