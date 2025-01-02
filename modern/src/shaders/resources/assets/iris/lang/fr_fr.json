@@ -4,7 +4,7 @@
   "iris.keybind.reload": "Recharger les shaders",
   "iris.keybind.shaderPackSelection": "Écran de sélection du pack de shaders",
   "iris.keybind.toggleShaders": "Activation des shaders",
-  "iris.keybinds": "Oculus",
+  "iris.keybinds": "Celeritas",
   "iris.shaders.reloaded.failure": "Échec lors du rechargement des shaders ! Raison : %s",
   "iris.shaders.toggled.failure": "Échec lors de l'activation des shaders ! Raison : %s",
   "options.iris.apply": "Appliquer",

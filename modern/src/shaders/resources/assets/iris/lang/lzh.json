@@ -4,7 +4,7 @@
   "iris.keybind.reload": "重載影",
   "iris.keybind.shaderPackSelection": "擇影囊之幕",
   "iris.keybind.toggleShaders": "影之啟閉",
-  "iris.keybinds": "Oculus",
+  "iris.keybinds": "Celeritas",
   "iris.shaders.reloaded.failure": "以%s故，弗能重載影！",
   "iris.shaders.toggled.failure": "以%s故，弗能用影！",
   "options.iris.apply": "然",

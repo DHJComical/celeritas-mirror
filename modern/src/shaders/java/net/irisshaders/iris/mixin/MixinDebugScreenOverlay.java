@@ -1,5 +1,6 @@
 package net.irisshaders.iris.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
@@ -13,10 +14,12 @@ import java.lang.management.BufferPoolMXBean;
 import java.lang.management.ManagementFactory;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@Mixin(DebugScreenOverlay.class)
+// Lower priority than the primary mixin
+@Mixin(value = DebugScreenOverlay.class, priority = 900)
 public abstract class MixinDebugScreenOverlay {
 	@Unique
 	private static final List<BufferPoolMXBean> iris$pools = ManagementFactory.getPlatformMXBeans(BufferPoolMXBean.class);
@@ -54,35 +57,19 @@ public abstract class MixinDebugScreenOverlay {
 		return String.format("%.3f %ciB", value / 1024.0, ci.current());
 	}
 
-	// From Sodium
-	@Unique
-	private static long iris$getNativeMemoryUsage() {
-		return ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage().getUsed();
-	}
-
-	@Inject(method = "getSystemInformation", at = @At("RETURN"))
-	private void iris$appendShaderPackText(CallbackInfoReturnable<List<String>> cir) {
-		List<String> messages = cir.getReturnValue();
-
-		messages.add("");
-		messages.add("[" + Iris.MODNAME + "] Version: " + Iris.getFormattedVersion());
-		messages.add("");
-
+    @ModifyExpressionValue(method = "getSystemInformation", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList([Ljava/lang/Object;)Ljava/util/ArrayList;", remap = false))
+    private ArrayList<String> redirectRightTextEarly(ArrayList<String> messages) {
 		if (Iris.getIrisConfig().areShadersEnabled()) {
-			messages.add("[" + Iris.MODNAME + "] Shaderpack: " + Iris.getCurrentPackName() + (Iris.isFallback() ? " (fallback)" : ""));
+			messages.add("Shaderpack: " + Iris.getCurrentPackName() + (Iris.isFallback() ? " (fallback)" : ""));
 			Iris.getCurrentPack().ifPresent(pack -> {
-				messages.add("[" + Iris.MODNAME + "] " + pack.getProfileInfo());
+				messages.add(pack.getProfileInfo());
 			});
-			messages.add("[" + Iris.MODNAME + "] Color space: " + IrisVideoSettings.colorSpace.name());
-		} else {
-			messages.add("[" + Iris.MODNAME + "] Shaders are disabled");
+			messages.add("Color space: " + IrisVideoSettings.colorSpace.name());
 		}
 
 		messages.add(3, "Direct Buffers: +" + iris$humanReadableByteCountBin(iris$directPool.getMemoryUsed()));
 
-		//if (!Iris.isSodiumInstalled()) {
-		//	messages.add(3, "Native Memory: +" + iris$humanReadableByteCountBin(iris$getNativeMemoryUsage()));
-		//}
+        return messages;
 	}
 
 	@Inject(method = "getGameInformation", at = @At("RETURN"))
