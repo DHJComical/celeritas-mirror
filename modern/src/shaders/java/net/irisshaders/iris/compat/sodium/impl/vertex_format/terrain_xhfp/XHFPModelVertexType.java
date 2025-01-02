@@ -5,23 +5,22 @@ import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshAttribute;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
-import net.irisshaders.iris.compat.sodium.impl.vertex_format.IrisChunkMeshAttributes;
 
 /**
  * Like HFPModelVertexType, but extended to support Iris. The extensions aren't particularly efficient right now.
  */
 public class XHFPModelVertexType implements ChunkVertexType {
 	public static final int STRIDE = 40;
-	public static final GlVertexFormat<ChunkMeshAttribute> VERTEX_FORMAT = GlVertexFormat.builder(ChunkMeshAttribute.class, STRIDE)
-		.addElement(ChunkMeshAttribute.POSITION_MATERIAL_MESH, "a_PosId", 0, GlVertexAttributeFormat.UNSIGNED_SHORT, 4, false, true)
-		.addElement(ChunkMeshAttribute.COLOR_SHADE, "a_Color", 8, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true, false)
-		.addElement(ChunkMeshAttribute.BLOCK_TEXTURE, "a_TexCoord", 12, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, false)
-		.addElement(ChunkMeshAttribute.LIGHT_TEXTURE, "a_LightCoord", 16, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, true)
-		.addElement(IrisChunkMeshAttributes.MID_TEX_COORD, "mc_midTexCoord",20, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, false)
-		.addElement(IrisChunkMeshAttributes.TANGENT, "at_tangent", 24, GlVertexAttributeFormat.BYTE, 4, true, false)
-		.addElement(IrisChunkMeshAttributes.NORMAL, "iris_Normal", 28, GlVertexAttributeFormat.BYTE, 3, true, false)
-		.addElement(IrisChunkMeshAttributes.BLOCK_ID, "mc_Entity", 32, GlVertexAttributeFormat.SHORT, 2, false, false)
-		.addElement(IrisChunkMeshAttributes.MID_BLOCK, "at_midBlock", 36, GlVertexAttributeFormat.BYTE, 4, false, false)
+	public static final GlVertexFormat VERTEX_FORMAT = GlVertexFormat.builder(STRIDE)
+		.addElement("a_PosId", 0, GlVertexAttributeFormat.UNSIGNED_SHORT, 4, false, true)
+		.addElement("a_Color", 8, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true, false)
+		.addElement("a_TexCoord", 12, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, false)
+		.addElement("a_LightCoord", 16, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, true)
+		.addElement("mc_midTexCoord",20, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, false)
+		.addElement("at_tangent", 24, GlVertexAttributeFormat.BYTE, 4, true, false)
+		.addElement("iris_Normal", 28, GlVertexAttributeFormat.BYTE, 3, true, false)
+		.addElement("mc_Entity", 32, GlVertexAttributeFormat.SHORT, 2, false, false)
+		.addElement("at_midBlock", 36, GlVertexAttributeFormat.BYTE, 4, false, false)
 		.build();
 
 	private static final int POSITION_MAX_VALUE = 65536;
@@ -68,7 +67,7 @@ public class XHFPModelVertexType implements ChunkVertexType {
 	}
 
 	@Override
-	public GlVertexFormat<ChunkMeshAttribute> getVertexFormat() {
+	public GlVertexFormat getVertexFormat() {
 		return VERTEX_FORMAT;
 	}
 

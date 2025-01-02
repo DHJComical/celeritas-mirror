@@ -20,7 +20,7 @@ public interface ChunkVertexType {
      */
     float getTextureScale();
 
-    GlVertexFormat<ChunkMeshAttribute> getVertexFormat();
+    GlVertexFormat getVertexFormat();
 
     ChunkVertexEncoder getEncoder();
 

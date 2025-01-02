@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.impl.render.chunk.vertex.format.impl;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeFormat;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshAttribute;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.lwjgl.system.MemoryUtil;
@@ -15,11 +14,11 @@ import org.lwjgl.system.MemoryUtil;
 public class VanillaLikeChunkVertex implements ChunkVertexType {
     public static final int STRIDE = 28;
 
-    public static final GlVertexFormat<ChunkMeshAttribute> VERTEX_FORMAT = GlVertexFormat.builder(ChunkMeshAttribute.class, STRIDE)
-            .addElement(ChunkMeshAttribute.POSITION_MATERIAL_MESH, "a_PosId", 0, GlVertexAttributeFormat.FLOAT, 3, false, false)
-            .addElement(ChunkMeshAttribute.COLOR_SHADE, "a_Color", 12, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true, false)
-            .addElement(ChunkMeshAttribute.BLOCK_TEXTURE, "a_TexCoord", 16, GlVertexAttributeFormat.FLOAT, 2, false, false)
-            .addElement(ChunkMeshAttribute.LIGHT_TEXTURE, "a_LightCoord", 24, GlVertexAttributeFormat.UNSIGNED_INT, 1, false, true)
+    public static final GlVertexFormat VERTEX_FORMAT = GlVertexFormat.builder(STRIDE)
+            .addElement("a_PosId", 0, GlVertexAttributeFormat.FLOAT, 3, false, false)
+            .addElement("a_Color", 12, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true, false)
+            .addElement("a_TexCoord", 16, GlVertexAttributeFormat.FLOAT, 2, false, false)
+            .addElement("a_LightCoord", 24, GlVertexAttributeFormat.UNSIGNED_INT, 1, false, true)
             .build();
 
     @Override
@@ -38,7 +37,7 @@ public class VanillaLikeChunkVertex implements ChunkVertexType {
     }
 
     @Override
-    public GlVertexFormat<ChunkMeshAttribute> getVertexFormat() {
+    public GlVertexFormat getVertexFormat() {
         return VERTEX_FORMAT;
     }
 

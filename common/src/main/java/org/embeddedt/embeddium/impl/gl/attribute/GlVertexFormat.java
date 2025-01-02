@@ -5,34 +5,30 @@ import lombok.AllArgsConstructor;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumMap;
 
 /**
- * Provides a generic vertex format which contains the attributes defined by {@param T}. Other code can then retrieve
+ * Provides a generic vertex format which contains attributes. Other code can then retrieve
  * the attributes and work with encoded data in a generic manner without needing to rely on a specific format.
- *
- * @param <T> The enumeration over the vertex attributes
  */
 @AllArgsConstructor
-public class GlVertexFormat<T extends Enum<T>> {
-    private final Class<T> attributeEnum;
-    private final Reference2ReferenceLinkedOpenHashMap<T, GlVertexAttribute> attributesKeyed;
+public class GlVertexFormat {
+    private final Reference2ReferenceLinkedOpenHashMap<String, GlVertexAttribute> attributesKeyed;
 
     private final int stride;
 
-    public static <T extends Enum<T>> Builder<T> builder(Class<T> type, int stride) {
-        return new Builder<>(type, stride);
+    public static Builder builder(int stride) {
+        return new Builder(stride);
     }
 
     /**
      * Returns the {@link GlVertexAttribute} of this vertex format bound to the type {@param name}.
      * @throws NullPointerException If the attribute does not exist in this format
      */
-    public GlVertexAttribute getAttribute(T name) {
+    public GlVertexAttribute getAttribute(String name) {
         GlVertexAttribute attr = this.attributesKeyed.get(name);
 
         if (attr == null) {
-            throw new NullPointerException("No attribute exists for " + name.toString());
+            throw new NullPointerException("No attribute exists for " + name);
         }
 
         return attr;
@@ -51,33 +47,30 @@ public class GlVertexFormat<T extends Enum<T>> {
 
     @Override
     public String toString() {
-        return String.format("GlVertexFormat<%s>{attributes=%d,stride=%d}", this.attributeEnum.getName(),
+        return String.format("GlVertexFormat{attributes=%d,stride=%d}",
                 this.attributesKeyed.size(), this.stride);
     }
 
-    public static class Builder<T extends Enum<T>> {
-        private final Reference2ReferenceLinkedOpenHashMap<T, GlVertexAttribute> attributes;
-        private final Class<T> type;
+    public static class Builder {
+        private final Reference2ReferenceLinkedOpenHashMap<String, GlVertexAttribute> attributes;
         private final int stride;
 
-        public Builder(Class<T> type, int stride) {
-            this.type = type;
+        public Builder(int stride) {
             this.attributes = new Reference2ReferenceLinkedOpenHashMap<>();
             this.stride = stride;
         }
 
-        public Builder<T> addElement(T type, String name, int pointer, GlVertexAttributeFormat format, int count, boolean normalized, boolean intType) {
-            return this.addElement(type, new GlVertexAttribute(format, name, count, normalized, pointer, this.stride, intType));
+        public Builder addElement(String name, int pointer, GlVertexAttributeFormat format, int count, boolean normalized, boolean intType) {
+            return this.addElement(new GlVertexAttribute(format, name, count, normalized, pointer, this.stride, intType));
         }
 
         /**
          * Adds an vertex attribute which will be bound to the given generic attribute type.
          *
-         * @param type The generic attribute type
          * @param attribute The attribute to bind
          * @throws IllegalStateException If an attribute is already bound to the generic type
          */
-        private Builder<T> addElement(T type, GlVertexAttribute attribute) {
+        private Builder addElement(GlVertexAttribute attribute) {
             if (attribute.getPointer() >= this.stride) {
                 throw new IllegalArgumentException("Element starts outside vertex format");
             }
@@ -86,8 +79,8 @@ public class GlVertexFormat<T extends Enum<T>> {
                 throw new IllegalArgumentException("Element extends outside vertex format");
             }
 
-            if (this.attributes.put(type, attribute) != null) {
-                throw new IllegalStateException("Generic attribute " + type.name() + " already defined in vertex format");
+            if (this.attributes.put(attribute.getName(), attribute) != null) {
+                throw new IllegalStateException("Generic attribute " + attribute.getName() + " already defined in vertex format");
             }
 
             return this;
@@ -96,15 +89,11 @@ public class GlVertexFormat<T extends Enum<T>> {
         /**
          * Creates a {@link GlVertexFormat} from the current builder.
          */
-        public GlVertexFormat<T> build() {
+        public GlVertexFormat build() {
             int size = 0;
 
-            for (T key : this.type.getEnumConstants()) {
-                GlVertexAttribute attribute = this.attributes.get(key);
-
-                if (attribute != null) {
-                    size = Math.max(size, attribute.getPointer() + attribute.getSize());
-                }
+            for (var attribute : this.attributes.values()) {
+                size = Math.max(size, attribute.getPointer() + attribute.getSize());
             }
 
             // The stride must be large enough to cover all attributes. This still allows for additional padding
@@ -113,7 +102,7 @@ public class GlVertexFormat<T extends Enum<T>> {
                 throw new IllegalArgumentException("Stride is too small");
             }
 
-            return new GlVertexFormat<>(this.type, this.attributes, this.stride);
+            return new GlVertexFormat(this.attributes, this.stride);
         }
     }
 }
