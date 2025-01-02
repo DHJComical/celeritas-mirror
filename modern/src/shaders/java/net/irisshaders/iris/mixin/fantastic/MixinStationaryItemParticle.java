@@ -28,9 +28,7 @@ public class MixinStationaryItemParticle {
 		BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(blockState);
 		ChunkRenderTypeSet types = model.getRenderTypes(blockState, clientLevel.random, ModelData.EMPTY);
 
-		if (types.contains(RenderType.solid()) || types.contains(RenderType.cutout()) || types.contains(RenderType.cutoutMipped())) {
-				isOpaque = true;
-		}
+        isOpaque = !types.contains(RenderType.translucent());
 	}
 
 	@Inject(method = "getRenderType", at = @At("HEAD"), cancellable = true)
