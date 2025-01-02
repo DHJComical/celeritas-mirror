@@ -37,7 +37,7 @@ jobs:
           restore-keys: |
             unimined-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-
       - name: Build glsl-relocated
-        run: ./gradlew :glsl-relocated:build
+        run: ./gradlew :glsl-relocated:buildRelocatedJars
       - name: Build jars
         run: ./gradlew chiseledBuild
       - name: Stop daemon to free memory
