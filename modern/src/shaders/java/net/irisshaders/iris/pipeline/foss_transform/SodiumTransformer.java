@@ -28,7 +28,7 @@ public class SodiumTransformer {
             translationUnit.rename("vaNormal", "iris_Normal");
             translationUnit.replaceExpression("vaUV0", "_vert_tex_diffuse_coord");
             translationUnit.replaceExpression("vaUV1", "ivec2(0, 10)");
-            translationUnit.rename("vaUV2", "a_LightCoord");
+            translationUnit.rename("vaUV2", "_vert_tex_light_coord");
 
             translationUnit.replaceExpression("textureMatrix", "mat4(1.0f)");
             replaceMidTexCoord(translationUnit, 1.0f / 32768.0f);
@@ -148,22 +148,22 @@ public class SodiumTransformer {
 
         translationUnit.injectFunction(
                 "void _vert_init() {" +
-                        "_vert_position = (vec3(a_PosId.xyz) * 4.8828125E-4f + -8.0f"
-                        + ");" +
-                        "_vert_tex_diffuse_coord = (a_TexCoord * " + (1.0f / 32768.0f) + ");" +
-                        "_vert_tex_light_coord = a_LightCoord;" +
+                        "uint packed_draw_params = (a_LightCoord & 0xFFFFu);" +
+                        "_vert_position = vec3(a_PosId.xyz);" +
+                        "_vert_tex_diffuse_coord = a_TexCoord;" +
+                        "_vert_tex_light_coord = ivec2((uvec2((a_LightCoord >> 16) & 0xFFFFu) >> uvec2(0, 8)) & uvec2(0xFFu));" +
                         "_vert_color = " + separateAo + ";" +
-                        "_draw_id = (a_PosId.w >> 8u) & 0xFFu; }");
+                        "_draw_id = (packed_draw_params >> 8) & 0xFFu; }");
 
         translationUnit.injectFunction(
                 "float _material_mip_bias(uint material) {\n" +
                         "    return ((material >> MATERIAL_USE_MIP_OFFSET) & 1u) != 0u ? 0.0f : -4.0f;\n" +
                         "}");
 
-        addIfNotExists(translationUnit, "a_PosId", "in uvec4 a_PosId;");
+        addIfNotExists(translationUnit, "a_PosId", "in vec3 a_PosId;");
         addIfNotExists(translationUnit, "a_TexCoord", "in vec2 a_TexCoord;");
         addIfNotExists(translationUnit, "a_Color", "in vec4 a_Color;");
-        addIfNotExists(translationUnit, "a_LightCoord", "in ivec2 a_LightCoord;");
+        addIfNotExists(translationUnit, "a_LightCoord", "in uint a_LightCoord;");
         translationUnit.prependMain("_vert_init();");
     }
 }

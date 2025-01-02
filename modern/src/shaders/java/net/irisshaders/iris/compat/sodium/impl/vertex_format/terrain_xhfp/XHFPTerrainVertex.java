@@ -22,36 +22,20 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
 	private float uSum;
 	private float vSum;
 
-	// TODO: FIX
-
-	/*@Override
-	public void copyQuadAndFlipNormal() {
-		ensureCapacity(4);
-
-		MemoryUtil.memCopy(this.writePointer - STRIDE * 4, this.writePointer, STRIDE * 4);
-
-		// Now flip vertex normals
-		int packedNormal = MemoryUtil.memGetInt(this.writePointer + 32);
-		int inverted = NormalHelper.invertPackedNormal(packedNormal);
-
-		MemoryUtil.memPutInt(this.writePointer + 32, inverted);
-		MemoryUtil.memPutInt(this.writePointer + 32 + STRIDE, inverted);
-		MemoryUtil.memPutInt(this.writePointer + 32 + STRIDE * 2, inverted);
-		MemoryUtil.memPutInt(this.writePointer + 32 + STRIDE * 3, inverted);
-
-		// We just wrote 4 vertices, advance by 4
-		for (int i = 0; i < 4; i++) {
-			this.advance();
-		}
-
-		// Ensure vertices are flushed
-		this.flush();
-	}*/
-
 	@Override
 	public void iris$setContextHolder(BlockContextHolder holder) {
 		this.contextHolder = holder;
 	}
+
+    private static int encodeDrawParameters(Material material, int sectionIndex) {
+        return (sectionIndex & 255) << 8 | (material.bits() & 255) << 0;
+    }
+
+    private static int encodeLight(int light) {
+        int block = light & 255;
+        int sky = light >> 16 & 255;
+        return block << 0 | sky << 8;
+    }
 
 	@Override
 	public long write(long ptr,
@@ -60,22 +44,21 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
 		vSum += vertex.v;
 		vertexCount++;
 
-		MemoryUtil.memPutShort(ptr, XHFPModelVertexType.encodePosition(vertex.x));
-		MemoryUtil.memPutShort(ptr + 2L, XHFPModelVertexType.encodePosition(vertex.y));
-		MemoryUtil.memPutShort(ptr + 4L, XHFPModelVertexType.encodePosition(vertex.z));
-		MemoryUtil.memPutByte(ptr + 6L, (byte) material.bits());
-		MemoryUtil.memPutByte(ptr + 7L, (byte) chunkId);
+        MemoryUtil.memPutFloat(ptr, vertex.x);
+        MemoryUtil.memPutFloat(ptr + 4, vertex.y);
+        MemoryUtil.memPutFloat(ptr + 8, vertex.z);
 
-		MemoryUtil.memPutInt(ptr + 8, vertex.color);
+        MemoryUtil.memPutInt(ptr + 12, vertex.color);
 
-		MemoryUtil.memPutInt(ptr + 12, XHFPModelVertexType.encodeTexture(vertex.u, vertex.v));
+        MemoryUtil.memPutFloat(ptr + 16, vertex.u);
+        MemoryUtil.memPutFloat(ptr + 20, vertex.v);
 
-		MemoryUtil.memPutInt(ptr + 16, vertex.light);
+        MemoryUtil.memPutInt(ptr + 24, encodeDrawParameters(material, chunkId) << 0 | encodeLight(vertex.light) << 16);
 
-		MemoryUtil.memPutShort(ptr + 32, contextHolder.blockId);
-		MemoryUtil.memPutShort(ptr + 34, contextHolder.renderType);
-		MemoryUtil.memPutInt(ptr + 36, contextHolder.ignoreMidBlock ? 0 : ExtendedDataHelper.computeMidBlock(vertex.x, vertex.y, vertex.z, contextHolder.localPosX, contextHolder.localPosY, contextHolder.localPosZ));
-		MemoryUtil.memPutByte(ptr + 39, contextHolder.lightValue);
+        MemoryUtil.memPutShort(ptr + 40, contextHolder.blockId);
+        MemoryUtil.memPutShort(ptr + 42, contextHolder.renderType);
+        MemoryUtil.memPutInt(ptr + 44, contextHolder.ignoreMidBlock ? 0 : ExtendedDataHelper.computeMidBlock(vertex.x, vertex.y, vertex.z, contextHolder.localPosX, contextHolder.localPosY, contextHolder.localPosZ));
+        MemoryUtil.memPutByte(ptr + 47, contextHolder.lightValue);
 
 		if (vertexCount == 4) {
 			vertexCount = 0;
@@ -112,10 +95,10 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
 
 			int midUV = XHFPModelVertexType.encodeTexture(uSum, vSum);
 
-			MemoryUtil.memPutInt(ptr + 20, midUV);
-			MemoryUtil.memPutInt(ptr + 20 - STRIDE, midUV);
-			MemoryUtil.memPutInt(ptr + 20 - STRIDE * 2, midUV);
-			MemoryUtil.memPutInt(ptr + 20 - STRIDE * 3, midUV);
+			MemoryUtil.memPutInt(ptr + 28, midUV);
+			MemoryUtil.memPutInt(ptr + 28 - STRIDE, midUV);
+			MemoryUtil.memPutInt(ptr + 28 - STRIDE * 2, midUV);
+			MemoryUtil.memPutInt(ptr + 28 - STRIDE * 3, midUV);
 
 			uSum = 0;
 			vSum = 0;
@@ -129,17 +112,17 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
 			int packedNormal = NormI8.pack(normal);
 
 
-			MemoryUtil.memPutInt(ptr + 28, packedNormal);
-			MemoryUtil.memPutInt(ptr + 28 - STRIDE, packedNormal);
-			MemoryUtil.memPutInt(ptr + 28 - STRIDE * 2, packedNormal);
-			MemoryUtil.memPutInt(ptr + 28 - STRIDE * 3, packedNormal);
+			MemoryUtil.memPutInt(ptr + 36, packedNormal);
+			MemoryUtil.memPutInt(ptr + 36 - STRIDE, packedNormal);
+			MemoryUtil.memPutInt(ptr + 36 - STRIDE * 2, packedNormal);
+			MemoryUtil.memPutInt(ptr + 36 - STRIDE * 3, packedNormal);
 
 			int tangent = NormalHelper.computeTangent(normal.x, normal.y, normal.z, quad);
 
-			MemoryUtil.memPutInt(ptr + 24, tangent);
-			MemoryUtil.memPutInt(ptr + 24 - STRIDE, tangent);
-			MemoryUtil.memPutInt(ptr + 24 - STRIDE * 2, tangent);
-			MemoryUtil.memPutInt(ptr + 24 - STRIDE * 3, tangent);
+			MemoryUtil.memPutInt(ptr + 32, tangent);
+			MemoryUtil.memPutInt(ptr + 32 - STRIDE, tangent);
+			MemoryUtil.memPutInt(ptr + 32 - STRIDE * 2, tangent);
+			MemoryUtil.memPutInt(ptr + 32 - STRIDE * 3, tangent);
 		}
 
 		return ptr + STRIDE;
