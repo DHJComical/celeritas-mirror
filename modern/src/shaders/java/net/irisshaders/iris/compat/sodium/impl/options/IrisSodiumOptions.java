@@ -5,6 +5,7 @@ import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 import net.minecraft.client.Options;
 import net.minecraft.network.chat.Component;
+import org.embeddedt.embeddium.api.OptionGUIConstructionEvent;
 import org.embeddedt.embeddium.api.OptionGroupConstructionEvent;
 import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
 import org.embeddedt.embeddium.api.options.control.CyclingControl;

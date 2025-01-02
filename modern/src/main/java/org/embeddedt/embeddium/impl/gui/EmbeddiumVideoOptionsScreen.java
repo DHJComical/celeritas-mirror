@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.gui;
 import com.google.common.collect.Multimap;
 //? if >=1.15
 import com.mojang.blaze3d.vertex.PoseStack;
+import org.embeddedt.embeddium.api.EmbeddiumConstants;
 import org.embeddedt.embeddium.api.OptionGUIConstructionEvent;
 import org.embeddedt.embeddium.impl.gui.console.Console;
 import org.embeddedt.embeddium.impl.gui.console.message.MessageLevel;
@@ -168,10 +169,9 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
 
     private void createShaderPackButton(Multimap<String, Tab<?>> tabs) {
         if(this.searchTextModel.getOptionPredicate().test(null) && ShaderModBridge.isShaderModPresent()) {
-            String shaderModId = Stream.of("oculus", "iris").filter(PlatformUtil::modPresent).findFirst().orElse("iris");
-            tabs.put(shaderModId, Tab.createBuilder()
+            tabs.put(EmbeddiumConstants.MODID, Tab.createBuilder()
                     .setTitle(ComponentUtil.translatable("options.iris.shaderPackSelection"))
-                    .setId(OptionIdentifier.create("iris", "shader_packs"))
+                    .setId(OptionIdentifier.create(EmbeddiumConstants.MODID, "shader_packs"))
                     .setOnSelectFunction(() -> {
                         if(ShaderModBridge.openShaderScreen(this) instanceof Screen screen) {
                             this.minecraft.setScreen(screen);
