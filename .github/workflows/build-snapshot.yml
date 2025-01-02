@@ -36,8 +36,12 @@ jobs:
           key: unimined-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-${{ hashFiles('settings.gradle', 'versions.json') }}
           restore-keys: |
             unimined-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('src/main/resources/embeddium.accesswidener') }}-
+      - name: Build glsl-relocated
+        run: ./gradlew :glsl-relocated:build
       - name: Build jars
-        run: ./gradlew chiseledBuild --no-daemon
+        run: ./gradlew chiseledBuild
+      - name: Stop daemon to free memory
+        run: ./gradlew --stop
       - name: Initialize smoke test caches
         uses: actions/cache@v4
         with:
