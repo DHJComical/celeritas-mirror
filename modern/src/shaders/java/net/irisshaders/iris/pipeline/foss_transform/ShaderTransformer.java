@@ -204,7 +204,6 @@ public class ShaderTransformer {
         }
         watch.stop();
         CUMULATIVE_WATCH.stop();
-        Iris.logger.info("Transformed shader '{}' for {} in {} (total transformer time: {})", name, patchType.name(), watch, CUMULATIVE_WATCH);
         return result;
     }
 
