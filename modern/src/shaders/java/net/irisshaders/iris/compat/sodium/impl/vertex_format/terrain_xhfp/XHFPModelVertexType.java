@@ -2,7 +2,6 @@ package net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp;
 
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeFormat;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshAttribute;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 
