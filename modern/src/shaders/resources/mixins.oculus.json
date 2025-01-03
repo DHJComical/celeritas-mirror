@@ -60,7 +60,6 @@
     "fabulous.MixinDisableFabulousGraphics",
     "gui.MixinForgeGui",
     "gui.MixinGui",
-    "gui.MixinVideoSettingsScreen",
     "rendertype.RenderStateShardAccessor",
     "rendertype.RenderTypeAccessor",
     "shadows.MixinBeaconRenderer",
