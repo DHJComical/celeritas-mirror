@@ -383,10 +383,6 @@ public class ShadowRenderer {
 
 		levelRenderer.getLevel().getProfiler().push("terrain_setup");
 
-		if (levelRenderer instanceof CullingDataCache) {
-			((CullingDataCache) levelRenderer).saveState();
-		}
-
 		levelRenderer.getLevel().getProfiler().push("initialize frustum");
 
 		terrainFrustumHolder = createShadowFrustum(renderDistanceMultiplier, terrainFrustumHolder);
@@ -559,10 +555,6 @@ public class ShadowRenderer {
 
 		// Restore the old viewport
 		RenderSystem.viewport(0, 0, client.getMainRenderTarget().width, client.getMainRenderTarget().height);
-
-		if (levelRenderer instanceof CullingDataCache) {
-			((CullingDataCache) levelRenderer).restoreState();
-		}
 
 		compositeRenderer.renderAll();
 
