@@ -29,7 +29,7 @@ public class MixinItemBlockRenderTypes {
 
     //? if forgelike {
 	@Inject(method = "getRenderLayers", at = @At("HEAD"), cancellable = true)
-	private static void iris$setCustomRenderType(BlockState arg, CallbackInfoReturnable<ChunkRenderTypeSet> cir) {
+	private static void iris$setCustomRenderTypeForge(BlockState arg, CallbackInfoReturnable<ChunkRenderTypeSet> cir) {
 		Map<Block, RenderType> idMap = WorldRenderingSettings.INSTANCE.getBlockTypeIds();
 		if (idMap != null) {
 			RenderType type = idMap.get(arg.getBlock());

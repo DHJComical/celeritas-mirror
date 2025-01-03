@@ -20,8 +20,8 @@ public class ModelTranslucencyHelper {
         //? if fabric {
         /*return ItemBlockRenderTypes.getChunkRenderType(state) == RenderType.translucent();
         *///?} else {
-        BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(blockState);
-        ChunkRenderTypeSet types = model.getRenderTypes(blockState, clientLevel.random, ModelData.EMPTY);
+        BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
+        ChunkRenderTypeSet types = model.getRenderTypes(state, randomSource, ModelData.EMPTY);
 
         return !types.contains(RenderType.translucent());
         //?}
