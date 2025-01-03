@@ -276,7 +276,9 @@ dependencies {
 
         shaderDeps.forEach {
             implementation(it)
-            shadow(it)
+            shadow(it) {
+                transitive = false
+            }
             minecraftLibraries(it)
         }
     }
