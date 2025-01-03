@@ -6,13 +6,13 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.irisshaders.iris.Iris;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,9 +37,11 @@ public class BlockMaterialMapping {
 		blockPropertiesMap.forEach((id, blockType) -> {
 			ResourceLocation resourceLocation = new ResourceLocation(id.getNamespace(), id.getName());
 
-			ForgeRegistries.BLOCKS.getDelegate(resourceLocation).ifPresent(
-					block -> blockTypeIds.put(block.get(), convertBlockToRenderType(blockType))
-			);
+            Block block = BuiltInRegistries.BLOCK.get(resourceLocation);
+
+            if (block != Blocks.AIR) {
+                blockTypeIds.put(block, convertBlockToRenderType(blockType));
+            }
 		});
 
 		return blockTypeIds;
@@ -67,10 +69,10 @@ public class BlockMaterialMapping {
 			throw new IllegalStateException("Failed to get entry for " + intId, exception);
 		}
 
-		Block block = ForgeRegistries.BLOCKS.getValue(resourceLocation);
+		Block block = BuiltInRegistries.BLOCK.get(resourceLocation);
 
 		// If the block doesn't exist, by default the registry will return AIR. That probably isn't what we want.
-		if (block == null || block == Blocks.AIR) {
+		if (block == Blocks.AIR) {
 			return;
 		}
 

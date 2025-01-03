@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(RenderSystem.class)
 public class MixinRenderSystem {
-	@Inject(method = "initRenderer", at = @At("RETURN"), remap = false)
+	@Inject(method = "initRenderer", at = @At("RETURN"))
 	private static void iris$onRendererInit(int debugVerbosity, boolean alwaysFalse, CallbackInfo ci) {
 		Iris.duringRenderSystemInit();
 		GLDebug.reloadDebugState();
@@ -31,7 +31,7 @@ public class MixinRenderSystem {
 		TextureTracker.INSTANCE.onSetShaderTexture(unit, tex.getId());
 	}
 
-	@Inject(method = "_setShaderTexture(II)V", at = @At("RETURN"), remap = false)
+	@Inject(method = "_setShaderTexture(II)V", at = @At("RETURN"))
 	private static void _setShaderTexture(int unit, int glId, CallbackInfo ci) {
 		TextureTracker.INSTANCE.onSetShaderTexture(unit, glId);
 	}

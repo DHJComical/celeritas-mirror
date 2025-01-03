@@ -56,12 +56,12 @@ public abstract class MixinSodiumWorldRenderer {
 		throw new IllegalStateException("maybe get Mixin?");
 	}
 
-	@Inject(method = "renderBlockEntities(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/RenderBuffers;Lit/unimi/dsi/fastutil/longs/Long2ObjectMap;FLnet/minecraft/client/renderer/MultiBufferSource$BufferSource;DDDLnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;)V", at = @At("HEAD"), remap = false)
+	@Inject(method = "renderBlockEntities(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/RenderBuffers;Lit/unimi/dsi/fastutil/longs/Long2ObjectMap;FLnet/minecraft/client/renderer/MultiBufferSource$BufferSource;DDDLnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;)V", at = @At("HEAD"))
 	private void resetEntityList(PoseStack matrices, RenderBuffers bufferBuilders, Long2ObjectMap<SortedSet<BlockDestructionProgress>> blockBreakingProgressions, float tickDelta, MultiBufferSource.BufferSource immediate, double x, double y, double z, BlockEntityRenderDispatcher blockEntityRenderer, CallbackInfo ci) {
 		beList = 0;
 	}
 
-	@Redirect(method = "renderBlockEntities(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/RenderBuffers;Lit/unimi/dsi/fastutil/longs/Long2ObjectMap;FLnet/minecraft/client/renderer/MultiBufferSource$BufferSource;DDDLnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;)V", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/render/CeleritasWorldRenderer;renderBlockEntity(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/RenderBuffers;Lit/unimi/dsi/fastutil/longs/Long2ObjectMap;FLnet/minecraft/client/renderer/MultiBufferSource$BufferSource;DDDLnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;Lnet/minecraft/world/level/block/entity/BlockEntity;)V"), remap = false)
+	@Redirect(method = "renderBlockEntities(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/RenderBuffers;Lit/unimi/dsi/fastutil/longs/Long2ObjectMap;FLnet/minecraft/client/renderer/MultiBufferSource$BufferSource;DDDLnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;)V", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/render/CeleritasWorldRenderer;renderBlockEntity(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/RenderBuffers;Lit/unimi/dsi/fastutil/longs/Long2ObjectMap;FLnet/minecraft/client/renderer/MultiBufferSource$BufferSource;DDDLnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;Lnet/minecraft/world/level/block/entity/BlockEntity;)V"))
 	private void addToList(PoseStack bufferBuilder, RenderBuffers entry, Long2ObjectMap<SortedSet<BlockDestructionProgress>> transformer, float stage, MultiBufferSource.BufferSource matrices, double bufferBuilders, double blockBreakingProgressions, double tickDelta, BlockEntityRenderDispatcher immediate, BlockEntity x) {
 		if (!renderLightsOnly || x.getBlockState().getLightEmission() > 0) {
 			renderBlockEntity(bufferBuilder, entry, transformer, stage, matrices, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x);
@@ -69,7 +69,7 @@ public abstract class MixinSodiumWorldRenderer {
 		}
 	}
 
-	@Redirect(method = "renderGlobalBlockEntities", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/render/CeleritasWorldRenderer;renderBlockEntity(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/RenderBuffers;Lit/unimi/dsi/fastutil/longs/Long2ObjectMap;FLnet/minecraft/client/renderer/MultiBufferSource$BufferSource;DDDLnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;Lnet/minecraft/world/level/block/entity/BlockEntity;)V"), remap = false)
+	@Redirect(method = "renderGlobalBlockEntities", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/render/CeleritasWorldRenderer;renderBlockEntity(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/RenderBuffers;Lit/unimi/dsi/fastutil/longs/Long2ObjectMap;FLnet/minecraft/client/renderer/MultiBufferSource$BufferSource;DDDLnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;Lnet/minecraft/world/level/block/entity/BlockEntity;)V"))
 	private void addToList2(PoseStack bufferBuilder, RenderBuffers entry, Long2ObjectMap<SortedSet<BlockDestructionProgress>> transformer, float stage, MultiBufferSource.BufferSource matrices, double bufferBuilders, double blockBreakingProgressions, double tickDelta, BlockEntityRenderDispatcher immediate, BlockEntity x) {
 		if (!renderLightsOnly || x.getBlockState().getLightEmission() > 0) {
 			renderBlockEntity(bufferBuilder, entry, transformer, stage, matrices, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x);
@@ -77,12 +77,12 @@ public abstract class MixinSodiumWorldRenderer {
 		}
 	}
 
-	@Inject(method = "isEntityVisible", at = @At("HEAD"), cancellable = true, remap = false)
+	@Inject(method = "isEntityVisible", at = @At("HEAD"), cancellable = true)
 	private void iris$overrideEntityCulling(Entity entity, EntityRenderer renderer, CallbackInfoReturnable<Boolean> cir) {
 		if (ShadowRenderingState.areShadowsCurrentlyBeingRendered()) cir.setReturnValue(true);
 	}
 
-	@Redirect(method = "setupTerrain", remap = false,
+	@Redirect(method = "setupTerrain",
 		at = @At(value = "INVOKE",
 			target = "Lorg/embeddedt/embeddium/impl/modern/render/chunk/ModernRenderSectionManager;needsUpdate()Z",
 			remap = false))

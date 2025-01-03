@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(CeleritasWorldRenderer.class)
 public class MixinRenderSectionManager {
-	@ModifyArg(method = "initRenderer", index = 0, remap = false,
+	@ModifyArg(method = "initRenderer", index = 0,
 		at = @At(value = "INVOKE",
 			target = "Lorg/embeddedt/embeddium/impl/modern/render/chunk/ModernRenderSectionManager;create(Lorg/embeddedt/embeddium/impl/render/chunk/vertex/format/ChunkVertexType;Lnet/minecraft/client/multiplayer/ClientLevel;ILorg/embeddedt/embeddium/impl/gl/device/CommandList;)Lorg/embeddedt/embeddium/impl/modern/render/chunk/ModernRenderSectionManager;"))
 	private ChunkVertexType iris$useExtendedVertexFormat$1(ChunkVertexType vertexType) {

@@ -33,19 +33,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.client.ConfigScreenHandler;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.IExtensionPoint;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.javafmlmod.FMLModContainer;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.fml.loading.LoadingModList;
-import net.minecraftforge.network.NetworkConstants;
+import org.embeddedt.embeddium.impl.Celeritas;
+import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
+import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
@@ -114,27 +104,8 @@ public class Iris {
 		return pipelineManager.getPipelineNullable() instanceof IrisRenderingPipeline;
 	}
 
-	public static void onKeyRegister(RegisterKeyMappingsEvent event) {
-		event.register(reloadKeybind);
-		event.register(toggleShadersKeybind);
-		event.register(shaderpackScreenKeybind);
-	}
-
-	public static void onKeyInput(InputEvent.Key event) {
-		handleKeybinds(Minecraft.getInstance());
-	}
-
     public static void forgeModInit() {
-        var modContainer = ModList.get().getModContainerById(MODID).orElseThrow();
-        var modEventBus = ((FMLModContainer)modContainer).getEventBus();
-
-        modEventBus.addListener(Iris::onKeyRegister);
-        MinecraftForge.EVENT_BUS.addListener(Iris::onKeyInput);
-
-        IRIS_VERSION = modContainer.getModInfo().getVersion().toString();
-
-        modContainer.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new ShaderPackScreen(screen)));
-        modContainer.registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+        IRIS_VERSION = Celeritas.getVersion();
     }
 
 	/**
@@ -153,7 +124,7 @@ public class Iris {
 
 
 		// Only load the shader pack when we can access OpenGL
-		if (LoadingModList.get().getModFileById("distanthorizons") == null) {
+		if (!EarlyLoaderServices.INSTANCE.isModLoaded("distanthorizons")) {
 			loadShaderpack();
 		}
 	}
@@ -696,7 +667,7 @@ public class Iris {
 		ChatFormatting color;
 		String version = getVersion();
 
-		if (!FMLEnvironment.production) {
+		if (PlatformUtil.isDevelopmentEnvironment()) {
 			color = ChatFormatting.GOLD;
 			version = version + " (Development Environment)";
 		} else if (version.endsWith("-dirty") || version.contains("unknown") || version.endsWith("-nogit")) {
@@ -727,7 +698,7 @@ public class Iris {
 
 	public static Path getShaderpacksDirectory() {
 		if (shaderpacksDirectory == null) {
-			shaderpacksDirectory = FMLPaths.GAMEDIR.get().resolve("shaderpacks");
+			shaderpacksDirectory = PlatformUtil.getGameDir().resolve("shaderpacks");
 		}
 
 		return shaderpacksDirectory;
@@ -771,7 +742,7 @@ public class Iris {
 			logger.warn("", e);
 		}
 
-		irisConfig = new IrisConfig(FMLPaths.CONFIGDIR.get().resolve(MODID + ".properties"));
+		irisConfig = new IrisConfig(PlatformUtil.getConfigDir().resolve(MODID + "-shaders.properties"));
 
 		try {
 			irisConfig.initialize();

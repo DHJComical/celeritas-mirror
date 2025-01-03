@@ -2,6 +2,7 @@ package net.irisshaders.iris.mixin;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonObject;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.irisshaders.iris.Iris;
@@ -52,7 +53,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
     public abstract int getId();
 
     @Redirect(method = "updateLocations",
-            at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;warn(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V", remap = false))
+            at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;warn(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V"))
     private void iris$redirectLogSpam(Logger logger, String message, Object arg1, Object arg2) {
         if (((Object) this) instanceof ExtendedShader || ((Object) this) instanceof FallbackShader) {
             return;
@@ -61,7 +62,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         logger.warn(message, arg1, arg2);
     }
 
-    @Redirect(method = "<init>(Lnet/minecraft/server/packs/resources/ResourceProvider;Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/blaze3d/vertex/VertexFormat;)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/shaders/Uniform;glBindAttribLocation(IILjava/lang/CharSequence;)V"))
+    @Redirect(method = "/<init>/", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/shaders/Uniform;glBindAttribLocation(IILjava/lang/CharSequence;)V"))
     public void iris$redirectBindAttributeLocation(int i, int j, CharSequence charSequence) {
         if (((Object) this) instanceof ExtendedShader && ATTRIBUTE_LIST.contains(charSequence)) {
             Uniform.glBindAttribLocation(i, j, "iris_" + charSequence);
@@ -88,8 +89,8 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         DepthColorStorage.unlockDepthColor();
     }
 
-    @Redirect(method = "<init>(Lnet/minecraft/server/packs/resources/ResourceProvider;Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/blaze3d/vertex/VertexFormat;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/GsonHelper;parse(Ljava/io/Reader;)Lcom/google/gson/JsonObject;"))
-    public JsonObject iris$setupGeometryShader(Reader reader, ResourceProvider resourceProvider, ResourceLocation name, VertexFormat vertexFormat) {
+    @Redirect(method = "/<init>/", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/GsonHelper;parse(Ljava/io/Reader;)Lcom/google/gson/JsonObject;"))
+    public JsonObject iris$setupGeometryShader(Reader reader, @Local(ordinal = 0, argsOnly = true) ResourceProvider resourceProvider, @Local(ordinal = 0) ResourceLocation name) {
         this.iris$createExtraShaders(resourceProvider, name);
         return GsonHelper.parse(reader);
     }

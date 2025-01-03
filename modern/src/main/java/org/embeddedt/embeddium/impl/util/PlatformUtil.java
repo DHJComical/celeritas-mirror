@@ -30,6 +30,10 @@ public class PlatformUtil {
     public static Path getConfigDir() {
         return FMLPaths.CONFIGDIR.get();
     }
+
+    public static Path getGameDir() {
+        return FMLPaths.GAMEDIR.get();
+    }
 }
 //?} else if fabric {
 /*public class PlatformUtil {
@@ -51,6 +55,10 @@ public class PlatformUtil {
 
     public static Path getConfigDir() {
         return FabricLoader.getInstance().getConfigDir();
+    }
+
+    public static Path getGameDir() {
+        return FabricLoader.getInstance().getGameDir();
     }
 }
 *///?} else if neoforge {
@@ -80,6 +88,10 @@ public class PlatformUtil {
 
     public static Path getConfigDir() {
         return FMLPaths.CONFIGDIR.get();
+    }
+
+    public static Path getGameDir() {
+        return FMLPaths.GAMEDIR.get();
     }
 }
 *///?}

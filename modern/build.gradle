@@ -127,7 +127,7 @@ java {
 
 def skippedFabricApiModules = ["fabric-renderer-api-v1", "fabric-renderer-indigo"]
 
-def shadersEnabled = project.name.equals("1.20.1-forge")
+def shadersEnabled = project.name.equals("1.20.1-forge") || project.name.equals("1.20.1-fabric")
 
 configurations {
     modCompileOnly
@@ -454,6 +454,7 @@ processResources {
                         } catch(Exception ignored) {}
                     }
                 }
+                parse.mixins = modMixinConfigs
                 file.text = JsonOutput.prettyPrint(JsonOutput.toJson(parse))
             }
         }

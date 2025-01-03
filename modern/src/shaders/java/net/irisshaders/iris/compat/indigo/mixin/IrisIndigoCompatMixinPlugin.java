@@ -1,6 +1,6 @@
 package net.irisshaders.iris.compat.indigo.mixin;
 
-import net.minecraftforge.fml.loading.FMLLoader;
+import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -25,7 +25,7 @@ public class IrisIndigoCompatMixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-		return FMLLoader.getLoadingModList().getModFileById("fabric_renderer_indigo") != null;
+		return EarlyLoaderServices.INSTANCE.isModLoaded("fabric-renderer-indigo");
 	}
 
 	@Override

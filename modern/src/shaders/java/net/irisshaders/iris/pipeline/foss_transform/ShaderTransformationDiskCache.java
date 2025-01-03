@@ -4,8 +4,8 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pipeline.transform.PatchShaderType;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.commons.codec.binary.Hex;
+import org.embeddedt.embeddium.impl.util.PlatformUtil;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -32,7 +32,7 @@ public class ShaderTransformationDiskCache {
      */
     private static final int TRANSFORMER_VERSION = 1;
 
-    private static final Path SHADER_CACHE_PATH = FMLPaths.GAMEDIR.get().resolve("cornea_transform_cache");
+    private static final Path SHADER_CACHE_PATH = PlatformUtil.getGameDir().resolve("cornea_transform_cache");
 
     private static final MessageDigest DIGEST;
 

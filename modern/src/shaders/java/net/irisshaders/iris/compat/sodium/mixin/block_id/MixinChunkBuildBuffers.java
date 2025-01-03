@@ -32,7 +32,7 @@ public class MixinChunkBuildBuffers implements ChunkBuildBuffersExt {
 	@Unique
 	private BlockContextHolder contextHolder;
 
-	@Inject(method = "<init>", at = @At("RETURN"), remap = false)
+	@Inject(method = "<init>", at = @At("RETURN"))
 	private void iris$onConstruct(RenderPassConfiguration configuration, CallbackInfo ci) {
 		Object2IntMap<BlockState> blockStateIds = WorldRenderingSettings.INSTANCE.getBlockStateIds();
 
@@ -43,7 +43,7 @@ public class MixinChunkBuildBuffers implements ChunkBuildBuffersExt {
 		}
 	}
 
-	@Inject(method = "<init>", remap = false, at = @At(value = "TAIL", remap = false))
+	@Inject(method = "<init>", at = @At(value = "TAIL"))
 	private void iris$redirectWriterCreation(RenderPassConfiguration configuration, CallbackInfo ci) {
 		for (BakedChunkModelBuilder builder : this.builders.values()) {
 			if (builder instanceof ContextAwareVertexWriter) {

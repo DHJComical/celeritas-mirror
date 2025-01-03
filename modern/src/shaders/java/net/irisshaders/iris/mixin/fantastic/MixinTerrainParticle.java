@@ -1,16 +1,11 @@
 package net.irisshaders.iris.mixin.fantastic;
 
-import net.minecraft.client.Minecraft;
+import net.irisshaders.iris.versionutils.ModelTranslucencyHelper;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.TerrainParticle;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.ChunkRenderTypeSet;
-import net.minecraftforge.client.model.data.ModelData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,10 +20,7 @@ public class MixinTerrainParticle {
 
 	@Inject(method = "<init>(Lnet/minecraft/client/multiplayer/ClientLevel;DDDDDDLnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/core/BlockPos;)V", at = @At("RETURN"))
 	private void iris$resolveTranslucency(ClientLevel level, double x, double y, double z, double velocityX, double velocityY, double velocityZ, BlockState blockState, BlockPos blockPos, CallbackInfo ci) {
-		BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(blockState);
-		ChunkRenderTypeSet types = model.getRenderTypes(blockState, level.random, ModelData.EMPTY);
-
-        isOpaque = !types.contains(RenderType.translucent());
+		isOpaque = ModelTranslucencyHelper.couldBeTranslucent(blockState, level.random);
 	}
 
 	@Inject(method = "getRenderType", at = @At("HEAD"), cancellable = true)

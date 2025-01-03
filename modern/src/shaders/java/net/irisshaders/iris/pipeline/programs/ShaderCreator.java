@@ -27,8 +27,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.commons.io.IOUtils;
+import org.embeddedt.embeddium.impl.util.PlatformUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -217,7 +217,7 @@ public class ShaderCreator {
 		private final String content;
 
 		private StringResource(ResourceLocation id, String content) {
-			super(new PathPackResources("<iris shaderpack shaders>", FMLPaths.CONFIGDIR.get(), true), () -> new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+			super(new PathPackResources("<iris shaderpack shaders>", PlatformUtil.getConfigDir(), true), () -> new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
 			this.content = content;
 		}
 

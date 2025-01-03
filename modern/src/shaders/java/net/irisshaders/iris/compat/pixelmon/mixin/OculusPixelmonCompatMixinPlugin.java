@@ -1,6 +1,6 @@
 package net.irisshaders.iris.compat.pixelmon.mixin;
 
-import net.minecraftforge.fml.loading.FMLLoader;
+import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -21,7 +21,7 @@ public class OculusPixelmonCompatMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-        return FMLLoader.getLoadingModList().getModFileById("pixelmon") != null;
+        return EarlyLoaderServices.INSTANCE.isModLoaded("pixelmon");
     }
 
     @Override

@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.blending.AlphaTest;
@@ -32,6 +31,8 @@ import net.irisshaders.iris.shaderpack.option.ShaderPackOptions;
 import net.irisshaders.iris.shaderpack.preprocessor.PropertiesPreprocessor;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
+import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
+import org.embeddedt.embeddium.impl.util.PlatformUtil;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -125,8 +126,8 @@ public class ShaderProperties {
 
 		if (Iris.getIrisConfig().areDebugOptionsEnabled()) {
 			try {
-				Files.writeString(FMLPaths.GAMEDIR.get().resolve("preprocessed.properties"), preprocessedContents);
-				Files.writeString(FMLPaths.GAMEDIR.get().resolve("original.properties"), contents);
+				Files.writeString(PlatformUtil.getGameDir().resolve("preprocessed.properties"), preprocessedContents);
+				Files.writeString(PlatformUtil.getGameDir().resolve("original.properties"), contents);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}

@@ -57,7 +57,7 @@ public abstract class MixinDebugScreenOverlay {
 		return String.format("%.3f %ciB", value / 1024.0, ci.current());
 	}
 
-    @ModifyExpressionValue(method = "getSystemInformation", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList([Ljava/lang/Object;)Ljava/util/ArrayList;", remap = false))
+    @ModifyExpressionValue(method = "getSystemInformation", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList([Ljava/lang/Object;)Ljava/util/ArrayList;"))
     private ArrayList<String> redirectRightTextEarly(ArrayList<String> messages) {
 		if (Iris.getIrisConfig().areShadersEnabled()) {
 			messages.add("Shaderpack: " + Iris.getCurrentPackName() + (Iris.isFallback() ? " (fallback)" : ""));

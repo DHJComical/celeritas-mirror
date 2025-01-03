@@ -95,7 +95,7 @@ public class MixinLevelRenderer {
 	// At this point we've ensured that Minecraft's main framebuffer is cleared.
 	// This is important or else very odd issues will happen with shaders that have a final pass that doesn't write to
 	// all pixels.
-	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = CLEAR, shift = At.Shift.AFTER, remap = false))
+	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = CLEAR, shift = At.Shift.AFTER))
 	private void iris$beginLevelRender(PoseStack poseStack, float tickDelta, long startTime, boolean renderBlockOutline,
 									   Camera camera, GameRenderer gameRenderer, LightTexture lightTexture,
 									   Matrix4f projection, CallbackInfo callback) {
@@ -187,7 +187,7 @@ public class MixinLevelRenderer {
 		pipeline.setPhase(WorldRenderingPhase.NONE);
 	}
 
-	@Inject(method = RENDER_CLOUDS, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/DimensionSpecialEffects;renderClouds(Lnet/minecraft/client/multiplayer/ClientLevel;IFLcom/mojang/blaze3d/vertex/PoseStack;DDDLorg/joml/Matrix4f;)Z", shift = At.Shift.AFTER))
+	@Inject(method = RENDER_CLOUDS, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/DimensionSpecialEffects;getCloudHeight()F", shift = At.Shift.AFTER))
 	private void iris$beginClouds(PoseStack poseStack, Matrix4f projection, float tickDelta, double x, double y, double z, CallbackInfo ci) {
 		pipeline.setPhase(WorldRenderingPhase.CLOUDS);
 	}
@@ -207,12 +207,12 @@ public class MixinLevelRenderer {
 		pipeline.setPhase(WorldRenderingPhase.NONE);
 	}
 
-	@Inject(method = RENDER_WEATHER, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/DimensionSpecialEffects;renderSnowAndRain(Lnet/minecraft/client/multiplayer/ClientLevel;IFLnet/minecraft/client/renderer/LightTexture;DDD)Z", shift = At.Shift.AFTER))
+	@Inject(method = RENDER_WEATHER, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;getRainLevel(F)F", shift = At.Shift.AFTER))
 	private void iris$beginWeather(LightTexture arg, float tickDelta, double x, double y, double z, CallbackInfo callback) {
 		pipeline.setPhase(WorldRenderingPhase.RAIN_SNOW);
 	}
 
-	@ModifyArg(method = RENDER_WEATHER, at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;depthMask(Z)V", ordinal = 0, remap = false))
+	@ModifyArg(method = RENDER_WEATHER, at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;depthMask(Z)V", ordinal = 0))
 	private boolean iris$writeRainAndSnowToDepthBuffer(boolean depthMaskEnabled) {
 		if (pipeline.shouldWriteRainAndSnowToDepthBuffer()) {
 			return true;

@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(targets = "org.embeddedt.embeddium.impl.gl.device.GLRenderDevice$ImmediateDrawCommandList", remap = false)
+@Mixin(targets = "org.embeddedt.embeddium.impl.gl.device.GLRenderDevice$ImmediateDrawCommandList")
 public class MixinGlRenderDevice {
 	@Redirect(method = "multiDrawElementsBaseVertex", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/gl/tessellation/GlPrimitiveType;getId()I"))
 	private int replaceId(GlPrimitiveType instance) {

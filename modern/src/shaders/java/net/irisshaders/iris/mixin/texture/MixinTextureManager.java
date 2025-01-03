@@ -15,7 +15,7 @@ import java.util.concurrent.Executor;
 
 @Mixin(TextureManager.class)
 public class MixinTextureManager {
-	@Inject(method = { "method_18167", "m_244739_", "lambda$reload$5" }, at = @At("TAIL"), remap = false)
+	@Inject(method = { "method_18167", "m_244739_", "lambda$reload$5" }, at = @At("TAIL"))
 	private void iris$onTailReloadLambda(ResourceManager resourceManager, Executor applyExecutor, CompletableFuture<?> future, Void void1, CallbackInfo ci) {
 		TextureFormatLoader.reload(resourceManager);
 		PBRTextureManager.INSTANCE.clear();
@@ -26,7 +26,7 @@ public class MixinTextureManager {
 		PBRTextureManager.INSTANCE.dumpTextures(path);
 	}
 
-	@Inject(method = "close()V", at = @At("TAIL"), remap = false)
+	@Inject(method = "close()V", at = @At("TAIL"))
 	private void iris$onTailClose(CallbackInfo ci) {
 		PBRTextureManager.INSTANCE.close();
 	}

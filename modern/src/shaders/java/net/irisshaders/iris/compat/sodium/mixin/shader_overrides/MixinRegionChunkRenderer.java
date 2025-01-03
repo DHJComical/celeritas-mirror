@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(DefaultChunkRenderer.class)
 public abstract class MixinRegionChunkRenderer implements ShaderChunkRendererExt {
-	@Redirect(method = "render", remap = false,
+	@Redirect(method = "render",
 		at = @At(value = "INVOKE",
 			target = "org/embeddedt/embeddium/impl/gl/shader/GlProgram.getInterface ()Ljava/lang/Object;"))
 	private Object iris$getInterface(GlProgram<?> program) {

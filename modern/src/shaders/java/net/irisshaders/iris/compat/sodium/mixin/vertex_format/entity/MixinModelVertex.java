@@ -32,7 +32,7 @@ public class MixinModelVertex {
 	 * @author IMS, embeddedt
 	 * @reason Set the shared flag for whether vertex data is being extended.
 	 */
-	@Inject(method = "writeQuadVertices(Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lorg/embeddedt/embeddium/impl/model/quad/ModelQuadView;IIIZ)V", at = @At("HEAD"), remap = false)
+	@Inject(method = "writeQuadVertices(Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lorg/embeddedt/embeddium/impl/model/quad/ModelQuadView;IIIZ)V", at = @At("HEAD"))
 	private static void checkForExtension(VertexBufferWriter writer, PoseStack.Pose matrices, ModelQuadView quad, int color, int light, int overlay, boolean todo, CallbackInfo ci, @Share("shouldExtend") LocalBooleanRef shouldExtend) {
 		shouldExtend.set(shouldBeExtended());
 	}
@@ -41,7 +41,7 @@ public class MixinModelVertex {
 	 * @author IMS, embeddedt
 	 * @reason Increase the allocated buffer size if using the extended vertex format.
 	 */
-	@ModifyConstant(method = "writeQuadVertices(Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lorg/embeddedt/embeddium/impl/model/quad/ModelQuadView;IIIZ)V", constant = @Constant(intValue = 4 * ModelVertex.STRIDE), remap = false)
+	@ModifyConstant(method = "writeQuadVertices(Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lorg/embeddedt/embeddium/impl/model/quad/ModelQuadView;IIIZ)V", constant = @Constant(intValue = 4 * ModelVertex.STRIDE))
 	private static int getNewBufferSize(int prevSize, @Share("shouldExtend") LocalBooleanRef shouldExtend) {
 		return shouldExtend.get() ? (4 * EntityVertex.STRIDE) : prevSize;
 	}
@@ -50,7 +50,7 @@ public class MixinModelVertex {
 	 * @author IMS, embeddedt
 	 * @reason Increase the stride used for advancing the buffer pointer if using the extended vertex format.
 	 */
-	@ModifyConstant(method = "writeQuadVertices(Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lorg/embeddedt/embeddium/impl/model/quad/ModelQuadView;IIIZ)V", constant = @Constant(longValue = ModelVertex.STRIDE), remap = false)
+	@ModifyConstant(method = "writeQuadVertices(Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lorg/embeddedt/embeddium/impl/model/quad/ModelQuadView;IIIZ)V", constant = @Constant(longValue = ModelVertex.STRIDE))
 	private static long getNewStride(long prevSize, @Share("shouldExtend") LocalBooleanRef shouldExtend) {
 		return shouldExtend.get() ? EntityVertex.STRIDE : prevSize;
 	}
@@ -59,7 +59,7 @@ public class MixinModelVertex {
 	 * @author IMS, embeddedt
 	 * @reason Inject extended properties (mid U/V, captured rendering state) into the buffer.
 	 */
-	@Inject(method = "writeQuadVertices(Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lorg/embeddedt/embeddium/impl/model/quad/ModelQuadView;IIIZ)V", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/api/vertex/format/common/ModelVertex;write(JFFFIFFIII)V"), remap = false)
+	@Inject(method = "writeQuadVertices(Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lorg/embeddedt/embeddium/impl/model/quad/ModelQuadView;IIIZ)V", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/api/vertex/format/common/ModelVertex;write(JFFFIFFIII)V"))
 	private static void injectExtendedData(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) ModelQuadView quad, @Local(name = "ptr") long ptr, @Share("shouldExtend") LocalBooleanRef shouldExtend) {
 		if (shouldExtend.get()) {
 			writeExtendedData(quad, ptr);
@@ -70,7 +70,7 @@ public class MixinModelVertex {
 	 * @author IMS, embeddedt
 	 * @reason Do a second pass over the data and inject any extra properties (tangent, etc.)
 	 */
-	@Inject(method = "writeQuadVertices(Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lorg/embeddedt/embeddium/impl/model/quad/ModelQuadView;IIIZ)V", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;push(Lorg/lwjgl/system/MemoryStack;JILorg/embeddedt/embeddium/api/vertex/format/VertexFormatDescription;)V"), remap = false)
+	@Inject(method = "writeQuadVertices(Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lorg/embeddedt/embeddium/impl/model/quad/ModelQuadView;IIIZ)V", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;push(Lorg/lwjgl/system/MemoryStack;JILorg/embeddedt/embeddium/api/vertex/format/VertexFormatDescription;)V"))
 	private static void injectExtendedData(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) ModelQuadView quad, @Local(name = "ptr") long ptr, @Share("shouldExtend") LocalBooleanRef shouldExtend, @Local(name = "normal") int normal) {
 		if (shouldExtend.get()) {
 			endQuad(ptr, normal);
@@ -81,7 +81,7 @@ public class MixinModelVertex {
 	 * @author IMS, embeddedt
 	 * @reason Change the format used for pushing data if the extended format is used
 	 */
-	@ModifyArg(method = "writeQuadVertices(Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lorg/embeddedt/embeddium/impl/model/quad/ModelQuadView;IIIZ)V", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;push(Lorg/lwjgl/system/MemoryStack;JILorg/embeddedt/embeddium/api/vertex/format/VertexFormatDescription;)V"), index = 3, remap = false)
+	@ModifyArg(method = "writeQuadVertices(Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lorg/embeddedt/embeddium/impl/model/quad/ModelQuadView;IIIZ)V", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/api/vertex/buffer/VertexBufferWriter;push(Lorg/lwjgl/system/MemoryStack;JILorg/embeddedt/embeddium/api/vertex/format/VertexFormatDescription;)V"), index = 3)
 	private static VertexFormatDescription changePushFormat(VertexFormatDescription desc, @Share("shouldExtend") LocalBooleanRef shouldExtend) {
 		return shouldExtend.get() ? EntityVertex.FORMAT : desc;
 	}

@@ -1,9 +1,9 @@
 package net.irisshaders.iris.pathways;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.irisshaders.iris.versionutils.ModelTranslucencyHelper;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 import net.irisshaders.batchedentityrendering.impl.FullyBufferedMultiBufferSource;
 import net.irisshaders.iris.api.v0.IrisApi;
@@ -65,8 +65,7 @@ public class HandRenderer {
 
 		if (item instanceof BlockItem) {
 			BlockState state = ((BlockItem) item).getBlock().defaultBlockState();
-			BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
-			return model.getRenderTypes(state, Minecraft.getInstance().level.random, ModelData.EMPTY).contains(RenderType.translucent());
+            return ModelTranslucencyHelper.couldBeTranslucent(state, Minecraft.getInstance().level.random);
 		}
 
 		return false;

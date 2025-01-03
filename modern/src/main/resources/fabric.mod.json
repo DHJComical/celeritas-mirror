@@ -27,7 +27,6 @@
   "accessWidener": "${mod_id}.accesswidener",
   "license": "$license",
   "mixins": [
-    "embeddium.mixins.json"
   ],
   "custom": {}
 }

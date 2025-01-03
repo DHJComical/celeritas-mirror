@@ -1,24 +1,21 @@
 package net.irisshaders.iris.mixin;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ScreenEffectRenderer;
-import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ScreenEffectRenderer.class)
 public abstract class MixinScreenEffectRenderer {
-	@Inject(method = "renderFluid", at = @At(value = "HEAD"), cancellable = true, remap = false)
-	private static void iris$disableUnderWaterOverlayRendering(Minecraft minecraft, PoseStack poseStack, ResourceLocation texture, CallbackInfo ci) {
+	@ModifyExpressionValue(method = "renderScreenEffect", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isEyeInFluid(Lnet/minecraft/tags/TagKey;)Z"))
+	private static boolean iris$disableUnderWaterOverlayRendering(boolean original) {
 		WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
 
 		if (pipeline != null && !pipeline.shouldRenderUnderwaterOverlay()) {
-			ci.cancel();
+			return false;
 		}
-	}
+        return original;
+    }
 }

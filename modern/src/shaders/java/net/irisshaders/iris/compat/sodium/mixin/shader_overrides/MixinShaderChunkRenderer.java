@@ -35,12 +35,12 @@ public class MixinShaderChunkRenderer implements ShaderChunkRendererExt {
 	@Shadow(remap = false)
 	private GlProgram<ChunkShaderInterface> activeProgram;
 
-	@Inject(method = "<init>", at = @At("RETURN"), remap = false)
+	@Inject(method = "<init>", at = @At("RETURN"))
 	private void iris$onInit(RenderDevice device, ChunkVertexType vertexType, CallbackInfo ci) {
 		irisChunkProgramOverrides = new IrisChunkProgramOverrides();
 	}
 
-	@Inject(method = "begin", at = @At("HEAD"), cancellable = true, remap = false)
+	@Inject(method = "begin", at = @At("HEAD"), cancellable = true)
 	private void iris$begin(TerrainRenderPass pass, CallbackInfo ci) {
 		// TODO add this to ShaderChunkRenderer upstream
 		RenderPassConfiguration<?> configuration = CeleritasWorldRenderer.instance().getRenderPassConfiguration();
@@ -70,7 +70,7 @@ public class MixinShaderChunkRenderer implements ShaderChunkRendererExt {
 		override.getInterface().setupState();
 	}
 
-	@Inject(method = "end", at = @At("HEAD"), remap = false, cancellable = true)
+	@Inject(method = "end", at = @At("HEAD"), cancellable = true)
 	private void iris$onEnd(TerrainRenderPass pass, CallbackInfo ci) {
 		ProgramUniforms.clearActiveUniforms();
 		ProgramSamplers.clearActiveSamplers();
@@ -86,7 +86,7 @@ public class MixinShaderChunkRenderer implements ShaderChunkRendererExt {
 		}
 	}
 
-	@Inject(method = "delete", at = @At("HEAD"), remap = false)
+	@Inject(method = "delete", at = @At("HEAD"))
 	private void iris$onDelete(CallbackInfo ci) {
 		irisChunkProgramOverrides.deleteShaders();
 	}

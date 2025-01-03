@@ -78,7 +78,7 @@ public class MixinChunkRenderRebuildTask {
 	}
 
 	@Inject(method = "execute(Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildContext;Lorg/embeddedt/embeddium/impl/util/task/CancellationToken;)Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildOutput;", at = @At(value = "INVOKE",
-		target = "Lorg/embeddedt/embeddium/impl/modern/render/chunk/compile/pipeline/FluidRenderer;render(Lorg/embeddedt/embeddium/impl/modern/render/chunk/compile/pipeline/BlockRenderContext;Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildBuffers;)V"), remap = false)
+		target = "Lorg/embeddedt/embeddium/impl/modern/render/chunk/compile/pipeline/FluidRenderer;render(Lorg/embeddedt/embeddium/impl/modern/render/chunk/compile/pipeline/BlockRenderContext;Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildBuffers;)V"))
 	private void iris$wrapGetFluidLayer(ChunkBuildContext context,
 										CancellationToken cancellationSource, CallbackInfoReturnable<ChunkBuildOutput> cir,
 										@Local(ordinal = 0) BlockState blockState,
@@ -89,7 +89,7 @@ public class MixinChunkRenderRebuildTask {
 	}
 
 	@Inject(method = "execute(Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildContext;Lorg/embeddedt/embeddium/impl/util/task/CancellationToken;)Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildOutput;",
-		at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/util/WorldUtil;hasBlockEntity(Lnet/minecraft/world/level/block/state/BlockState;)Z"), remap = false)
+		at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/util/WorldUtil;hasBlockEntity(Lnet/minecraft/world/level/block/state/BlockState;)Z"))
 	private void iris$resetContext(ChunkBuildContext buildContext, CancellationToken cancellationSource, CallbackInfoReturnable<ChunkBuildOutput> cir) {
 		if (buildContext.buffers instanceof ChunkBuildBuffersExt) {
 			((ChunkBuildBuffersExt) buildContext.buffers).iris$resetBlockContext();

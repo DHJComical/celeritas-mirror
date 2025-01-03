@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * A simple optimization to avoid redundant glBindFramebuffer calls, works in principle the same as things like
  * glBindTexture in GlStateManager.
  */
-@Mixin(value = GlStateManager.class, remap = false)
+@Mixin(value = GlStateManager.class)
 public class MixinGlStateManager_FramebufferBinding {
 	private static int iris$drawFramebuffer = 0;
 	private static int iris$readFramebuffer = 0;
@@ -44,7 +44,7 @@ public class MixinGlStateManager_FramebufferBinding {
 		}
 	}
 
-	@Inject(method = "_glUseProgram", at = @At("HEAD"), cancellable = true, remap = false)
+	@Inject(method = "_glUseProgram", at = @At("HEAD"), cancellable = true)
 	private static void iris$avoidRedundantBind2(int pInt0, CallbackInfo ci) {
 		if (iris$program == pInt0) {
 			ci.cancel();
@@ -53,7 +53,7 @@ public class MixinGlStateManager_FramebufferBinding {
 		}
 	}
 
-	@Inject(method = "_glDeleteFramebuffers(I)V", at = @At("HEAD"), remap = false)
+	@Inject(method = "_glDeleteFramebuffers(I)V", at = @At("HEAD"))
 	private static void iris$trackFramebufferDelete(int framebuffer, CallbackInfo ci) {
 		if (iris$drawFramebuffer == framebuffer) {
 			iris$drawFramebuffer = 0;

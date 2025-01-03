@@ -1,5 +1,7 @@
 package net.irisshaders.iris.mixin.gui;
 
+//? if forge {
+
 import net.irisshaders.iris.gui.screen.HudHideable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -28,3 +30,5 @@ public class MixinForgeGui {
         }
     }
 }
+
+//?}

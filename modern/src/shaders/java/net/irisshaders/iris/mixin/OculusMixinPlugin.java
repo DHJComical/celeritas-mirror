@@ -1,6 +1,6 @@
 package net.irisshaders.iris.mixin;
 
-import net.minecraftforge.fml.loading.LoadingModList;
+import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -27,7 +27,7 @@ public class OculusMixinPlugin implements IMixinConfigPlugin {
         // Forge 1.20.1 and older load mixins even if there is a mod loading error, but
         // don't load ATs, which causes a ton of support requests from our mixins failing
         // to apply. The solution is to just not apply them ourselves if there is an error.
-        return LoadingModList.get().getErrors().isEmpty();
+        return EarlyLoaderServices.INSTANCE.isLoadingNormally();
     }
 
     @Override

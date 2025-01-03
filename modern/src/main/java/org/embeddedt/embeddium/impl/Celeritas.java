@@ -129,6 +129,10 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         }
 
         SpriteFinderCache.registerListener();
+
+        //? if 1.20.1 {
+        net.irisshaders.iris.Iris.forgeModInit();
+        //?}
     }
     *///?}
 

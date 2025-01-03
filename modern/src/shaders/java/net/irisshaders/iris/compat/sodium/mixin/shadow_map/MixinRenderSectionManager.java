@@ -20,7 +20,7 @@ public class MixinRenderSectionManager {
 	@Unique
 	private @NotNull SortedRenderLists shadowRenderLists = SortedRenderLists.empty();
 
-	@Redirect(method = "createTerrainRenderList", at = @At(value = "FIELD", target = "Lorg/embeddedt/embeddium/impl/render/chunk/RenderSectionManager;renderLists:Lorg/embeddedt/embeddium/impl/render/chunk/lists/SortedRenderLists;"), remap = false)
+	@Redirect(method = "createTerrainRenderList", at = @At(value = "FIELD", target = "Lorg/embeddedt/embeddium/impl/render/chunk/RenderSectionManager;renderLists:Lorg/embeddedt/embeddium/impl/render/chunk/lists/SortedRenderLists;"))
 	private void useShadowRenderList(RenderSectionManager instance, SortedRenderLists value) {
 		if (ShadowRenderingState.areShadowsCurrentlyBeingRendered()) {
 			shadowRenderLists = value;
@@ -29,7 +29,7 @@ public class MixinRenderSectionManager {
 		}
 	}
 
-	@Inject(method = "update", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/render/chunk/RenderSectionManager;createTerrainRenderList(Lorg/embeddedt/embeddium/impl/render/chunk/PositionedViewport;IZ)V", shift = At.Shift.AFTER), cancellable = true, remap = false)
+	@Inject(method = "update", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/render/chunk/RenderSectionManager;createTerrainRenderList(Lorg/embeddedt/embeddium/impl/render/chunk/PositionedViewport;IZ)V", shift = At.Shift.AFTER), cancellable = true)
 	private void cancelIfShadow(PositionedViewport positionedViewport, int frame, boolean spectator, CallbackInfo ci) {
 		if (ShadowRenderingState.areShadowsCurrentlyBeingRendered()) ci.cancel();
 	}
@@ -38,14 +38,14 @@ public class MixinRenderSectionManager {
 		"getRenderLists",
 		"getVisibleChunkCount",
 		"renderLayer"
-	}, at = @At(value = "FIELD", target = "Lorg/embeddedt/embeddium/impl/render/chunk/RenderSectionManager;renderLists:Lorg/embeddedt/embeddium/impl/render/chunk/lists/SortedRenderLists;"), remap = false)
+	}, at = @At(value = "FIELD", target = "Lorg/embeddedt/embeddium/impl/render/chunk/RenderSectionManager;renderLists:Lorg/embeddedt/embeddium/impl/render/chunk/lists/SortedRenderLists;"))
 	private SortedRenderLists useShadowRenderList2(RenderSectionManager instance) {
 		return ShadowRenderingState.areShadowsCurrentlyBeingRendered() ? shadowRenderLists : renderLists;
 	}
 
 	@Redirect(method = {
 		"resetRenderLists"
-	}, at = @At(value = "FIELD", target = "Lorg/embeddedt/embeddium/impl/render/chunk/RenderSectionManager;renderLists:Lorg/embeddedt/embeddium/impl/render/chunk/lists/SortedRenderLists;"), remap = false)
+	}, at = @At(value = "FIELD", target = "Lorg/embeddedt/embeddium/impl/render/chunk/RenderSectionManager;renderLists:Lorg/embeddedt/embeddium/impl/render/chunk/lists/SortedRenderLists;"))
 	private void useShadowRenderList3(RenderSectionManager instance, SortedRenderLists value) {
 		if (ShadowRenderingState.areShadowsCurrentlyBeingRendered()) shadowRenderLists = value;
 		else renderLists = value;

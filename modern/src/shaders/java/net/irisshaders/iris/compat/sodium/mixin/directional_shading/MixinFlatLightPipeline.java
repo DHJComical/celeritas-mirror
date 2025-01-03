@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(FlatLightPipeline.class)
 public class MixinFlatLightPipeline {
-	@Inject(method = "calculate", at = @At(value = "INVOKE", target = "Ljava/util/Arrays;fill([II)V", ordinal = 0, shift = At.Shift.AFTER), cancellable = true, remap = false)
+	@Inject(method = "calculate", at = @At(value = "INVOKE", target = "Ljava/util/Arrays;fill([II)V", ordinal = 0, shift = At.Shift.AFTER), cancellable = true)
 	private void iris$disableDirectionalShading(CallbackInfo ci) {
 		if (WorldRenderingSettings.INSTANCE.shouldDisableDirectionalShading()) {
 			ci.cancel();

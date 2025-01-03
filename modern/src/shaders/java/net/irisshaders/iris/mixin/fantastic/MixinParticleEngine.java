@@ -1,28 +1,21 @@
 package net.irisshaders.iris.mixin.fantastic;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.particle.Particle;
 import net.irisshaders.iris.fantastic.ParticleRenderingPhase;
 import net.irisshaders.iris.fantastic.PhasedParticleEngine;
+import net.irisshaders.iris.mixin.InjectionPoints;
 import net.irisshaders.iris.pipeline.programs.ShaderAccess;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.client.renderer.culling.Frustum;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -55,9 +48,6 @@ import java.util.function.Supplier;
 @Mixin(ParticleEngine.class)
 public class MixinParticleEngine implements PhasedParticleEngine {
 	private static final Set<ParticleRenderType> OPAQUE_PARTICLE_RENDER_TYPES;
-	@Shadow
-	@Final
-	private Map<ParticleRenderType, Queue<Particle>> particles;
 
 	static {
 		OPAQUE_PARTICLE_RENDER_TYPES = ImmutableSet.of(
@@ -71,24 +61,25 @@ public class MixinParticleEngine implements PhasedParticleEngine {
 	@Unique
 	private ParticleRenderingPhase phase = ParticleRenderingPhase.EVERYTHING;
 
-	@Redirect(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShader(Ljava/util/function/Supplier;)V"), remap = false)
+	@Redirect(method = InjectionPoints.PARTICLE_ENGINE_RENDER, at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShader(Ljava/util/function/Supplier;)V"))
 	private void iris$changeParticleShader(Supplier<ShaderInstance> pSupplier0) {
 		RenderSystem.setShader(phase == ParticleRenderingPhase.TRANSLUCENT ? ShaderAccess::getParticleTranslucentShader : pSupplier0);
 	}
 
-	@Redirect(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V", at = @At(value = "INVOKE", target = "Ljava/util/Map;keySet()Ljava/util/Set;"), remap = false)
-	private Set<ParticleRenderType> iris$selectParticlesToRender(Map<ParticleRenderType, Queue<Particle>> instance) {
-		Set<ParticleRenderType> keySet = instance.keySet();
-
-		if (phase == ParticleRenderingPhase.TRANSLUCENT) {
-			// Remove all known opaque particle texture sheets.
-			return Sets.filter(keySet, type -> !OPAQUE_PARTICLE_RENDER_TYPES.contains(type));
+	@ModifyExpressionValue(method = InjectionPoints.PARTICLE_ENGINE_RENDER, at = @At(value = "INVOKE", target = "Ljava/lang/Iterable;iterator()Ljava/util/Iterator;"))
+	private Iterator<Particle> iris$selectParticlesToRender(Iterator<Particle> iterator, @Local(ordinal = 0) ParticleRenderType renderType) {
+        if (phase == ParticleRenderingPhase.NOTHING) {
+            // Remove everything
+            return Collections.emptyIterator();
+        } else if (phase == ParticleRenderingPhase.TRANSLUCENT) {
+			// Render only translucent particle sheets
+			return !OPAQUE_PARTICLE_RENDER_TYPES.contains(renderType) ? iterator : Collections.emptyIterator();
 		} else if (phase == ParticleRenderingPhase.OPAQUE) {
 			// Render only opaque particle sheets
-			return Sets.filter(keySet, type -> !type.equals(ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT));
+            return OPAQUE_PARTICLE_RENDER_TYPES.contains(renderType) ? iterator : Collections.emptyIterator();
 		} else {
 			// Don't override particle rendering
-			return keySet;
+			return iterator;
 		}
 	}
 

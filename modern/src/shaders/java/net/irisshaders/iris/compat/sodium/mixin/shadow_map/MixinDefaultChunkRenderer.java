@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(DefaultChunkRenderer.class)
 public class MixinDefaultChunkRenderer {
-	@ModifyExpressionValue(method = "render", at = @At(value = "FIELD", target = "Lorg/embeddedt/embeddium/impl/render/chunk/DefaultChunkRenderer;useBlockFaceCulling:Z"), remap = false)
+	@ModifyExpressionValue(method = "render", at = @At(value = "FIELD", target = "Lorg/embeddedt/embeddium/impl/render/chunk/DefaultChunkRenderer;useBlockFaceCulling:Z"))
 	private boolean iris$disableBlockFaceCullingInShadowPass(boolean original) {
 		if (ShadowRenderingState.areShadowsCurrentlyBeingRendered()) return false;
 		return original;

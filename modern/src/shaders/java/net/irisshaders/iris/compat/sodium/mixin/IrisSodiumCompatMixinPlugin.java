@@ -1,6 +1,5 @@
 package net.irisshaders.iris.compat.sodium.mixin;
 
-import net.minecraftforge.fml.loading.LoadingModList;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -15,11 +14,11 @@ import java.util.Set;
  */
 public class IrisSodiumCompatMixinPlugin implements IMixinConfigPlugin {
 
-	public static boolean isCeleritasLoaded;
+	public static final boolean isCeleritasLoaded = true;
 
 	@Override
 	public void onLoad(String mixinPackage) {
-		isCeleritasLoaded = LoadingModList.get().getModFileById("embeddium") != null;
+
 	}
 
 	@Override
@@ -29,10 +28,6 @@ public class IrisSodiumCompatMixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-		if (!isCeleritasLoaded) {
-			return false;
-		}
-
 		return true;
 	}
 

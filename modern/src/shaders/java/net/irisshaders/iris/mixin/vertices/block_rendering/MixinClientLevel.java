@@ -21,7 +21,8 @@ public class MixinClientLevel {
 		}
 	}
 
-	@ModifyVariable(method = "getShade(FFFZ)F", at = @At("HEAD"), argsOnly = true, remap = false)
+    //? if forgelike {
+	@ModifyVariable(method = "getShade(FFFZ)F", at = @At("HEAD"), argsOnly = true)
 	private boolean iris$maybeDisableDirectionalShadingForge(boolean shaded) {
 		if (WorldRenderingSettings.INSTANCE.shouldDisableDirectionalShading()) {
 			return false;
@@ -29,4 +30,5 @@ public class MixinClientLevel {
 			return shaded;
 		}
 	}
+    //?}
 }

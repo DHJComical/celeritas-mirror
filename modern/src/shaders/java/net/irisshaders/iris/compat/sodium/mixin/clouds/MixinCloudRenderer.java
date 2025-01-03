@@ -24,7 +24,7 @@ public abstract class MixinCloudRenderer {
 	 * @author embeddedt
 	 * @reason draw the clouds using the Iris shader if present
 	 */
-	@WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/render/immediate/CloudShader;prepareForDraw(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;FFFF)V"), remap = false)
+	@WrapOperation(method = "render", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/render/immediate/CloudShader;prepareForDraw(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;FFFF)V"))
 	private void drawWithIrisShader(CloudShader instance, Matrix4f modelViewMatrix, Matrix4f projectionMatrix, float r, float g, float b, float a, Operation<Void> original) {
 		WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
 
@@ -41,7 +41,7 @@ public abstract class MixinCloudRenderer {
 	 * @author embeddedt
 	 * @reason suppress the vanilla cloud rendering if Iris shader is active
 	 */
-	@Inject(method = "drawVertexBuffer", at = @At("HEAD"), cancellable = true, remap = false)
+	@Inject(method = "drawVertexBuffer", at = @At("HEAD"), cancellable = true)
 	private void drawWithIrisShader(CallbackInfo ci) {
 		WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
 

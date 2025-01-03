@@ -23,7 +23,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -80,7 +80,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 
 		String irisName = Iris.MODNAME + " " + Iris.getVersion();
 
-		if (!FMLEnvironment.production) {
+		if (PlatformUtil.isDevelopmentEnvironment()) {
 			this.developmentComponent = Component.literal("Development Environment").withStyle(ChatFormatting.GOLD);
 		}
 
