@@ -42,7 +42,8 @@ public abstract class MixinBufferBuilder_SeparateAo extends DefaultedVertexConsu
 		super.putBulkData(matrixEntry, quad, brightnesses, red, green, blue, lights, overlay, useQuadColorData);
 	}
 
-	@ModifyVariable(method = "vertex", at = @At("HEAD"), index = 7, argsOnly = true)
+	@SuppressWarnings("UnnecessaryQualifiedMemberReference") // needed to avoid Unimined remapping failure
+    @ModifyVariable(method = "Lcom/mojang/blaze3d/vertex/BufferBuilder;vertex(FFFFFFFFFIIFFF)V", at = @At("HEAD"), index = 7, argsOnly = true)
 	public float vertex(float alpha) {
 		if (brightnesses != null && WorldRenderingSettings.INSTANCE.shouldUseSeparateAo()) {
 			if (brightnessIndex < brightnesses.length) {
