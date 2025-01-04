@@ -1,5 +1,11 @@
 package net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import net.irisshaders.iris.compat.sodium.impl.block_context.BlockContextHolder;
@@ -7,6 +13,7 @@ import net.irisshaders.iris.compat.sodium.impl.block_context.ContextAwareVertexW
 import net.irisshaders.iris.vertices.ExtendedDataHelper;
 import net.irisshaders.iris.vertices.NormI8;
 import net.irisshaders.iris.vertices.NormalHelper;
+import org.embeddedt.embeddium.impl.render.texture.TextureAtlasExtended;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
@@ -21,6 +28,9 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
 	private int vertexCount;
 	private float uSum;
 	private float vSum;
+
+    private final TextureAtlas blocksAtlas = (TextureAtlas)Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS);
+    private final Object2IntMap<TextureAtlasSprite> fallbackMaterials = WorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
 
 	@Override
 	public void iris$setContextHolder(BlockContextHolder holder) {
@@ -101,8 +111,13 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
 
             short blockId = contextHolder.blockId;
 
-            if (blockId == -1) {
-                // Try fallback based on texture
+            if (blockId == -1 && fallbackMaterials != null) {
+                // Try to fall back to the "canonical" block ID for the texture, this can often greatly improve
+                // the visuals of facade-style blocks
+                TextureAtlasSprite sprite = ((TextureAtlasExtended)blocksAtlas).celeritas$findFromUV(uSum, vSum);
+                if (sprite != null) {
+                    blockId = (short)fallbackMaterials.getOrDefault(sprite, -1);
+                }
             }
 
             MemoryUtil.memPutShort(ptr + 40, blockId);
