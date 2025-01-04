@@ -5,7 +5,6 @@
   "plugin": "net.irisshaders.iris.mixin.OculusMixinPlugin",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "DimensionTypeAccessor",
     "GameRendererAccessor",
     "GlStateManagerAccessor",
     "LevelRendererAccessor",
