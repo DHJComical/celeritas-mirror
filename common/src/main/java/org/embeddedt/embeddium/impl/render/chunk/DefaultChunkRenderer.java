@@ -70,7 +70,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
                 continue;
             }
 
-            fillCommandBuffer(this.batch, region, storage, renderList, camera, renderPass, useBlockFaceCulling);
+            fillCommandBuffer(this.batch, region, storage, renderList, camera, renderPass, useBlockFaceCulling && renderPass.isSorted());
 
             if (this.batch.isEmpty()) {
                 continue;
@@ -123,7 +123,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
 
             int slices;
 
-            if (useBlockFaceCulling && !pass.isSorted()) {
+            if (useBlockFaceCulling) {
                 slices = getVisibleFaces(camera.intX, camera.intY, camera.intZ, chunkX, chunkY, chunkZ);
             } else {
                 slices = ModelQuadFacing.ALL;
