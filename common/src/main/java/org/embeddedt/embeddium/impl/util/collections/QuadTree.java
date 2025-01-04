@@ -9,6 +9,8 @@ import java.util.function.Function;
  */
 public final class QuadTree<T>
 {
+    private static final QuadTree<?> EMPTY = new QuadTree<>(new Rect2i(0, 0, 0, 0), 0);
+
     private static final int MAX_DEPTH = 12;
 
     private final Rect2i rect;
@@ -16,6 +18,11 @@ public final class QuadTree<T>
     private final Rect2i[] childRects;
 
     private final List<Entry<T>> entries = new ArrayList<>();
+
+    @SuppressWarnings("unchecked")
+    public static <T> QuadTree<T> empty() {
+        return (QuadTree<T>)EMPTY;
+    }
 
     public QuadTree(Rect2i rect, int minSize)
     {

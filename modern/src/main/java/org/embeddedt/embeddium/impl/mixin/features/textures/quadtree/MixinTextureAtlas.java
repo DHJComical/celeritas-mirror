@@ -29,7 +29,7 @@ public class MixinTextureAtlas implements TextureAtlasExtended {
     @Shadow
     private Map<ResourceLocation, TextureAtlasSprite> texturesByName;
 
-    private QuadTree<TextureAtlasSprite> celeritas$quadTree;
+    private QuadTree<TextureAtlasSprite> celeritas$quadTree = QuadTree.empty();
 
     @Inject(method = "upload", at = @At("RETURN"))
     private void generateQuadTree(SpriteLoader.Preparations preparations, CallbackInfo ci) {
@@ -39,6 +39,11 @@ public class MixinTextureAtlas implements TextureAtlasExtended {
         for (TextureAtlasSprite sprite : this.texturesByName.values()) {
             this.celeritas$quadTree.insert(sprite, s -> new QuadTree.Rect2i(s.getX(), s.getY(), s.contents().width(), s.contents().height()));
         }
+    }
+
+    @Inject(method = "clearTextureData", at = @At("RETURN"))
+    private void clearQuadTree(CallbackInfo ci) {
+        this.celeritas$quadTree = QuadTree.empty();
     }
 
     @Override
