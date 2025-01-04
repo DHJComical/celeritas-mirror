@@ -55,7 +55,6 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
 
         MemoryUtil.memPutInt(ptr + 24, encodeDrawParameters(material, chunkId) << 0 | encodeLight(vertex.light) << 16);
 
-        MemoryUtil.memPutShort(ptr + 40, contextHolder.blockId);
         MemoryUtil.memPutShort(ptr + 42, contextHolder.renderType);
         MemoryUtil.memPutInt(ptr + 44, contextHolder.ignoreMidBlock ? 0 : ExtendedDataHelper.computeMidBlock(vertex.x, vertex.y, vertex.z, contextHolder.localPosX, contextHolder.localPosY, contextHolder.localPosZ));
         MemoryUtil.memPutByte(ptr + 47, contextHolder.lightValue);
@@ -99,6 +98,17 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
 			MemoryUtil.memPutInt(ptr + 28 - STRIDE, midUV);
 			MemoryUtil.memPutInt(ptr + 28 - STRIDE * 2, midUV);
 			MemoryUtil.memPutInt(ptr + 28 - STRIDE * 3, midUV);
+
+            short blockId = contextHolder.blockId;
+
+            if (blockId == -1) {
+                // Try fallback based on texture
+            }
+
+            MemoryUtil.memPutShort(ptr + 40, blockId);
+            MemoryUtil.memPutShort(ptr + 40 - STRIDE, blockId);
+            MemoryUtil.memPutShort(ptr + 40 - STRIDE * 2, blockId);
+            MemoryUtil.memPutShort(ptr + 40 - STRIDE * 3, blockId);
 
 			uSum = 0;
 			vSum = 0;

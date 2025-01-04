@@ -1,22 +1,29 @@
 package net.irisshaders.iris.shaderpack.materialmap;
 
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.*;
 import net.irisshaders.iris.Iris;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
+import net.minecraftforge.client.model.data.ModelData;
+import org.embeddedt.embeddium.impl.util.DirectionUtil;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BlockMaterialMapping {
 	public static Object2IntMap<BlockState> createBlockStateIdMap(Int2ObjectMap<List<BlockEntry>> blockPropertiesMap) {
@@ -46,6 +53,67 @@ public class BlockMaterialMapping {
 
 		return blockTypeIds;
 	}
+
+    private static final RandomSource RANDOM = new SingleThreadedRandomSource(42L);
+
+    public static Object2IntMap<TextureAtlasSprite> createFallbackTextureMaterialMap(Object2IntMap<BlockState> blockStateIds) {
+        if (blockStateIds == null) {
+            return null;
+        }
+
+        var modelShaper = Minecraft.getInstance().getModelManager().getBlockModelShaper();
+        Object2ObjectMap<TextureAtlasSprite, Int2IntMap> votingMap = new Object2ObjectOpenHashMap<>();
+        for (var entry : Object2IntMaps.fastIterable(blockStateIds)) {
+            var state = entry.getKey();
+            var model = modelShaper.getBlockModel(state);
+            var materialId = entry.getIntValue();
+
+            for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
+                conductVoting(model, state, direction, votingMap, materialId);
+            }
+
+            conductVoting(model, state, null, votingMap, materialId);
+        }
+
+        Object2IntMap<TextureAtlasSprite> finalMap = new Object2IntOpenHashMap<>();
+
+        var entryComparator = Comparator.comparingInt(Int2IntMap.Entry::getIntValue);
+
+        for (var entry : Object2ObjectMaps.fastIterable(votingMap)) {
+            Int2IntMap.Entry highestEntry;
+
+            if (entry.getValue().size() == 1) {
+                highestEntry = entry.getValue().int2IntEntrySet().iterator().next();
+            } else {
+                highestEntry = entry.getValue().int2IntEntrySet().stream().max(entryComparator).orElseThrow();
+            }
+
+            finalMap.put(entry.getKey(), highestEntry.getIntKey());
+        }
+
+        return finalMap;
+    }
+
+    private static void conductVoting(BakedModel model, BlockState state, @Nullable Direction direction, Object2ObjectMap<TextureAtlasSprite, Int2IntMap> votingMap, int vote) {
+        RANDOM.setSeed(42L);
+        var quadList = model.getQuads(state, direction, RANDOM, ModelData.EMPTY, null);
+
+        //noinspection ForLoopReplaceableByForEach
+        for (int i = 0; i < quadList.size(); i++) {
+            var quad = quadList.get(i);
+            var sprite = quad.getSprite();
+
+            if (sprite != null) {
+                var votes = votingMap.get(sprite);
+                if (votes == null) {
+                    votes = new Int2IntArrayMap();
+                    votingMap.put(sprite, votes);
+                }
+
+                votes.mergeInt(vote, 1, Integer::sum);
+            }
+        }
+    }
 
 	private static RenderType convertBlockToRenderType(BlockRenderType type) {
 		if (type == null) {
