@@ -82,6 +82,8 @@ public class RenderSection {
     // Used by the translucency sorter, to determine when a section needs sorting again
     public double lastCameraX, lastCameraY, lastCameraZ;
 
+    private boolean hasAnythingToRender;
+
     public RenderSection(RenderRegion region, int chunkX, int chunkY, int chunkZ) {
         this.chunkX = chunkX;
         this.chunkY = chunkY;
@@ -96,6 +98,7 @@ public class RenderSection {
         this.region = region;
 
         this.contextData = null;
+        this.updateCachedContextDataFlags();
     }
 
     public RenderSection getAdjacent(int direction) {
@@ -159,12 +162,14 @@ public class RenderSection {
         this.built = true;
         this.visibilityData = info.getContext(VISIBILITY_DATA);
         this.contextData = info;
+        this.updateCachedContextDataFlags();
     }
 
     private void clearRenderState() {
         this.built = false;
         this.visibilityData = VisibilityEncoding.NULL;
         this.contextData = null;
+        this.updateCachedContextDataFlags();
     }
 
     /**
@@ -308,8 +313,12 @@ public class RenderSection {
         }
     }
 
+    public void updateCachedContextDataFlags() {
+        this.hasAnythingToRender = this.contextData != null && this.contextData.hasAnyContext();
+    }
+
     public boolean hasAnythingToRender() {
-        return this.contextData != null && this.contextData.hasAnyContext();
+        return this.hasAnythingToRender;
     }
 
     @Deprecated
