@@ -127,7 +127,7 @@ java {
 
 def skippedFabricApiModules = ["fabric-renderer-api-v1", "fabric-renderer-indigo"]
 
-def shadersEnabled = project.name.equals("1.20.1-forge") || project.name.equals("1.20.1-fabric")
+def shadersEnabled = project.name.startsWith("1.20.1-") || project.name.startsWith("1.20.4-")
 
 configurations {
     modCompileOnly

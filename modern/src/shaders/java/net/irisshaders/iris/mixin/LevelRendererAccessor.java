@@ -21,7 +21,7 @@ public interface LevelRendererAccessor {
 	@Accessor("entityRenderDispatcher")
 	EntityRenderDispatcher getEntityRenderDispatcher();
 
-	@Invoker("renderChunkLayer")
+	@Invoker(/*? if <1.20.2 {*/ "renderChunkLayer" /*?} else {*/ /*"renderSectionLayer" *//*?}*/)
 	void invokeRenderChunkLayer(RenderType terrainLayer, PoseStack modelView, double cameraX, double cameraY, double cameraZ, Matrix4f projectionMatrix);
 
 	@Invoker("setupRender")

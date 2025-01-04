@@ -72,9 +72,14 @@ public class MixinLevelRenderer {
 		IrisTimeUniforms.updateTime();
 		CapturedRenderingState.INSTANCE.setGbufferModelView(poseStack.last().pose());
 		CapturedRenderingState.INSTANCE.setGbufferProjection(projection);
-		CapturedRenderingState.INSTANCE.setTickDelta(tickDelta);
+        //? if >=1.20.4 {
+        /*net.minecraft.world.TickRateManager lvTickRateManager10 = this.minecraft.level.tickRateManager();
+        float fakeTickDelta = lvTickRateManager10.runsNormally() ? tickDelta : 1.0F;
+        *///?} else
+        float fakeTickDelta = tickDelta;
+		CapturedRenderingState.INSTANCE.setTickDelta(fakeTickDelta);
 		CapturedRenderingState.INSTANCE.setRealTickDelta(tickDelta);
-		CapturedRenderingState.INSTANCE.setCloudTime((ticks + tickDelta) * 0.03F);
+		CapturedRenderingState.INSTANCE.setCloudTime((ticks + fakeTickDelta) * 0.03F);
 		SystemTimeUniforms.COUNTER.beginFrame();
 		SystemTimeUniforms.TIMER.beginFrame(startTime);
 
@@ -197,12 +202,14 @@ public class MixinLevelRenderer {
 		pipeline.setPhase(WorldRenderingPhase.NONE);
 	}
 
-	@Inject(method = "renderChunkLayer", at = @At("HEAD"))
+    private static final String RENDER_CHUNK_LAYER = /*? if <1.20.2 {*/ "renderChunkLayer" /*?} else {*/ /*"renderSectionLayer" *//*?}*/;
+
+	@Inject(method = RENDER_CHUNK_LAYER, at = @At("HEAD"))
 	private void iris$beginTerrainLayer(RenderType renderType, PoseStack poseStack, double d, double e, double f, Matrix4f projectionMatrix, CallbackInfo ci) {
 		pipeline.setPhase(WorldRenderingPhase.fromTerrainRenderType(renderType));
 	}
 
-	@Inject(method = "renderChunkLayer", at = @At("RETURN"))
+	@Inject(method = RENDER_CHUNK_LAYER, at = @At("RETURN"))
 	private void iris$endTerrainLayer(RenderType renderType, PoseStack poseStack, double d, double e, double f, Matrix4f projectionMatrix, CallbackInfo ci) {
 		pipeline.setPhase(WorldRenderingPhase.NONE);
 	}

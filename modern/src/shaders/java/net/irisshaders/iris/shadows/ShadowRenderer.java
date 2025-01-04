@@ -138,7 +138,9 @@ public class ShadowRenderer {
 
 		this.sunPathRotation = directives.getSunPathRotation();
 
-		this.buffers = new RenderBuffers();
+        int processors = Runtime.getRuntime().availableProcessors();
+        int threads = Minecraft.getInstance().is64Bit() ? processors : Math.min(processors, 4);
+		this.buffers = new RenderBuffers(/*? if >=1.20.4 {*//*threads*//*?}*/);
 
 		if (this.buffers instanceof RenderBuffersExt) {
 			this.renderBuffersExt = (RenderBuffersExt) buffers;
@@ -540,7 +542,10 @@ public class ShadowRenderer {
 
 		IrisRenderSystem.restorePlayerProjection();
 
-		debugStringTerrain = ((LevelRenderer) levelRenderer).getChunkStatistics();
+        //? if >=1.20.2 {
+		/*debugStringTerrain = ((LevelRenderer) levelRenderer).getSectionStatistics();
+        *///?} else
+        debugStringTerrain = ((LevelRenderer) levelRenderer).getChunkStatistics();
 
 		levelRenderer.getLevel().getProfiler().popPush("generate mipmaps");
 
