@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.render.chunk;
 
 import lombok.Getter;
 import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
+import org.embeddedt.embeddium.impl.render.chunk.lists.RenderVisualsService;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirectionSet;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
@@ -14,12 +15,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 /**
  * The render state object for a chunk section. This contains all the graphics state for each render pass along with
  * data about the render in the chunk visibility graph.
  */
 public class RenderSection {
+    private static final RenderVisualsService VISUALS_SERVICE = ServiceLoader.load(RenderVisualsService.class).findFirst().orElseThrow();
+
     // Render Region State
     private final RenderRegion region;
     private final int sectionIndex;
@@ -32,7 +36,7 @@ public class RenderSection {
 
     // We must use EVERYTHING here for the default visibility encoding, so that ContextBundle.empty() would correspond
     // to the data generated for an empty section.
-    public static ContextBundle.Key<RenderSection, Long> VISIBILITY_DATA = new ContextBundle.Key<>(RenderSection.class, VisibilityEncoding.EVERYTHING);
+    public static final ContextBundle.Key<RenderSection, Long> VISIBILITY_DATA = new ContextBundle.Key<>(RenderSection.class, VisibilityEncoding.EVERYTHING);
 
     private int incomingDirections;
     private int lastVisibleFrame = -1;
@@ -50,6 +54,10 @@ public class RenderSection {
     // Rendering State
     private boolean built = false; // merge with the flags?
     private ContextBundle<RenderSection> contextData;
+    private boolean hasAnythingToRender;
+    @Getter
+    private int visualsServiceFlags;
+
 
     /**
      * A mapping from translucent render passes to the sort state for that particular pass (which contains data needed
@@ -81,8 +89,6 @@ public class RenderSection {
 
     // Used by the translucency sorter, to determine when a section needs sorting again
     public double lastCameraX, lastCameraY, lastCameraZ;
-
-    private boolean hasAnythingToRender;
 
     public RenderSection(RenderRegion region, int chunkX, int chunkY, int chunkZ) {
         this.chunkX = chunkX;
@@ -315,6 +321,11 @@ public class RenderSection {
 
     public void updateCachedContextDataFlags() {
         this.hasAnythingToRender = this.contextData != null && this.contextData.hasAnyContext();
+        if (this.hasAnythingToRender) {
+            this.visualsServiceFlags = VISUALS_SERVICE.getVisualBitmaskForSection(this.contextData);
+        } else {
+            this.visualsServiceFlags = 0;
+        }
     }
 
     public boolean hasAnythingToRender() {

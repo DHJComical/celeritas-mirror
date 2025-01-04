@@ -39,7 +39,6 @@ public class ChunkRenderList {
         this.lastVisibleFrame = frame;
     }
 
-    private static final RenderVisualsService VISUALS_SERVICE = ServiceLoader.load(RenderVisualsService.class).findFirst().orElseThrow();
 
     public void add(RenderSection render) {
         if (this.size >= RenderRegion.REGION_SIZE) {
@@ -49,8 +48,7 @@ public class ChunkRenderList {
         this.size++;
 
         int index = render.getSectionIndex();
-        var contextData = Objects.requireNonNull(render.getBuiltContext());
-        var flags = VISUALS_SERVICE.getVisualBitmaskForSection(contextData);
+        int flags = render.getVisualsServiceFlags();
 
         this.sectionsWithGeometry[this.sectionsWithGeometryCount] = (byte) index;
         this.sectionsWithGeometryCount += (flags >>> RenderVisualsService.HAS_BLOCK_GEOMETRY) & 1;
