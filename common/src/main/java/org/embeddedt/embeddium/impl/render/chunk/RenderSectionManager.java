@@ -142,7 +142,7 @@ public abstract class RenderSectionManager {
         var sortRebuildList = this.rebuildLists.get(ChunkUpdateType.SORT);
         var importantSortRebuildList = this.rebuildLists.get(ChunkUpdateType.IMPORTANT_SORT);
         var allowImportant = allowImportantRebuilds();
-        for (Iterator<ChunkRenderList> it = this.renderLists.iterator(); it.hasNext(); ) {
+        for (Iterator<ChunkRenderList> it = this.getRenderLists().iterator(); it.hasNext(); ) {
             ChunkRenderList entry = it.next();
             var region = entry.getRegion();
             ByteIterator sectionIterator = entry.sectionsWithGeometryIterator(false);
@@ -210,7 +210,7 @@ public abstract class RenderSectionManager {
 
         this.occlusionCuller.findVisible(visitor, positionedViewport.viewport(), searchDistance, useOcclusionCulling, frame);
 
-        this.renderLists = visitor.createRenderLists();
+        this.setRenderLists(visitor.createRenderLists());
         this.rebuildLists = visitor.getRebuildLists();
 
         this.checkTranslucencyChange();
@@ -234,7 +234,7 @@ public abstract class RenderSectionManager {
     protected abstract boolean shouldUseOcclusionCulling(PositionedViewport positionedViewport, boolean spectator);
 
     private void resetRenderLists() {
-        this.renderLists = SortedRenderLists.empty();
+        this.setRenderLists(SortedRenderLists.empty());
 
         for (var list : this.rebuildLists.values()) {
             list.clear();
@@ -297,7 +297,7 @@ public abstract class RenderSectionManager {
         RenderDevice device = RenderDevice.INSTANCE;
         CommandList commandList = device.createCommandList();
 
-        this.chunkRenderer.render(matrices, commandList, this.renderLists, pass, new CameraTransform(x, y, z));
+        this.chunkRenderer.render(matrices, commandList, this.getRenderLists(), pass, new CameraTransform(x, y, z));
 
         commandList.flush();
     }
@@ -508,7 +508,7 @@ public abstract class RenderSectionManager {
 
     public int getVisibleChunkCount() {
         var sections = 0;
-        var iterator = this.renderLists.iterator();
+        var iterator = this.getRenderLists().iterator();
 
         while (iterator.hasNext()) {
             var renderList = iterator.next();
@@ -612,7 +612,7 @@ public abstract class RenderSectionManager {
 
         int[] sectionCounts = new int[TranslucentQuadAnalyzer.Level.VALUES.length];
 
-        for (Iterator<ChunkRenderList> it = this.renderLists.iterator(); it.hasNext(); ) {
+        for (Iterator<ChunkRenderList> it = this.getRenderLists().iterator(); it.hasNext(); ) {
             var renderList = it.next();
             var region = renderList.getRegion();
             var listIter = renderList.sectionsWithGeometryIterator(false);
@@ -706,6 +706,10 @@ public abstract class RenderSectionManager {
 
     public @NotNull SortedRenderLists getRenderLists() {
         return this.renderLists;
+    }
+
+    protected void setRenderLists(@NotNull SortedRenderLists renderLists) {
+        this.renderLists = renderLists;
     }
 
     public boolean isSectionBuilt(int x, int y, int z) {
