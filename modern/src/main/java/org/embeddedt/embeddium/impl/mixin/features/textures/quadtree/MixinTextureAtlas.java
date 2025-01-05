@@ -6,7 +6,8 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.impl.render.texture.TextureAtlasExtended;
-import org.embeddedt.embeddium.impl.util.collections.QuadTree;
+import org.embeddedt.embeddium.impl.util.collections.quadtree.QuadTree;
+import org.embeddedt.embeddium.impl.util.collections.quadtree.Rect2i;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,12 +34,13 @@ public class MixinTextureAtlas implements TextureAtlasExtended {
 
     @Inject(method = "upload", at = @At("RETURN"))
     private void generateQuadTree(SpriteLoader.Preparations preparations, CallbackInfo ci) {
-        QuadTree.Rect2i treeRect = new QuadTree.Rect2i(0, 0, this.width, this.height);
+        Rect2i treeRect = new Rect2i(0, 0, this.width, this.height);
         int minSize = this.sprites.stream().mapToInt(c -> Math.max(c.width(), c.height())).min().orElseThrow();
         this.celeritas$quadTree = new QuadTree<>(treeRect, minSize);
         for (TextureAtlasSprite sprite : this.texturesByName.values()) {
-            this.celeritas$quadTree.insert(sprite, s -> new QuadTree.Rect2i(s.getX(), s.getY(), s.contents().width(), s.contents().height()));
+            this.celeritas$quadTree.insert(sprite, s -> new Rect2i(s.getX(), s.getY(), s.contents().width(), s.contents().height()));
         }
+        this.celeritas$quadTree.bake();
     }
 
     @Inject(method = "clearTextureData", at = @At("RETURN"))
