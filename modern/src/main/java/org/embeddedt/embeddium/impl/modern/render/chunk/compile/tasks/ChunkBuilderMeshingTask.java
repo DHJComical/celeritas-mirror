@@ -29,7 +29,6 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.chunk.VisGraph;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -45,7 +44,6 @@ import org.embeddedt.embeddium.api.ChunkDataBuiltEvent;
 import org.embeddedt.embeddium.impl.chunk.MeshAppenderRenderer;
 //? if forgelike
 import org.embeddedt.embeddium.impl.model.ModelDataSnapshotter;
-import org.embeddedt.embeddium.impl.model.UnwrappableBakedModel;
 import org.joml.Vector3d;
 
 import java.util.*;
@@ -124,16 +122,9 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         modelOffset.set(x & 15, y & 15, z & 15);
 
                         if (blockState.getRenderShape() == RenderShape.MODEL) {
-                            BakedModel model = cache.getBlockModels()
-                                .getBlockModel(blockState);
-
                             long seed = blockState.getSeed(blockPos);
-                            context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, model, seed);
-                            context.random().setSeed(seed);
-
-                            // Embeddium: Ideally we'd do this before the call to getModelData, but that requires an
-                            // LVT reordering to move "long seed" further up. We will have to do this in 21.
-                            model = UnwrappableBakedModel.unwrapIfPossible(model, context.random());
+                            context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, cache.getBlockModels().getBlockModel(blockState), seed);
+                            var model = context.model();
 
                             //? if forgelike {
                             var modelData = model.getModelData(context.localSlice(), blockPos, blockState, modelDataGetter.getModelData(blockPos));

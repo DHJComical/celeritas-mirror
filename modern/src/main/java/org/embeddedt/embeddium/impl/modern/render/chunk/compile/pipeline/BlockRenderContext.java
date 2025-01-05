@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
+import org.embeddedt.embeddium.impl.model.UnwrappableBakedModel;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 //? if >=1.15
@@ -80,9 +81,11 @@ public class BlockRenderContext {
         this.origin.set(origin.getX(), origin.getY(), origin.getZ());
 
         this.state = state;
-        this.model = model;
 
         this.seed = seed;
+
+        this.random.setSeed(seed);
+        this.model = UnwrappableBakedModel.unwrapIfPossible(model, this.random);
 
         this.lightValue = -1;
     }
