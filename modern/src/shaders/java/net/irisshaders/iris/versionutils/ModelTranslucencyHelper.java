@@ -27,7 +27,7 @@ public class ModelTranslucencyHelper {
         BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
         ChunkRenderTypeSet types = model.getRenderTypes(state, randomSource, ModelData.EMPTY);
 
-        return !types.contains(RenderType.translucent());
+        return types.contains(RenderType.translucent());
         //?}
     }
 }
