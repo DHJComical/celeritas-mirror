@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.*;
 import net.irisshaders.iris.Iris;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
@@ -62,17 +63,32 @@ public class BlockMaterialMapping {
         }
 
         var modelShaper = Minecraft.getInstance().getModelManager().getBlockModelShaper();
+
         Object2ObjectMap<TextureAtlasSprite, Int2IntMap> votingMap = new Object2ObjectOpenHashMap<>();
-        for (var entry : Object2IntMaps.fastIterable(blockStateIds)) {
-            var state = entry.getKey();
-            var model = modelShaper.getBlockModel(state);
-            var materialId = entry.getIntValue();
+        Object2ObjectMap<Block, List<BlockState>> statesByBlock = new Object2ObjectOpenHashMap<>();
 
-            for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
-                conductVoting(model, state, direction, votingMap, materialId);
+        // Group states by block. This means that all models for the same block will be retrieved at once, which may
+        // help dynamic model loading implementations.
+        for (var state : blockStateIds.keySet()) {
+            statesByBlock.computeIfAbsent(state.getBlock(), b -> new ArrayList<>(2)).add(state);
+        }
+
+        for (var stateList : statesByBlock.values()) {
+            for (var state : stateList) {
+                var model = modelShaper.getBlockModel(state);
+                var materialId = blockStateIds.getInt(state);
+
+                try {
+                    for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
+                        conductVoting(model, state, direction, votingMap, materialId);
+                    }
+
+                    conductVoting(model, state, null, votingMap, materialId);
+                } catch (Exception ignored) {
+                    // No problem, we'll just skip this block.
+                    break;
+                }
             }
-
-            conductVoting(model, state, null, votingMap, materialId);
         }
 
         Object2IntMap<TextureAtlasSprite> finalMap = new Object2IntOpenHashMap<>();
@@ -96,7 +112,7 @@ public class BlockMaterialMapping {
 
     private static void conductVoting(BakedModel model, BlockState state, @Nullable Direction direction, Object2ObjectMap<TextureAtlasSprite, Int2IntMap> votingMap, int vote) {
         RANDOM.setSeed(42L);
-        var quadList = model.getQuads(state, direction, RANDOM, ModelData.EMPTY, null);
+        List<BakedQuad> quadList = model.getQuads(state, direction, RANDOM, ModelData.EMPTY, null);
 
         //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < quadList.size(); i++) {
