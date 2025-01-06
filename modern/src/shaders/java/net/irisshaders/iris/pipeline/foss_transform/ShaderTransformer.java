@@ -298,12 +298,12 @@ public class ShaderTransformer {
 
         if (parameters.type.glShaderType == ShaderType.VERTEX) {
             root.injectVariable("vec4 iris_FrontColor;");
-            root.replaceExpression("gl_FrontColor", "iris_FrontColor");
+            root.rename("gl_FrontColor", "iris_FrontColor");
         }
 
         if (parameters.type.glShaderType == ShaderType.FRAGMENT) {
             if (root.containsCall("gl_FragColor")) {
-                root.replaceExpression("gl_FragColor", "gl_FragData[0]");
+                root.rename("gl_FragColor", "gl_FragData[0]");
             }
 
             if (root.containsCall("gl_TexCoord")) {
