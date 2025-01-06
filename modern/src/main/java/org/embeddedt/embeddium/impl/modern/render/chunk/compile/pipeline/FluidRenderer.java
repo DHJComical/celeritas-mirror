@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 //? if fabric
 /*import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;*/
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -100,11 +101,21 @@ public class FluidRenderer {
     //? if fabric && >=1.17
     /*private final FabricFluidRenderer fabricFluidRenderer = new FabricFluidRenderer();*/
 
+    /**
+     * Whether any fluids exist with the RENDERS_WITH_VANILLA tag. This allows the check to be elided most of the time.
+     */
+    private final boolean doVanillaRenderedFluidsExist;
+
     public FluidRenderer(ColorProviderRegistry colorProviderRegistry, LightPipelineProvider lighters) {
         this.quad.setLightFace(Direction.UP);
 
         this.lighters = lighters;
         this.colorProviderRegistry = colorProviderRegistry;
+
+        //? if >=1.18 {
+        this.doVanillaRenderedFluidsExist = net.minecraft.core.registries.BuiltInRegistries.FLUID.getTag(EmbeddiumTags.RENDERS_WITH_VANILLA).filter(t -> t.size() > 0).isPresent();
+        //?} else
+        /*this.doVanillaRenderedFluidsExist = false;*/
     }
 
     /**
@@ -242,7 +253,7 @@ public class FluidRenderer {
 
         // Embeddium: Delegate to vanilla liquid renderer if fluid has this tag.
         //? if >=1.18 {
-        if(fluidState.getType().is(EmbeddiumTags.RENDERS_WITH_VANILLA)) {
+        if(this.doVanillaRenderedFluidsExist && fluidState.getType().is(EmbeddiumTags.RENDERS_WITH_VANILLA)) {
             renderVanilla(world, fluidState, blockPos, meshBuilder, material);
             return;
         }
