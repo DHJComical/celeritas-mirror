@@ -2,8 +2,8 @@
 
 # Celeritas
 
-Celeritas is a free and open-source performance mod for Minecraft clients. It is a fork of Embeddium, which itself
-was based on the last FOSS-licensed version of Sodium.
+Celeritas is a free and open-source performance & shaders mod for Minecraft clients. It is a fork of Embeddium (which itself
+was based on the last FOSS-licensed version of Sodium) and Oculus 1.7.
 
 I maintain this mod for personal use/experimentation and make the source code available for others who
 might be interested. I have no plans to release binaries on CurseForge or Modrinth, and I provide no
