@@ -185,8 +185,8 @@ public class VertexSerializerFactory {
 
             //? if <1.21 {
             int byteLength = elementType.getByteSize();
-            //? } else
-            int byteLength = elementType.byteSize();
+            //?} else
+            /*int byteLength = elementType.byteSize();*/
 
             ops.add(new MemoryTransfer(srcOffset, dstOffset, byteLength));
         }

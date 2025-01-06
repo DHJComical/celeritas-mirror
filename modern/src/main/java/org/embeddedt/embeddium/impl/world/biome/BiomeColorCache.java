@@ -97,6 +97,10 @@ public class BiomeColorCache {
         //? if <1.15
         /*BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();*/
 
+        int firstSeenColor = 0;
+
+        boolean uniqueColor = true;
+
         for (int worldZ = this.minZ; worldZ <= this.maxZ; worldZ++) {
             for (int worldX = this.minX; worldX <= this.maxX; worldX++) {
                 Biome biome = this.biomeData.getBiome(worldX, worldY, worldZ)/*? if >=1.18.2 {*/ .value() /*?}*/;
@@ -105,15 +109,24 @@ public class BiomeColorCache {
                 int relativeZ = worldZ - this.minZ;
 
                 //? if >=1.15 {
-                slice.buffer.set(relativeX, relativeZ, resolver.getColor(biome, worldX, worldZ));
+                int color = resolver.getColor(biome, worldX, worldZ);
                 //?} else {
                 /*pos.set(worldX, worldY, worldZ);
-                slice.buffer.set(relativeX, relativeZ, resolver.getColor(biome, pos));
+                int color = resolver.getColor(biome, pos);
                 *///?}
+
+                if (firstSeenColor == 0) {
+                    firstSeenColor = color;
+                } else if (firstSeenColor != color) {
+                    uniqueColor = false;
+                }
+
+                slice.buffer.set(relativeX, relativeZ, color);
             }
         }
 
-        if (this.blendRadius > 0) {
+        // Skip blurring if all the values are the same anyway
+        if (!uniqueColor && this.blendRadius > 0) {
             BoxBlur.blur(slice.buffer, this.tempColorBuffer, this.blendRadius);
         }
 
