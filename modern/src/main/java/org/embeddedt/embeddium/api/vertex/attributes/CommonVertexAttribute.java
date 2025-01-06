@@ -13,10 +13,10 @@ public class CommonVertexAttribute {
     public static final VertexFormatElement NORMAL = DefaultVertexFormat.ELEMENT_NORMAL;
     //?} else {
     /*public static final VertexFormatElement POSITION = VertexFormatElement.POSITION;
-    public static final VertexFormatElement COLOR = DefaultVertexFormat.COLOR;
-    public static final VertexFormatElement TEXTURE = DefaultVertexFormat.UV0;
-    public static final VertexFormatElement OVERLAY = DefaultVertexFormat.UV1;
-    public static final VertexFormatElement LIGHT = DefaultVertexFormat.UV2;
-    public static final VertexFormatElement NORMAL = DefaultVertexFormat.NORMAL;
+    public static final VertexFormatElement COLOR = VertexFormatElement.COLOR;
+    public static final VertexFormatElement TEXTURE = VertexFormatElement.UV0;
+    public static final VertexFormatElement OVERLAY = VertexFormatElement.UV1;
+    public static final VertexFormatElement LIGHT = VertexFormatElement.UV2;
+    public static final VertexFormatElement NORMAL = VertexFormatElement.NORMAL;
     *///?}
 }

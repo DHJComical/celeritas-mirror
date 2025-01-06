@@ -183,7 +183,10 @@ public class VertexSerializerFactory {
             var srcOffset = srcVertexFormat.getElementOffset(elementType);
             var dstOffset = dstVertexFormat.getElementOffset(elementType);
 
+            //? if <1.21 {
             int byteLength = elementType.getByteSize();
+            //? } else
+            int byteLength = elementType.byteSize();
 
             ops.add(new MemoryTransfer(srcOffset, dstOffset, byteLength));
         }

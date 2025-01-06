@@ -1,9 +1,9 @@
 package org.embeddedt.embeddium.impl.render.vertex;
 
-//? if <1.21
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+//? if <1.21
 import org.embeddedt.embeddium.impl.mixin.core.render.VertexFormatAccessor;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
 import com.mojang.blaze3d.vertex.VertexFormat;
