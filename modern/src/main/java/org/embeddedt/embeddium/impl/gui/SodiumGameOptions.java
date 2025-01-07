@@ -75,7 +75,8 @@ public class SodiumGameOptions {
 
         public boolean enableVignette = true;
 
-        public boolean useQuadNormalsForShading = false;
+        @SerializedName("use_quad_normals_for_shading_v2")
+        public boolean useQuadNormalsForShading = true;
     }
 
     public static class NotificationSettings {
