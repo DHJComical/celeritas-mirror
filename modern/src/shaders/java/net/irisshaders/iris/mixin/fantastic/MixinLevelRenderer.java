@@ -1,6 +1,8 @@
 package net.irisshaders.iris.mixin.fantastic;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.culling.Frustum;
 import org.joml.Matrix4f;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.fantastic.ParticleRenderingPhase;
@@ -41,19 +43,25 @@ public class MixinLevelRenderer {
 	}
 
 	@Inject(method = "renderLevel", at = @At(value = "CONSTANT", args = "stringValue=entities"))
-	private void iris$renderOpaqueParticles(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci) {
+	private void iris$renderOpaqueParticles(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci, @Local(ordinal = 0) Frustum vanillaFrustum) {
 		minecraft.getProfiler().popPush("opaque_particles");
 
 		MultiBufferSource.BufferSource bufferSource = renderBuffers.bufferSource();
 
 		ParticleRenderingSettings settings = getRenderingSettings();
 
+        boolean isRendering = false;
+
 		if (settings == ParticleRenderingSettings.BEFORE) {
-			minecraft.particleEngine.render(poseStack, bufferSource, lightTexture, camera, f);
+            isRendering = true;
 		} else if (settings == ParticleRenderingSettings.MIXED) {
 			((PhasedParticleEngine) minecraft.particleEngine).setParticleRenderingPhase(ParticleRenderingPhase.OPAQUE);
-			minecraft.particleEngine.render(poseStack, bufferSource, lightTexture, camera, f);
+            isRendering = true;
 		}
+
+        if (isRendering) {
+            minecraft.particleEngine.render(poseStack, bufferSource, lightTexture, camera, f /*? if forgelike {*/, vanillaFrustum /*?}*/);
+        }
 	}
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=particles"))
