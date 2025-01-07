@@ -112,7 +112,12 @@ public class BlockMaterialMapping {
 
     private static void conductVoting(BakedModel model, BlockState state, @Nullable Direction direction, Object2ObjectMap<TextureAtlasSprite, Int2IntMap> votingMap, int vote) {
         RANDOM.setSeed(42L);
-        List<BakedQuad> quadList = model.getQuads(state, direction, RANDOM, ModelData.EMPTY, null);
+        //? if forge
+        List<BakedQuad> quadList = model.getQuads(state, direction, RANDOM, net.minecraftforge.client.model.data.ModelData.EMPTY, null);
+        //? if neoforge
+        /*List<BakedQuad> quadList = model.getQuads(state, direction, RANDOM, net.neoforged.neoforge.client.model.data.ModelData.EMPTY, null);*/
+        //? if fabric
+        /*List<BakedQuad> quadList = model.getQuads(state, direction, RANDOM);*/
 
         //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < quadList.size(); i++) {
