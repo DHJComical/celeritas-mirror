@@ -43,7 +43,7 @@ public class BlockRenderCache {
         this.worldSlice = new WorldSlice(world);
         this.lightDataCache = new ArrayLightDataCache(this.worldSlice);
 
-        LightPipelineProvider lightPipelineProvider = new LightPipelineProvider(this.lightDataCache);
+        LightPipelineProvider lightPipelineProvider = new LightPipelineProvider(this.lightDataCache, true);
 
         var colorRegistry = new ColorProviderRegistry(client.getBlockColors());
 

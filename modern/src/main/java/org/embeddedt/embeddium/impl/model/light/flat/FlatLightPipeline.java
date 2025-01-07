@@ -36,8 +36,14 @@ public class FlatLightPipeline implements LightPipeline {
      */
     private final boolean useQuadNormalsForShading;
 
-    public FlatLightPipeline(LightDataAccess lightCache) {
+    /**
+     * Whether directional shading should be enabled.
+     */
+    private final boolean enableDirectionalShading;
+
+    public FlatLightPipeline(LightDataAccess lightCache, boolean enableDirectionalShading) {
         this.lightCache = lightCache;
+        this.enableDirectionalShading = enableDirectionalShading;
         this.useQuadNormalsForShading = Celeritas.options().quality.useQuadNormalsForShading;
     }
 
@@ -60,12 +66,17 @@ public class FlatLightPipeline implements LightPipeline {
         }
 
         Arrays.fill(out.lm, lightmap);
-        //? if forgelike
-        if((quad.getFlags() & ModelQuadFlags.IS_VANILLA_SHADED) != 0 || !this.useQuadNormalsForShading) {
-            Arrays.fill(out.br, WorldUtil.getShade(this.lightCache.getWorld(), lightFace, shade));
-        /*? if forgelike {*/ } else {
-            this.applySidedBrightnessFromNormals(quad, out, shade);
-        } /*?}*/
+
+        if (enableDirectionalShading) {
+            //? if forgelike
+            if ((quad.getFlags() & ModelQuadFlags.IS_VANILLA_SHADED) != 0 || !this.useQuadNormalsForShading) {
+                Arrays.fill(out.br, WorldUtil.getShade(this.lightCache.getWorld(), lightFace, shade));
+            /*? if forgelike {*/ } else {
+                this.applySidedBrightnessFromNormals(quad, out, shade);
+            } /*?}*/
+        } else {
+            Arrays.fill(out.br, 1.0f);
+        }
     }
 
     //? if forgelike && >=1.19 {

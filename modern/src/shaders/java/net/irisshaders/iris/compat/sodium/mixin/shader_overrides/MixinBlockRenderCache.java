@@ -20,4 +20,9 @@ public class MixinBlockRenderCache {
     private Map<Block, RenderType> shaders$getRenderType(Map<Block, RenderType> original) {
         return WorldRenderingSettings.INSTANCE.getBlockTypeIds();
     }
+
+    @ModifyArg(method = "<init>", at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/model/light/LightPipelineProvider;<init>(Lorg/embeddedt/embeddium/impl/model/light/data/LightDataAccess;Z)V"), index = 1)
+    private boolean shouldEnableDirectionalShading(boolean original) {
+        return original && !WorldRenderingSettings.INSTANCE.shouldDisableDirectionalShading();
+    }
 }

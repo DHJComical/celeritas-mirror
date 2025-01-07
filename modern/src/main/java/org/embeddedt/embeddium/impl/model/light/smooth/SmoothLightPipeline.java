@@ -67,7 +67,12 @@ public class SmoothLightPipeline implements LightPipeline {
      */
     private final boolean useQuadNormalsForShading;
 
-    public SmoothLightPipeline(LightDataAccess cache) {
+    /**
+     * Whether directional shading should be enabled.
+     */
+    private final boolean enableDirectionalShading;
+
+    public SmoothLightPipeline(LightDataAccess cache, boolean enableDirectionalShading) {
         this.lightCache = cache;
 
         for (int i = 0; i < this.cachedFaceData.length; i++) {
@@ -75,6 +80,7 @@ public class SmoothLightPipeline implements LightPipeline {
         }
 
         this.useQuadNormalsForShading = Celeritas.options().quality.useQuadNormalsForShading;
+        this.enableDirectionalShading = enableDirectionalShading;
     }
 
     @Override
@@ -101,15 +107,17 @@ public class SmoothLightPipeline implements LightPipeline {
             this.applyNonParallelFace(neighborInfo, quad, pos, lightFace, out);
         }
 
-        //? if forgelike {
-        if((flags & ModelQuadFlags.IS_VANILLA_SHADED) != 0 || !this.useQuadNormalsForShading) {
-            this.applySidedBrightness(out, lightFace, shade);
-        } else {
-            this.applySidedBrightnessFromNormals(out, quad, shade);
+        if (enableDirectionalShading) {
+            //? if forgelike {
+            if((flags & ModelQuadFlags.IS_VANILLA_SHADED) != 0 || !this.useQuadNormalsForShading) {
+                this.applySidedBrightness(out, lightFace, shade);
+            } else {
+                this.applySidedBrightnessFromNormals(out, quad, shade);
+            }
+            //?} else {
+            /*this.applySidedBrightness(out, lightFace, shade);
+             *///?}
         }
-        //?} else {
-        /*this.applySidedBrightness(out, lightFace, shade);
-        *///?}
     }
 
     @Override

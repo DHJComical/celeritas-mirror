@@ -16,8 +16,6 @@
     "block_id.MixinChunkRenderRebuildTask",
     "block_id.MixinChunkVertexBufferBuilder",
     "clouds.MixinCloudRenderer",
-    "directional_shading.MixinFlatLightPipeline",
-    "directional_shading.MixinSmoothLightPipeline",
     "options.MixinSodiumGameOptions",
     "pbr_animation.MixinSpriteContents",
     "shader_overrides.MixinBlockRenderCache",

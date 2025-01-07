@@ -17,14 +17,14 @@ public class LightPipelineProvider {
     private final EnumMap<LightMode, LightPipeline> lighters = new EnumMap<>(LightMode.class);
     private final LightDataAccess lightData;
 
-    public LightPipelineProvider(LightDataAccess cache) {
+    public LightPipelineProvider(LightDataAccess cache, boolean enableDirectionalShading) {
         this.lightData = cache;
         if (LoaderServices.INSTANCE.hasCustomLightPipeline()) {
             this.lighters.put(LightMode.SMOOTH, LoaderServices.INSTANCE.createCustomLightPipeline(LightMode.SMOOTH, cache));
             this.lighters.put(LightMode.FLAT, LoaderServices.INSTANCE.createCustomLightPipeline(LightMode.FLAT, cache));
         } else {
-            this.lighters.put(LightMode.SMOOTH, new SmoothLightPipeline(cache));
-            this.lighters.put(LightMode.FLAT, new FlatLightPipeline(cache));
+            this.lighters.put(LightMode.SMOOTH, new SmoothLightPipeline(cache, enableDirectionalShading));
+            this.lighters.put(LightMode.FLAT, new FlatLightPipeline(cache, enableDirectionalShading));
         }
     }
 
