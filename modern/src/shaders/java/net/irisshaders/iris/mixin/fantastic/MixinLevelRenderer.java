@@ -1,6 +1,7 @@
 package net.irisshaders.iris.mixin.fantastic;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.culling.Frustum;
 import org.joml.Matrix4f;
@@ -61,8 +62,15 @@ public class MixinLevelRenderer {
 
         if (isRendering) {
             minecraft.particleEngine.render(poseStack, bufferSource, lightTexture, camera, f /*? if forgelike {*/, vanillaFrustum /*?}*/);
+
+            // Workaround: Restore some render state that modded particles tend to break.
+            celeritas$restoreNormalRenderState();
         }
 	}
+
+    private void celeritas$restoreNormalRenderState() {
+        RenderSystem.enableCull();
+    }
 
     @Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=particles"))
     private void iris$setRenderingPhaseForVanillaParticles(CallbackInfo ci) {
