@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
-//? if >=1.18 {
+//? if >=1.18 <=1.21.4 {
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;

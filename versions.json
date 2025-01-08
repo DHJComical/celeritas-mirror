@@ -14,8 +14,9 @@
       "loaders": ["fabric", "forge", "neoforge"]
     },
     {
-      "friendlyName": "1.21.4",
-      "loaders": ["fabric","neoforge"]
+      "friendlyName": "25w02a",
+      "semanticName": "1.21.5-alpha.25.2.a",
+      "loaders": ["fabric"]
     },
     {
       "friendlyName": "1.19.2",

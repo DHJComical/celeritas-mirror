@@ -113,7 +113,7 @@ public class FluidRenderer {
         this.colorProviderRegistry = colorProviderRegistry;
 
         //? if >=1.18 {
-        this.doVanillaRenderedFluidsExist = net.minecraft.core.registries.BuiltInRegistries.FLUID.getTag(EmbeddiumTags.RENDERS_WITH_VANILLA).filter(t -> t.size() > 0).isPresent();
+        this.doVanillaRenderedFluidsExist = net.minecraft.core.registries.BuiltInRegistries.FLUID.getTagOrEmpty(EmbeddiumTags.RENDERS_WITH_VANILLA).iterator().hasNext();
         //?} else
         /*this.doVanillaRenderedFluidsExist = false;*/
     }
@@ -175,7 +175,10 @@ public class FluidRenderer {
 
             VoxelShape threshold = Shapes.box(0.0D, 0.0D, 0.0D, 1.0D, height, 1.0D);
 
+            //? if <=1.21.4 {
             return !Shapes.blockOccudes(threshold, shape, dir);
+            //?} else
+            /*return !Shapes.blockOccludes(threshold, shape, dir);*/
         }
 
         return true;

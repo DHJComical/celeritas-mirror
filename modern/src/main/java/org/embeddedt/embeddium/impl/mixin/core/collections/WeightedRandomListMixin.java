@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.core.collections;
 
-//? if >=1.21.2 {
+//? if >=1.21.2 <=1.21.4 {
 /*import com.google.common.collect.ImmutableList;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedEntry;

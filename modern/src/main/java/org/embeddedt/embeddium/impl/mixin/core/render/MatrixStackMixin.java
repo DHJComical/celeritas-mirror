@@ -17,15 +17,15 @@ import java.util.Deque;
 
 @Mixin(value = PoseStack.class, priority = 900)
 public abstract class MatrixStackMixin implements CachingPoseStack {
+    private int cacheEnabled = 0;
+
+    //? if <=1.21.4 {
     @Shadow
     @Final
     private Deque<PoseStack.Pose> poseStack;
 
     @Unique
     private final Deque<PoseStack.Pose> cache = new ArrayDeque<>();
-
-    private int cacheEnabled = 0;
-
 
     /**
      * @author JellySquid
@@ -70,6 +70,7 @@ public abstract class MatrixStackMixin implements CachingPoseStack {
             this.cache.addLast(pose);
         }
     }
+    //?}
 
     @Override
     public void embeddium$setCachingEnabled(boolean flag) {
