@@ -1,5 +1,6 @@
 package net.irisshaders.iris.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -11,34 +12,32 @@ import net.minecraftforge.client.ChunkRenderTypeSet;
 /*import net.neoforged.neoforge.client.ChunkRenderTypeSet;*/
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
 
 @Mixin(ItemBlockRenderTypes.class)
 public class MixinItemBlockRenderTypes {
-    @Inject(method = "getChunkRenderType", at = @At("HEAD"), cancellable = true)
-    private static void iris$setCustomRenderType(BlockState arg, CallbackInfoReturnable<RenderType> cir) {
+    @ModifyExpressionValue(method = "getChunkRenderType", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
+    private static Object iris$setCustomRenderType(Object defaultRenderType, BlockState state) {
         Map<Block, RenderType> idMap = WorldRenderingSettings.INSTANCE.getBlockTypeIds();
         if (idMap != null) {
-            RenderType type = idMap.get(arg.getBlock());
-            if (type != null) {
-                cir.setReturnValue(type);
-            }
+            RenderType type = idMap.get(state.getBlock());
+            return type != null ? type : defaultRenderType;
+        } else {
+            return defaultRenderType;
         }
     }
 
     //? if forgelike {
-	@Inject(method = "getRenderLayers", at = @At("HEAD"), cancellable = true)
-	private static void iris$setCustomRenderTypeForge(BlockState arg, CallbackInfoReturnable<ChunkRenderTypeSet> cir) {
-		Map<Block, RenderType> idMap = WorldRenderingSettings.INSTANCE.getBlockTypeIds();
-		if (idMap != null) {
-			RenderType type = idMap.get(arg.getBlock());
-			if (type != null) {
-				cir.setReturnValue(ChunkRenderTypeSet.of(type));
-			}
-		}
-	}
+    @ModifyExpressionValue(method = "getRenderLayers", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
+    private static Object iris$setCustomRenderTypeForge(Object defaultRenderType, BlockState state) {
+        Map<Block, RenderType> idMap = WorldRenderingSettings.INSTANCE.getBlockTypeIds();
+        if (idMap != null) {
+            RenderType type = idMap.get(state.getBlock());
+            return type != null ? ChunkRenderTypeSet.of(type) : defaultRenderType;
+        } else {
+            return defaultRenderType;
+        }
+    }
     //?}
 }
