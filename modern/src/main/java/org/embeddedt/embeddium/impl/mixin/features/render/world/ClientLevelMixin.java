@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.world;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -41,6 +43,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -98,9 +101,6 @@ public abstract class ClientLevelMixin extends Level {
     private final Consumer<AmbientParticleSettings> embeddium$particleSettingsConsumer = settings -> lambda$doAnimateTick$4(embeddium$particlePos, settings);
     *///?}
 
-    @Shadow
-    protected void trySpawnDripParticles(BlockPos p_104690_, BlockState p_104691_, ParticleOptions p_104692_, boolean p_104693_) { throw new AssertionError(); }
-
 
     //? if >=1.19 {
     @Redirect(method = "animateTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/RandomSource;create()Lnet/minecraft/util/RandomSource;"))
@@ -116,60 +116,12 @@ public abstract class ClientLevelMixin extends Level {
 
     /**
      * @author embeddedt
-     * @reason Avoid allocations & do some misc optimizations. Partially based on old Sodium 0.2 mixin
+     * @reason Avoid INVOKEDYNAMIC
      */
-    @Overwrite
-    public void doAnimateTick(int xCenter, int yCenter, int zCenter, int radius, /*$ rng >>*/ RandomSource random,
-                              //? if >=1.18 {
-                              @Nullable Block markerBlock,
-                              //?} else if >=1.17 {
-                              /*@Nullable ClientLevel.MarkerParticleStatus markerParticleStatus,
-                              *///?} else
-                              /*boolean showMarker,*/
-                              BlockPos.MutableBlockPos pos) {
-        int x = xCenter + (random.nextInt(radius) - random.nextInt(radius));
-        int y = yCenter + (random.nextInt(radius) - random.nextInt(radius));
-        int z = zCenter + (random.nextInt(radius) - random.nextInt(radius));
-
-        pos.set(x, y, z);
-
-        BlockState blockState = this.getBlockState(pos);
-
-        blockState.getBlock().animateTick(blockState, this, pos, random);
-
-        FluidState fluidState = blockState.getFluidState();
-
-        if (!fluidState.isEmpty()) {
-            fluidState.animateTick(this, pos, random);
-            ParticleOptions particleoptions = fluidState.getDripParticle();
-            if (particleoptions != null && random.nextInt(10) == 0) {
-                boolean flag = blockState.isFaceSturdy(this, pos, Direction.DOWN);
-                BlockPos blockpos = pos.below();
-                this.trySpawnDripParticles(blockpos, this.getBlockState(blockpos), particleoptions, flag);
-            }
-        }
-
-        //? if >=1.18 {
-        if (blockState.getBlock() == markerBlock) {
-            this.addParticle(new BlockParticleOption(ParticleTypes.BLOCK_MARKER, blockState), (double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, 0.0D, 0.0D, 0.0D);
-        }
-        //?} else if >=1.17 {
-        /*if (markerParticleStatus != null && blockState.getBlock() == markerParticleStatus.block) {
-            this.addParticle(markerParticleStatus.particle, (double)x + 0.5D, (double)y + 0.5D, (double)z + 0.5D, 0.0D, 0.0D, 0.0D);
-        }
-        *///?} else {
-        /*if (showMarker && blockState.getBlock() == Blocks.BARRIER) {
-            this.addParticle(ParticleTypes.BARRIER, (double)x + 0.5, (double)y + 0.5, (double)z + 0.5, 0.0, 0.0, 0.0);
-        }
-        *///?}
-
-        //? if >=1.16 {
-        if (!blockState.isCollisionShapeFullBlock(this, pos)) {
-            // This dance looks ridiculous over just calling the lambda, but it's needed because mod mixins target the ifPresent call.
-            // The important part (skipping the allocation) still happens.
-            embeddium$particlePos = pos;
-            this.getBiome(pos) /*? if >=1.18.2 {*/.value()/*?}*/.getAmbientParticle().ifPresent(embeddium$particleSettingsConsumer);
-        }
-        //?}
+    @ModifyExpressionValue(method = "doAnimateTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/biome/Biome;getAmbientParticle()Ljava/util/Optional;"))
+    private Optional<AmbientParticleSettings> celeritas$setupForAnimateTickLambdaReplacement(Optional<AmbientParticleSettings> settingsOpt, @Local(ordinal = 0, argsOnly = true) BlockPos.MutableBlockPos pos) {
+        // Save the position so it can be accessed inside the capture
+        embeddium$particlePos = pos;
+        return settingsOpt;
     }
 }
