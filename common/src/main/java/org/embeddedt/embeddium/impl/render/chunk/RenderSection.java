@@ -338,7 +338,7 @@ public class RenderSection {
     }
 
     public void setTranslucencySortStates(@NotNull Map<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> sortStates) {
-        this.translucencySortStates = sortStates;
+        this.translucencySortStates = Map.copyOf(sortStates);
 
         TranslucentQuadAnalyzer.Level level = TranslucentQuadAnalyzer.Level.NONE;
         boolean needsDynamicSorting = false;
