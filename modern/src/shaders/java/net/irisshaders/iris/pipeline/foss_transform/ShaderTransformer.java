@@ -108,12 +108,25 @@ public class ShaderTransformer {
 
     private static final Pattern versionPattern = Pattern.compile("#version\\s+(\\d+)(?:\\s+(\\w+))?");
 
-    private static final List<String> fullReservedWords = new ArrayList<>();
     private static final Map<Integer, List<String>> versionedReservedWords = new HashMap<>();;
 
     static {
-        fullReservedWords.add("texture");
         versionedReservedWords.put(400, List.of("sample"));
+    }
+
+    private static final Pattern texturePattern = Pattern.compile("\\btexture\\s*\\(|(\\btexture\\b)");
+
+    private static String replaceTexture(String input) {
+        var matcher = texturePattern.matcher(input);
+
+        StringBuilder builder = new StringBuilder();
+        while (matcher.find()) {
+            String texMatch = matcher.group(1);
+            matcher.appendReplacement(builder, texMatch != null ? matcher.group(0).replaceFirst(Pattern.quote(texMatch), "iris_renamed_texture") : matcher.group(0));
+        }
+        matcher.appendTail(builder);
+
+        return builder.toString();
     }
 
     private static <P extends Parameters> Map<PatchShaderType, String> transformInternal(String name, EnumMap<PatchShaderType, String> inputs, Patch patchType, P parameters) {
@@ -156,10 +169,9 @@ public class ShaderTransformer {
             // This handles some reserved keywords which cause the AST parser to fail
             // but aren't necessarily invalid for GLSL versions prior to 400. This simple
             // renames the matching strings and prefixes them with iris_renamed_
-            for (String reservedWord : fullReservedWords) {
-                String newName = "iris_renamed_" + reservedWord;
-                input = input.replaceAll("\\b" + reservedWord + "\\b", newName);
-            }
+
+            input = replaceTexture(input);
+
             for (int version : versionedReservedWords.keySet()) {
                 if (versionInt < version) {
                     for (String reservedWord : versionedReservedWords.get(version)) {
