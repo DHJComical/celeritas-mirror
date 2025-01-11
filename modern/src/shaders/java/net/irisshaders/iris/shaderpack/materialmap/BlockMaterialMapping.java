@@ -4,14 +4,18 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.*;
 import net.irisshaders.iris.Iris;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class BlockMaterialMapping {
@@ -56,6 +60,23 @@ public class BlockMaterialMapping {
 		};
 	}
 
+    private static final Reference2BooleanOpenHashMap<Class<? extends Block>> APPEARANCE_CHANGING_BLOCKS = new Reference2BooleanOpenHashMap<>();
+
+    private static boolean isAppearanceChangingBlock(Block block) {
+        return APPEARANCE_CHANGING_BLOCKS.computeIfAbsent(block.getClass(), (Class<? extends Block> clz) -> {
+            Method m;
+            try {
+                m = clz.getMethod("getAppearance", BlockState.class, BlockAndTintGetter.class, BlockPos.class, Direction.class, BlockState.class, BlockPos.class);
+            } catch(ReflectiveOperationException e) {
+                return false;
+            }
+            //? if forge {
+            return m.getDeclaringClass() != net.minecraftforge.common.extensions.IForgeBlock.class;
+            //?} else
+            /*return false;*/
+        });
+    }
+
 	private static void addBlockStates(BlockEntry entry, Object2IntMap<BlockState> idMap, int intId) {
 		NamespacedId id = entry.id();
 		ResourceLocation resourceLocation;
@@ -71,6 +92,12 @@ public class BlockMaterialMapping {
 		if (block == Blocks.AIR) {
 			return;
 		}
+
+        if (isAppearanceChangingBlock(block)) {
+            Iris.logger.warn("Warning while parsing the block ID map entry for \"" + "block." + intId + "\":");
+            Iris.logger.warn("- The block {} can change appearance, skipping!", resourceLocation);
+            return;
+        }
 
 		Map<String, String> propertyPredicates = entry.propertyPredicates();
 
