@@ -25,8 +25,12 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ModelTextureAnalyzer {
+    /**
+     * Whether or not to use multithreading for texture analysis. Disabled by default as this appears to dramatically
+     * slow down analysis with dynamic model loading.
+     */
+    private static final boolean USE_MULTITHREADING = false;
     private final List<AnalyzerThread> threads;
-    private final Object2IntMap<BlockState> blockStateIds;
 
     private static List<ImmutableList<BlockState>> getBlockStateGroups(Object2IntMap<BlockState> blockStateIds) {
         Object2ObjectMap<Block, List<BlockState>> statesByBlock = new Object2ObjectOpenHashMap<>();
@@ -48,9 +52,7 @@ public class ModelTextureAnalyzer {
     }
 
     ModelTextureAnalyzer(Object2IntMap<BlockState> blockStateIds) {
-        this.blockStateIds = blockStateIds;
-
-        int numThreads = Runtime.getRuntime().availableProcessors();
+        int numThreads = USE_MULTITHREADING ? Runtime.getRuntime().availableProcessors() : 1;
 
         this.threads = new ArrayList<>(numThreads);
 
