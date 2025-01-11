@@ -82,16 +82,15 @@ public class Iris {
 	private static IrisConfig irisConfig;
 	private static FileSystem zipFileSystem;
 
-	private static KeyMapping reloadKeybind;
-	private static KeyMapping toggleShadersKeybind;
-	private static KeyMapping shaderpackScreenKeybind;
-	private static KeyMapping wireframeKeybind;
+	public static KeyMapping reloadKeybind;
+    public static KeyMapping toggleShadersKeybind;
+    public static KeyMapping shaderpackScreenKeybind;
+    public static KeyMapping wireframeKeybind;
 	// Flag variable used when reloading
 	// Used in favor of queueDefaultShaderPackOptionValues() for resetting as the
 	// behavior is more concrete and therefore is more likely to repair a user's issues
 	private static boolean resetShaderPackOptions = false;
 
-	private static String IRIS_VERSION;
 	private static boolean fallback;
 	private static boolean loadPackWhenPossible = false;
 	private static boolean renderSystemInit = false;
@@ -103,10 +102,6 @@ public class Iris {
 	public static boolean isPackInUseQuick() {
 		return pipelineManager.getPipelineNullable() instanceof IrisRenderingPipeline;
 	}
-
-    public static void forgeModInit() {
-        IRIS_VERSION = Celeritas.getVersion();
-    }
 
 	/**
 	 * Called once RenderSystem#initRenderer has completed. This means that we can safely access OpenGL.
@@ -656,11 +651,7 @@ public class Iris {
 	}
 
 	public static String getVersion() {
-		if (IRIS_VERSION == null) {
-			return "Version info unknown!";
-		}
-
-		return IRIS_VERSION;
+		return Celeritas.getVersion();
 	}
 
 	public static String getFormattedVersion() {
