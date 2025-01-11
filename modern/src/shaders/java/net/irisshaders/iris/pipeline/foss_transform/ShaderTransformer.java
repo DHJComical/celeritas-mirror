@@ -31,13 +31,9 @@ import org.taumc.glsl.grammar.GLSLLexer;
 import org.taumc.glsl.grammar.GLSLParser;
 import org.taumc.glsl.grammar.GLSLPreParser;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ShaderTransformer {
     static String tab = "";
@@ -110,6 +106,16 @@ public class ShaderTransformer {
 
     private static final Stopwatch CUMULATIVE_WATCH = Stopwatch.createUnstarted();
 
+    private static final Pattern versionPattern = Pattern.compile("#version\\s+(\\d+)(?:\\s+(\\w+))?");
+
+    private static final List<String> fullReservedWords = new ArrayList<>();
+    private static final Map<Integer, List<String>> versionedReservedWords = new HashMap<>();;
+
+    static {
+        fullReservedWords.add("texture");
+        versionedReservedWords.put(400, List.of("sample"));
+    }
+
     private static <P extends Parameters> Map<PatchShaderType, String> transformInternal(String name, EnumMap<PatchShaderType, String> inputs, Patch patchType, P parameters) {
         EnumMap<PatchShaderType, String> result = new EnumMap<>(PatchShaderType.class);
         EnumMap<PatchShaderType, Transformer> types = new EnumMap<>(PatchShaderType.class);
@@ -124,29 +130,48 @@ public class ShaderTransformer {
                 continue;
             }
 
-            var parsedShader = ShaderParser.parseShader(inputs.get(type));
-            var pre = parsedShader.pre();
-            var translationUnit = parsedShader.full();
-            var preparsed = pre.compiler_directive();
-            String profile = null;
-            String versionString = null;
-            GLSLPreParser.Compiler_directiveContext version = null;
-            for (var entry: preparsed) {
-                if (entry.version_directive() != null) {
-                    version = entry;
-                    if (entry.version_directive().number() != null) {
-                        versionString = entry.version_directive().number().getText();
-                    }
-                    if (entry.version_directive().profile() != null) {
-                        profile = entry.version_directive().profile().getText();
-                    }
-                }
+            String input = inputs.get(type);
+
+            Matcher matcher = versionPattern.matcher(input);
+            if (!matcher.find()) {
+                throw new IllegalArgumentException("No #version directive found in source code!");
             }
-            pre.children.remove(version);
+
+            String versionString = matcher.group(1);
             if (versionString == null) {
                 continue;
             }
-            String profileString = "#version " + versionString + " " + profile;
+
+            String profile = "";
+            int versionInt = Integer.parseInt(versionString);
+            if (versionInt >= 150) {
+                profile = matcher.group(2);
+                if (profile == null) {
+                    profile = "core";
+                }
+            }
+
+            String profileString = "#version " + versionString + " " + profile + "\n";
+
+            // This handles some reserved keywords which cause the AST parser to fail
+            // but aren't necessarily invalid for GLSL versions prior to 400. This simple
+            // renames the matching strings and prefixes them with iris_renamed_
+            for (String reservedWord : fullReservedWords) {
+                String newName = "iris_renamed_" + reservedWord;
+                input = input.replaceAll("\\b" + reservedWord + "\\b", newName);
+            }
+            for (int version : versionedReservedWords.keySet()) {
+                if (versionInt < version) {
+                    for (String reservedWord : versionedReservedWords.get(version)) {
+                        String newName = "iris_renamed_" + reservedWord;
+                        input = input.replaceAll("\\b" + reservedWord + "\\b", newName);
+                    }
+                }
+            }
+
+            var parsedShader = ShaderParser.parseShader(input);
+            var translationUnit = parsedShader.full();
+
             var transformer = new Transformer(translationUnit);
             if (Objects.requireNonNull(parameters.patch) == Patch.COMPUTE) {
                 commonPatch(transformer, parameters, true);
@@ -193,7 +218,7 @@ public class ShaderTransformer {
             }
             CompTransformer.transformEach(transformer, parameters);
             types.put(type, transformer);
-            prepatched.put(type, getFormattedShader(pre, profileString));
+            prepatched.put(type, profileString);
         }
         CompTransformer.transformGrouped(types, parameters);
         for (var entry : types.entrySet()) {
