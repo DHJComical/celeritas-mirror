@@ -340,7 +340,7 @@ public class ShaderTransformer {
 
         if (parameters.type.glShaderType == ShaderType.FRAGMENT) {
             if (root.containsCall("gl_FragColor")) {
-                root.rename("gl_FragColor", "gl_FragData[0]");
+                root.replaceExpression("gl_FragColor", "gl_FragData[0]", GLSLParser::unary_expression);
             }
 
             if (root.containsCall("gl_TexCoord")) {
