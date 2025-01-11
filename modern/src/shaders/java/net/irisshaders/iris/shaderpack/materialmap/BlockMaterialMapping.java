@@ -1,28 +1,16 @@
 package net.irisshaders.iris.shaderpack.materialmap;
 
-import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.*;
 import net.irisshaders.iris.Iris;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
-import net.minecraftforge.client.model.data.ModelData;
-import org.embeddedt.embeddium.impl.util.DirectionUtil;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -54,87 +42,6 @@ public class BlockMaterialMapping {
 
 		return blockTypeIds;
 	}
-
-    private static final RandomSource RANDOM = new SingleThreadedRandomSource(42L);
-
-    public static Object2IntMap<TextureAtlasSprite> createFallbackTextureMaterialMap(Object2IntMap<BlockState> blockStateIds) {
-        if (blockStateIds == null) {
-            return null;
-        }
-
-        var modelShaper = Minecraft.getInstance().getModelManager().getBlockModelShaper();
-
-        Object2ObjectMap<TextureAtlasSprite, Int2IntMap> votingMap = new Object2ObjectOpenHashMap<>();
-        Object2ObjectMap<Block, List<BlockState>> statesByBlock = new Object2ObjectOpenHashMap<>();
-
-        // Group states by block. This means that all models for the same block will be retrieved at once, which may
-        // help dynamic model loading implementations.
-        for (var state : blockStateIds.keySet()) {
-            statesByBlock.computeIfAbsent(state.getBlock(), b -> new ArrayList<>(2)).add(state);
-        }
-
-        for (var stateList : statesByBlock.values()) {
-            for (var state : stateList) {
-                var model = modelShaper.getBlockModel(state);
-                var materialId = blockStateIds.getInt(state);
-
-                try {
-                    for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
-                        conductVoting(model, state, direction, votingMap, materialId);
-                    }
-
-                    conductVoting(model, state, null, votingMap, materialId);
-                } catch (Exception ignored) {
-                    // No problem, we'll just skip this block.
-                    break;
-                }
-            }
-        }
-
-        Object2IntMap<TextureAtlasSprite> finalMap = new Object2IntOpenHashMap<>();
-
-        var entryComparator = Comparator.comparingInt(Int2IntMap.Entry::getIntValue);
-
-        for (var entry : Object2ObjectMaps.fastIterable(votingMap)) {
-            Int2IntMap.Entry highestEntry;
-
-            if (entry.getValue().size() == 1) {
-                highestEntry = entry.getValue().int2IntEntrySet().iterator().next();
-            } else {
-                highestEntry = entry.getValue().int2IntEntrySet().stream().max(entryComparator).orElseThrow();
-            }
-
-            finalMap.put(entry.getKey(), highestEntry.getIntKey());
-        }
-
-        return finalMap;
-    }
-
-    private static void conductVoting(BakedModel model, BlockState state, @Nullable Direction direction, Object2ObjectMap<TextureAtlasSprite, Int2IntMap> votingMap, int vote) {
-        RANDOM.setSeed(42L);
-        //? if forge
-        List<BakedQuad> quadList = model.getQuads(state, direction, RANDOM, net.minecraftforge.client.model.data.ModelData.EMPTY, null);
-        //? if neoforge
-        /*List<BakedQuad> quadList = model.getQuads(state, direction, RANDOM, net.neoforged.neoforge.client.model.data.ModelData.EMPTY, null);*/
-        //? if fabric
-        /*List<BakedQuad> quadList = model.getQuads(state, direction, RANDOM);*/
-
-        //noinspection ForLoopReplaceableByForEach
-        for (int i = 0; i < quadList.size(); i++) {
-            var quad = quadList.get(i);
-            var sprite = quad.getSprite();
-
-            if (sprite != null) {
-                var votes = votingMap.get(sprite);
-                if (votes == null) {
-                    votes = new Int2IntArrayMap();
-                    votingMap.put(sprite, votes);
-                }
-
-                votes.mergeInt(vote, 1, Integer::sum);
-            }
-        }
-    }
 
 	private static RenderType convertBlockToRenderType(BlockRenderType type) {
 		if (type == null) {
