@@ -31,6 +31,7 @@
     "MixinLevelRenderer",
     "MixinLightningBoltRenderer",
     "MixinLightTexture",
+    "MixinMinecraft_Keybinds",
     "MixinMinecraft_PipelineManagement",
     "MixinModelViewBobbing",
     "MixinOptions_Entrypoint",

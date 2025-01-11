@@ -3,6 +3,8 @@ package net.irisshaders.iris;
 import com.google.common.base.Throwables;
 import com.mojang.blaze3d.platform.GlDebug;
 import com.mojang.blaze3d.platform.InputConstants;
+//? if fabric
+/*import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;*/
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.compat.sodium.impl.options.IrisSodiumOptions;
 import net.irisshaders.iris.config.IrisConfig;
@@ -721,6 +723,13 @@ public class Iris {
 		toggleShadersKeybind = new KeyMapping("iris.keybind.toggleShaders", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, "iris.keybinds");
 		shaderpackScreenKeybind = new KeyMapping("iris.keybind.shaderPackSelection", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_O, "iris.keybinds");
 		wireframeKeybind = new KeyMapping("iris.keybind.wireframe", InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), "iris.keybinds");
+
+        //? if fabric {
+        /*KeyBindingHelper.registerKeyBinding(net.irisshaders.iris.Iris.reloadKeybind);
+        KeyBindingHelper.registerKeyBinding(net.irisshaders.iris.Iris.shaderpackScreenKeybind);
+        KeyBindingHelper.registerKeyBinding(net.irisshaders.iris.Iris.toggleShadersKeybind);
+        KeyBindingHelper.registerKeyBinding(net.irisshaders.iris.Iris.wireframeKeybind);
+        *///?}
 
 		DHCompat.run();
 

@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.impl;
 import net.minecraft.client.Minecraft;
 
 //? if forge && >=1.18 {
-import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.fml.IExtensionPoint;
@@ -120,7 +119,6 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
             ev.register(net.irisshaders.iris.Iris.toggleShadersKeybind);
             ev.register(net.irisshaders.iris.Iris.wireframeKeybind);
         });
-        mainEventBus.addListener(((InputEvent.Key ev) -> net.irisshaders.iris.Iris.handleKeybinds(Minecraft.getInstance())));
         //?}
     }
 
@@ -139,10 +137,6 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         }
 
         SpriteFinderCache.registerListener();
-
-        //? if 1.20.1 {
-        net.irisshaders.iris.Iris.forgeModInit();
-        //?}
     }
     *///?}
 
