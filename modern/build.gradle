@@ -127,7 +127,7 @@ java {
 
 def skippedFabricApiModules = ["fabric-renderer-api-v1", "fabric-renderer-indigo"]
 
-def shadersEnabled = project.name.startsWith("1.20.1-") || project.name.startsWith("1.20.4-") || project.name.startsWith("1.20.6-") || project.name.startsWith("1.21.1-")
+def shadersEnabled = project.name.startsWith("1.20.1-") || project.name.startsWith("1.20.4-") || project.name.startsWith("1.20.6-")
 
 configurations {
     modCompileOnly
@@ -151,10 +151,16 @@ sourceSets {
                 srcDirs += "src/shaders/resources"
             }
         }
+        java {
+            srcDirs += "src/batching/java"
+        }
+        resources {
+            srcDirs += "src/batching/resources"
+        }
     }
 }
 
-def modMixinConfigs = ["embeddium.mixins.json"]
+def modMixinConfigs = ["embeddium.mixins.json", "oculus-batched-entity-rendering.mixins.json"]
 
 if (shadersEnabled) {
     modMixinConfigs.addAll([
@@ -163,7 +169,6 @@ if (shadersEnabled) {
             "mixins.oculus.vertexformat.json",
             "mixins.oculus.bettermipmaps.json",
             "mixins.oculus.fixes.maxfpscrash.json",
-            "oculus-batched-entity-rendering.mixins.json",
             "mixins.oculus.compat.sodium.json",
             "mixins.oculus.compat.indigo.json",
             "mixins.oculus.compat.indium.json",

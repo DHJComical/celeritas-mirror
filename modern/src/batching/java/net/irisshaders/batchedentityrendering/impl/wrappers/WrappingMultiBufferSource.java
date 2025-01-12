@@ -1,4 +1,4 @@
-package net.irisshaders.iris.layer;
+package net.irisshaders.batchedentityrendering.impl.wrappers;
 
 import net.minecraft.client.renderer.RenderType;
 

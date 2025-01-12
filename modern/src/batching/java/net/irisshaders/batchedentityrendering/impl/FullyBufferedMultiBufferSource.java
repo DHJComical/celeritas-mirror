@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.irisshaders.batchedentityrendering.impl.ordering.GraphTranslucencyRenderOrderManager;
 import net.irisshaders.batchedentityrendering.impl.ordering.RenderOrderManager;
-import net.irisshaders.iris.layer.WrappingMultiBufferSource;
+import net.irisshaders.batchedentityrendering.impl.wrappers.WrappingMultiBufferSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -91,12 +91,14 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 
 		var buffer = builders[affinity].getBuffer(renderType);
 
+        //? if <1.21 {
         if (buffer instanceof ExtendedBufferBuilder bufferBuilderExt) {
             var replacement = bufferBuilderExt.sodium$getDelegate();
             if (replacement != null) {
                 return replacement;
             }
         }
+        //?}
 
         return buffer;
 	}

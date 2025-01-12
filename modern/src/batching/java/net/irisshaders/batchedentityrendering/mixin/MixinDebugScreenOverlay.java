@@ -2,7 +2,6 @@ package net.irisshaders.batchedentityrendering.mixin;
 
 import net.irisshaders.batchedentityrendering.impl.BatchingDebugMessageHelper;
 import net.irisshaders.batchedentityrendering.impl.DrawCallTrackingRenderBuffers;
-import net.irisshaders.iris.Iris;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,7 +25,7 @@ public abstract class MixinDebugScreenOverlay {
 		DrawCallTrackingRenderBuffers drawTracker = (DrawCallTrackingRenderBuffers) Minecraft.getInstance().renderBuffers();
 
 		// blank line separator
-		if (Iris.getIrisConfig().areDebugOptionsEnabled()) {
+		if (true) { // TODO Iris.getIrisConfig().areDebugOptionsEnabled()) {
 			messages.add("");
 			messages.add("[Entity Batching] " + BatchingDebugMessageHelper.getDebugMessage(drawTracker));
 		}

@@ -1,4 +1,4 @@
-package net.irisshaders.iris.gl.uniform;
+package net.irisshaders.iris.parsing;
 
 public enum UniformType {
 	INT,
