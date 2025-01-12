@@ -7,6 +7,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.irisshaders.iris.features.FeatureFlags;
+import net.irisshaders.iris.gl.GLDebug;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.buffer.ShaderStorageBufferHolder;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
@@ -221,6 +222,7 @@ public class FinalPassRenderer {
 		if (this.finalPass != null) {
 			// If there is a final pass, we use the shader-based full screen quad rendering pathway instead
 			// of just copying the color buffer.
+            GLDebug.pushGroup(990, "final");
 
 			colorHolder.bind();
 
@@ -252,6 +254,7 @@ public class FinalPassRenderer {
 			FullScreenQuadRenderer.INSTANCE.renderQuad();
 
 			FullScreenQuadRenderer.INSTANCE.end();
+            GLDebug.popGroup();
 		} else {
 			// If there are no passes, we somehow need to transfer the content of the Iris color render targets into
 			// the main Minecraft framebuffer.

@@ -327,6 +327,8 @@ public final class GLDebug {
 	}
 
 	private static class KHRDebugState implements DebugState {
+        // Let's see how bad this goes
+        private static final boolean ENABLE_DEBUG_GROUPS = true;
 		private int stackSize;
 
 		@Override
@@ -336,12 +338,18 @@ public final class GLDebug {
 
 		@Override
 		public void pushGroup(int id, String name) {
+            if (!ENABLE_DEBUG_GROUPS) {
+                return;
+            }
 			KHRDebug.glPushDebugGroup(KHRDebug.GL_DEBUG_SOURCE_APPLICATION, id, name);
 			stackSize += 1;
 		}
 
 		@Override
 		public void popGroup() {
+            if (!ENABLE_DEBUG_GROUPS) {
+                return;
+            }
 			if (stackSize != 0) {
 				KHRDebug.glPopDebugGroup();
 				stackSize -= 1;

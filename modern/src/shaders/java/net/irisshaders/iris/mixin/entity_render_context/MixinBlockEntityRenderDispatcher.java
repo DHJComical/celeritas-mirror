@@ -7,6 +7,7 @@ import net.irisshaders.iris.layer.BlockEntityRenderStateShard;
 import net.irisshaders.iris.layer.OuterWrappedRenderType;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
+import net.irisshaders.iris.vertices.ImmediateState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -48,7 +49,7 @@ public class MixinBlockEntityRenderDispatcher {
 
 		Object2IntMap<BlockState> blockStateIds = WorldRenderingSettings.INSTANCE.getBlockStateIds();
 
-		if (blockStateIds == null) {
+		if (blockStateIds == null || !ImmediateState.isRenderingLevel) {
 			return bufferSource;
 		}
 

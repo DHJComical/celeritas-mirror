@@ -11,9 +11,11 @@ import net.irisshaders.batchedentityrendering.impl.MemoryTrackingRenderBuffers;
 import net.irisshaders.batchedentityrendering.impl.RenderBuffersExt;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.compat.dh.DHCompat;
+import net.irisshaders.iris.gl.GLDebug;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.mixin.LevelRendererAccessor;
+import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
 import net.irisshaders.iris.shaderpack.properties.PackDirectives;
 import net.irisshaders.iris.shaderpack.properties.PackShadowDirectives;
@@ -72,6 +74,7 @@ public class ShadowRenderer {
 	private final ShadowRenderTargets targets;
 	private final ShadowCullState packCullingState;
 	private final ShadowCompositeRenderer compositeRenderer;
+    private final IrisRenderingPipeline pipeline;
 	private final boolean shouldRenderTerrain;
 	private final boolean shouldRenderTranslucent;
 	private final boolean shouldRenderEntities;
@@ -92,9 +95,10 @@ public class ShadowRenderer {
 	private int renderedShadowEntities = 0;
 	private int renderedShadowBlockEntities = 0;
 
-	public ShadowRenderer(ProgramSource shadow, PackDirectives directives,
-						  ShadowRenderTargets shadowRenderTargets, ShadowCompositeRenderer compositeRenderer, CustomUniforms customUniforms, boolean separateHardwareSamplers) {
+	public ShadowRenderer(IrisRenderingPipeline pipeline, ProgramSource shadow, PackDirectives directives,
+                          ShadowRenderTargets shadowRenderTargets, ShadowCompositeRenderer compositeRenderer, CustomUniforms customUniforms, boolean separateHardwareSamplers) {
 
+        this.pipeline = pipeline;
 		this.separateHardwareSamplers = separateHardwareSamplers;
 
 		final PackShadowDirectives shadowDirectives = directives.getShadowDirectives();
@@ -570,7 +574,10 @@ public class ShadowRenderer {
 		// Restore the old viewport
 		RenderSystem.viewport(0, 0, client.getMainRenderTarget().width, client.getMainRenderTarget().height);
 
+        pipeline.removePhaseIfNeeded();
+        GLDebug.pushGroup(901, "shadowcomp");
 		compositeRenderer.renderAll();
+        GLDebug.popGroup();
 
 		levelRenderer.setRenderBuffers(playerBuffers);
 
