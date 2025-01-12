@@ -15,6 +15,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
@@ -94,4 +96,18 @@ public class MixinLevelRenderer {
 		((RenderBuffersExt) renderBuffers).endLevelRendering();
 		groupable = null;
 	}
+
+    /**
+     * @author embeddedt
+     * @reason Ensure all batches are flushed, not just the last one, since we batch more things
+     */
+    @Redirect(method = "renderLevel", slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;renderDebug(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/Camera;)V")),
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;endLastBatch()V"))
+    private void batchedentityrendering$endAllBatches(MultiBufferSource.BufferSource bufferSource) {
+        if (bufferSource instanceof FullyBufferedMultiBufferSource) {
+            bufferSource.endBatch();
+        } else {
+            bufferSource.endLastBatch();
+        }
+    }
 }
