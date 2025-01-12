@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.profiling.ProfilerFiller;
+import org.embeddedt.embeddium.impl.render.vertex.buffer.ExtendedBufferBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -88,7 +89,16 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 			affinities.put(renderType, affinity);
 		}
 
-		return builders[affinity].getBuffer(renderType);
+		var buffer = builders[affinity].getBuffer(renderType);
+
+        if (buffer instanceof ExtendedBufferBuilder bufferBuilderExt) {
+            var replacement = bufferBuilderExt.sodium$getDelegate();
+            if (replacement != null) {
+                return replacement;
+            }
+        }
+
+        return buffer;
 	}
 
 	private void removeReady() {
