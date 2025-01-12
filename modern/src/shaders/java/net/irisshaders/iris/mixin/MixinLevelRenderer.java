@@ -143,7 +143,7 @@ public class MixinLevelRenderer {
 	// avoid breaking other mods such as Light Overlay: https://github.com/IrisShaders/Iris/issues/1356
 
 	// Do this before sky rendering so it's ready before the sky render starts.
-	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "renderSky*"))
+	@Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=sky"))
 	private void iris$renderTerrainShadows(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) Camera camera) {
 		pipeline.renderShadows((LevelRendererAccessor) this, camera);
 	}
@@ -153,7 +153,7 @@ public class MixinLevelRenderer {
 		return false;
 	}
 
-	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "renderSky*"))
+	@Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=sky"))
 	private void iris$beginSky(CallbackInfo callback) {
 		// Use CUSTOM_SKY until levelFogColor is called as a heuristic to catch FabricSkyboxes.
 		pipeline.setPhase(WorldRenderingPhase.CUSTOM_SKY);
@@ -203,7 +203,7 @@ public class MixinLevelRenderer {
 		poseStack.mulPose(Axis.ZP.rotationDegrees(pipeline.getSunPathRotation()));
 	}
 
-	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "renderSky*", shift = At.Shift.AFTER))
+	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;renderSky(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V", shift = At.Shift.AFTER))
 	private void iris$endSky(CallbackInfo ci) {
 		pipeline.setPhase(WorldRenderingPhase.NONE);
 	}

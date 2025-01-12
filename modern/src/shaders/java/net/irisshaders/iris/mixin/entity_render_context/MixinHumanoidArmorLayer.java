@@ -36,7 +36,7 @@ public abstract class MixinHumanoidArmorLayer<T extends LivingEntity, M extends 
 		CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getItemIds().applyAsInt(new NamespacedId(location.getNamespace(), location.getPath())));
 	}
 
-	@Inject(method = "renderTrim", at = @At(value = "HEAD"))
+	@Inject(method = "renderTrim*", at = @At(value = "HEAD"))
 	private void changeTrimTemp(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) ArmorTrim pArmorTrim4) {
 		if (WorldRenderingSettings.INSTANCE.getItemIds() == null) return;
 
@@ -44,7 +44,7 @@ public abstract class MixinHumanoidArmorLayer<T extends LivingEntity, M extends 
 		CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getItemIds().applyAsInt(new NamespacedId("minecraft", "trim_" + pArmorTrim4.material().value().assetName())));
 	}
 
-	@Inject(method = "renderTrim", at = @At(value = "TAIL"))
+	@Inject(method = "renderTrim*", at = @At(value = "TAIL"))
 	private void changeTrimTemp2(CallbackInfo ci) {
 		if (WorldRenderingSettings.INSTANCE.getItemIds() == null) return;
 		CapturedRenderingState.INSTANCE.setCurrentRenderedItem(backupValue);
