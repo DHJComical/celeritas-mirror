@@ -1,5 +1,6 @@
 package net.irisshaders.iris.pathways;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.irisshaders.iris.versionutils.ModelTranslucencyHelper;
 import net.minecraft.client.resources.model.BakedModel;
@@ -24,6 +25,8 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.GameType;
 import org.joml.Matrix4f;
+
+import java.util.function.BooleanSupplier;
 
 public class HandRenderer {
 	public static final HandRenderer INSTANCE = new HandRenderer();
@@ -75,14 +78,19 @@ public class HandRenderer {
 		return isHandTranslucent(InteractionHand.MAIN_HAND) || isHandTranslucent(InteractionHand.OFF_HAND);
 	}
 
-	public void renderSolid(PoseStack poseStack, float tickDelta, Camera camera, GameRenderer gameRenderer, WorldRenderingPipeline pipeline) {
-		if (!canRender(camera, gameRenderer) || !IrisApi.getInstance().isShaderPackInUse()) {
+    public enum Stage {
+        SOLID,
+        TRANSLUCENT;
+    }
+
+	public void render(Stage stage, PoseStack poseStack, float tickDelta, Camera camera, GameRenderer gameRenderer, WorldRenderingPipeline pipeline) {
+		if (!canRender(camera, gameRenderer) || (stage == Stage.TRANSLUCENT && !isAnyHandTranslucent()) || !IrisApi.getInstance().isShaderPackInUse()) {
 			return;
 		}
 
 		ACTIVE = true;
 
-		pipeline.setPhase(WorldRenderingPhase.HAND_SOLID);
+		pipeline.setPhase(stage == Stage.SOLID ? WorldRenderingPhase.HAND_SOLID : WorldRenderingPhase.HAND_TRANSLUCENT);
 
 		poseStack.pushPose();
 
@@ -90,7 +98,13 @@ public class HandRenderer {
 
 		setupGlState(gameRenderer, camera, poseStack, tickDelta);
 
-		renderingSolid = true;
+		renderingSolid = stage == Stage.SOLID;
+
+        //? if >=1.20.6 {
+        /*RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().set(poseStack.last().pose());
+        RenderSystem.applyModelViewMatrix();
+        *///?}
 
 		gameRenderer.itemInHandRenderer.renderHandsWithItems(tickDelta, poseStack, bufferSource.getUnflushableWrapper(), Minecraft.getInstance().player, Minecraft.getInstance().getEntityRenderDispatcher().getPackedLightCoords(camera.getEntity(), tickDelta));
 
@@ -102,38 +116,12 @@ public class HandRenderer {
 		gameRenderer.resetProjectionMatrix(CapturedRenderingState.INSTANCE.getGbufferProjection());
 
 		poseStack.popPose();
+        //? if >=1.20.6 {
+        /*RenderSystem.getModelViewStack().popMatrix();
+        RenderSystem.applyModelViewMatrix();
+        *///?}
 
 		renderingSolid = false;
-
-		pipeline.setPhase(WorldRenderingPhase.NONE);
-
-		ACTIVE = false;
-	}
-
-	public void renderTranslucent(PoseStack poseStack, float tickDelta, Camera camera, GameRenderer gameRenderer, WorldRenderingPipeline pipeline) {
-		if (!canRender(camera, gameRenderer) || !isAnyHandTranslucent() || !IrisApi.getInstance().isShaderPackInUse()) {
-			return;
-		}
-
-		ACTIVE = true;
-
-		pipeline.setPhase(WorldRenderingPhase.HAND_TRANSLUCENT);
-
-		poseStack.pushPose();
-
-		Minecraft.getInstance().getProfiler().push("iris_hand_translucent");
-
-		setupGlState(gameRenderer, camera, poseStack, tickDelta);
-
-		gameRenderer.itemInHandRenderer.renderHandsWithItems(tickDelta, poseStack, bufferSource, Minecraft.getInstance().player, Minecraft.getInstance().getEntityRenderDispatcher().getPackedLightCoords(camera.getEntity(), tickDelta));
-
-		poseStack.popPose();
-
-		Minecraft.getInstance().getProfiler().pop();
-
-		gameRenderer.resetProjectionMatrix(CapturedRenderingState.INSTANCE.getGbufferProjection());
-
-		bufferSource.endBatch();
 
 		pipeline.setPhase(WorldRenderingPhase.NONE);
 

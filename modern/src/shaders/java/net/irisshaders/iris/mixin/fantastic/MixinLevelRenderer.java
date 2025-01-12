@@ -39,12 +39,18 @@ public class MixinLevelRenderer {
 	private RenderBuffers renderBuffers;
 
 	@Inject(method = "renderLevel", at = @At("HEAD"))
-	private void iris$resetParticleManagerPhase(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci) {
+	private void iris$resetParticleManagerPhase(CallbackInfo ci) {
 		((PhasedParticleEngine) minecraft.particleEngine).setParticleRenderingPhase(ParticleRenderingPhase.EVERYTHING);
 	}
 
 	@Inject(method = "renderLevel", at = @At(value = "CONSTANT", args = "stringValue=entities"))
-	private void iris$renderOpaqueParticles(PoseStack poseStack, float f, long l, boolean bl, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f projectionMatrix, CallbackInfo ci, @Local(ordinal = 0) Frustum vanillaFrustum) {
+	private void iris$renderOpaqueParticles(CallbackInfo ci, @Local(ordinal = 0) Frustum vanillaFrustum,
+                                            //? if <1.20.6
+                                            @Local(ordinal = 0, argsOnly = true) PoseStack poseStack,
+                                            @Local(ordinal = 0, argsOnly = true) LightTexture lightTexture,
+                                            @Local(ordinal = 0, argsOnly = true) Camera camera,
+                                            @Local(ordinal = 0, argsOnly = true) float f
+                                            ) {
 		minecraft.getProfiler().popPush("opaque_particles");
 
 		MultiBufferSource.BufferSource bufferSource = renderBuffers.bufferSource();
@@ -61,7 +67,7 @@ public class MixinLevelRenderer {
 		}
 
         if (isRendering) {
-            minecraft.particleEngine.render(poseStack, bufferSource, lightTexture, camera, f /*? if forgelike {*/, vanillaFrustum /*?}*/);
+            minecraft.particleEngine.render(/*? if <1.20.6 {*/ poseStack, bufferSource, /*?}*/ lightTexture, camera, f /*? if forgelike {*/, vanillaFrustum /*?}*/);
 
             // Workaround: Restore some render state that modded particles tend to break.
             celeritas$restoreNormalRenderState();

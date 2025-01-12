@@ -247,9 +247,15 @@ public final class CommonUniforms {
 		if (cameraEntity instanceof LivingEntity) {
 			MobEffectInstance darkness = ((LivingEntity) cameraEntity).getEffect(MobEffects.DARKNESS);
 
+            //? if <1.20.6 {
 			if (darkness != null && darkness.getFactorData().isPresent()) {
 				return darkness.getFactorData().get().getFactor((LivingEntity) cameraEntity, CapturedRenderingState.INSTANCE.getTickDelta());
 			}
+            //?} else {
+            /*if (darkness != null) {
+                return darkness.getBlendFactor((LivingEntity) cameraEntity, CapturedRenderingState.INSTANCE.getTickDelta());
+            }
+            *///?}
 		}
 
 		return 0.0F;

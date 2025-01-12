@@ -1,5 +1,6 @@
 package net.irisshaders.iris.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
@@ -9,6 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
 
 /**
  * This Mixin implements support for the ambientOcclusionLevel value. This injection point was chosen because it's
@@ -32,17 +34,12 @@ public abstract class MixinBlockStateBehavior {
 	@Shadow
 	public abstract Block getBlock();
 
-	@Shadow
-	protected abstract BlockState asState();
-
 	/**
 	 * @author IMS
 	 * @reason ambientOcclusionLevel support. Semantically, we're completely changing the meaning of the method.
 	 */
-	@Overwrite
-	@SuppressWarnings("deprecation")
-	public float getShadeBrightness(BlockGetter blockGetter, BlockPos blockPos) {
-		float originalValue = this.getBlock().getShadeBrightness(this.asState(), blockGetter, blockPos);
+	@ModifyReturnValue(method = "getShadeBrightness", at= @At("RETURN"))
+	private float applyAoLevel(float originalValue) {
 		float aoLightValue = WorldRenderingSettings.INSTANCE.getAmbientOcclusionLevel();
 		return 1.0F - aoLightValue * (1.0F - originalValue);
 	}

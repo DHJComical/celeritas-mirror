@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -191,12 +192,15 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 			this.shaderOptionList = null;
 		}
 
+        /*
 		if (inWorld) {
 			this.shaderPackList.setRenderBackground(false);
 			if (shaderOptionList != null) {
 				this.shaderOptionList.setRenderBackground(false);
 			}
 		}
+
+         */
 
 		this.clearWidgets();
 
@@ -268,7 +272,10 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 			);
 
 			showHideButton.setTooltip(Tooltip.create(showOrHide));
+            //? if <1.20.6 {
 			showHideButton.setTooltipDelay(10);
+            //?} else
+            /*showHideButton.setTooltipDelay(Duration.ofSeconds(10));*/
 
 			this.addRenderableWidget(showHideButton);
 		}

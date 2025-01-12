@@ -127,7 +127,9 @@ public class MixinLevelRenderer {
                                      @Local(ordinal = 0, argsOnly = true) GameRenderer gameRenderer,
                                      @Local(ordinal = 0, argsOnly = true) float tickDelta
                                      ) {
-		HandRenderer.INSTANCE.renderTranslucent(poseStack, tickDelta, camera, gameRenderer, pipeline);
+        //? if >=1.20.6
+        /*var poseStack = new PoseStack();*/
+		HandRenderer.INSTANCE.render(HandRenderer.Stage.TRANSLUCENT, poseStack, tickDelta, camera, gameRenderer, pipeline);
 		Minecraft.getInstance().getProfiler().popPush("iris_final");
 		pipeline.finalizeLevelRendering();
 		pipeline = null;
@@ -286,8 +288,10 @@ public class MixinLevelRenderer {
                                         @Local(ordinal = 0, argsOnly = true) Camera camera,
                                         @Local(ordinal = 0, argsOnly = true) GameRenderer gameRenderer,
                                         @Local(ordinal = 0, argsOnly = true) float tickDelta) {
+        //? if >=1.20.6
+        /*var poseStack = new PoseStack();*/
 		pipeline.beginHand();
-		HandRenderer.INSTANCE.renderSolid(poseStack, tickDelta, camera, gameRenderer, pipeline);
+		HandRenderer.INSTANCE.render(HandRenderer.Stage.SOLID, poseStack, tickDelta, camera, gameRenderer, pipeline);
 		Minecraft.getInstance().getProfiler().popPush("iris_pre_translucent");
 		pipeline.beginTranslucents();
 	}

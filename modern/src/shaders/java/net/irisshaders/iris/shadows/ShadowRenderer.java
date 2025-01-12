@@ -139,7 +139,7 @@ public class ShadowRenderer {
 		this.sunPathRotation = directives.getSunPathRotation();
 
         int processors = Runtime.getRuntime().availableProcessors();
-        int threads = Minecraft.getInstance().is64Bit() ? processors : Math.min(processors, 4);
+        int threads = processors;
 		this.buffers = new RenderBuffers(/*? if >=1.20.4 {*//*threads*//*?}*/);
 
 		if (this.buffers instanceof RenderBuffersExt) {
@@ -455,9 +455,15 @@ public class ShadowRenderer {
 
 		// Render all opaque terrain unless pack requests not to
 		if (shouldRenderTerrain) {
+            //? if <1.20.6 {
 			levelRenderer.invokeRenderChunkLayer(RenderType.solid(), modelView, cameraX, cameraY, cameraZ, shadowProjection);
 			levelRenderer.invokeRenderChunkLayer(RenderType.cutout(), modelView, cameraX, cameraY, cameraZ, shadowProjection);
 			levelRenderer.invokeRenderChunkLayer(RenderType.cutoutMipped(), modelView, cameraX, cameraY, cameraZ, shadowProjection);
+            //?} else {
+            /*levelRenderer.invokeRenderChunkLayer(RenderType.solid(), cameraX, cameraY, cameraZ, MODELVIEW, shadowProjection);
+            levelRenderer.invokeRenderChunkLayer(RenderType.cutout(), cameraX, cameraY, cameraZ, MODELVIEW, shadowProjection);
+            levelRenderer.invokeRenderChunkLayer(RenderType.cutoutMipped(), cameraX, cameraY, cameraZ,MODELVIEW, shadowProjection);
+            *///?}
 		}
 
 		// Reset our viewport in case Sodium overrode it
@@ -530,7 +536,10 @@ public class ShadowRenderer {
 		// It doesn't matter a ton, since this just means that they won't be sorted in the normal rendering pass.
 		// Just something to watch out for, however...
 		if (shouldRenderTranslucent) {
+            //? if <1.20.6 {
 			levelRenderer.invokeRenderChunkLayer(RenderType.translucent(), modelView, cameraX, cameraY, cameraZ, shadowProjection);
+            //?} else
+            /*levelRenderer.invokeRenderChunkLayer(RenderType.translucent(), cameraX, cameraY, cameraZ, MODELVIEW, shadowProjection);*/
 		}
 
 		// Note: Apparently tripwire isn't rendered in the shadow pass.
