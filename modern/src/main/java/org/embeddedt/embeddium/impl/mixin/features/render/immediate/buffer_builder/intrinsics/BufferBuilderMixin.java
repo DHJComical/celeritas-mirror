@@ -30,13 +30,14 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
     public void putBulkData(PoseStack.Pose matrices, BakedQuad bakedQuad, float r, float g, float b, float a, int light, int overlay, boolean colorize) {
     *///?} else {
     @Override
-    public void putBulkData(PoseStack.Pose matrices, BakedQuad bakedQuad, float r, float g, float b, int light, int overlay) {
+    public void putBulkData(PoseStack.Pose matrices, BakedQuad bakedQuad, float r, float g, float b, /*? if >=1.20.6 {*/ /*float a, *//*?}*/ int light, int overlay) {
         boolean colorize = true;
+        //? if <1.20.6
         float a = 1.0f;
     //?}
         if (!this.fastFormat) {
             //? if <1.21
-            super.putBulkData(matrices, bakedQuad, r, g, b, light, overlay);
+            super.putBulkData(matrices, bakedQuad, r, g, b, /*? if >=1.20.6 {*/ /*a, *//*?}*/ light, overlay);
             //? if >=1.21 && neoforge
             /*VertexConsumer.super.putBulkData(matrices, bakedQuad, r, g, b, a, light, overlay, colorize);*/
             //? if >=1.21 && !neoforge
@@ -68,13 +69,13 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
     }
 
     @Override
-    public void putBulkData(PoseStack.Pose matrices, BakedQuad bakedQuad, float[] brightnessTable, float r, float g, float b, /*? if >=1.21 {*/ /*float a, *//*?}*/ int[] light, int overlay, boolean colorize) {
-        //? if <1.21
+    public void putBulkData(PoseStack.Pose matrices, BakedQuad bakedQuad, float[] brightnessTable, float r, float g, float b, /*? if >=1.20.6 {*/ /*float a, *//*?}*/ int[] light, int overlay, boolean colorize) {
+        //? if <1.20.6
         float a = 1.0f;
         if (!this.fastFormat) {
             //? if >=1.21
             /*VertexConsumer.*/
-            super.putBulkData(matrices, bakedQuad, brightnessTable, r, g, b, /*? if >=1.21 {*/ /*a, *//*?}*/ light, overlay, colorize);
+            super.putBulkData(matrices, bakedQuad, brightnessTable, r, g, b, /*? if >=1.20.6 {*/ /*a, *//*?}*/ light, overlay, colorize);
 
             SpriteUtil.markSpriteActive(((BakedQuadView)bakedQuad).getSprite());
 

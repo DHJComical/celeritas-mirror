@@ -53,7 +53,7 @@ public abstract class MatrixStackMixin implements CachingPoseStack {
             entry = new PoseStack.Pose(new Matrix4f(prev.pose()), new Matrix3f(prev.normal()));
         }
 
-        //? if >=1.21
+        //? if >=1.20.6
         /*entry.trustedNormals = prev.trustedNormals;*/
 
         this.poseStack.addLast(entry);

@@ -57,9 +57,9 @@ public class SearchTextFieldModel {
         int i = Math.min(this.selectionStart, this.selectionEnd);
         int j = Math.max(this.selectionStart, this.selectionEnd);
         int k = this.maxLength - this.text.length() - (i - j);
-        //? if <1.21
+        //? if <1.20.6
         String string = SharedConstants.filterText(text);
-        //? if >=1.21
+        //? if >=1.20.6
         /*String string = StringUtil.filterText(text);*/
         int l = string.length();
         if (k < l) {

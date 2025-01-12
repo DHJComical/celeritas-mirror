@@ -4,6 +4,7 @@ package org.embeddedt.embeddium.impl.mixin.features.render.world.sky;
 /*import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import net.minecraft.client.renderer.FogParameters;
 *///?}
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -54,13 +55,10 @@ public class WorldRendererMixin {
     //? if <1.21.2 {
     @Inject(method = "renderSky", at = @At("HEAD"), cancellable = true)
     private void preRenderSky(
-            //? if <1.21
-            PoseStack matrices,
-            //? if >=1.21
-            /*Matrix4f frustumMatrix,*/
-            //? if >=1.17
-            Matrix4f projectionMatrix,
-            float tickDelta, /*? if >=1.18 {*/ Camera camera, boolean bl, /*?}*/ /*? if >=1.17 {*/ Runnable runnable, /*?}*/ CallbackInfo ci) {
+            CallbackInfo ci
+            //? if >=1.18
+            , @Local(ordinal = 0, argsOnly = true) Camera camera
+            ) {
     //?} else {
     /*@Inject(method = "addSkyPass", at = @At("HEAD"), cancellable = true)
     private void preRenderSky(FrameGraphBuilder frameGraphBuilder, Camera camera, float f, FogParameters fogParameters, CallbackInfo ci) {

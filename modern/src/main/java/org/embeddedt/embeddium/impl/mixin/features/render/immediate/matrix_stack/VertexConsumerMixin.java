@@ -36,10 +36,27 @@ public interface VertexConsumerMixin {
     }
 
     @Overwrite
-    default VertexConsumer normal(Matrix3f matrix, float x, float y, float z) {
+    default VertexConsumer normal(
+            //? if <1.20.6 {
+            Matrix3f matrix,
+            //?} else
+            /*PoseStack.Pose pose,*/
+            float x, float y, float z) {
+        //? if >=1.20.6
+        /*var matrix = pose.normal();*/
         float xt = MatrixHelper.transformNormalX(matrix, x, y, z);
         float yt = MatrixHelper.transformNormalY(matrix, x, y, z);
         float zt = MatrixHelper.transformNormalZ(matrix, x, y, z);
+
+        //? if >=1.20.6 {
+        /*if (!pose.trustedNormals) {
+            float scalar = Math.invsqrt(Math.fma(xt, xt, Math.fma(yt, yt, zt * zt)));
+
+            xt *= scalar;
+            yt *= scalar;
+            zt *= scalar;
+        }
+        *///?}
 
         return this.normal(xt, yt, zt);
     }

@@ -94,7 +94,7 @@ public class GlyphRendererMixin {
 
         float x1 = x + this.left;
         float x2 = x + this.right;
-        float shift = /*? if <1.21 {*/ 3.0F /*?} else {*/ /*0.0F *//*?}*/;
+        float shift = /*? if <1.20.6 {*/ 3.0F /*?} else {*/ /*0.0F *//*?}*/;
         float y1 = this.up - shift;
         float y2 = this.down - shift;
         float h1 = y + y1;

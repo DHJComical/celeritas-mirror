@@ -559,9 +559,9 @@ public class CeleritasWorldRenderer {
                 /*VertexConsumer transformer = new BreakingTextureGenerator(bufferBuilder, entry);
                 *///?} else if >=1.16 <1.20 {
                 /*VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry.pose(), entry.normal());
-                *///?} else if >=1.20 <1.21 {
+                *///?} else if >=1.20 <1.20.6 {
                 VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry.pose(), entry.normal(), 1.0f);
-                //?} else if >=1.21 {
+                //?} else if >=1.20.6 {
                 /*VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry, 1.0f);
                 *///?}
 

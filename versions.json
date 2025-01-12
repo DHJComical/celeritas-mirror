@@ -10,6 +10,10 @@
       "loaders": ["neoforge"]
     },
     {
+      "friendlyName": "1.20.6",
+      "loaders": ["fabric"]
+    },
+    {
       "friendlyName": "1.21.1",
       "loaders": ["fabric", "forge", "neoforge"]
     },

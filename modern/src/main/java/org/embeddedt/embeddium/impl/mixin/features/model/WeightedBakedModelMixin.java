@@ -48,9 +48,9 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
     *///?}
 
     private static BakedModel getData(WeightedEntry.Wrapper<BakedModel> wrapper) {
-        //? if >=1.21
+        //? if >=1.20.6
         /*return wrapper.data();*/
-        //? if <1.21
+        //? if <1.20.6
         return wrapper.getData();
     }
 

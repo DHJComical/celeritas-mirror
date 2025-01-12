@@ -146,9 +146,9 @@ public class SearchTextFieldComponent extends AbstractWidget {
         if (!this.isActive()) {
             return false;
         }
-        //? if <1.21
+        //? if <1.20.6
         if (SharedConstants.isAllowedChatCharacter(chr)) {
-        //? if >=1.21
+        //? if >=1.20.6
         /*if (StringUtil.isAllowedChatCharacter(chr)) {*/
             if (this.model.editable) {
                 this.model.write(Character.toString(chr));
