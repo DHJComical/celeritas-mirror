@@ -1,5 +1,6 @@
 package net.irisshaders.iris.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.irisshaders.iris.Iris;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -30,7 +31,7 @@ public class MixinMinecraft_PipelineManagement {
 	 * NB: Not on leave, another inject is used for that
 	 */
 	@Inject(method = "setLevel", at = @At("HEAD"))
-	private void iris$trackLastDimensionOnLevelChange(@Nullable ClientLevel level, CallbackInfo ci) {
+	private void iris$trackLastDimensionOnLevelChange(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) ClientLevel level) {
 		Iris.lastDimension = Iris.getCurrentDimension();
 	}
 

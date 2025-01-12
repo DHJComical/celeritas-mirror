@@ -22,7 +22,13 @@ public interface LevelRendererAccessor {
 	EntityRenderDispatcher getEntityRenderDispatcher();
 
 	@Invoker(/*? if <1.20.2 {*/ "renderChunkLayer" /*?} else {*/ /*"renderSectionLayer" *//*?}*/)
-	void invokeRenderChunkLayer(RenderType terrainLayer, PoseStack modelView, double cameraX, double cameraY, double cameraZ, Matrix4f projectionMatrix);
+	void invokeRenderChunkLayer(RenderType terrainLayer,
+                                //? if <1.20.6
+                                PoseStack modelView,
+                                double cameraX, double cameraY, double cameraZ,
+                                //? if >=1.20.6
+                                /*Matrix4f modelView,*/
+                                Matrix4f projectionMatrix);
 
 	@Invoker("setupRender")
 	void invokeSetupRender(Camera camera, Frustum frustum, boolean hasForcedFrustum, boolean spectator);

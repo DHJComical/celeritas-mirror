@@ -1,6 +1,7 @@
 package net.irisshaders.iris.mixin;
 
 import com.google.common.collect.Lists;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.platform.GlUtil;
 import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -13,6 +14,8 @@ import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
 import net.irisshaders.iris.shadows.ShadowRenderer;
+import net.irisshaders.iris.uniforms.CapturedRenderingState;
+import net.irisshaders.iris.uniforms.SystemTimeUniforms;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
@@ -95,7 +98,12 @@ public class MixinGameRenderer {
 		}
 	}
 
-	@Inject(method = "getPositionTexColorNormalShader", at = @At("HEAD"), cancellable = true)
+	@Inject(method =
+            //? if <1.20.6 {
+            "getPositionTexColorNormalShader"
+            //?} else
+            /*"getRendertypeCloudsShader"*/
+            , at = @At("HEAD"), cancellable = true)
 	private static void iris$overridePositionTexColorNormalShader(CallbackInfoReturnable<ShaderInstance> cir) {
 		if (ShadowRenderer.ACTIVE) {
 			override(ShaderKey.SHADOW_CLOUDS, cir);
@@ -132,6 +140,7 @@ public class MixinGameRenderer {
 
 	@Inject(method = {
 		"getRendertypeTranslucentShader",
+        //? if <1.20.6
 		"getRendertypeTranslucentNoCrumblingShader",
 		"getRendertypeTranslucentMovingBlockShader",
 		"getRendertypeTripwireShader"
@@ -325,6 +334,14 @@ public class MixinGameRenderer {
 		}
 	}
 
+    @Inject(method = "render", at = @At("HEAD"))
+    private void iris$startFrame(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) float tickDelta, @Local(ordinal = 0, argsOnly = true) long startTime) {
+        // This allows certain functions like float smoothing to function outside a world.
+        CapturedRenderingState.INSTANCE.setRealTickDelta(tickDelta);
+        SystemTimeUniforms.COUNTER.beginFrame();
+        SystemTimeUniforms.TIMER.beginFrame(startTime);
+    }
+
 	@Inject(method = {
 		"getRendertypeTextShader",
 		"getRendertypeTextSeeThroughShader",
@@ -459,7 +476,7 @@ public class MixinGameRenderer {
 	}
 
 	@Inject(method = "renderLevel", at = @At("TAIL"))
-	private void iris$runColorSpace(float pGameRenderer0, long pLong1, PoseStack pPoseStack2, CallbackInfo ci) {
+	private void iris$runColorSpace(CallbackInfo ci) {
 		Iris.getPipelineManager().getPipeline().ifPresent(WorldRenderingPipeline::finalizeGameRendering);
 	}
 
