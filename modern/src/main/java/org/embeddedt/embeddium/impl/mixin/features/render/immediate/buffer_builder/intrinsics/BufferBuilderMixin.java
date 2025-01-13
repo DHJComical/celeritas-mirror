@@ -36,8 +36,10 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
         float a = 1.0f;
     //?}
         if (!this.fastFormat) {
-            //? if <1.21
-            super.putBulkData(matrices, bakedQuad, r, g, b, /*? if >=1.20.6 {*/ /*a, *//*?}*/ light, overlay);
+            //? if <1.20.6
+            super.putBulkData(matrices, bakedQuad, r, g, b, light, overlay);
+            //? if >=1.20.6 <1.21
+            /*super.putBulkData(matrices, bakedQuad, r, g, b, a, light, overlay);*/
             //? if >=1.21 && neoforge
             /*VertexConsumer.super.putBulkData(matrices, bakedQuad, r, g, b, a, light, overlay, colorize);*/
             //? if >=1.21 && !neoforge
