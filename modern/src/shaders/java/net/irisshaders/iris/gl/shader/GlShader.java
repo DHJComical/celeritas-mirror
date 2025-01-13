@@ -3,11 +3,11 @@
 package net.irisshaders.iris.gl.shader;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.irisshaders.iris.gl.GLDebug;
 import net.irisshaders.iris.gl.GlResource;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.KHRDebug;
 

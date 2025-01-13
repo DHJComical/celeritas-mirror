@@ -1,6 +1,7 @@
 package net.irisshaders.iris.compat.sodium.impl.shader_overrides;
 
 import org.embeddedt.embeddium.impl.gl.GlObject;
+import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.shader.GlProgram;
 import org.embeddedt.embeddium.impl.gl.shader.GlShader;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
@@ -9,7 +10,6 @@ import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkFogMode;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.gl.GLDebug;
 import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.blending.AlphaTests;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;

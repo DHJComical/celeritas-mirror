@@ -1,8 +1,8 @@
 package net.irisshaders.iris.gl.buffer;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.irisshaders.iris.gl.GLDebug;
 import net.irisshaders.iris.gl.IrisRenderSystem;
+import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.lwjgl.opengl.GL43C;
 
 // Do not extend GlResource, this is immutable.

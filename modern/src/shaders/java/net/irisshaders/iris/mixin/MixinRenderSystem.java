@@ -2,7 +2,6 @@ package net.irisshaders.iris.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.gl.GLDebug;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.texture.TextureTracker;
@@ -20,7 +19,6 @@ public class MixinRenderSystem {
 	@Inject(method = "initRenderer", at = @At("RETURN"))
 	private static void iris$onRendererInit(int debugVerbosity, boolean alwaysFalse, CallbackInfo ci) {
 		Iris.duringRenderSystemInit();
-		GLDebug.reloadDebugState();
 		IrisRenderSystem.initRenderer();
 		IrisSamplers.initRenderer();
 		Iris.onRenderSystemInit();
