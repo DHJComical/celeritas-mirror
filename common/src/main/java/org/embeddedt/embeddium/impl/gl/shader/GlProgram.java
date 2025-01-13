@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.gl.shader;
 
 import org.embeddedt.embeddium.impl.gl.GlObject;
+import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniform;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformBlock;
 import org.apache.logging.log4j.LogManager;
@@ -8,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL32C;
+import org.lwjgl.opengl.GL43C;
 
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -109,6 +111,8 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
             if (result != GL20C.GL_TRUE) {
                 throw new RuntimeException("Shader program linking failed, see log for details");
             }
+
+            GLDebug.nameObject(GL43C.GL_PROGRAM, this.program, this.name);
 
             return new GlProgram<>(this.program, factory);
         }
