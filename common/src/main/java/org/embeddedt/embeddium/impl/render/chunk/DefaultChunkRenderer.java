@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.render.chunk;
 
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeBinding;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
+import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.DrawCommandList;
 import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatch;
@@ -52,6 +53,8 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
 
         boolean useBlockFaceCulling = this.useBlockFaceCulling;
 
+        GLDebug.pushGroup(770, renderPass.name() + " terrain pass");
+
         ChunkShaderInterface shader = this.activeProgram.getInterface();
         shader.setProjectionMatrix(matrices.projection());
         shader.setModelViewMatrix(matrices.modelView());
@@ -87,6 +90,8 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
             setModelMatrixUniforms(shader, region, camera);
             executeDrawBatch(commandList, tessellation, this.batch);
         }
+
+        GLDebug.popGroup();
 
         super.end(renderPass);
     }
