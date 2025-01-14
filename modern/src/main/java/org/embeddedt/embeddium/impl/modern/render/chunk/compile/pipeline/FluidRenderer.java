@@ -329,8 +329,6 @@ public class FluidRenderer {
         LightMode lightMode = isWater && Minecraft.useAmbientOcclusion() ? LightMode.SMOOTH : LightMode.FLAT;
         LightPipeline lighter = this.lighters.getLighter(lightMode);
 
-        quad.setFlags(ModelQuadFlags.IS_VANILLA_SHADED);
-
         if (!sfUp && this.isSideExposed(world, posX, posY, posZ, Direction.UP, Math.min(Math.min(northWestHeight, southWestHeight), Math.min(southEastHeight, northEastHeight)))) {
             northWestHeight -= EPSILON;
             southWestHeight -= EPSILON;
@@ -344,6 +342,8 @@ public class FluidRenderer {
             float u1, u2, u3, u4;
             float v1, v2, v3, v4;
 
+            int shapeFlags;
+
             if (velocity.x == 0.0D && velocity.z == 0.0D) {
                 sprite = sprites[0];
                 facing = ModelQuadFacing.POS_Y;
@@ -355,6 +355,8 @@ public class FluidRenderer {
                 v3 = v2;
                 u4 = u3;
                 v4 = v1;
+
+                shapeFlags = ModelQuadFlags.IS_PARALLEL;
             } else {
                 sprite = sprites[1];
                 facing = ModelQuadFacing.UNASSIGNED;
@@ -369,7 +371,11 @@ public class FluidRenderer {
                 v3 = sprite.getV((SPRITE_UV_SCALING_RANGE/2) + (cos - sin) * SPRITE_UV_SCALING_RANGE);
                 u4 = sprite.getU((SPRITE_UV_SCALING_RANGE/2) + (cos - sin) * SPRITE_UV_SCALING_RANGE);
                 v4 = sprite.getV((SPRITE_UV_SCALING_RANGE/2) + (-cos - sin) * SPRITE_UV_SCALING_RANGE);
+
+                shapeFlags = 0;
             }
+
+            quad.setFlags(ModelQuadFlags.IS_VANILLA_SHADED | shapeFlags);
 
             float uAvg = (u1 + u2 + u3 + u4) / 4.0F;
             float vAvg = (v1 + v2 + v3 + v4) / 4.0F;
@@ -434,6 +440,8 @@ public class FluidRenderer {
             setVertex(quad, 1, 0.0f, yOffset, 0.0f, minU, minV);
             setVertex(quad, 2, 1.0F, yOffset, 0.0f, maxU, minV);
             setVertex(quad, 3, 1.0F, yOffset, 1.0F, maxU, maxV);
+
+            quad.setFlags(ModelQuadFlags.IS_VANILLA_SHADED | ModelQuadFlags.IS_PARALLEL);
 
             this.updateQuad(quad, world, blockPos, lighter, Direction.DOWN, 1.0F, colorProvider, fluidState);
             this.writeQuad(meshBuilder, material, offset, quad, ModelQuadFacing.NEG_Y, false, ctx);
