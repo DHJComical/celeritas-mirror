@@ -257,7 +257,9 @@ public class RenderRegion {
         }
 
         public GlBuffer getIndexBuffer() {
-            // implict null-check is intended
+            if (this.indexArena == null) {
+                throw new IllegalStateException("Attempted to retrieve index buffer for a non-indexed region");
+            }
             return this.indexArena.getBufferObject();
         }
 
