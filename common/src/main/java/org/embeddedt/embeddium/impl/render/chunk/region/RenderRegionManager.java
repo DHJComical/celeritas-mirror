@@ -60,6 +60,8 @@ public class RenderRegionManager {
     private void uploadMeshes(CommandList commandList, RenderRegion region, Collection<ChunkBuildOutput> results) {
         var uploads = new ArrayList<PendingSectionUpload>();
 
+        boolean needIndexBuffer = false;
+
         for (ChunkBuildOutput result : results) {
             for (TerrainRenderPass pass : renderPassConfiguration.renderPasses()) {
                 var storage = region.getStorage(pass);
@@ -71,6 +73,8 @@ public class RenderRegionManager {
                 BuiltSectionMeshParts mesh = result.getMesh(pass);
 
                 if (mesh != null) {
+                    needIndexBuffer |= mesh.getIndexData() != null;
+
                     uploads.add(new PendingSectionUpload(result.render, mesh, pass,
                             new PendingUpload(mesh.getVertexData()), mesh.getIndexData() != null ? new PendingUpload(mesh.getIndexData()) : null));
                 }
@@ -87,8 +91,6 @@ public class RenderRegionManager {
 
         boolean bufferChanged = geometryArena.upload(commandList, uploads.stream()
                 .map(upload -> upload.vertexUpload));
-
-        boolean needIndexBuffer = uploads.stream().anyMatch(upload -> upload.indexUpload != null);
 
         if (needIndexBuffer) {
             bufferChanged |= resources.getOrCreateIndexArena(commandList).upload(commandList, uploads.stream()
