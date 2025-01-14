@@ -88,8 +88,13 @@ public class RenderRegionManager {
         boolean bufferChanged = geometryArena.upload(commandList, uploads.stream()
                 .map(upload -> upload.vertexUpload));
 
-        bufferChanged |= resources.getIndexArena().upload(commandList, uploads.stream()
-                .map(upload -> upload.indexUpload).filter(Objects::nonNull));
+        boolean needIndexBuffer = uploads.stream().anyMatch(upload -> upload.indexUpload != null);
+
+        if (needIndexBuffer) {
+            bufferChanged |= resources.getOrCreateIndexArena(commandList).upload(commandList, uploads.stream()
+                    .map(upload -> upload.indexUpload).filter(Objects::nonNull));
+        }
+
 
         // If any of the buffers changed, the tessellation will need to be updated
         // Once invalidated the tessellation will be re-created on the next attempted use
@@ -135,7 +140,7 @@ public class RenderRegionManager {
 
         var resources = region.createResources(commandList);
 
-        boolean bufferChanged = resources.getIndexArena().upload(commandList, uploads.stream()
+        boolean bufferChanged = resources.getOrCreateIndexArena(commandList).upload(commandList, uploads.stream()
                 .map(upload -> upload.indexUpload).filter(Objects::nonNull));
 
         // If any of the buffers changed, the tessellation will need to be updated

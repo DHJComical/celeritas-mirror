@@ -190,9 +190,13 @@ public class RenderRegion {
     }
 
     public void update(CommandList commandList) {
-        if (this.resources != null && this.resources.shouldDelete()) {
-            this.resources.delete(commandList);
-            this.resources = null;
+        if (this.resources != null) {
+            if (this.resources.shouldDelete()) {
+                this.resources.delete(commandList);
+                this.resources = null;
+            } else {
+                this.resources.deleteIndexArenaIfPossible(commandList);
+            }
         }
     }
 
@@ -202,13 +206,14 @@ public class RenderRegion {
 
     public static class DeviceResources {
         private final GlBufferArena geometryArena;
-        private final GlBufferArena indexArena;
+        private final StagingBuffer stagingBuffer;
+        private GlBufferArena indexArena;
         private GlTessellation tessellation;
         private GlTessellation indexedTessellation;
 
         public DeviceResources(CommandList commandList, StagingBuffer stagingBuffer, int stride) {
             this.geometryArena = new GlBufferArena(commandList, REGION_SIZE * 756, stride, stagingBuffer);
-            this.indexArena = new GlBufferArena(commandList, (REGION_SIZE * 378) / 4 * 6, 4, stagingBuffer);
+            this.stagingBuffer = stagingBuffer;
         }
 
         public void updateTessellation(CommandList commandList, GlTessellation tessellation) {
@@ -252,26 +257,44 @@ public class RenderRegion {
         }
 
         public GlBuffer getIndexBuffer() {
+            // implict null-check is intended
             return this.indexArena.getBufferObject();
         }
 
         public void delete(CommandList commandList) {
             this.deleteTessellations(commandList);
             this.geometryArena.delete(commandList);
-            this.indexArena.delete(commandList);
+            if (this.indexArena != null) {
+                this.indexArena.delete(commandList);
+            }
         }
 
         public GlBufferArena getGeometryArena() {
             return this.geometryArena;
         }
 
+
         public GlBufferArena getIndexArena() {
             return this.indexArena;
         }
 
+        public GlBufferArena getOrCreateIndexArena(CommandList commandList) {
+            if (this.indexArena == null) {
+                this.indexArena = new GlBufferArena(commandList, (REGION_SIZE * 378) / 4 * 6, 4, this.stagingBuffer);
+            }
+            return this.indexArena;
+        }
 
         public boolean shouldDelete() {
             return this.geometryArena.isEmpty();
+        }
+
+        public void deleteIndexArenaIfPossible(CommandList commandList) {
+            if (this.indexArena != null && this.indexArena.isEmpty()) {
+                this.updateIndexedTessellation(commandList, null);
+                this.indexArena.delete(commandList);
+                this.indexArena = null;
+            }
         }
     }
 }
