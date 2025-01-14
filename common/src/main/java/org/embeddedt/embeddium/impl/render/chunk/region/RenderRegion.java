@@ -282,7 +282,7 @@ public class RenderRegion {
 
         public GlBufferArena getOrCreateIndexArena(CommandList commandList) {
             if (this.indexArena == null) {
-                this.indexArena = new GlBufferArena(commandList, (REGION_SIZE * 378) / 4 * 6, 4, this.stagingBuffer);
+                this.indexArena = new GlBufferArena(commandList, (REGION_SIZE * 126) / 4 * 6, 4, this.stagingBuffer);
             }
             return this.indexArena;
         }
