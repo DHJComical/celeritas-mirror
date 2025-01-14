@@ -681,7 +681,7 @@ public abstract class RenderSectionManager {
         }
 
         list.add(String.format("Geometry Pool: %d/%d MiB (%d buffers)", MathUtil.toMib(deviceUsed), MathUtil.toMib(deviceAllocated), count));
-        if (indexUsed > 0) {
+        if (indexCount > 0) {
             list.add(String.format("Index Pool: %d/%d MiB (%d buffers)", MathUtil.toMib(indexUsed), MathUtil.toMib(indexAllocated), indexCount));
         }
         list.add(String.format("Transfer Queue: %s", this.regions.getStagingBuffer().toString()));
