@@ -72,7 +72,7 @@ public class WorldUtil {
         //?} else if forge {
         /*return state.hasTileEntity();
         *///?} else {
-        /*return state instanceof EntityBlock;
+        /*return state.getBlock() instanceof EntityBlock;
         *///?}
     }
 
