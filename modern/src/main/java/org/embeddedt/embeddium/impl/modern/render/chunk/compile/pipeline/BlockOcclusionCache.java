@@ -25,6 +25,14 @@ public class BlockOcclusionCache {
         this.map.defaultReturnValue(UNCACHED_VALUE);
     }
 
+    private static final Direction[] OPPOSITE_CACHE = new Direction[Direction.values().length];
+
+    static {
+        for (var dir : Direction.values()) {
+            OPPOSITE_CACHE[dir.ordinal()] = dir.getOpposite();
+        }
+    }
+
     /**
      * @param selfState The state of the block in the world
      * @param view The world view for this render context
@@ -42,7 +50,7 @@ public class BlockOcclusionCache {
 
         VoxelShape selfShape, adjShape;
 
-        Direction oppositeFacing = facing.getOpposite();
+        Direction oppositeFacing = OPPOSITE_CACHE[facing.ordinal()];
 
         if (/*? if <1.21.2 {*/ adjState.canOcclude() /*?} else {*/ /*true *//*?}*/) {
             adjShape = adjState.getFaceOcclusionShape(/*? if <1.21.2 {*/view, adjPos,/*?}*/ oppositeFacing);
