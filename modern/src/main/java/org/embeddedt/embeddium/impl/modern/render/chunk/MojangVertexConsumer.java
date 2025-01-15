@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.modern.render.chunk;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
+import org.embeddedt.embeddium.api.util.NormI8;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
@@ -50,11 +51,19 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
         }
     }
 
+    private void applyNormal(int packedNormal) {
+        var vertices = this.vertices;
+        for(int i = 0; i < 4; i++) {
+            vertices[i].trueNormal = packedNormal;
+        }
+    }
+
     private void flushQuad() {
         applyDefaultColor();
         triggerSpriteAnimation();
         var n = computedNormal;
         ModelQuadUtil.calculateNormal(vertices, n);
+        applyNormal(NormI8.pack(n));
         var facing = ModelQuadUtil.findNormalFace(n.x, n.y, n.z);
         this.targetBuilder.getVertexBuffer(facing).push(vertices, material);
         currentIndex = -1;
@@ -156,6 +165,7 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
     public VertexConsumer normal(float p_350429_, float p_350286_, float p_350836_) {
         //? if >=1.21
         /*public VertexConsumer setNormal(float p_350429_, float p_350286_, float p_350836_) {*/
+        currentVertexObj.vanillaNormal = NormI8.pack(p_350429_, p_350286_, p_350836_);
         return this;
     }
 

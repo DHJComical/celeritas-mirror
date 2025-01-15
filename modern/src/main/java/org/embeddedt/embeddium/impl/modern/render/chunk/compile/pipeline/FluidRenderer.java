@@ -54,6 +54,7 @@ import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 import org.embeddedt.embeddium.impl.render.fluid.EmbeddiumFluidSpriteCache;
 //? if >=1.18
 import org.embeddedt.embeddium.impl.tags.EmbeddiumTags;
+import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
 import org.embeddedt.embeddium.impl.util.ModernBlockPosUtil;
 import org.joml.Vector3fc;
 
@@ -586,9 +587,13 @@ public class FluidRenderer {
         }
     }
 
+    private static final int VANILLA_FLUID_NORMAL = DirectionUtil.PACKED_NORMALS[Direction.UP.ordinal()];
+
     private void writeQuad(ChunkModelBuilder builder, Material material, Vector3fc offset, ModelQuadView quad,
                            ModelQuadFacing facing, boolean flip, BlockRenderContext ctx) {
         var vertices = this.vertices;
+
+        int trueNormal = facing != ModelQuadFacing.UNASSIGNED ? facing.getPackedNormal() : ModelQuadUtil.calculateNormal(quad);
 
         for (int i = 0; i < 4; i++) {
             var out = vertices[flip ? (3 - i + 1) & 0b11 : i];
@@ -600,6 +605,9 @@ public class FluidRenderer {
             out.u = quad.getTexU(i);
             out.v = quad.getTexV(i);
             out.light = this.quadLightData.lm[i];
+
+            out.vanillaNormal = VANILLA_FLUID_NORMAL;
+            out.trueNormal = trueNormal;
         }
 
         TextureAtlasSprite sprite = quad.getSprite();

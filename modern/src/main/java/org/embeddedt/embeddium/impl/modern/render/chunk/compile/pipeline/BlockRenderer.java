@@ -347,6 +347,9 @@ public class BlockRenderer {
 
         ModelQuadFacing normalFace = quad.getNormalFace();
 
+        int vanillaNormal = DirectionUtil.PACKED_NORMALS[quad.getLightFace().ordinal()];
+        int trueNormal = quad.getComputedFaceNormal();
+
         for (int dstIndex = 0; dstIndex < 4; dstIndex++) {
             int srcIndex = orientation.getVertexIndex(dstIndex);
 
@@ -361,6 +364,9 @@ public class BlockRenderer {
             out.v = quad.getTexV(srcIndex);
 
             out.light = ModelQuadUtil.mergeBakedLight(quad.getLight(srcIndex), quad.getVanillaLightEmission(), light.lm[srcIndex]);
+
+            out.vanillaNormal = vanillaNormal;
+            out.trueNormal = trueNormal;
         }
 
         var vertexBuffer = builder.getVertexBuffer(normalFace);

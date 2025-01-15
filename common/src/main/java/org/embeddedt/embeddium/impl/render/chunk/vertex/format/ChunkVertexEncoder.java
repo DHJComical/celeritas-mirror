@@ -13,6 +13,15 @@ public interface ChunkVertexEncoder {
         public float u;
         public float v;
         public int light;
+        /**
+         * The normal that vanilla would output for this quad. Unused by Embeddium's built-in shaders, but might be used
+         * by a core shader.
+         */
+        public int vanillaNormal;
+        /**
+         * The actual normal vector of this quad computed off the geometry.
+         */
+        public int trueNormal;
 
         public static Vertex[] uninitializedQuad() {
             Vertex[] vertices = new Vertex[4];

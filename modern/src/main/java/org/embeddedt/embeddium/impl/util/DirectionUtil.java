@@ -1,7 +1,10 @@
 package org.embeddedt.embeddium.impl.util;
 
 import java.util.Arrays;
+
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import org.embeddedt.embeddium.api.util.NormI8;
 
 /**
  * Contains a number of cached arrays to avoid allocations since calling Enum#values() requires the backing array to
@@ -16,6 +19,16 @@ public class DirectionUtil {
     private static final Direction[] OPPOSITE_DIRECTIONS = Arrays.stream(ALL_DIRECTIONS)
             .map(Direction::getOpposite)
             .toArray(Direction[]::new);
+
+    public static final int[] PACKED_NORMALS = new int[Direction.values().length];
+
+    static {
+        Direction[] directions = Direction.values();
+        for (int i = 0; i < directions.length; i++) {
+            Vec3i normal = directions[i].getNormal();
+            PACKED_NORMALS[i] = NormI8.pack(normal.getX(), normal.getY(), normal.getZ());
+        }
+    }
 
     // Direction#byId is slow in the absence of Lithium
     public static Direction getOpposite(Direction dir) {
