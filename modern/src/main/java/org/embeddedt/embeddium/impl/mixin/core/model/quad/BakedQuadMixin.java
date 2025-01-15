@@ -3,10 +3,13 @@ package org.embeddedt.embeddium.impl.mixin.core.model.quad;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
+import org.embeddedt.embeddium.impl.modern.render.chunk.sprite.SpriteTransparencyLevelHolder;
+import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
 import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -116,6 +119,15 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     @Override
     public void addFlags(int flags) {
         this.flags |= flags;
+    }
+
+    @Override
+    public @Nullable SpriteTransparencyLevel getTransparencyLevel() {
+        if (this.sprite != null && (this.flags & ModelQuadFlags.IS_TRUSTED_SPRITE) != 0) {
+            return SpriteTransparencyLevelHolder.getTransparencyLevel(this.sprite);
+        } else {
+            return null;
+        }
     }
 
     @Override
