@@ -41,7 +41,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         return program;
     }
 
-    private GlProgram<ChunkShaderInterface> createShader(String path, ChunkShaderOptions options) {
+    protected GlProgram<ChunkShaderInterface> createShader(String path, ChunkShaderOptions options) {
         ShaderConstants constants = options.constants();
 
         GlShader vertShader = ShaderLoader.loadShader(ShaderType.VERTEX,
