@@ -105,7 +105,7 @@ public class BlockRenderer {
         //?} else {
         /*this.fabricModelRenderingHandler = null;
         *///?}
-        this.isRenderPassOptEnabled = Celeritas.options().performance.useRenderPassOptimization && !ShaderModBridge.areShadersEnabled();
+        this.isRenderPassOptEnabled = Celeritas.options().performance.useRenderPassOptimization;
     }
 
     /**
