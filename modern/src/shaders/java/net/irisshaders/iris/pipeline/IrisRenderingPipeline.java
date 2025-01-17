@@ -1,5 +1,6 @@
 package net.irisshaders.iris.pipeline;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -8,6 +9,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
+import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.IrisRenderSystem;
@@ -415,6 +417,8 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		this.loadedShaders = new HashSet<>();
 
+        Stopwatch watch = Stopwatch.createStarted();
+
         try {
             this.shaderMap = new ShaderMap((key, syncExecutor) -> {
                 if (key.isShadow()) {
@@ -437,6 +441,9 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
             destroyShaders();
             throw e;
         }
+
+        watch.stop();
+        Iris.logger.info("Loaded shaders in {}", watch);
 
 		WorldRenderingSettings.INSTANCE.setBlockStateIds(
 			BlockMaterialMapping.createBlockStateIdMap(programSet.getPack().getIdMap().getBlockProperties()));
