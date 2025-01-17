@@ -1,6 +1,5 @@
 package net.irisshaders.batchedentityrendering.impl;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
 import net.irisshaders.batchedentityrendering.impl.ordering.GraphTranslucencyRenderOrderManager;
@@ -10,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.profiling.ProfilerFiller;
-import org.embeddedt.embeddium.impl.render.vertex.buffer.ExtendedBufferBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,15 +40,15 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 
 	public FullyBufferedMultiBufferSource() {
         //? if <1.21 {
-		super(new BufferBuilder(0), Collections.emptyMap());
+		super(new com.mojang.blaze3d.vertex.BufferBuilder(0), Collections.emptyMap());
         //?} else
-        /*super(new ByteBufferBuilder(0), Object2ObjectSortedMaps.emptyMap());*/
+        /*super(new com.mojang.blaze3d.vertex.ByteBufferBuilder(0), Object2ObjectSortedMaps.emptyMap());*/
 
 		this.renderOrderManager = new GraphTranslucencyRenderOrderManager();
 		this.builders = new SegmentedBufferBuilder[NUM_BUFFERS];
 
 		for (int i = 0; i < this.builders.length; i++) {
-			this.builders[i] = new SegmentedBufferBuilder();
+			this.builders[i] = new SegmentedBufferBuilder(this);
 		}
 
 		// use accessOrder=true so our LinkedHashMap works as an LRU cache.
@@ -96,7 +94,7 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 		var buffer = builders[affinity].getBuffer(renderType);
 
         //? if <1.21 {
-        if (buffer instanceof ExtendedBufferBuilder bufferBuilderExt) {
+        if (buffer instanceof org.embeddedt.embeddium.impl.render.vertex.buffer.ExtendedBufferBuilder bufferBuilderExt) {
             var replacement = bufferBuilderExt.sodium$getDelegate();
             if (replacement != null) {
                 return replacement;
@@ -226,8 +224,8 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 	}
 
 	@Override
-	public int getAllocatedSize() {
-		int size = 0;
+	public long getAllocatedSize() {
+        long size = 0;
 
 		for (SegmentedBufferBuilder builder : builders) {
 			size += builder.getAllocatedSize();
@@ -237,8 +235,8 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 	}
 
 	@Override
-	public int getUsedSize() {
-		int size = 0;
+	public long getUsedSize() {
+        long size = 0;
 
 		for (SegmentedBufferBuilder builder : builders) {
 			size += builder.getUsedSize();
@@ -246,6 +244,12 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 
 		return size;
 	}
+
+    public void weAreOutOfMemory() {
+        for (SegmentedBufferBuilder builder : builders) {
+            builder.lastDitchAttempt();
+        }
+    }
 
 	@Override
 	public void freeAndDeleteBuffer() {
@@ -302,9 +306,9 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 
 		UnflushableWrapper(FullyBufferedMultiBufferSource wrapped) {
             //? if <1.21 {
-            super(new BufferBuilder(0), Collections.emptyMap());
+            super(new com.mojang.blaze3d.vertex.BufferBuilder(0), Collections.emptyMap());
              //?} else
-            /*super(new ByteBufferBuilder(0), Object2ObjectSortedMaps.emptyMap());*/
+            /*super(new com.mojang.blaze3d.vertex.ByteBufferBuilder(0), Object2ObjectSortedMaps.emptyMap());*/
 
 			this.wrapped = wrapped;
 		}

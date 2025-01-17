@@ -1,42 +1,53 @@
 package net.irisshaders.batchedentityrendering.mixin;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import net.irisshaders.batchedentityrendering.impl.MemoryTrackingBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-
-import java.util.Map;
+import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(MultiBufferSource.BufferSource.class)
 public class MixinBufferSource implements MemoryTrackingBuffer {
+    //? if <1.21 {
 	@Shadow
 	@Final
-	protected BufferBuilder builder;
+	protected com.mojang.blaze3d.vertex.BufferBuilder builder;
 
 	@Shadow
 	@Final
-	protected Map<RenderType, BufferBuilder> fixedBuffers;
+	protected java.util.Map<RenderType, com.mojang.blaze3d.vertex.BufferBuilder> fixedBuffers;
+    //?} else {
+    /*@Shadow
+    @Final
+    protected com.mojang.blaze3d.vertex.ByteBufferBuilder sharedBuffer;
+
+    @Shadow
+    @Final
+    protected java.util.SequencedMap<RenderType, com.mojang.blaze3d.vertex.ByteBufferBuilder> fixedBuffers;
+
+    @Unique
+    private final com.mojang.blaze3d.vertex.ByteBufferBuilder builder = sharedBuffer;
+    *///?}
 
 	@Override
-	public int getAllocatedSize() {
-		int allocatedSize = ((MemoryTrackingBuffer) builder).getAllocatedSize();
+	public long getAllocatedSize() {
+        long allocatedSize = ((MemoryTrackingBuffer) builder).getAllocatedSize();
 
-		for (BufferBuilder builder : fixedBuffers.values()) {
-			allocatedSize += ((MemoryTrackingBuffer) builder).getAllocatedSize();
+		for (var fixed : fixedBuffers.values()) {
+			allocatedSize += ((MemoryTrackingBuffer) fixed).getAllocatedSize();
 		}
 
 		return allocatedSize;
 	}
 
 	@Override
-	public int getUsedSize() {
-		int allocatedSize = ((MemoryTrackingBuffer) builder).getUsedSize();
+	public long getUsedSize() {
+        long allocatedSize = ((MemoryTrackingBuffer) builder).getUsedSize();
 
-		for (BufferBuilder builder : fixedBuffers.values()) {
-			allocatedSize += ((MemoryTrackingBuffer) builder).getUsedSize();
+		for (var fixed : fixedBuffers.values()) {
+			allocatedSize += ((MemoryTrackingBuffer) fixed).getUsedSize();
 		}
 
 		return allocatedSize;
@@ -46,8 +57,8 @@ public class MixinBufferSource implements MemoryTrackingBuffer {
 	public void freeAndDeleteBuffer() {
 		((MemoryTrackingBuffer) builder).freeAndDeleteBuffer();
 
-		for (BufferBuilder builder : fixedBuffers.values()) {
-			((MemoryTrackingBuffer) builder).freeAndDeleteBuffer();
+		for (var fixed : fixedBuffers.values()) {
+			((MemoryTrackingBuffer) fixed).freeAndDeleteBuffer();
 		}
 	}
 }
