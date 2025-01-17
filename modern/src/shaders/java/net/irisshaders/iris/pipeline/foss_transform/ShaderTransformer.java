@@ -11,6 +11,7 @@ import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.parameter.Parameters;
 import net.irisshaders.iris.pipeline.transform.parameter.SodiumParameters;
 import net.irisshaders.iris.pipeline.transform.parameter.VanillaParameters;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.taumc.glsl.ShaderParser;
 import org.taumc.glsl.StorageCollector;
 import org.taumc.glsl.Transformer;
@@ -26,7 +27,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ShaderTransformer {
-    static String tab = "";
 
     private static final int CACHE_SIZE = 100;
     private static final Object2ObjectLinkedOpenHashMap<TransformKey, Map<PatchShaderType, String>> shaderTransformationCache = new Object2ObjectLinkedOpenHashMap<>();
@@ -51,15 +51,20 @@ public class ShaderTransformer {
 
             var key = new TransformKey(patchType, inputs, parameters);
 
-            result = shaderTransformationCache.getAndMoveToFirst(key);
+            synchronized (shaderTransformationCache) {
+                result = shaderTransformationCache.getAndMoveToFirst(key);
+            }
+
             if(result == null || !useCache) {
                 result = ShaderTransformationDiskCache.transformIfAbsent(key, () -> transformInternal(name, inputs, patchType, parameters));
                 // Clear this, we don't want whatever random type was last transformed being considered for the key
                 parameters.type = null;
-                if(shaderTransformationCache.size() >= CACHE_SIZE) {
-                    shaderTransformationCache.removeLast();
+                synchronized (shaderTransformationCache) {
+                    if(shaderTransformationCache.size() >= CACHE_SIZE) {
+                        shaderTransformationCache.removeLast();
+                    }
+                    shaderTransformationCache.putAndMoveToLast(key, result);
                 }
-                shaderTransformationCache.putAndMoveToLast(key, result);
             }
 
             return result;
@@ -79,22 +84,24 @@ public class ShaderTransformer {
 
             var key = new TransformKey(patchType, inputs, parameters);
 
-            result = shaderTransformationCache.getAndMoveToFirst(key);
+            synchronized (shaderTransformationCache) {
+                result = shaderTransformationCache.getAndMoveToFirst(key);
+            }
             if(result == null || !useCache) {
                 result = transformInternal(name, inputs, patchType, parameters);
                 // Clear this, we don't want whatever random type was last transformed being considered for the key
                 parameters.type = null;
-                if(shaderTransformationCache.size() >= CACHE_SIZE) {
-                    shaderTransformationCache.removeLast();
+                synchronized (shaderTransformationCache) {
+                    if(shaderTransformationCache.size() >= CACHE_SIZE) {
+                        shaderTransformationCache.removeLast();
+                    }
+                    shaderTransformationCache.putAndMoveToLast(key, result);
                 }
-                shaderTransformationCache.putAndMoveToLast(key, result);
             }
 
             return result;
         }
     }
-
-    private static final Stopwatch CUMULATIVE_WATCH = Stopwatch.createUnstarted();
 
     private static final Pattern versionPattern = Pattern.compile("#version\\s+(\\d+)(?:\\s+(\\w+))?");
 
@@ -125,7 +132,6 @@ public class ShaderTransformer {
         EnumMap<PatchShaderType, String> prepatched = new EnumMap<>(PatchShaderType.class);
 
         Stopwatch watch = Stopwatch.createStarted();
-        CUMULATIVE_WATCH.start();
 
         for (PatchShaderType type : PatchShaderType.values()) {
             parameters.type = type;
@@ -230,7 +236,6 @@ public class ShaderTransformer {
             });
         }
         watch.stop();
-        CUMULATIVE_WATCH.stop();
         return result;
     }
 
@@ -412,11 +417,12 @@ public class ShaderTransformer {
 
     public static String getFormattedShader(ParseTree tree, String string) {
         StringBuilder sb = new StringBuilder(string + "\n");
-        getFormattedShader(tree, sb);
+        MutableObject<String> tab = new MutableObject<>("");
+        getFormattedShader(tree, sb, tab);
         return sb.toString();
     }
 
-    private static void getFormattedShader(ParseTree tree, StringBuilder stringBuilder) {
+    private static void getFormattedShader(ParseTree tree, StringBuilder stringBuilder, MutableObject<String> tab) {
         if (tree instanceof TerminalNode) {
             String text = tree.getText();
             if (text.equals("<EOF>")) {
@@ -429,17 +435,17 @@ public class ShaderTransformer {
             stringBuilder.append(text);
             if (text.equals("{")) {
                 stringBuilder.append(" \n\t");
-                tab = "\t";
+                tab.setValue("\t");
             }
 
             if (text.equals("}")) {
                 stringBuilder.deleteCharAt(stringBuilder.length() - 2);
-                tab = "";
+                tab.setValue("");
             }
-            stringBuilder.append(text.equals(";") ? " \n" + tab : " ");
+            stringBuilder.append(text.equals(";") ? " \n" + tab.getValue() : " ");
         } else {
             for(int i = 0; i < tree.getChildCount(); ++i) {
-                getFormattedShader(tree.getChild(i), stringBuilder);
+                getFormattedShader(tree.getChild(i), stringBuilder, tab);
             }
         }
 

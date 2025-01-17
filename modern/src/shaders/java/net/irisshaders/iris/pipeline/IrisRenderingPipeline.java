@@ -113,6 +113,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
@@ -413,29 +415,28 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		this.loadedShaders = new HashSet<>();
 
-
-		this.shaderMap = new ShaderMap(key -> {
-			try {
-				if (key.isShadow()) {
-					if (shadowRenderTargets != null) {
-						return createShadowShader(key.getName(), resolver.resolve(key.getProgram()), key);
-					} else {
-						return null;
-					}
-				} else {
-					return createShader(key.getName(), resolver.resolve(key.getProgram()), key);
-				}
-			} catch (FakeChainedJsonException e) {
-				destroyShaders();
-				throw e.getTrueException();
-			} catch (IOException e) {
-				destroyShaders();
-				throw new RuntimeException(e);
-			} catch (RuntimeException e) {
-				destroyShaders();
-				throw e;
-			}
-		});
+        try {
+            this.shaderMap = new ShaderMap((key, syncExecutor) -> {
+                if (key.isShadow()) {
+                    if (shadowRenderTargets != null) {
+                        return createShadowShader(key.getName(), resolver.resolve(key.getProgram()), key, syncExecutor);
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return createShader(key.getName(), resolver.resolve(key.getProgram()), key, syncExecutor);
+                }
+            });
+        } catch (FakeChainedJsonException e) {
+            destroyShaders();
+            throw e.getTrueException();
+        } catch (IOException e) {
+            destroyShaders();
+            throw new RuntimeException(e);
+        } catch (RuntimeException e) {
+            destroyShaders();
+            throw e;
+        }
 
 		WorldRenderingSettings.INSTANCE.setBlockStateIds(
 			BlockMaterialMapping.createBlockStateIdMap(programSet.getPack().getIdMap().getBlockProperties()));
@@ -673,12 +674,12 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		return programs;
 	}
 
-	private ShaderInstance createShader(String name, Optional<ProgramSource> source, ShaderKey key) throws IOException {
+	private CompletableFuture<ShaderInstance> createShader(String name, Optional<ProgramSource> source, ShaderKey key, Executor syncExecutor) throws IOException {
 		if (!source.isPresent()) {
-			return createFallbackShader(name, key);
+			return CompletableFuture.completedFuture(createFallbackShader(name, key));
 		}
 
-		return createShader(name, source.get(), key.getProgram(), key.getAlphaTest(), key.getVertexFormat(), key.getFogMode(),
+		return createShader(name, syncExecutor, source.get(), key.getProgram(), key.getAlphaTest(), key.getVertexFormat(), key.getFogMode(),
 			key.isIntensity(), key.shouldIgnoreLightmap(), key.isGlint(), key.isText());
 	}
 
@@ -687,7 +688,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		return customTextureMap;
 	}
 
-	private ShaderInstance createShader(String name, ProgramSource source, ProgramId programId, AlphaTest fallbackAlpha,
+	private CompletableFuture<ShaderInstance> createShader(String name, Executor syncExecutor, ProgramSource source, ProgramId programId, AlphaTest fallbackAlpha,
 										VertexFormat vertexFormat, FogMode fogMode,
 										boolean isIntensity, boolean isFullbright, boolean isGlint, boolean isText) throws IOException {
 		GlFramebuffer beforeTranslucent = renderTargets.createGbufferFramebuffer(flippedAfterPrepare, source.getDirectives().getDrawBuffers());
@@ -701,12 +702,13 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			() -> isBeforeTranslucent ? flippedAfterPrepare : flippedAfterTranslucent;
 
 
-		ExtendedShader extendedShader = ShaderCreator.create(this, name, source, programId, beforeTranslucent, afterTranslucent,
+        CompletableFuture<ExtendedShader> extendedShaderFuture = ShaderCreator.create(this, syncExecutor, name, source, programId, beforeTranslucent, afterTranslucent,
 			fallbackAlpha, vertexFormat, inputs, updateNotifier, this, flipped, fogMode, isIntensity, isFullbright, false, isLines, customUniforms);
 
-		loadedShaders.add(extendedShader);
-
-		return extendedShader;
+        return extendedShaderFuture.thenApplyAsync(shader -> {
+            loadedShaders.add(shader);
+            return shader;
+        }, syncExecutor);
 	}
 
 	private ShaderInstance createFallbackShader(String name, ShaderKey key) throws IOException {
@@ -722,12 +724,12 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		return shader;
 	}
 
-	private ShaderInstance createShadowShader(String name, Optional<ProgramSource> source, ShaderKey key) throws IOException {
+	private CompletableFuture<ShaderInstance> createShadowShader(String name, Optional<ProgramSource> source, ShaderKey key, Executor syncExecutor) throws IOException {
 		if (!source.isPresent()) {
-			return createFallbackShadowShader(name, key);
+			return CompletableFuture.completedFuture(createFallbackShadowShader(name, key));
 		}
 
-		return createShadowShader(name, source.get(), key.getProgram(), key.getAlphaTest(), key.getVertexFormat(),
+		return createShadowShader(name, syncExecutor, source.get(), key.getProgram(), key.getAlphaTest(), key.getVertexFormat(),
 			key.isIntensity(), key.shouldIgnoreLightmap(), key.isText());
 	}
 
@@ -743,7 +745,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		return shader;
 	}
 
-	private ShaderInstance createShadowShader(String name, ProgramSource source, ProgramId programId, AlphaTest fallbackAlpha,
+	private CompletableFuture<ShaderInstance> createShadowShader(String name, Executor syncExecutor, ProgramSource source, ProgramId programId, AlphaTest fallbackAlpha,
 											  VertexFormat vertexFormat, boolean isIntensity, boolean isFullbright, boolean isText) throws IOException {
 		GlFramebuffer framebuffer = shadowRenderTargets.createShadowFramebuffer(ImmutableSet.of(), source.getDirectives().hasUnknownDrawBuffers() ? new int[]{0, 1} : source.getDirectives().getDrawBuffers());
 		boolean isLines = programId == ProgramId.Line && resolver.has(ProgramId.Line);
@@ -752,12 +754,13 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		Supplier<ImmutableSet<Integer>> flipped = () -> flippedBeforeShadow;
 
-		ExtendedShader extendedShader = ShaderCreator.create(this, name, source, programId, framebuffer, framebuffer,
+		CompletableFuture<ExtendedShader> extendedShaderFuture = ShaderCreator.create(this, syncExecutor, name, source, programId, framebuffer, framebuffer,
 			fallbackAlpha, vertexFormat, inputs, updateNotifier, this, flipped, FogMode.PER_VERTEX, isIntensity, isFullbright, true, isLines, customUniforms);
 
-		loadedShaders.add(extendedShader);
-
-		return extendedShader;
+        return extendedShaderFuture.thenApplyAsync(shader -> {
+            loadedShaders.add(shader);
+            return shader;
+        }, syncExecutor);
 	}
 
 	public void addGbufferOrShadowSamplers(SamplerHolder samplers, ImageHolder images, Supplier<ImmutableSet<Integer>> flipped,

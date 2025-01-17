@@ -23,6 +23,8 @@ import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.irisshaders.iris.uniforms.VanillaUniforms;
 import net.irisshaders.iris.uniforms.builtin.BuiltinReplacementUniforms;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
+import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
@@ -45,32 +47,38 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 public class ShaderCreator {
-	public static ExtendedShader create(WorldRenderingPipeline pipeline, String name, ProgramSource source, ProgramId programId, GlFramebuffer writingToBeforeTranslucent,
-										GlFramebuffer writingToAfterTranslucent, AlphaTest fallbackAlpha,
-										VertexFormat vertexFormat, ShaderAttributeInputs inputs, FrameUpdateNotifier updateNotifier,
-										IrisRenderingPipeline parent, Supplier<ImmutableSet<Integer>> flipped, FogMode fogMode, boolean isIntensity,
-										boolean isFullbright, boolean isShadowPass, boolean isLines, CustomUniforms customUniforms) throws IOException {
+	public static CompletableFuture<ExtendedShader> create(WorldRenderingPipeline pipeline, Executor syncExecutor, String name, ProgramSource source, ProgramId programId, GlFramebuffer writingToBeforeTranslucent,
+                                                           GlFramebuffer writingToAfterTranslucent, AlphaTest fallbackAlpha,
+                                                           VertexFormat vertexFormat, ShaderAttributeInputs inputs, FrameUpdateNotifier updateNotifier,
+                                                           IrisRenderingPipeline parent, Supplier<ImmutableSet<Integer>> flipped, FogMode fogMode, boolean isIntensity,
+                                                           boolean isFullbright, boolean isShadowPass, boolean isLines, CustomUniforms customUniforms) throws IOException {
 		AlphaTest alpha = source.getDirectives().getAlphaTestOverride().orElse(fallbackAlpha);
 		BlendModeOverride blendModeOverride = source.getDirectives().getBlendModeOverride().orElse(programId.getBlendModeOverride());
 
-		Map<PatchShaderType, String> transformed = TransformPatcherBridge.patchVanilla(
-			name,
-			source.getVertexSource().orElseThrow(RuntimeException::new),
-			source.getGeometrySource().orElse(null),
-			source.getTessControlSource().orElse(null),
-			source.getTessEvalSource().orElse(null),
-			source.getFragmentSource().orElseThrow(RuntimeException::new),
-			alpha, isLines, true, inputs, pipeline.getTextureMap());
-		String vertex = transformed.get(PatchShaderType.VERTEX);
-		String geometry = transformed.get(PatchShaderType.GEOMETRY);
-		String tessControl = transformed.get(PatchShaderType.TESS_CONTROL);
-		String tessEval = transformed.get(PatchShaderType.TESS_EVAL);
-		String fragment = transformed.get(PatchShaderType.FRAGMENT);
+        return CompletableFuture.supplyAsync(() -> {
+            return TransformPatcherBridge.patchVanilla(
+                    name,
+                    source.getVertexSource().orElseThrow(RuntimeException::new),
+                    source.getGeometrySource().orElse(null),
+                    source.getTessControlSource().orElse(null),
+                    source.getTessEvalSource().orElse(null),
+                    source.getFragmentSource().orElseThrow(RuntimeException::new),
+                    alpha, isLines, true, inputs, pipeline.getTextureMap());
+        }, Util.backgroundExecutor()).thenApplyAsync(transformed -> {
 
-		String shaderJsonString = String.format("""
+            String vertex = transformed.get(PatchShaderType.VERTEX);
+            String geometry = transformed.get(PatchShaderType.GEOMETRY);
+            String tessControl = transformed.get(PatchShaderType.TESS_CONTROL);
+            String tessEval = transformed.get(PatchShaderType.TESS_EVAL);
+            String fragment = transformed.get(PatchShaderType.FRAGMENT);
+
+            String shaderJsonString = String.format("""
 			    {
 			    "blend": {
 			        "func": "add",
@@ -103,26 +111,31 @@ public class ShaderCreator {
 			    ]
 			}""", name, name);
 
-		ShaderPrinter.printProgram(name).addSources(transformed).addJson(shaderJsonString).print();
+            ShaderPrinter.printProgram(name).addSources(transformed).addJson(shaderJsonString).print();
 
-		ResourceProvider shaderResourceFactory = new IrisProgramResourceFactory(shaderJsonString, vertex, geometry, tessControl, tessEval, fragment);
+            ResourceProvider shaderResourceFactory = new IrisProgramResourceFactory(shaderJsonString, vertex, geometry, tessControl, tessEval, fragment);
 
-		List<BufferBlendOverride> overrides = new ArrayList<>();
-		source.getDirectives().getBufferBlendOverrides().forEach(information -> {
-			int index = Ints.indexOf(source.getDirectives().getDrawBuffers(), information.index());
-			if (index > -1) {
-				overrides.add(new BufferBlendOverride(index, information.blendMode()));
-			}
-		});
+            List<BufferBlendOverride> overrides = new ArrayList<>();
+            source.getDirectives().getBufferBlendOverrides().forEach(information -> {
+                int index = Ints.indexOf(source.getDirectives().getDrawBuffers(), information.index());
+                if (index > -1) {
+                    overrides.add(new BufferBlendOverride(index, information.blendMode()));
+                }
+            });
 
-		return new ExtendedShader(shaderResourceFactory, name, vertexFormat, tessControl != null || tessEval != null, writingToBeforeTranslucent, writingToAfterTranslucent, blendModeOverride, alpha, uniforms -> {
-			CommonUniforms.addDynamicUniforms(uniforms, FogMode.PER_VERTEX);
-			customUniforms.assignTo(uniforms);
-			BuiltinReplacementUniforms.addBuiltinReplacementUniforms(uniforms);
-			VanillaUniforms.addVanillaUniforms(uniforms);
-		}, (samplerHolder, imageHolder) -> {
-			parent.addGbufferOrShadowSamplers(samplerHolder, imageHolder, flipped, isShadowPass, inputs.hasTex(), inputs.hasLight(), inputs.hasOverlay());
-		}, isIntensity, parent, overrides, customUniforms);
+            try {
+                return new ExtendedShader(shaderResourceFactory, name, vertexFormat, tessControl != null || tessEval != null, writingToBeforeTranslucent, writingToAfterTranslucent, blendModeOverride, alpha, uniforms -> {
+                    CommonUniforms.addDynamicUniforms(uniforms, FogMode.PER_VERTEX);
+                    customUniforms.assignTo(uniforms);
+                    BuiltinReplacementUniforms.addBuiltinReplacementUniforms(uniforms);
+                    VanillaUniforms.addVanillaUniforms(uniforms);
+                }, (samplerHolder, imageHolder) -> {
+                    parent.addGbufferOrShadowSamplers(samplerHolder, imageHolder, flipped, isShadowPass, inputs.hasTex(), inputs.hasLight(), inputs.hasOverlay());
+                }, isIntensity, parent, overrides, customUniforms);
+            } catch (IOException e) {
+                throw new CompletionException(e);
+            }
+        }, syncExecutor);
 	}
 
 	public static FallbackShader createFallback(String name, GlFramebuffer writingToBeforeTranslucent,
