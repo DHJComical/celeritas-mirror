@@ -1,16 +1,10 @@
 package net.irisshaders.iris.pipeline.foss_transform;
 
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.blending.AlphaTests;
 import net.irisshaders.iris.gl.shader.ShaderType;
 import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.parameter.VanillaParameters;
-import oculus.org.antlr.v4.runtime.CharStreams;
-import oculus.org.antlr.v4.runtime.CommonTokenStream;
 import org.taumc.glsl.Transformer;
-import org.taumc.glsl.Util;
-import org.taumc.glsl.grammar.GLSLLexer;
-import org.taumc.glsl.grammar.GLSLParser;
 
 import static net.irisshaders.iris.pipeline.foss_transform.ShaderTransformer.addIfNotExistsType;
 import static net.irisshaders.iris.pipeline.foss_transform.ShaderTransformer.upgradeStorageQualifiers;
