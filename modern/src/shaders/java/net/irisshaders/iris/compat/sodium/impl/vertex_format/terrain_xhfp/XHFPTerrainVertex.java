@@ -1,7 +1,10 @@
 package net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.shaderpack.materialmap.ModelTextureAnalyzer;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -30,7 +33,7 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
 	private float vSum;
 
     private final TextureAtlas blocksAtlas = (TextureAtlas)Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS);
-    private final Object2IntMap<TextureAtlasSprite> fallbackMaterials = WorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
+    private final Object2ObjectMap<TextureAtlasSprite, Int2IntMap> fallbackMaterials = WorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
 
 	@Override
 	public void iris$setContextHolder(BlockContextHolder holder) {
@@ -116,7 +119,7 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
                 // the visuals of facade-style blocks
                 TextureAtlasSprite sprite = ((TextureAtlasExtended)blocksAtlas).celeritas$findFromUV(uSum, vSum);
                 if (sprite != null) {
-                    blockId = (short)fallbackMaterials.getOrDefault(sprite, -1);
+                    blockId = (short) ModelTextureAnalyzer.fetchBlockIdForTexturedState(fallbackMaterials, contextHolder.blockState, sprite);
                 }
             }
 

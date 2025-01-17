@@ -2,9 +2,7 @@ package net.irisshaders.iris.shaderpack.materialmap;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntMaps;
+import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.*;
 import net.irisshaders.iris.Iris;
 import net.minecraft.client.Minecraft;
@@ -12,7 +10,9 @@ import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
@@ -69,18 +69,64 @@ public class ModelTextureAnalyzer {
         }
     }
 
-    private static void mergeIntoMainMap(Object2ObjectMap<TextureAtlasSprite, Int2IntMap> dest, Object2ObjectMap<TextureAtlasSprite, Int2IntMap> src) {
-        src.forEach((sprite, votes) -> {
-            dest.merge(sprite, votes, (oldVotes, newVotes) -> {
-                for (var entry : Int2IntMaps.fastIterable(newVotes)) {
-                    oldVotes.merge(entry.getIntKey(), entry.getIntValue(), Integer::sum);
-                }
-                return oldVotes;
+    private static int computePropertiesForState(BlockState state) {
+        int props = 0;
+        if (state.isSolidRender(EmptyBlockGetter.INSTANCE, BlockPos.ZERO)) {
+            props |= 1;
+        }
+        return props;
+    }
+
+    public static int fetchBlockIdForTexturedState(Object2ObjectMap<TextureAtlasSprite, Int2IntMap> fallbackMaterialMap, BlockState state, TextureAtlasSprite sprite) {
+        var byPropertyMap = fallbackMaterialMap.get(sprite);
+
+        if (byPropertyMap == null) {
+            return -1;
+        }
+
+        int props = computePropertiesForState(state);
+
+        int blockId = byPropertyMap.getOrDefault(props, -1);
+
+        if (blockId != -1) {
+            return blockId;
+        }
+
+        // Compute the closest bitwise match and use that
+
+        int bestBlockId = -1, bestDifferenceCount = Integer.MAX_VALUE;
+
+        for (var entry : Int2IntMaps.fastIterable(byPropertyMap)) {
+            int diff = Integer.bitCount(entry.getIntKey() ^ props);
+            if (diff < bestDifferenceCount) {
+                bestBlockId = entry.getIntKey();
+                bestDifferenceCount = diff;
+            }
+        }
+
+        return bestBlockId;
+    }
+
+    private static void mergeIntoMainMap(Object2ObjectMap<TextureAtlasSprite, Int2ObjectMap<Int2IntMap>> dest, Object2ObjectMap<TextureAtlasSprite, Int2ObjectMap<Int2IntMap>> src) {
+        src.forEach((sprite, votesByProperty) -> {
+            dest.merge(sprite, votesByProperty, (oldVotesByProperty, newVotesByProperty) -> {
+                Int2ObjectMaps.fastForEach(newVotesByProperty, propertyEntry -> {
+                    var properties = propertyEntry.getIntKey();
+                    var votes = propertyEntry.getValue();
+                    oldVotesByProperty.merge(properties, votes, (oldVotes, newVotes) -> {
+                        for (var entry : Int2IntMaps.fastIterable(newVotes)) {
+                            oldVotes.merge(entry.getIntKey(), entry.getIntValue(), Integer::sum);
+                        }
+                        return oldVotes;
+                    });
+                });
+
+                return oldVotesByProperty;
             });
         });
     }
 
-    public static @Nullable Object2IntMap<TextureAtlasSprite> runAnalysisSync(@Nullable Object2IntMap<BlockState> blockStateIds) {
+    public static @Nullable Object2ObjectMap<TextureAtlasSprite, Int2IntMap> runAnalysisSync(@Nullable Object2IntMap<BlockState> blockStateIds) {
         Stopwatch watch = Stopwatch.createStarted();
         var result = runAnalysis(blockStateIds).join();
         watch.stop();
@@ -88,7 +134,7 @@ public class ModelTextureAnalyzer {
         return result;
     }
 
-    public static CompletableFuture<@Nullable Object2IntMap<TextureAtlasSprite>> runAnalysis(@Nullable Object2IntMap<BlockState> blockStateIds) {
+    public static CompletableFuture<@Nullable Object2ObjectMap<TextureAtlasSprite, Int2IntMap>> runAnalysis(@Nullable Object2IntMap<BlockState> blockStateIds) {
         if (blockStateIds == null) {
             return CompletableFuture.completedFuture(null);
         }
@@ -101,25 +147,31 @@ public class ModelTextureAnalyzer {
         var threadedStageCompletion = CompletableFuture.allOf(analyzer.threads.stream().map(AnalyzerThread::getCompletionFuture).toArray(CompletableFuture[]::new));
         // Wait for all the threads to terminate
         return threadedStageCompletion.thenApply(v -> {
-            Object2ObjectOpenHashMap<TextureAtlasSprite, Int2IntMap> mergedMap = new Object2ObjectOpenHashMap<>();
+            Object2ObjectOpenHashMap<TextureAtlasSprite, Int2ObjectMap<Int2IntMap>> mergedMap = new Object2ObjectOpenHashMap<>();
             for (AnalyzerThread t : analyzer.threads) {
                 mergeIntoMainMap(mergedMap, t.votingMap);
             }
 
-            Object2IntMap<TextureAtlasSprite> finalMap = new Object2IntOpenHashMap<>();
+            Object2ObjectMap<TextureAtlasSprite, Int2IntMap> finalMap = new Object2ObjectOpenHashMap<>();
 
             var entryComparator = Comparator.comparingInt(Int2IntMap.Entry::getIntValue);
 
             for (var entry : Object2ObjectMaps.fastIterable(mergedMap)) {
-                Int2IntMap.Entry highestEntry;
+                Int2IntMap materialByProperty = new Int2IntArrayMap();
 
-                if (entry.getValue().size() == 1) {
-                    highestEntry = entry.getValue().int2IntEntrySet().iterator().next();
-                } else {
-                    highestEntry = entry.getValue().int2IntEntrySet().stream().max(entryComparator).orElseThrow();
+                for (var entryByProperty : Int2ObjectMaps.fastIterable(entry.getValue())) {
+                    Int2IntMap.Entry highestEntry;
+
+                    if (entry.getValue().size() == 1) {
+                        highestEntry = entryByProperty.getValue().int2IntEntrySet().iterator().next();
+                    } else {
+                        highestEntry = entryByProperty.getValue().int2IntEntrySet().stream().max(entryComparator).orElseThrow();
+                    }
+
+                    materialByProperty.put(entryByProperty.getIntKey(), highestEntry.getIntKey());
                 }
 
-                finalMap.put(entry.getKey(), highestEntry.getIntKey());
+                finalMap.put(entry.getKey(), materialByProperty);
             }
 
             return finalMap;
@@ -128,11 +180,12 @@ public class ModelTextureAnalyzer {
 
     static class AnalyzerThread extends Thread {
         private final SingleThreadedRandomSource random = new SingleThreadedRandomSource(42L);
-        private final Object2ObjectMap<TextureAtlasSprite, Int2IntMap> votingMap = new Object2ObjectOpenHashMap<>();
+        private final Object2ObjectOpenHashMap<TextureAtlasSprite, Int2ObjectMap<Int2IntMap>> votingMap = new Object2ObjectOpenHashMap<>();
         private final BlockModelShaper blockModelShaper = Minecraft.getInstance().getModelManager().getBlockModelShaper();
         private final Object2IntMap<BlockState> blockStateIds;
         private final List<ImmutableList<BlockState>> tasks;
         private final CompletableFuture<Void> completableFuture;
+        private final ReferenceOpenHashSet<BakedQuad> seenQuads = new ReferenceOpenHashSet<>();
 
         AnalyzerThread(Object2IntMap<BlockState> blockStateIds, List<ImmutableList<BlockState>> tasks) {
             this.blockStateIds = blockStateIds;
@@ -162,22 +215,27 @@ public class ModelTextureAnalyzer {
                 var state = states.get(i);
 
                 var model = blockModelShaper.getBlockModel(state);
+
                 var materialId = blockStateIds.getInt(state);
+
+                var stateProps = computePropertiesForState(state);
 
                 try {
                     for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
-                        conductVoting(model, state, direction, materialId);
+                        conductVoting(model, state, stateProps, direction, materialId);
                     }
 
-                    conductVoting(model, state, null, materialId);
+                    conductVoting(model, state, stateProps, null, materialId);
                 } catch (Exception ignored) {
                     // No problem, we'll just skip this block.
                     break;
                 }
             }
+
+            seenQuads.clear();
         }
 
-        private void conductVoting(BakedModel model, BlockState state, @Nullable Direction direction, int vote) {
+        private void conductVoting(BakedModel model, BlockState state, int stateProps, @Nullable Direction direction, int vote) {
             random.setSeed(42L);
             //? if forge
             List<BakedQuad> quadList = model.getQuads(state, direction, random, net.minecraftforge.client.model.data.ModelData.EMPTY, null);
@@ -191,16 +249,30 @@ public class ModelTextureAnalyzer {
             //noinspection ForLoopReplaceableByForEach
             for (int i = 0; i < quadList.size(); i++) {
                 var quad = quadList.get(i);
+
+                // Do not allow the same quad to vote multiple times for different states. This helps prevent
+                // blocks with high quantities of blockstates from skewing the vote. We need to do this, rather than
+                // merging all the votes for a given block, as we need to allow actual visual variations to be counted.
+                if (!seenQuads.add(quad)) {
+                    continue;
+                }
+
                 var sprite = quad.getSprite();
 
                 if (sprite != null) {
                     var votes = votingMap.get(sprite);
                     if (votes == null) {
-                        votes = new Int2IntArrayMap();
+                        votes = new Int2ObjectArrayMap<>();
                         votingMap.put(sprite, votes);
                     }
 
-                    votes.mergeInt(vote, 1, Integer::sum);
+                    var votesByProperty = votes.get(stateProps);
+                    if (votesByProperty == null) {
+                        votesByProperty = new Int2IntArrayMap();
+                        votes.put(stateProps, votesByProperty);
+                    }
+
+                    votesByProperty.mergeInt(vote, 1, Integer::sum);
                 }
             }
         }
