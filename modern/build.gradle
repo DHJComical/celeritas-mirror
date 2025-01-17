@@ -186,7 +186,6 @@ if (shadersEnabled) {
 }
 
 evaluationDependsOn(":common")
-evaluationDependsOn(":glsl-relocated")
 
 unimined.minecraft {
     combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
