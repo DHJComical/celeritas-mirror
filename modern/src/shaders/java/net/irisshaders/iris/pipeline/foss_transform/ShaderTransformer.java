@@ -1,9 +1,6 @@
 package net.irisshaders.iris.pipeline.foss_transform;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.base.Supplier;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.shader.ShaderType;
 import net.irisshaders.iris.pipeline.transform.Patch;
@@ -131,8 +128,6 @@ public class ShaderTransformer {
         EnumMap<PatchShaderType, Transformer> types = new EnumMap<>(PatchShaderType.class);
         EnumMap<PatchShaderType, String> prepatched = new EnumMap<>(PatchShaderType.class);
 
-        Stopwatch watch = Stopwatch.createStarted();
-
         for (PatchShaderType type : PatchShaderType.values()) {
             parameters.type = type;
             if (inputs.get(type) == null) {
@@ -235,7 +230,6 @@ public class ShaderTransformer {
                 result.put(entry.getKey(), getFormattedShader(tree, prepatched.get(entry.getKey())));
             });
         }
-        watch.stop();
         return result;
     }
 
