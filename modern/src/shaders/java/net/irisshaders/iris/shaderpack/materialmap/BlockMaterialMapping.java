@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -35,7 +36,7 @@ public class BlockMaterialMapping {
 		Map<Block, RenderType> blockTypeIds = new Object2ObjectOpenHashMap<>();
 
 		blockPropertiesMap.forEach((id, blockType) -> {
-			ResourceLocation resourceLocation = new ResourceLocation(id.getNamespace(), id.getName());
+			ResourceLocation resourceLocation = ResourceLocationUtil.make(id.getNamespace(), id.getName());
 
             Block block = BuiltInRegistries.BLOCK.get(resourceLocation);
 
@@ -81,7 +82,7 @@ public class BlockMaterialMapping {
 		NamespacedId id = entry.id();
 		ResourceLocation resourceLocation;
 		try {
-			resourceLocation = new ResourceLocation(id.getNamespace(), id.getName());
+			resourceLocation = ResourceLocationUtil.make(id.getNamespace(), id.getName());
 		} catch (Exception exception) {
 			throw new IllegalStateException("Failed to get entry for " + intId, exception);
 		}

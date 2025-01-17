@@ -24,6 +24,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.Mth;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -157,7 +158,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 			}
 		}
 
-		ResourceLocation pbrSpriteName = new ResourceLocation(spriteName.getNamespace(), spriteName.getPath() + pbrType.getSuffix());
+		ResourceLocation pbrSpriteName = ResourceLocationUtil.make(spriteName.getNamespace(), spriteName.getPath() + pbrType.getSuffix());
 		PBRSpriteContents pbrSpriteContents = new PBRSpriteContents(pbrSpriteName, new FrameSize(frameWidth, frameHeight), nativeImage, /*? if <1.20.4 {*/ metadataSection /*?} else {*/ /*animationMetadata *//*?}*/, pbrType);
 		pbrSpriteContents.increaseMipLevel(mipLevel);
 		return new PBRTextureAtlasSprite(pbrSpriteName, pbrSpriteContents, atlasWidth, atlasHeight, sprite.getX(), sprite.getY(), sprite);
@@ -167,9 +168,9 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		String path = pbrType.appendSuffix(spriteName.getPath());
 		// Temporary fix for CIT Resewn. CIT Resewn has sprites that are not in the textures/ folder, so a custom check must be used here to avoid that assumption.
 		if (path.startsWith("optifine/cit/")) {
-			return new ResourceLocation(spriteName.getNamespace(), path + ".png");
+			return ResourceLocationUtil.make(spriteName.getNamespace(), path + ".png");
 		}
-		return new ResourceLocation(spriteName.getNamespace(), "textures/" + path + ".png");
+		return ResourceLocationUtil.make(spriteName.getNamespace(), "textures/" + path + ".png");
 	}
 
 	protected static class PBRSpriteContents extends SpriteContents implements CustomMipmapGenerator.Provider {

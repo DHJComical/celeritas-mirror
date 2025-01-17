@@ -229,12 +229,12 @@ public class SegmentedBufferBuilder implements MultiBufferSource, MemoryTracking
 	}
 
 	@Override
-	public int getAllocatedSize() {
+	public long getAllocatedSize() {
 		return ((MemoryTrackingBuffer) buffer).getAllocatedSize();
 	}
 
 	@Override
-	public int getUsedSize() {
+	public long getUsedSize() {
 		return ((MemoryTrackingBuffer) buffer).getUsedSize();
 	}
 
@@ -242,5 +242,9 @@ public class SegmentedBufferBuilder implements MultiBufferSource, MemoryTracking
 	public void freeAndDeleteBuffer() {
 		((MemoryTrackingBuffer) buffer).freeAndDeleteBuffer();
 	}
+
+    public void lastDitchAttempt() {
+
+    }
 }
 //?}

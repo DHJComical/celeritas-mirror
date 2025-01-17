@@ -1,14 +1,14 @@
 package net.irisshaders.iris.pathways;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
+import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
+import org.embeddedt.embeddium.api.vertex.format.common.PositionVertex;
 import org.joml.Matrix4f;
+import org.lwjgl.system.MemoryStack;
 
 /**
  * Renders the sky horizon. Vanilla Minecraft simply uses the "clear color" for its horizon, and then draws a plane
@@ -55,31 +55,23 @@ public class HorizonRenderer {
 			this.buffer.close();
 		}
 
-		BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-
-		// Build the horizon quads into a buffer
-		buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-		buildHorizon(currentRenderDistance * 16, buffer);
-		BufferBuilder.RenderedBuffer renderedBuffer = buffer.end();
-
-		this.buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-		this.buffer.bind();
-		this.buffer.upload(renderedBuffer);
-		VertexBuffer.unbind();
+        this.buffer = BufferHelper.makeStaticBuffer(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION, writer -> {
+            buildHorizon(currentRenderDistance * 16, writer);
+        });
 	}
 
-	private void buildQuad(VertexConsumer consumer, double x1, double z1, double x2, double z2) {
-		consumer.vertex(x1, BOTTOM, z1);
-		consumer.endVertex();
-		consumer.vertex(x1, TOP, z1);
-		consumer.endVertex();
-		consumer.vertex(x2, TOP, z2);
-		consumer.endVertex();
-		consumer.vertex(x2, BOTTOM, z2);
-		consumer.endVertex();
+	private void buildQuad(VertexBufferWriter consumer, double x1, double z1, double x2, double z2) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            var vertex = stack.nmalloc(4 * PositionVertex.STRIDE);
+            PositionVertex.put(vertex + 0 * PositionVertex.STRIDE, (float)x1, BOTTOM, (float)z1);
+            PositionVertex.put(vertex + 1 * PositionVertex.STRIDE, (float)x1, TOP, (float)z1);
+            PositionVertex.put(vertex + 2 * PositionVertex.STRIDE, (float)x2, TOP, (float)z2);
+            PositionVertex.put(vertex + 3 * PositionVertex.STRIDE, (float)x2, BOTTOM, (float)z2);
+            consumer.push(stack, vertex, 4, PositionVertex.FORMAT);
+        }
 	}
 
-	private void buildHalf(VertexConsumer consumer, double adjacent, double opposite, boolean invert) {
+	private void buildHalf(VertexBufferWriter consumer, double adjacent, double opposite, boolean invert) {
 		if (invert) {
 			adjacent = -adjacent;
 			opposite = -opposite;
@@ -105,49 +97,51 @@ public class HorizonRenderer {
 	 * @param opposite the opposite side length of the a triangle with a hypotenuse extending from the center of the
 	 *                 octagon to a given vertex on the perimeter.
 	 */
-	private void buildOctagonalPrism(VertexConsumer consumer, double adjacent, double opposite) {
+	private void buildOctagonalPrism(VertexBufferWriter consumer, double adjacent, double opposite) {
 		buildHalf(consumer, adjacent, opposite, false);
 		buildHalf(consumer, adjacent, opposite, true);
 	}
 
-	private void buildRegularOctagonalPrism(VertexConsumer consumer, double radius) {
+	private void buildRegularOctagonalPrism(VertexBufferWriter consumer, double radius) {
 		buildOctagonalPrism(consumer, radius * COS_22_5, radius * SIN_22_5);
 	}
 
-	private void buildBottomPlane(VertexConsumer consumer, int radius) {
-		for (int x = -radius; x <= radius; x += 64) {
-			for (int z = -radius; z <= radius; z += 64) {
-				consumer.vertex(x + 64, BOTTOM, z);
-				consumer.endVertex();
-				consumer.vertex(x, BOTTOM, z);
-				consumer.endVertex();
-				consumer.vertex(x, BOTTOM, z + 64);
-				consumer.endVertex();
-				consumer.vertex(x + 64, BOTTOM, z + 64);
-				consumer.endVertex();
-			}
-		}
+	private void buildBottomPlane(VertexBufferWriter consumer, int radius) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            var vertex = stack.nmalloc(4 * PositionVertex.STRIDE);
+
+            for (int x = -radius; x <= radius; x += 64) {
+                for (int z = -radius; z <= radius; z += 64) {
+                    PositionVertex.put(vertex + 0 * PositionVertex.STRIDE, (float)(x + 64), BOTTOM, (float)z);
+                    PositionVertex.put(vertex + 1 * PositionVertex.STRIDE, (float)x, BOTTOM, (float)z);
+                    PositionVertex.put(vertex + 2 * PositionVertex.STRIDE, (float)x, BOTTOM, (float)(z + 64));
+                    PositionVertex.put(vertex + 3 * PositionVertex.STRIDE, (float)(x + 64), BOTTOM, (float)(z + 64));
+                    consumer.push(stack, vertex, 4, PositionVertex.FORMAT);
+                }
+            }
+        }
 	}
 
-	private void buildTopPlane(VertexConsumer consumer, int radius) {
+	private void buildTopPlane(VertexBufferWriter consumer, int radius) {
 		// You might be tempted to try to combine this with buildBottomPlane to avoid code duplication,
 		// but that won't work since the winding order has to be reversed or else one of the planes will be
 		// discarded by back face culling.
-		for (int x = -radius; x <= radius; x += 64) {
-			for (int z = -radius; z <= radius; z += 64) {
-				consumer.vertex(x + 64, TOP, z);
-				consumer.endVertex();
-				consumer.vertex(x + 64, TOP, z + 64);
-				consumer.endVertex();
-				consumer.vertex(x, TOP, z + 64);
-				consumer.endVertex();
-				consumer.vertex(x, TOP, z);
-				consumer.endVertex();
-			}
-		}
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            var vertex = stack.nmalloc(4 * PositionVertex.STRIDE);
+
+            for (int x = -radius; x <= radius; x += 64) {
+                for (int z = -radius; z <= radius; z += 64) {
+                    PositionVertex.put(vertex + 0 * PositionVertex.STRIDE, (float)(x + 64), TOP, (float)z);
+                    PositionVertex.put(vertex + 1 * PositionVertex.STRIDE, (float)(x + 64), TOP, (float)(z + 64));
+                    PositionVertex.put(vertex + 2 * PositionVertex.STRIDE, (float)x, TOP, (float)(z + 64));
+                    PositionVertex.put(vertex + 3 * PositionVertex.STRIDE, (float)x, TOP, (float)z);
+                    consumer.push(stack, vertex, 4, PositionVertex.FORMAT);
+                }
+            }
+        }
 	}
 
-	private void buildHorizon(int radius, VertexConsumer consumer) {
+	private void buildHorizon(int radius, VertexBufferWriter consumer) {
 		if (radius > 256) {
 			// Prevent the prism from getting too large, this causes issues on some shader packs that modify the vanilla
 			// sky if we don't do this.

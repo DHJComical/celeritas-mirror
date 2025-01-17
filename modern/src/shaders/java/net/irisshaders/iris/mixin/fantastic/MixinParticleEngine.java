@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.irisshaders.iris.fantastic.IrisParticleRenderTypes;
 import net.irisshaders.iris.fantastic.ParticleRenderingPhase;
 import net.irisshaders.iris.fantastic.PhasedParticleEngine;
 import net.irisshaders.iris.mixin.InjectionPoints;
@@ -55,8 +54,7 @@ public class MixinParticleEngine implements PhasedParticleEngine {
 				ParticleRenderType.PARTICLE_SHEET_OPAQUE,
 				ParticleRenderType.PARTICLE_SHEET_LIT,
 				ParticleRenderType.CUSTOM,
-				ParticleRenderType.NO_RENDER,
-                IrisParticleRenderTypes.OPAQUE_TERRAIN
+				ParticleRenderType.NO_RENDER
 		);
 	}
 

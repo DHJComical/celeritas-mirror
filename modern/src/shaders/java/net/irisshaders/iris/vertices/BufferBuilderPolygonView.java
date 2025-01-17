@@ -1,44 +1,39 @@
 package net.irisshaders.iris.vertices;
 
 import net.irisshaders.iris.vertices.views.QuadView;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 
 public class BufferBuilderPolygonView implements QuadView {
-	private ByteBuffer buffer;
-	private int writePointer;
-	private int stride = 48;
-	private int vertexAmount;
+    private long[] writePointers;
 
-	public void setup(ByteBuffer buffer, int writePointer, int stride, int vertexAmount) {
-		this.buffer = buffer;
-		this.writePointer = writePointer;
-		this.stride = stride;
-		this.vertexAmount = vertexAmount;
-	}
+    public void setup(long[] writePointers) {
+        this.writePointers = writePointers;
+    }
 
-	@Override
-	public float x(int index) {
-		return buffer.getFloat(writePointer - stride * (vertexAmount - index));
-	}
+    @Override
+    public float x(int index) {
+        return MemoryUtil.memGetFloat(writePointers[index]);
+    }
 
-	@Override
-	public float y(int index) {
-		return buffer.getFloat(writePointer + 4 - stride * (vertexAmount - index));
-	}
+    @Override
+    public float y(int index) {
+        return MemoryUtil.memGetFloat(writePointers[index] + 4);
+    }
 
-	@Override
-	public float z(int index) {
-		return buffer.getFloat(writePointer + 8 - stride * (vertexAmount - index));
-	}
+    @Override
+    public float z(int index) {
+        return MemoryUtil.memGetFloat(writePointers[index] + 8);
+    }
 
-	@Override
-	public float u(int index) {
-		return buffer.getFloat(writePointer + 16 - stride * (vertexAmount - index));
-	}
+    @Override
+    public float u(int index) {
+        return MemoryUtil.memGetFloat(writePointers[index] + 16);
+    }
 
-	@Override
-	public float v(int index) {
-		return buffer.getFloat(writePointer + 20 - stride * (vertexAmount - index));
-	}
+    @Override
+    public float v(int index) {
+        return MemoryUtil.memGetFloat(writePointers[index] + 20);
+    }
 }

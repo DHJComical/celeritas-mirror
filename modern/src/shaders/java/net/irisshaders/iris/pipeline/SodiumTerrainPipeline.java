@@ -30,6 +30,7 @@ import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.builtin.BuiltinReplacementUniforms;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import net.minecraft.resources.ResourceLocation;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -299,7 +300,7 @@ public class SodiumTerrainPipeline {
 		String namespace = matcher.group("namespace");
 		String path = matcher.group("path");
 
-		ResourceLocation identifier = new ResourceLocation(namespace, path);
+		ResourceLocation identifier = ResourceLocationUtil.make(namespace, path);
 		return "";
 	}
 

@@ -4,6 +4,7 @@ import net.irisshaders.iris.Iris;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.FileNotFoundException;
@@ -14,7 +15,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 public class TextureFormatLoader {
-	public static final ResourceLocation LOCATION = new ResourceLocation("optifine/texture.properties");
+	public static final ResourceLocation LOCATION = ResourceLocationUtil.make("optifine/texture.properties");
 
 	private static TextureFormat format;
 

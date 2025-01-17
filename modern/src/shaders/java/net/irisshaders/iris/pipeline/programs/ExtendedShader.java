@@ -30,6 +30,7 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -232,7 +233,7 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 
 	@Override
 	public void iris$createExtraShaders(ResourceProvider factory, ResourceLocation name) {
-		factory.getResource(new ResourceLocation(name.getNamespace(), name.getPath() + "_geometry.gsh")).ifPresent(geometry -> {
+		factory.getResource(ResourceLocationUtil.make(name.getNamespace(), name.getPath() + "_geometry.gsh")).ifPresent(geometry -> {
 			try {
 				this.geometry = Program.compileShader(IrisProgramTypes.GEOMETRY, name.getPath(), geometry.open(), geometry.sourcePackId(), new GlslPreprocessor() {
 					@Nullable
@@ -246,7 +247,7 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 				Iris.logger.error("Failed to create shader program", e);
 			}
 		});
-		factory.getResource(new ResourceLocation(name.getNamespace(), name.getPath() + "_tessControl.tcs")).ifPresent(tessControl -> {
+		factory.getResource(ResourceLocationUtil.make(name.getNamespace(), name.getPath() + "_tessControl.tcs")).ifPresent(tessControl -> {
 			try {
 				this.tessControl = Program.compileShader(IrisProgramTypes.TESS_CONTROL, name.getPath(), tessControl.open(), tessControl.sourcePackId(), new GlslPreprocessor() {
 					@Nullable
@@ -260,7 +261,7 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 				Iris.logger.error("Failed to create shader program", e);
 			}
 		});
-		factory.getResource(new ResourceLocation(name.getNamespace(), name.getPath() + "_tessEval.tes")).ifPresent(tessEval -> {
+		factory.getResource(ResourceLocationUtil.make(name.getNamespace(), name.getPath() + "_tessEval.tes")).ifPresent(tessEval -> {
 			try {
 				this.tessEval = Program.compileShader(IrisProgramTypes.TESS_EVAL, name.getPath(), tessEval.open(), tessEval.sourcePackId(), new GlslPreprocessor() {
 					@Nullable
