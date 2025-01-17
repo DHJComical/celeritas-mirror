@@ -30,6 +30,9 @@ public class ShaderMap {
 
         for (int i = 0; i < ids.length; i++) {
             futures[i] = factory.create(ids[i], syncExecutor);
+            if (futures[i] == null) {
+                throw new IllegalArgumentException("Factory for " + ids[i] + " returned null");
+            }
         }
 
         var combinedFuture = CompletableFuture.allOf(futures);

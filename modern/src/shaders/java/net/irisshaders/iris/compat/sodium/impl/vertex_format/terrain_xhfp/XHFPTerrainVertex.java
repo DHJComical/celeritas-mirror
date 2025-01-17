@@ -1,6 +1,7 @@
 package net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntFunction;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.irisshaders.iris.Iris;
@@ -9,6 +10,7 @@ import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.world.level.block.state.BlockState;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import net.irisshaders.iris.compat.sodium.impl.block_context.BlockContextHolder;
@@ -33,7 +35,7 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
 	private float vSum;
 
     private final TextureAtlas blocksAtlas = (TextureAtlas)Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS);
-    private final Object2ObjectMap<TextureAtlasSprite, Int2IntMap> fallbackMaterials = WorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
+    private final Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> fallbackMaterials = WorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
 
 	@Override
 	public void iris$setContextHolder(BlockContextHolder holder) {

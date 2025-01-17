@@ -17,7 +17,7 @@ public class WorldRenderingSettings {
 
 	private boolean reloadRequired;
     private Object2IntMap<BlockState> blockStateIds;
-    private Object2ObjectMap<TextureAtlasSprite, Int2IntMap> fallbackTextureMaterialMapping;
+    private Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> fallbackTextureMaterialMapping;
 	private Map<Block, RenderType> blockTypeIds;
 	private Object2IntFunction<NamespacedId> entityIds;
 	private Object2IntFunction<NamespacedId> itemIds;
@@ -65,11 +65,11 @@ public class WorldRenderingSettings {
 	}
 
     @Nullable
-    public Object2ObjectMap<TextureAtlasSprite, Int2IntMap> getFallbackTextureMaterialMapping() {
+    public Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> getFallbackTextureMaterialMapping() {
         return fallbackTextureMaterialMapping;
     }
 
-    public void setFallbackTextureMaterialMapping(Object2ObjectMap<TextureAtlasSprite, Int2IntMap> fallbackTextureMaterialMapping) {
+    public void setFallbackTextureMaterialMapping(Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> fallbackTextureMaterialMapping) {
         if (this.fallbackTextureMaterialMapping != null && this.fallbackTextureMaterialMapping.equals(fallbackTextureMaterialMapping)) {
             return;
         }

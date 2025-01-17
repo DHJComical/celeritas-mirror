@@ -425,7 +425,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
                     if (shadowRenderTargets != null) {
                         return createShadowShader(key.getName(), resolver.resolve(key.getProgram()), key, syncExecutor);
                     } else {
-                        return null;
+                        return CompletableFuture.completedFuture(null);
                     }
                 } else {
                     return createShader(key.getName(), resolver.resolve(key.getProgram()), key, syncExecutor);

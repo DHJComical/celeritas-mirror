@@ -77,34 +77,51 @@ public class ModelTextureAnalyzer {
         return props;
     }
 
-    public static int fetchBlockIdForTexturedState(Object2ObjectMap<TextureAtlasSprite, Int2IntMap> fallbackMaterialMap, BlockState state, TextureAtlasSprite sprite) {
+    private static final Int2ObjectMap<Object2IntFunction<BlockState>> FIXED_ID_CACHE = new Int2ObjectOpenHashMap<>();
+
+    private static Object2IntFunction<BlockState> fixedId(int id) {
+        return FIXED_ID_CACHE.computeIfAbsent(id, i -> state -> i);
+    }
+
+    private static Object2IntFunction<BlockState> forPropertyMap(Int2IntMap byPropertyMap) {
+        return state -> {
+            if (!(state instanceof BlockState)) {
+                return -1;
+            }
+
+            int props = computePropertiesForState((BlockState)state);
+
+            int blockId = byPropertyMap.getOrDefault(props, -1);
+
+            if (blockId != -1) {
+                return blockId;
+            }
+
+            // Compute the closest bitwise match and use that
+
+            int bestBlockId = -1, bestDifferenceCount = Integer.MAX_VALUE;
+
+            for (var entry : Int2IntMaps.fastIterable(byPropertyMap)) {
+                int diff = Integer.bitCount(entry.getIntKey() ^ props);
+                if (diff < bestDifferenceCount) {
+                    bestBlockId = entry.getIntKey();
+                    bestDifferenceCount = diff;
+                }
+            }
+
+            return bestBlockId;
+        };
+    }
+    private static final Object2IntFunction<BlockState> NONE = fixedId(-1);
+
+    public static int fetchBlockIdForTexturedState(Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> fallbackMaterialMap, BlockState state, TextureAtlasSprite sprite) {
         var byPropertyMap = fallbackMaterialMap.get(sprite);
 
         if (byPropertyMap == null) {
             return -1;
         }
 
-        int props = computePropertiesForState(state);
-
-        int blockId = byPropertyMap.getOrDefault(props, -1);
-
-        if (blockId != -1) {
-            return blockId;
-        }
-
-        // Compute the closest bitwise match and use that
-
-        int bestBlockId = -1, bestDifferenceCount = Integer.MAX_VALUE;
-
-        for (var entry : Int2IntMaps.fastIterable(byPropertyMap)) {
-            int diff = Integer.bitCount(entry.getIntKey() ^ props);
-            if (diff < bestDifferenceCount) {
-                bestBlockId = entry.getIntKey();
-                bestDifferenceCount = diff;
-            }
-        }
-
-        return bestBlockId;
+        return byPropertyMap.applyAsInt(state);
     }
 
     private static void mergeIntoMainMap(Object2ObjectMap<TextureAtlasSprite, Int2ObjectMap<Int2IntMap>> dest, Object2ObjectMap<TextureAtlasSprite, Int2ObjectMap<Int2IntMap>> src) {
@@ -126,7 +143,7 @@ public class ModelTextureAnalyzer {
         });
     }
 
-    public static @Nullable Object2ObjectMap<TextureAtlasSprite, Int2IntMap> runAnalysisSync(@Nullable Object2IntMap<BlockState> blockStateIds) {
+    public static @Nullable Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> runAnalysisSync(@Nullable Object2IntMap<BlockState> blockStateIds) {
         Stopwatch watch = Stopwatch.createStarted();
         var result = runAnalysis(blockStateIds).join();
         watch.stop();
@@ -134,7 +151,7 @@ public class ModelTextureAnalyzer {
         return result;
     }
 
-    public static CompletableFuture<@Nullable Object2ObjectMap<TextureAtlasSprite, Int2IntMap>> runAnalysis(@Nullable Object2IntMap<BlockState> blockStateIds) {
+    public static CompletableFuture<@Nullable Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>>> runAnalysis(@Nullable Object2IntMap<BlockState> blockStateIds) {
         if (blockStateIds == null) {
             return CompletableFuture.completedFuture(null);
         }
@@ -152,7 +169,7 @@ public class ModelTextureAnalyzer {
                 mergeIntoMainMap(mergedMap, t.votingMap);
             }
 
-            Object2ObjectMap<TextureAtlasSprite, Int2IntMap> finalMap = new Object2ObjectOpenHashMap<>();
+            Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> finalMap = new Object2ObjectOpenHashMap<>();
 
             var entryComparator = Comparator.comparingInt(Int2IntMap.Entry::getIntValue);
 
@@ -171,7 +188,13 @@ public class ModelTextureAnalyzer {
                     materialByProperty.put(entryByProperty.getIntKey(), highestEntry.getIntKey());
                 }
 
-                finalMap.put(entry.getKey(), materialByProperty);
+                if (materialByProperty.size() == 0) {
+                    finalMap.put(entry.getKey(), NONE);
+                } else if (materialByProperty.size() == 1 || materialByProperty.values().intStream().distinct().count() == 1) {
+                    finalMap.put(entry.getKey(), fixedId(materialByProperty.values().iterator().nextInt()));
+                } else {
+                    finalMap.put(entry.getKey(), forPropertyMap(materialByProperty));
+                }
             }
 
             return finalMap;
