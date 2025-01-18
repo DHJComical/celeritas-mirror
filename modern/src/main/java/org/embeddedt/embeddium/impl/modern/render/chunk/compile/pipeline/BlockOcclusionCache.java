@@ -4,10 +4,12 @@ import it.unimi.dsi.fastutil.objects.Object2ByteLinkedOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.embeddedt.embeddium.impl.mixin.features.options.render_layers.ItemBlockRenderTypesAccessor;
 import org.embeddedt.embeddium.impl.util.ModernBlockPosUtil;
 
 /**
@@ -20,9 +22,12 @@ public class BlockOcclusionCache {
     private final CachedOcclusionShapeTest cachedTest = new CachedOcclusionShapeTest();
     private final BlockPos.MutableBlockPos cpos = new BlockPos.MutableBlockPos();
 
+    private final boolean leavesRenderingAsSolid;
+
     public BlockOcclusionCache() {
         this.map = new Object2ByteLinkedOpenHashMap<>(2048, 0.5F);
         this.map.defaultReturnValue(UNCACHED_VALUE);
+        this.leavesRenderingAsSolid = !ItemBlockRenderTypesAccessor.celeritas$areLeavesFancy();
     }
 
     private static final Direction[] OPPOSITE_CACHE = new Direction[Direction.values().length];
@@ -66,6 +71,12 @@ public class BlockOcclusionCache {
 
             //? if <1.21.2
             if (adjShape == Shapes.block() && selfShape == Shapes.block()) return false;
+        } else if (this.leavesRenderingAsSolid && adjState.getBlock() instanceof LeavesBlock) {
+            // Allow leaves to cull like a regular solid block when in fast mode, despite not being marked as occluding
+            adjShape = Shapes.block();
+            selfShape = selfState.getFaceOcclusionShape(/*? if <1.21.2 {*/view, pos,/*?}*/ facing);
+
+            if (selfShape == Shapes.block()) return false;
         } else {
             selfShape = Shapes.empty();
             adjShape = Shapes.empty();
