@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Final;
@@ -68,6 +69,11 @@ public abstract class LevelMixin {
         }
 
         for (BlockEntity be : list) {
+            // We can avoid any further checks completely on blocks without a model
+            if (be.getBlockState().getRenderShape() != RenderShape.MODEL) {
+                continue;
+            }
+
             boolean overridesModelData = OVERRIDES_GET_MODEL_DATA.computeIfAbsent(be.getClass(), clz -> {
                 try {
                     Method method = clz.getMethod("getModelData");
