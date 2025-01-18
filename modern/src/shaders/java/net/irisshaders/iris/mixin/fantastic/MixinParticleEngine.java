@@ -66,7 +66,7 @@ public class MixinParticleEngine implements PhasedParticleEngine {
 		RenderSystem.setShader(phase == ParticleRenderingPhase.TRANSLUCENT ? ShaderAccess::getParticleTranslucentShader : pSupplier0);
 	}
 
-	@ModifyExpressionValue(method = InjectionPoints.PARTICLE_ENGINE_RENDER, at = @At(value = "INVOKE", target = "Ljava/lang/Iterable;iterator()Ljava/util/Iterator;"))
+	@ModifyExpressionValue(method = InjectionPoints.PARTICLE_ENGINE_RENDER, at = @At(value = "INVOKE", target = /*? if <1.21 {*/ "Ljava/lang/Iterable;iterator()Ljava/util/Iterator;" /*?} else {*/ /*"Ljava/util/Queue;iterator()Ljava/util/Iterator;" *//*?}*/))
 	private Iterator<Particle> iris$selectParticlesToRender(Iterator<Particle> iterator, @Local(ordinal = 0) ParticleRenderType renderType) {
         if (phase == ParticleRenderingPhase.NOTHING) {
             // Remove everything

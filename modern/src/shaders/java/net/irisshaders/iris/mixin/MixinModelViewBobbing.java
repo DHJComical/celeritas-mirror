@@ -6,6 +6,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
+import org.joml.Quaternionf;
+import org.joml.Quaternionfc;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -92,7 +94,7 @@ public abstract class MixinModelViewBobbing {
     private boolean areShadersOn;
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
-    private void iris$saveShadersOn(float pGameRenderer0, long pLong1, CallbackInfo ci) {
+    private void iris$saveShadersOn(CallbackInfo ci) {
         areShadersOn = IrisApi.getInstance().isShaderPackInUse();
     }
 
@@ -125,10 +127,23 @@ public abstract class MixinModelViewBobbing {
 
     @Redirect(method = "renderLevel",
             at = @At(value = "INVOKE",
-                    target = "Lorg/joml/Matrix4f;rotationXYZ(FFF)Lorg/joml/Matrix4f;"))
-    private Matrix4f iris$applyBobbingToModelView(Matrix4f instance, float angleX, float angleY, float angleZ, float tickDelta) {
+                    target =
+                            //? if <1.21 {
+                            "Lorg/joml/Matrix4f;rotationXYZ(FFF)Lorg/joml/Matrix4f;"
+                            //?} else
+                            /^"Lorg/joml/Matrix4f;rotation(Lorg/joml/Quaternionfc;)Lorg/joml/Matrix4f;"^/
+            ))
+    private Matrix4f iris$applyBobbingToModelView(Matrix4f instance,
+                                                  //? if <1.21 {
+                                                  float angleX, float angleY, float angleZ, float tickDelta
+                                                  //?} else
+                                                  /^Quaternionfc quat, net.minecraft.client.DeltaTracker deltaTracker^/
+    ) {
         if (!areShadersOn) {
+            //? if <1.21 {
             instance.rotateXYZ(angleX, angleY, angleZ);
+            //?} else
+            /^instance.rotate(quat);^/
 
             return instance;
         }
@@ -136,13 +151,19 @@ public abstract class MixinModelViewBobbing {
         PoseStack stack = new PoseStack();
         stack.last().pose().set(instance);
 
+        //? if >=1.21
+        /^float tickDelta = deltaTracker.getGameTimeDeltaPartialTick(true);^/
+
         this.bobHurt(stack, tickDelta);
         if (this.minecraft.options.bobView().get()) {
             this.bobView(stack, tickDelta);
         }
 
         instance.set(stack.last().pose());
+        //? if <1.21 {
         instance.rotateXYZ(angleX, angleY, angleZ);
+        //?} else
+        /^instance.rotate(quat);^/
 
         return instance;
     }

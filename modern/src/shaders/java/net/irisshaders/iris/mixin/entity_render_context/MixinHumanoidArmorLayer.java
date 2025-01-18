@@ -1,5 +1,6 @@
 package net.irisshaders.iris.mixin.entity_render_context;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
@@ -12,6 +13,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.armortrim.ArmorTrim;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,14 +29,18 @@ public abstract class MixinHumanoidArmorLayer<T extends LivingEntity, M extends 
 		super(pRenderLayer0);
 	}
 
-	@Inject(method = "renderArmorPiece", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/HumanoidModel;copyPropertiesTo(Lnet/minecraft/client/model/HumanoidModel;)V"))
-	private void changeId(CallbackInfo ci, @Local(ordinal = 0) ArmorItem lvArmorItem8) {
-		if (WorldRenderingSettings.INSTANCE.getItemIds() == null) return;
+	@ModifyExpressionValue(method = "*", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getItemBySlot(Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/world/item/ItemStack;"))
+	private ItemStack changeId(ItemStack original) {
+		if (WorldRenderingSettings.INSTANCE.getItemIds() == null) return original;
 
-		ResourceLocation location = BuiltInRegistries.ITEM.getKey(lvArmorItem8);
+        if (original.getItem() instanceof ArmorItem lvArmorItem8) {
+            ResourceLocation location = BuiltInRegistries.ITEM.getKey(lvArmorItem8);
 
-		CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getItemIds().applyAsInt(new NamespacedId(location.getNamespace(), location.getPath())));
-	}
+            CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getItemIds().applyAsInt(new NamespacedId(location.getNamespace(), location.getPath())));
+        }
+
+        return original;
+    }
 
 	@Inject(method = "renderTrim*", at = @At(value = "HEAD"))
 	private void changeTrimTemp(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) ArmorTrim pArmorTrim4) {

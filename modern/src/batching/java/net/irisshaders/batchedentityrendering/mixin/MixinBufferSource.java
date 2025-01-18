@@ -7,6 +7,9 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MultiBufferSource.BufferSource.class)
 public class MixinBufferSource implements MemoryTrackingBuffer {
@@ -28,7 +31,12 @@ public class MixinBufferSource implements MemoryTrackingBuffer {
     protected java.util.SequencedMap<RenderType, com.mojang.blaze3d.vertex.ByteBufferBuilder> fixedBuffers;
 
     @Unique
-    private final com.mojang.blaze3d.vertex.ByteBufferBuilder builder = sharedBuffer;
+    private com.mojang.blaze3d.vertex.ByteBufferBuilder builder;
+
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void assignOurField(CallbackInfo ci) {
+        this.builder = this.sharedBuffer;
+    }
     *///?}
 
 	@Override

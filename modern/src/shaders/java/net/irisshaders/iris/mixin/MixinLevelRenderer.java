@@ -60,14 +60,19 @@ public class MixinLevelRenderer {
 	@Shadow
 	private @Nullable ClientLevel level;
 
+    @Unique
+    private float celeritas$currentTickDelta;
+
 	// Begin shader rendering after buffers have been cleared.
 	// At this point we've ensured that Minecraft's main framebuffer is cleared.
 	// This is important or else very odd issues will happen with shaders that have a final pass that doesn't write to
 	// all pixels.
 	@Inject(method = "renderLevel", at = @At("HEAD"))
 	private void iris$setupPipeline(CallbackInfo callback,
+                                    //? if <1.21 {
                                     @Local(ordinal = 0, argsOnly = true) float tickDelta,
-                                    @Local(ordinal = 0, argsOnly = true) long startTime,
+                                    //?} else
+                                    /*@Local(ordinal = 0, argsOnly = true) net.minecraft.client.DeltaTracker deltaTracker,*/
                                     //? if <1.20.6 {
                                     @Local(ordinal = 0, argsOnly = true) PoseStack poseStack,
                                     @Local(ordinal = 0, argsOnly = true) Matrix4f projection
@@ -77,6 +82,11 @@ public class MixinLevelRenderer {
                                     *///?}
     ) {
 		DHCompat.checkFrame();
+
+        //? if >=1.21
+        /*float tickDelta = deltaTracker.getGameTimeDeltaPartialTick(true);*/
+
+        this.celeritas$currentTickDelta = tickDelta;
 
 		IrisTimeUniforms.updateTime();
         //? if <1.20.6
@@ -124,12 +134,11 @@ public class MixinLevelRenderer {
                                      //?} else
                                      /*@Local(ordinal = 0, argsOnly = true) Matrix4f modelMatrix,*/
                                      @Local(ordinal = 0, argsOnly = true) Camera camera,
-                                     @Local(ordinal = 0, argsOnly = true) GameRenderer gameRenderer,
-                                     @Local(ordinal = 0, argsOnly = true) float tickDelta
+                                     @Local(ordinal = 0, argsOnly = true) GameRenderer gameRenderer
                                      ) {
         //? if >=1.20.6
         /*var poseStack = new PoseStack();*/
-		HandRenderer.INSTANCE.render(HandRenderer.Stage.TRANSLUCENT, poseStack, tickDelta, camera, gameRenderer, pipeline);
+		HandRenderer.INSTANCE.render(HandRenderer.Stage.TRANSLUCENT, poseStack, celeritas$currentTickDelta, camera, gameRenderer, pipeline);
 		Minecraft.getInstance().getProfiler().popPush("iris_final");
 		pipeline.finalizeLevelRendering();
 		pipeline = null;
@@ -203,7 +212,12 @@ public class MixinLevelRenderer {
 		poseStack.mulPose(Axis.ZP.rotationDegrees(pipeline.getSunPathRotation()));
 	}
 
-	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;renderSky(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V", shift = At.Shift.AFTER))
+	@Inject(method = "renderLevel", at = @At(value = "INVOKE", target =
+            //? if <1.21 {
+            "Lnet/minecraft/client/renderer/LevelRenderer;renderSky(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V"
+            //?} else
+            /*"Lnet/minecraft/client/renderer/LevelRenderer;renderSky(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V"*/
+            , shift = At.Shift.AFTER))
 	private void iris$endSky(CallbackInfo ci) {
 		pipeline.setPhase(WorldRenderingPhase.NONE);
 	}
@@ -286,12 +300,11 @@ public class MixinLevelRenderer {
                                          //?} else
                                         /*@Local(ordinal = 0, argsOnly = true) Matrix4f modelMatrix,*/
                                         @Local(ordinal = 0, argsOnly = true) Camera camera,
-                                        @Local(ordinal = 0, argsOnly = true) GameRenderer gameRenderer,
-                                        @Local(ordinal = 0, argsOnly = true) float tickDelta) {
+                                        @Local(ordinal = 0, argsOnly = true) GameRenderer gameRenderer) {
         //? if >=1.20.6
         /*var poseStack = new PoseStack();*/
 		pipeline.beginHand();
-		HandRenderer.INSTANCE.render(HandRenderer.Stage.SOLID, poseStack, tickDelta, camera, gameRenderer, pipeline);
+		HandRenderer.INSTANCE.render(HandRenderer.Stage.SOLID, poseStack, celeritas$currentTickDelta, camera, gameRenderer, pipeline);
 		Minecraft.getInstance().getProfiler().popPush("iris_pre_translucent");
 		pipeline.beginTranslucents();
 	}

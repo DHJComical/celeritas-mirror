@@ -1,61 +1,72 @@
 package net.irisshaders.iris.mixin.sky;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.*;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
-import net.minecraft.client.Camera;
 import net.minecraft.client.renderer.LevelRenderer;
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Coerce;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Slice;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * Allows pipelines to disable the sun, moon, or both.
  */
 @Mixin(LevelRenderer.class)
 public class MixinLevelRenderer_SunMoonToggle {
-	/**
-	 * This is a convenient way to disable rendering the sun / moon, since this clears the sun's vertices from
-	 * the buffer, then when BufferRenderer is passed the empty buffer it will notice that it's empty and
-	 * won't dispatch an unnecessary draw call. Nice!
-	 */
-	@Unique
-	private void iris$emptyBuilder() {
-		BufferBuilder builder = Tesselator.getInstance().getBuilder();
 
-		builder.end().release();
-		builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+    //? if >=1.21 {
+    /*private static final String CELERITAS$DRAW_WITH_SHADER = "Lcom/mojang/blaze3d/vertex/BufferUploader;drawWithShader(Lcom/mojang/blaze3d/vertex/MeshData;)V";
+
+    @Unique
+	private void iris$emptyBuilder(Object data) {
+        ((MeshData)data).close();
 	}
 
-	@Inject(method = "renderSky",
-		at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferBuilder;end()Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;"),
+    @Unique
+    private void iris$drawBuilder(Object data) {
+        BufferUploader.drawWithShader((MeshData)data);
+    }
+    *///?} else {
+    private static final String CELERITAS$DRAW_WITH_SHADER = "Lcom/mojang/blaze3d/vertex/BufferUploader;drawWithShader(Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;)V";
+    @Unique
+    private void iris$emptyBuilder(Object data) {
+        ((BufferBuilder.RenderedBuffer)data).release();
+    }
+
+    @Unique
+    private void iris$drawBuilder(Object data) {
+        BufferUploader.drawWithShader((BufferBuilder.RenderedBuffer) data);
+    }
+    //?}
+
+	@Redirect(method = "renderSky",
+		at = @At(value = "INVOKE", target = CELERITAS$DRAW_WITH_SHADER),
 		slice = @Slice(
 			from = @At(value = "FIELD", target = "net/minecraft/client/renderer/LevelRenderer.SUN_LOCATION : Lnet/minecraft/resources/ResourceLocation;"),
 			to = @At(value = "FIELD", target = "net/minecraft/client/renderer/LevelRenderer.MOON_LOCATION : Lnet/minecraft/resources/ResourceLocation;")),
 		allow = 1)
-	private void iris$beforeDrawSun(CallbackInfo ci) {
+	private void iris$beforeDrawSun(@Coerce Object meshData) {
 		if (!Iris.getPipelineManager().getPipeline().map(WorldRenderingPipeline::shouldRenderSun).orElse(true)) {
-			iris$emptyBuilder();
-		}
+            iris$emptyBuilder(meshData);
+		} else {
+            iris$drawBuilder(meshData);
+        }
 	}
 
-	@Inject(method = "renderSky",
-		at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferBuilder;end()Lcom/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer;"),
+	@Redirect(method = "renderSky",
+		at = @At(value = "INVOKE", target = CELERITAS$DRAW_WITH_SHADER),
 		slice = @Slice(
 			from = @At(value = "FIELD", target = "net/minecraft/client/renderer/LevelRenderer.MOON_LOCATION : Lnet/minecraft/resources/ResourceLocation;"),
 			to = @At(value = "INVOKE", target = "net/minecraft/client/multiplayer/ClientLevel.getStarBrightness (F)F")),
 		allow = 1)
-	private void iris$beforeDrawMoon(CallbackInfo ci) {
+	private void iris$beforeDrawMoon(@Coerce Object meshData) {
 		if (!Iris.getPipelineManager().getPipeline().map(WorldRenderingPipeline::shouldRenderMoon).orElse(true)) {
-			iris$emptyBuilder();
-		}
+			iris$emptyBuilder(meshData);
+		} else {
+            iris$drawBuilder(meshData);
+        }
 	}
 }

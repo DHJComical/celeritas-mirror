@@ -10,5 +10,7 @@ public class InjectionPoints {
                     "Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;F" +
                     //? if forgelike
                     "Lnet/minecraft/client/renderer/culling/Frustum;" +
+                    //? if neoforge && >=1.21
+                    /*"Ljava/util/function/Predicate;" +*/
                     ")V";
 }

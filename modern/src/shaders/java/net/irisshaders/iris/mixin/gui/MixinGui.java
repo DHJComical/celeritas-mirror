@@ -23,7 +23,7 @@ public class MixinGui {
 	private Minecraft minecraft;
 
 	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
-	public void iris$handleHudHidingScreens(GuiGraphics pGui0, float pFloat1, CallbackInfo ci) {
+	public void iris$handleHudHidingScreens(CallbackInfo ci) {
 		Screen screen = this.minecraft.screen;
 
 		if (screen instanceof HudHideable) {

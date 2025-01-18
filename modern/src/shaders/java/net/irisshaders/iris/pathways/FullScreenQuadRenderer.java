@@ -1,13 +1,14 @@
 package net.irisshaders.iris.pathways;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.helpers.VertexBufferHelper;
+import org.embeddedt.embeddium.api.vertex.format.common.TexturedVertex;
+import org.lwjgl.system.MemoryStack;
 
 /**
  * Renders a full-screen textured quad to the screen. Used in composite / deferred rendering.
@@ -18,18 +19,16 @@ public class FullScreenQuadRenderer {
 	private final VertexBuffer quad;
 
 	private FullScreenQuadRenderer() {
-		BufferBuilder bufferBuilder = new BufferBuilder(DefaultVertexFormat.POSITION_TEX.getVertexSize() * 4);
-		bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-		bufferBuilder.vertex(0.0F, 0.0F, 0.0F).uv(0.0F, 0.0F).endVertex();
-		bufferBuilder.vertex(1.0F, 0.0F, 0.0F).uv(1.0F, 0.0F).endVertex();
-		bufferBuilder.vertex(1.0F, 1.0F, 0.0F).uv(1.0F, 1.0F).endVertex();
-		bufferBuilder.vertex(0.0F, 1.0F, 0.0F).uv(0.0F, 1.0F).endVertex();
-		BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
-
-		quad = new VertexBuffer(VertexBuffer.Usage.STATIC);
-		quad.bind();
-		quad.upload(renderedBuffer);
-		VertexBuffer.unbind();
+        quad = BufferHelper.makeStaticBuffer(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX, consumer -> {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                long ptr = stack.nmalloc(TexturedVertex.STRIDE * 4);
+                TexturedVertex.put(ptr + 0 * TexturedVertex.STRIDE, 0, 0, 0, 0, 0);
+                TexturedVertex.put(ptr + 1 * TexturedVertex.STRIDE, 1, 0, 0, 1, 0);
+                TexturedVertex.put(ptr + 2 * TexturedVertex.STRIDE, 1, 1, 0, 1, 1);
+                TexturedVertex.put(ptr + 3 * TexturedVertex.STRIDE, 0, 1, 0, 0, 1);
+                consumer.push(stack, ptr, 4, TexturedVertex.FORMAT);
+            }
+        });
 	}
 
 	public void render() {
