@@ -44,7 +44,8 @@ public abstract class LevelMixin {
             return;
         }
 
-        List<BlockEntity> list = new ArrayList<>();
+        ArrayList<BlockEntity> list = new ArrayList<>();
+        list.ensureCapacity(this.freshBlockEntities.size() + this.pendingFreshBlockEntities.size());
         list.addAll(this.freshBlockEntities);
         list.addAll(this.pendingFreshBlockEntities);
         listRef.set(list);
