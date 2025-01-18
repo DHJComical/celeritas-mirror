@@ -9,7 +9,6 @@ import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.irisshaders.batchedentityrendering.mixin.RenderTypeAccessor;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 
 import java.util.ArrayList;
@@ -36,6 +35,10 @@ public class SegmentedBufferBuilder implements MemoryTrackingBuffer {
 
     public VertexConsumer getBuffer(RenderType renderType) {
         try {
+            if (RenderTypeUtil.requiresSegmentSplits(renderType)) {
+                endAndGenSegmentForType(renderType);
+            }
+
             ByteBufferBuilderHolder buffer = buffers.computeIfAbsent(renderType, (r) -> new ByteBufferBuilderHolder(new ByteBufferBuilder(r.bufferSize())));
 
             buffer.wasUsed();
@@ -62,26 +65,34 @@ public class SegmentedBufferBuilder implements MemoryTrackingBuffer {
         parent.weAreOutOfMemory();
     }
 
-    public List<BufferSegment> getSegments() {
-        builders.forEach(((renderType, bufferBuilder) -> {
-            try {
-                MeshData meshData = bufferBuilder.build();
+    private void endAndGenSegmentForType(RenderType renderType) {
+        var bufferBuilder = builders.remove(renderType);
 
-                if (meshData == null) return;
+        if (bufferBuilder == null) {
+            return;
+        }
 
-                if (shouldSortOnUpload(renderType)) {
-                    meshData.sortQuads(buffers.get(renderType).getBuffer(), RenderSystem.getVertexSorting());
-                }
+        try {
+            MeshData meshData = bufferBuilder.build();
 
-                segments.add(new BufferSegment(meshData, renderType));
-            } catch (OutOfMemoryError e) {
-                // we're freaked. try to clear memory for the next one, but don't bother about this one.
+            if (meshData == null) return;
 
-                weAreOutOfMemory();
+            if (shouldSortOnUpload(renderType)) {
+                meshData.sortQuads(buffers.get(renderType).getBuffer(), RenderSystem.getVertexSorting());
             }
-        }));
 
-        builders.clear();
+            segments.add(new BufferSegment(meshData, renderType));
+        } catch (OutOfMemoryError e) {
+            // we're freaked. try to clear memory for the next one, but don't bother about this one.
+
+            weAreOutOfMemory();
+        }
+    }
+
+    public List<BufferSegment> getSegments() {
+        if (!builders.isEmpty()) {
+            List.copyOf(builders.keySet()).forEach(this::endAndGenSegmentForType);
+        }
 
         List<BufferSegment> finalSegments = new ArrayList<>(segments);
 
