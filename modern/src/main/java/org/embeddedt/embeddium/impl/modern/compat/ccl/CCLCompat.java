@@ -18,8 +18,10 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 //?}
 //? if <1.19
 /*import net.minecraftforge.registries.IRegistryDelegate;*/
-import net.neoforged.fml.ModList;
+//? if neoforge {
+/*import net.neoforged.fml.ModList;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+*///?}
 import org.embeddedt.embeddium.api.BlockRendererRegistry;
 import org.jetbrains.annotations.NotNull;
 
