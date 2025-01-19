@@ -7,14 +7,19 @@ import codechicken.lib.render.block.ICCBlockRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 //? if >=1.19 {
 import net.minecraft.core.Holder;
+//? if forge
 import net.minecraftforge.registries.ForgeRegistries;
 //?}
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
+//? if forge {
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+//?}
 //? if <1.19
 /*import net.minecraftforge.registries.IRegistryDelegate;*/
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import org.embeddedt.embeddium.api.BlockRendererRegistry;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,12 +30,15 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CCLCompat {
-    //? if >=1.19 {
+    //? if forge && >=1.19 {
 	private static Map<Holder<Block>, ICCBlockRenderer> customBlockRenderers;
     private static Map<Holder<Fluid>, ICCBlockRenderer> customFluidRenderers;
-    //?} else {
+    //?} else if forge && <1.19 {
     /*private static Map<IRegistryDelegate<Block>, ICCBlockRenderer> customBlockRenderers;
     private static Map<IRegistryDelegate<Fluid>, ICCBlockRenderer> customFluidRenderers;
+    *///?} else if neoforge {
+    /*private static Map<Block, ICCBlockRenderer> customBlockRenderers;
+    private static Map<Fluid, ICCBlockRenderer> customFluidRenderers;
     *///?}
     private static List<ICCBlockRenderer> customGlobalRenderers;
 
@@ -60,7 +68,9 @@ public class CCLCompat {
                 }
                 if(!customBlockRenderers.isEmpty()) {
                     Block block = ctx.state().getBlock();
-                    //? if >=1.19 {
+                    //? if neoforge {
+                    /*var holder = block;
+                    *///?} else if >=1.19 {
                     var holder = ForgeRegistries.BLOCKS.getDelegateOrThrow(block);
                     //?} else
                     /*var holder = block.delegate;*/
@@ -71,7 +81,9 @@ public class CCLCompat {
                 }
                 if(!customFluidRenderers.isEmpty()) {
                     Fluid fluid = ctx.state().getFluidState().getType();
-                    //? if >=1.19 {
+                    //? if neoforge {
+                    /*var holder = fluid;
+                    *///?} else if >=1.19 {
                     var holder = ForgeRegistries.FLUIDS.getDelegateOrThrow(fluid);
                     //?} else
                     /*var holder = fluid.delegate;*/
