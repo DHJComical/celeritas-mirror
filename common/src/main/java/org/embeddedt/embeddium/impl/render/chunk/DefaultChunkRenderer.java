@@ -73,7 +73,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
                 continue;
             }
 
-            fillCommandBuffer(this.batch, region, storage, renderList, camera, renderPass, useBlockFaceCulling && renderPass.isSorted());
+            fillCommandBuffer(this.batch, region, storage, renderList, camera, renderPass, useBlockFaceCulling && !renderPass.isSorted());
 
             if (this.batch.isEmpty()) {
                 continue;
