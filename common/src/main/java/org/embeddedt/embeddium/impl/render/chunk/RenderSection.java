@@ -315,7 +315,7 @@ public class RenderSection {
         if (ctx != null) {
             return ctx.getContext(key);
         } else {
-            return key.defaultValue;
+            return key.defaultValue();
         }
     }
 

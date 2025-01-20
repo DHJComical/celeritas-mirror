@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.common.datastructure;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -7,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-public class ContextBundle<UNIVERSE> {
+public final class ContextBundle<UNIVERSE> {
     private final Object[] context;
     private long populatedEntries;
     private static final ConcurrentHashMap<Class<?>, AtomicInteger> ID_TRACKING = new ConcurrentHashMap<>();
@@ -79,13 +80,16 @@ public class ContextBundle<UNIVERSE> {
         return this.populatedEntries;
     }
 
-    public static class Key<UNIVERSE, T> {
-        public final T defaultValue;
-        public final int id;
+    public record Key<UNIVERSE, T>(T defaultValue, int id) {
+        @Deprecated
+        @ApiStatus.Internal
+        public Key(T defaultValue, int id) {
+            this.defaultValue = defaultValue;
+            this.id = id;
+        }
 
         public Key(Class<UNIVERSE> universe, @Nullable T defaultValue) {
-            this.defaultValue = defaultValue;
-            this.id = idTrackerForUniverse(universe).getAndIncrement();
+            this(defaultValue, idTrackerForUniverse(universe).getAndIncrement());
             if (this.id >= 64) {
                 throw new IllegalStateException("Maximum number of keys for universe " + universe + " exceeded.");
             }

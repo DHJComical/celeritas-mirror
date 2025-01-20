@@ -135,9 +135,7 @@ public class ModernRenderSectionManager extends RenderSectionManager {
                     continue;
                 }
 
-                for (TextureAtlasSprite sprite : sprites) {
-                    SpriteUtil.markSpriteActive(sprite);
-                }
+                sprites.forEach(SpriteUtil::markSpriteActive);
             }
         }
     }
