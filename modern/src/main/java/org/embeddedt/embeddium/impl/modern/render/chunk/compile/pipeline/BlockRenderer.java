@@ -168,10 +168,12 @@ public class BlockRenderer {
 
         int nullCullFaceFlags = defaultQuadRenderingFlags;
 
+        var isMaterialSolid = material == buffers.getRenderPassConfiguration().defaultSolidMaterial();
+
         for (Direction face : DirectionUtil.ALL_DIRECTIONS) {
             List<BakedQuad> quads = this.getGeometry(ctx, face);
 
-            if (!quads.isEmpty() && this.isFaceVisible(ctx, face)) {
+            if (!quads.isEmpty() && this.isFaceVisible(ctx, face, isMaterialSolid)) {
                 this.quadRenderingFlags = defaultQuadRenderingFlags;
                 this.renderQuadList(ctx, material, lighter, colorizer, renderOffset, buffers, meshBuilder, quads, face);
                 // Make sure any flags that are turned off are also turned off for the null cullface
@@ -194,8 +196,8 @@ public class BlockRenderer {
         return ctx.model().getQuads(ctx.state(), face, random/*? if forgelike && >=1.19 {*/, ctx.modelData(), ctx.renderLayer()/*?}*/ /*? if forgelike && <1.19 {*//*, ctx.modelData()*//*?}*/);
     }
 
-    private boolean isFaceVisible(BlockRenderContext ctx, Direction face) {
-        return this.occlusionCache.shouldDrawSide(ctx.state(), ctx.localSlice(), ctx.pos(), face);
+    private boolean isFaceVisible(BlockRenderContext ctx, Direction face, boolean isMaterialSolid) {
+        return this.occlusionCache.shouldDrawSide(ctx.state(), ctx.localSlice(), ctx.pos(), face, isMaterialSolid);
     }
 
     private static int computeLightFlagMask(BakedQuad quad) {
