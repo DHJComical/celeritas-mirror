@@ -14,6 +14,7 @@ import org.joml.Vector3d;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Frustum.class)
@@ -70,5 +71,17 @@ public class FrustumMixin implements ViewportProvider {
     }
 
     *///?}
+
+    //? if forge {
+    /**
+     * @author embeddedt
+     * @reason Avoid AABB#equals in hot path, turns out Double.compare can be slow
+     */
+    @Redirect(method = "isVisible", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/phys/AABB;equals(Ljava/lang/Object;)Z"))
+    private boolean checkInfinite(AABB aabb, Object infinite) {
+            return aabb == net.minecraftforge.common.extensions.IForgeBlockEntity.INFINITE_EXTENT_AABB
+                    || (Double.isInfinite(aabb.minX) && Double.isInfinite(aabb.minY) && Double.isInfinite(aabb.minZ) && Double.isInfinite(aabb.maxX) && Double.isInfinite(aabb.maxY) && Double.isInfinite(aabb.maxZ));
+    }
+    //? }
 
 }

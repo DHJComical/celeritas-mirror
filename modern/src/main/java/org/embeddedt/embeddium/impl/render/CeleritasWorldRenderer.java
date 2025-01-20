@@ -590,11 +590,6 @@ public class CeleritasWorldRenderer {
     // the volume of a section multiplied by the number of sections to be checked at most
     private static final double MAX_ENTITY_CHECK_VOLUME = 16 * 16 * 16 * 15;
 
-    private static boolean isInfiniteExtentsBox(AABB box) {
-        return Double.isInfinite(box.minX) || Double.isInfinite(box.minY) || Double.isInfinite(box.minZ)
-            || Double.isInfinite(box.maxX) || Double.isInfinite(box.maxY) || Double.isInfinite(box.maxZ);
-    }
-
     /**
      * Returns whether or not the entity intersects with any visible chunks in the graph.
      * @return True if the entity is visible, otherwise false
@@ -614,12 +609,12 @@ public class CeleritasWorldRenderer {
         //? if >=1.21.2
         /*AABB box = renderer.getBoundingBoxForCulling(entity);*/
 
+        return this.isBoxVisible(box);
+    }
 
-        if (isInfiniteExtentsBox(box)) {
-            return true;
-        }
-
+    public boolean isBoxVisible(AABB box) {
         // bail on very large entities to avoid checking many sections
+        // this also implicitly checks for the box being infinitely large
         double entityVolume = (box.maxX - box.minX) * (box.maxY - box.minY) * (box.maxZ - box.minZ);
         if (entityVolume > MAX_ENTITY_CHECK_VOLUME) {
             // TODO: do a frustum check instead, even large entities aren't visible if they're outside the frustum
