@@ -82,6 +82,6 @@ public class FrustumMixin implements ViewportProvider {
             return aabb == net.minecraftforge.common.extensions.IForgeBlockEntity.INFINITE_EXTENT_AABB
                     || (Double.isInfinite(aabb.minX) && Double.isInfinite(aabb.minY) && Double.isInfinite(aabb.minZ) && Double.isInfinite(aabb.maxX) && Double.isInfinite(aabb.maxY) && Double.isInfinite(aabb.maxZ));
     }
-    //? }
+    //?}
 
 }
