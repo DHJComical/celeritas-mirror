@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
 //? if fabric
 /*import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;*/
+import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.FluidTags;
@@ -548,7 +549,15 @@ public class FluidRenderer {
                 setVertex(quad, 2, x1, yOffset, z1, u1, v3);
                 setVertex(quad, 3, x1, c1, z1, u1, v1);
 
-                float br = dir.getAxis() == Direction.Axis.Z ? 0.8F : 0.6F;
+                float br;
+
+                if (WorldRenderingSettings.INSTANCE.shouldDisableDirectionalShading()) {
+                    br = 1.0f;
+                } else if (dir.getAxis() == Direction.Axis.Z) {
+                    br = 0.8f;
+                } else {
+                    br = 0.6f;
+                }
 
                 ModelQuadFacing facing = ModernQuadFacing.fromDirection(dir);
 
