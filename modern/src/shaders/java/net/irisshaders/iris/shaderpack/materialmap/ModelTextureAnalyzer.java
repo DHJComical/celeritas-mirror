@@ -8,12 +8,16 @@ import net.irisshaders.iris.Iris;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import org.embeddedt.embeddium.impl.util.DirectionUtil;
@@ -197,8 +201,41 @@ public class ModelTextureAnalyzer {
                 }
             }
 
+            populateVanillaFluids(finalMap, blockStateIds);
+
             return finalMap;
         });
+    }
+
+    private static void populateVanillaFluids(Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> map, Object2IntMap<BlockState> blockStateIds) {
+        var atlas = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS);
+
+        for (var fluid : BuiltInRegistries.FLUID) {
+            //? if forge
+            var attributes = net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions.of(fluid);
+            //? if neoforge
+            /*var attributes = net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(fluid);*/
+            for (var state : fluid.getStateDefinition().getPossibleStates()) {
+                var legacyState = state.createLegacyBlock();
+                var correctFluidId = blockStateIds.getOrDefault(legacyState, -1);
+
+                if (correctFluidId != -1) {
+                    var idFn = fixedId(correctFluidId);
+                    var flowingTexture = attributes.getFlowingTexture();
+                    if (flowingTexture != null) {
+                        map.put(atlas.apply(flowingTexture), idFn);
+                    }
+                    var stillTexture = attributes.getStillTexture();
+                    if (stillTexture != null) {
+                        map.put(atlas.apply(stillTexture), idFn);
+                    }
+                    var overlayTexture = attributes.getOverlayTexture();
+                    if (overlayTexture != null) {
+                        map.put(atlas.apply(overlayTexture), idFn);
+                    }
+                }
+            }
+        }
     }
 
     static class AnalyzerThread extends Thread {
