@@ -1,5 +1,6 @@
 package net.irisshaders.batchedentityrendering.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.world.entity.Entity;
@@ -7,12 +8,9 @@ import net.minecraft.world.entity.EntityType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Slice;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -40,17 +38,15 @@ public class MixinLevelRenderer_EntityListSorting {
 	@Shadow
 	private ClientLevel level;
 
-	@ModifyVariable(method = "renderLevel", at = @At(value = "INVOKE_ASSIGN", target = "Ljava/lang/Iterable;iterator()Ljava/util/Iterator;"),
-		slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderBuffers;bufferSource()Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;"),
-			to = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;shouldRender(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/client/renderer/culling/Frustum;DDD)Z")), allow = 1)
-	private Iterator<Entity> batchedentityrendering$sortEntityList(Iterator<Entity> iterator) {
+	@ModifyExpressionValue(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;entitiesForRendering()Ljava/lang/Iterable;"))
+	private Iterable<Entity> batchedentityrendering$sortEntityList(Iterable<Entity> unsortedList) {
 		// Sort the entity list first in order to allow vanilla's entity batching code to work better.
 		this.level.getProfiler().push("sortEntityList");
 
 		Map<EntityType<?>, List<Entity>> sortedEntities = new HashMap<>();
 
 		List<Entity> entities = new ArrayList<>();
-		iterator.forEachRemaining(entity -> {
+		unsortedList.forEach(entity -> {
 			sortedEntities.computeIfAbsent(entity.getType(), entityType -> new ArrayList<>(32)).add(entity);
 		});
 
@@ -58,6 +54,6 @@ public class MixinLevelRenderer_EntityListSorting {
 
 		this.level.getProfiler().pop();
 
-		return entities.iterator();
+		return entities;
 	}
 }
