@@ -13,6 +13,14 @@ credits = '${String.join(", ",contributors)}'
 displayURL = "$homepage_url"
 description = "$mod_description"
 
+[[mods]]
+modId = "iris"
+version = "1.7.3"
+displayName = "Celeritas Shaders"
+description = '''
+Stub, to allow mods detecting Iris to function as expected.
+'''
+
 [[dependencies.${mod_id}]]
 modId = "${forgeid}"
 mandatory = true
