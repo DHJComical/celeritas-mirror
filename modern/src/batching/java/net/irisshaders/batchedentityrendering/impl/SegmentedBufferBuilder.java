@@ -257,5 +257,9 @@ public class SegmentedBufferBuilder implements MultiBufferSource, MemoryTracking
     public void lastDitchAttempt() {
 
     }
+
+    public void clearBuffers(int clearTime) {
+
+    }
 }
 //?}
