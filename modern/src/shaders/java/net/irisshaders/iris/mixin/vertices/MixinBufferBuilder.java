@@ -109,17 +109,17 @@ public abstract class MixinBufferBuilder implements BlockSensitiveBufferBuilder,
 			return format;
 		}
 
-		if (format == DefaultVertexFormat.BLOCK) {
+		if (format == DefaultVertexFormat.BLOCK || format == IrisVertexFormats.TERRAIN) {
 			extending = true;
 			iris$isTerrain = true;
 			injectNormalAndUV1 = false;
 			return IrisVertexFormats.TERRAIN;
-		} else if (format == DefaultVertexFormat.NEW_ENTITY) {
+		} else if (format == DefaultVertexFormat.NEW_ENTITY || format == IrisVertexFormats.ENTITY) {
 			extending = true;
 			iris$isTerrain = false;
 			injectNormalAndUV1 = false;
 			return IrisVertexFormats.ENTITY;
-		} else if (format == DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP) {
+		} else if (format == DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP || format == IrisVertexFormats.GLYPH) {
 			extending = true;
 			iris$isTerrain = false;
 			injectNormalAndUV1 = true;
