@@ -3,7 +3,9 @@ package net.irisshaders.iris.mixin.fantastic;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
 import org.joml.Matrix4f;
 import net.irisshaders.iris.Iris;
@@ -13,19 +15,13 @@ import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shaderpack.properties.ParticleRenderingSettings;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderBuffers;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import javax.annotation.Nullable;
 import java.util.function.Predicate;
 
 /**
@@ -42,12 +38,16 @@ public class MixinLevelRenderer {
 	@Shadow
 	private RenderBuffers renderBuffers;
 
-	@Inject(method = "renderLevel", at = @At("HEAD"))
+    @Shadow
+    @Nullable
+    private PostChain transparencyChain;
+
+    @Inject(method = "renderLevel", at = @At("HEAD"))
 	private void iris$resetParticleManagerPhase(CallbackInfo ci) {
 		((PhasedParticleEngine) minecraft.particleEngine).setParticleRenderingPhase(ParticleRenderingPhase.EVERYTHING);
 	}
 
-	@Inject(method = "renderLevel", at = @At(value = "CONSTANT", args = "stringValue=entities"))
+	@Inject(method = "renderLevel", at = @At(value = "CONSTANT", args = "stringValue=translucent"))
 	private void iris$renderOpaqueParticles(CallbackInfo ci, @Local(ordinal = 0) Frustum vanillaFrustum,
                                             //? if <1.20.6
                                             @Local(ordinal = 0, argsOnly = true) PoseStack poseStack,
@@ -58,6 +58,11 @@ public class MixinLevelRenderer {
                                             //?} else
                                             /*@Local(ordinal = 0, argsOnly = true) net.minecraft.client.DeltaTracker deltaTracker*/
                                             ) {
+
+        if (this.transparencyChain != null) {
+            return;
+        }
+
         //? if >=1.21
         /*float f = deltaTracker.getGameTimeDeltaPartialTick(false);*/
 		minecraft.getProfiler().popPush("opaque_particles");
@@ -111,6 +116,11 @@ public class MixinLevelRenderer {
     @ModifyArg(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleEngine;render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V"))
     private Predicate<ParticleRenderType> forceAllTypes(Predicate<ParticleRenderType> oldPredicate) {
         return t -> true;
+    }
+
+    @Redirect(method = "renderLevel", slice = @Slice(from = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=solid_particles")), at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleEngine;render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V", ordinal = 0))
+    private void disableNeoSolidParticleRendering(ParticleEngine instance, LightTexture crashreportcategory, Camera throwable, float particle, Frustum meshdata, Predicate<ParticleRenderType> tesselator) {
+
     }
     *///?}
 

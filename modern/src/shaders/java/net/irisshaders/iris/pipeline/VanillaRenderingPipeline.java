@@ -183,7 +183,7 @@ public class VanillaRenderingPipeline implements WorldRenderingPipeline {
 
 	@Override
 	public ParticleRenderingSettings getParticleRenderingSettings() {
-		return ParticleRenderingSettings.MIXED;
+		return Minecraft.useShaderTransparency() ? ParticleRenderingSettings.AFTER : ParticleRenderingSettings.MIXED;
 	}
 
 	@Override
