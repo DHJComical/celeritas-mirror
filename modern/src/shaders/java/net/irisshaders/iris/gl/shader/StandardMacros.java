@@ -50,7 +50,7 @@ public class StandardMacros {
 		define(standardDefines, getRenderer());
 		define(standardDefines, "IS_IRIS");
         define(standardDefines, "IRIS_HAS_TRANSLUCENCY_SORTING");
-        define(standardDefines, "IRIS_TAG_SUPPORT", "1");
+        define(standardDefines, "IRIS_TAG_SUPPORT", "2");
 
 
 		if (EarlyLoaderServices.INSTANCE.isModLoaded("distanthorizons") && DHCompat.hasRenderingEnabled()) {

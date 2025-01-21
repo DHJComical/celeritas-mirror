@@ -28,14 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * A utility class for parsing entries in item.properties, block.properties, and entities.properties files in shaderpacks
@@ -227,6 +220,9 @@ public class IdMap {
 					Iris.logger.warn("Unexpected error while parsing an entry from " + fileName + " for the key " + key + ":", e);
 				}
 			}
+
+            // Place tag entries after regular entries
+            entries.sort(Comparator.comparingInt(e -> e.isTag() ? 1 : 0));
 
 			entriesById.put(intId, Collections.unmodifiableList(entries));
 		});
