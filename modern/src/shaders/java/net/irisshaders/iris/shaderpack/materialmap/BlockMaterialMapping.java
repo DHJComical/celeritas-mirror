@@ -79,6 +79,11 @@ public class BlockMaterialMapping {
     }
 
 	private static void addBlockStates(BlockEntry entry, Object2IntMap<BlockState> idMap, int intId) {
+        if (entry.isTag()) {
+            entry.expandEntries().forEach(nested -> addBlockStates(nested, idMap, intId));
+            return;
+        }
+
 		NamespacedId id = entry.id();
 		ResourceLocation resourceLocation;
 		try {

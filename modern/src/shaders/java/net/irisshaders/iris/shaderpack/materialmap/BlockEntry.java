@@ -1,13 +1,19 @@
 package net.irisshaders.iris.shaderpack.materialmap;
 
+import com.google.common.collect.Iterators;
 import net.irisshaders.iris.Iris;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
-public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates) {
+public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates, boolean isTag) {
 
 	/**
 	 * Parses a block ID entry.
@@ -20,12 +26,21 @@ public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates
 			throw new IllegalArgumentException("Called BlockEntry::parse with an empty string");
 		}
 
+        boolean isTag;
+
+        if (entry.startsWith("%")) {
+            isTag = true;
+            entry = entry.substring(1);
+        } else {
+            isTag = false;
+        }
+
 		// We can assume that this array is of at least array length because the input string is non-empty.
 		String[] splitStates = entry.split(":");
 
 		// Trivial case: no states, no namespace
 		if (splitStates.length == 1) {
-			return new BlockEntry(new NamespacedId("minecraft", entry), Collections.emptyMap());
+			return new BlockEntry(new NamespacedId("minecraft", entry), Collections.emptyMap(), isTag);
 		}
 
 		// Less trivial case: no states involved, just a namespace
@@ -33,7 +48,7 @@ public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates
 		// The first term MUST be a valid ResourceLocation component without an equals sign
 		// The second term, if it does not contain an equals sign, must be a valid ResourceLocation component.
 		if (splitStates.length == 2 && !splitStates[1].contains("=")) {
-			return new BlockEntry(new NamespacedId(splitStates[0], splitStates[1]), Collections.emptyMap());
+			return new BlockEntry(new NamespacedId(splitStates[0], splitStates[1]), Collections.emptyMap(), isTag);
 		}
 
 		// Complex case: One or more states involved...
@@ -79,8 +94,26 @@ public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates
 			map.put(propertyParts[0], propertyParts[1]);
 		}
 
-		return new BlockEntry(id, map);
+		return new BlockEntry(id, map, isTag);
 	}
 
+    public Iterable<BlockEntry> expandEntries() {
+        if (!this.isTag) {
+            return Collections.singletonList(this);
+        } else {
+            var tag = TagKey.create(Registries.BLOCK, ResourceLocationUtil.make(id.getNamespace().toLowerCase(Locale.ROOT), id.getName().toLowerCase(Locale.ROOT)));
+            var tagOpt = BuiltInRegistries.BLOCK.getTag(tag);
 
+            if (!tagOpt.isPresent()) {
+                Iris.logger.warn("Failed to find the block tag {}", tag.location());
+                return Collections.emptyList();
+            }
+
+            var holderSet = tagOpt.orElseThrow();
+            return () -> Iterators.transform(holderSet.iterator(), holder -> {
+                var location = holder.unwrapKey().orElseThrow().location();
+                return new BlockEntry(new NamespacedId(location.getNamespace(), location.getPath()), propertyPredicates, false);
+            });
+        }
+    }
 }

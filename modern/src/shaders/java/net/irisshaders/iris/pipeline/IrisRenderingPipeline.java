@@ -188,6 +188,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 	private int currentSpecularTexture;
 	private ColorSpace currentColorSpace;
 	private CloudSetting dhCloudSetting;
+    private boolean blockIdsNeedPopulation;
 
 	public IrisRenderingPipeline(ProgramSet programSet) {
 		ShaderPrinter.resetPrintState();
@@ -445,10 +446,8 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
         watch.stop();
         Iris.logger.info("Loaded shaders in {}", watch);
 
-		WorldRenderingSettings.INSTANCE.setBlockStateIds(
-			BlockMaterialMapping.createBlockStateIdMap(programSet.getPack().getIdMap().getBlockProperties()));
-		WorldRenderingSettings.INSTANCE.setBlockTypeIds(BlockMaterialMapping.createBlockTypeMap(programSet.getPack().getIdMap().getBlockRenderTypeMap()));
-        WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(ModelTextureAnalyzer.runAnalysisSync(WorldRenderingSettings.INSTANCE.getBlockStateIds()));
+        // We need to defer creation of the block state mappings, like Iris 1.8, because tags may not exist at launch time
+        blockIdsNeedPopulation = true;
 
 		WorldRenderingSettings.INSTANCE.setEntityIds(programSet.getPack().getIdMap().getEntityIdMap());
 		WorldRenderingSettings.INSTANCE.setItemIds(programSet.getPack().getIdMap().getItemIdMap());
@@ -892,6 +891,15 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 	@Override
 	public void beginLevelRendering() {
 		isRenderingWorld = true;
+
+        if (blockIdsNeedPopulation) {
+            WorldRenderingSettings.INSTANCE.setBlockStateIds(
+                    BlockMaterialMapping.createBlockStateIdMap(pack.getIdMap().getBlockProperties()));
+            WorldRenderingSettings.INSTANCE.setBlockTypeIds(BlockMaterialMapping.createBlockTypeMap(pack.getIdMap().getBlockRenderTypeMap()));
+            WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(ModelTextureAnalyzer.runAnalysisSync(WorldRenderingSettings.INSTANCE.getBlockStateIds()));
+            Minecraft.getInstance().levelRenderer.allChanged();
+            blockIdsNeedPopulation = false;
+        }
 
 		// Make sure we're using texture unit 0 for this.
 		RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
