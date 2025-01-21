@@ -138,6 +138,10 @@ public final class QuadTree<T> extends Rect2i
     }
 
     public T find(int x, int y) {
+        if (!this.contains(x, y)) {
+            return null;
+        }
+
         if (entries != null)
         {
             for (Entry<T> e : entries)
