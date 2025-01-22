@@ -3,6 +3,9 @@ package org.embeddedt.embeddium.api.eventbus;
 //? if forge
 import net.minecraftforge.common.MinecraftForge;
 
+//? if neoforge
+/*import net.neoforged.neoforge.common.NeoForge;*/
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -45,7 +48,10 @@ public class EventHandlerRegistrar<T extends EmbeddiumEvent> {
     private static <T extends EmbeddiumEvent> boolean postPlatformSpecificEvent(T event) {
         //? if forge {
         return MinecraftForge.EVENT_BUS.post(event);
-        //?} else {
+        //?} else if neoforge {
+        /*NeoForge.EVENT_BUS.post(event);
+        return event.isCanceled();
+        *///?} else {
         /*return false;
         *///?}
     }
