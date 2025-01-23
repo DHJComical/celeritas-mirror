@@ -15,6 +15,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.builder.ChunkMeshBufferBuilder;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -32,11 +33,16 @@ public class ChunkBuildBuffers {
     @Getter
     private final RenderPassConfiguration<?> renderPassConfiguration;
 
+    @Getter
+    private final ChunkVertexEncoder encoder;
+
     public ChunkBuildBuffers(RenderPassConfiguration<?> configuration) {
         this.renderPassConfiguration = configuration;
 
         var encoder = configuration.vertexType().getEncoder();
         var stride = configuration.vertexType().getVertexFormat().getStride();
+
+        this.encoder = encoder;
 
         for (TerrainRenderPass pass : configuration.renderPasses()) {
             var vertexBuffers = new ChunkMeshBufferBuilder[ModelQuadFacing.COUNT];
