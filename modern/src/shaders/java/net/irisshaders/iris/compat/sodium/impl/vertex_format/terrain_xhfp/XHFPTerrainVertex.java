@@ -1,6 +1,5 @@
 package net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntFunction;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -10,37 +9,47 @@ import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ContextAwareChunkVertexEncoder;
+import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
-import net.irisshaders.iris.compat.sodium.impl.block_context.BlockContextHolder;
-import net.irisshaders.iris.compat.sodium.impl.block_context.ContextAwareVertexWriter;
 import net.irisshaders.iris.vertices.ExtendedDataHelper;
 import net.irisshaders.iris.vertices.NormI8;
 import net.irisshaders.iris.vertices.NormalHelper;
 import org.embeddedt.embeddium.impl.render.texture.TextureAtlasExtended;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 
 import static net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp.XHFPModelVertexType.STRIDE;
 
-public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertexWriter {
+public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkVertexEncoder {
 	private final QuadViewTerrain.QuadViewTerrainUnsafe quad = new QuadViewTerrain.QuadViewTerrainUnsafe();
 	private final Vector3f normal = new Vector3f();
-
-	private BlockContextHolder contextHolder;
 
 	private int vertexCount;
 	private float uSum;
 	private float vSum;
 
+    private static final BlockState AIR = Blocks.AIR.defaultBlockState();
+
+    private int localPosX;
+    private int localPosY;
+    private int localPosZ;
+
+    private short blockId;
+    private BlockState blockState;
+    private short renderType;
+    private boolean ignoreMidBlock;
+    private byte lightValue;
+
+    private final Object2IntMap<BlockState> blockStateIds = WorldRenderingSettings.INSTANCE.getBlockStateIds();
+
     private final TextureAtlas blocksAtlas = (TextureAtlas)Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS);
     private final Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> fallbackMaterials = WorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
-
-	@Override
-	public void iris$setContextHolder(BlockContextHolder holder) {
-		this.contextHolder = holder;
-	}
 
     private static int encodeDrawParameters(Material material, int sectionIndex) {
         return (sectionIndex & 255) << 8 | (material.bits() & 255) << 0;
@@ -52,7 +61,44 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
         return block << 0 | sky << 8;
     }
 
-	@Override
+    private void setLocalPos(BlockRenderContext ctx) {
+        var pos = ctx.pos();
+        this.localPosX = pos.getX();
+        this.localPosY = pos.getY();
+        this.localPosZ = pos.getZ();
+    }
+
+    @Override
+    public void prepareToRenderBlockFace(BlockRenderContext ctx, @Nullable Direction side) {
+        this.blockId = (short) this.blockStateIds.getOrDefault(ctx.state(), -1);
+        this.blockState = ctx.state();
+        this.renderType = 0;
+        this.lightValue = (byte)ctx.lightEmission();
+        this.setLocalPos(ctx);
+    }
+
+    @Override
+    public void prepareToRenderFluidFace(BlockRenderContext ctx) {
+        var state = ctx.state().getFluidState().createLegacyBlock();
+        this.blockId = (short) this.blockStateIds.getOrDefault(state, -1);
+        this.blockState = state;
+        this.renderType = 1;
+        this.lightValue = (byte)ctx.lightEmission();
+        this.setLocalPos(ctx);
+    }
+
+    @Override
+    public void finishRenderingBlock() {
+        this.blockId = -1;
+        this.blockState = AIR;
+        this.renderType = -1;
+        this.localPosX = 0;
+        this.localPosY = 0;
+        this.localPosZ = 0;
+        this.lightValue = 0;
+    }
+
+    @Override
 	public long write(long ptr,
 					  Material material, Vertex vertex, int chunkId) {
 		uSum += vertex.u;
@@ -70,9 +116,9 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
 
         MemoryUtil.memPutInt(ptr + 24, encodeDrawParameters(material, chunkId) << 0 | encodeLight(vertex.light) << 16);
 
-        MemoryUtil.memPutShort(ptr + 42, contextHolder.renderType);
-        MemoryUtil.memPutInt(ptr + 44, contextHolder.ignoreMidBlock ? 0 : ExtendedDataHelper.computeMidBlock(vertex.x, vertex.y, vertex.z, contextHolder.localPosX, contextHolder.localPosY, contextHolder.localPosZ));
-        MemoryUtil.memPutByte(ptr + 47, contextHolder.lightValue);
+        MemoryUtil.memPutShort(ptr + 42, renderType);
+        MemoryUtil.memPutInt(ptr + 44, ignoreMidBlock ? 0 : ExtendedDataHelper.computeMidBlock(vertex.x, vertex.y, vertex.z, localPosX, localPosY, localPosZ));
+        MemoryUtil.memPutByte(ptr + 47, lightValue);
 
 		if (vertexCount == 4) {
 			vertexCount = 0;
@@ -114,14 +160,14 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareVertex
 			MemoryUtil.memPutInt(ptr + 28 - STRIDE * 2, midUV);
 			MemoryUtil.memPutInt(ptr + 28 - STRIDE * 3, midUV);
 
-            short blockId = contextHolder.blockId;
+            short blockId = this.blockId;
 
             if (blockId == -1 && fallbackMaterials != null) {
                 // Try to fall back to the "canonical" block ID for the texture, this can often greatly improve
                 // the visuals of facade-style blocks
                 TextureAtlasSprite sprite = ((TextureAtlasExtended)blocksAtlas).celeritas$findFromUV(uSum, vSum);
                 if (sprite != null) {
-                    blockId = (short) ModelTextureAnalyzer.fetchBlockIdForTexturedState(fallbackMaterials, contextHolder.blockState, sprite);
+                    blockId = (short) ModelTextureAnalyzer.fetchBlockIdForTexturedState(fallbackMaterials, this.blockState, sprite);
                 }
             }
 

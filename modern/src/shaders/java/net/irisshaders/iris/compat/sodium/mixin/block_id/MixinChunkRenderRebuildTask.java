@@ -66,33 +66,4 @@ public class MixinChunkRenderRebuildTask {
 			((ChunkBuildBuffersExt) context.buffers).iris$setLocalPos(relX, relY, relZ);
 		}
 	}
-
-	@Inject(method = "execute(Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildContext;Lorg/embeddedt/embeddium/impl/util/task/CancellationToken;)Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildOutput;", at = @At(value = "INVOKE",
-		target = "Lnet/minecraft/client/renderer/block/BlockModelShaper;getBlockModel(Lnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/client/resources/model/BakedModel;"))
-	private void iris$wrapGetBlockLayer(ChunkBuildContext context,
-										CancellationToken cancellationSource, CallbackInfoReturnable<ChunkBuildOutput> cir,
-										@Local(ordinal = 0) BlockState blockState) {
-		if (context.buffers instanceof ChunkBuildBuffersExt) {
-			((ChunkBuildBuffersExt) context.buffers).iris$setMaterialId(blockState, ExtendedDataHelper.BLOCK_RENDER_TYPE, (byte) blockState.getLightEmission());
-		}
-	}
-
-	@Inject(method = "execute(Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildContext;Lorg/embeddedt/embeddium/impl/util/task/CancellationToken;)Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildOutput;", at = @At(value = "INVOKE",
-		target = "Lorg/embeddedt/embeddium/impl/modern/render/chunk/compile/pipeline/FluidRenderer;render(Lorg/embeddedt/embeddium/impl/modern/render/chunk/compile/pipeline/BlockRenderContext;Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildBuffers;)V"))
-	private void iris$wrapGetFluidLayer(ChunkBuildContext context,
-										CancellationToken cancellationSource, CallbackInfoReturnable<ChunkBuildOutput> cir,
-										@Local(ordinal = 0) BlockState blockState,
-										@Local(ordinal = 0) FluidState fluidState) {
-		if (context.buffers instanceof ChunkBuildBuffersExt) {
-			((ChunkBuildBuffersExt) context.buffers).iris$setMaterialId(fluidState.createLegacyBlock(), ExtendedDataHelper.FLUID_RENDER_TYPE, (byte) blockState.getLightEmission());
-		}
-	}
-
-	@Inject(method = "execute(Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildContext;Lorg/embeddedt/embeddium/impl/util/task/CancellationToken;)Lorg/embeddedt/embeddium/impl/render/chunk/compile/ChunkBuildOutput;",
-		at = @At(value = "INVOKE", target = "Lorg/embeddedt/embeddium/impl/util/WorldUtil;hasBlockEntity(Lnet/minecraft/world/level/block/state/BlockState;)Z"))
-	private void iris$resetContext(ChunkBuildContext buildContext, CancellationToken cancellationSource, CallbackInfoReturnable<ChunkBuildOutput> cir) {
-		if (buildContext.buffers instanceof ChunkBuildBuffersExt) {
-			((ChunkBuildBuffersExt) buildContext.buffers).iris$resetBlockContext();
-		}
-	}
 }
