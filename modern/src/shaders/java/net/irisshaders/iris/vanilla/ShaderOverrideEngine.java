@@ -114,7 +114,7 @@ public class ShaderOverrideEngine {
                 return null;
             }
         };
-        iris$overrides.put("clouds", cloudsShader);
+        iris$overrides.put("rendertype_clouds", cloudsShader);
         iris$overrides.put("position_tex_color_normal", cloudsShader);
         iris$overrides.put("rendertype_solid", () -> {
             if (ShadowRenderer.ACTIVE) {
