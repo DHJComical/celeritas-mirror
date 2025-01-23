@@ -101,6 +101,9 @@ public abstract class BufferBuilderMixin /*? if >=1.15 <1.21 {*/ extends Default
     @Final
     private int vertexSize;
 
+    @Shadow
+    private int elementsToFill;
+
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onFormatChanged(ByteBufferBuilder buffer, VertexFormat.Mode mode, VertexFormat format, CallbackInfo ci) {
         this.embeddium$format = VertexFormatRegistry.instance().get(format);
@@ -148,7 +151,8 @@ public abstract class BufferBuilderMixin /*? if >=1.15 <1.21 {*/ extends Default
         //? if <1.21 {
         this.nextElementByte += length;
         //?} else {
-        /*this.vertexPointer = dst;
+        /*this.vertexPointer = dst + length - this.vertexSize;
+        this.elementsToFill = 0;
         *///?}
     }
 
