@@ -20,9 +20,9 @@ public class ChunkMeshBufferBuilder {
     private int capacity;
     private int sectionIndex;
 
-    public ChunkMeshBufferBuilder(ChunkVertexType vertexType, int initialCapacity, boolean collectSortState) {
-        this.encoder = vertexType.getEncoder();
-        this.stride = vertexType.getVertexFormat().getStride();
+    public ChunkMeshBufferBuilder(ChunkVertexEncoder encoder, int stride, int initialCapacity, boolean collectSortState) {
+        this.encoder = encoder;
+        this.stride = stride;
 
         this.buffer = null;
 

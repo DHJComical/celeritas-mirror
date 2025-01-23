@@ -35,12 +35,14 @@ public class ChunkBuildBuffers {
     public ChunkBuildBuffers(RenderPassConfiguration<?> configuration) {
         this.renderPassConfiguration = configuration;
 
+        var encoder = configuration.vertexType().getEncoder();
+        var stride = configuration.vertexType().getVertexFormat().getStride();
+
         for (TerrainRenderPass pass : configuration.renderPasses()) {
             var vertexBuffers = new ChunkMeshBufferBuilder[ModelQuadFacing.COUNT];
-            var vertexType = configuration.getVertexTypeForPass(pass);
 
             for (int facing = 0; facing < ModelQuadFacing.COUNT; facing++) {
-                vertexBuffers[facing] = new ChunkMeshBufferBuilder(vertexType, 128 * 1024, pass.isSorted() && facing == ModelQuadFacing.UNASSIGNED.ordinal());
+                vertexBuffers[facing] = new ChunkMeshBufferBuilder(encoder, stride, 128 * 1024, pass.isSorted() && facing == ModelQuadFacing.UNASSIGNED.ordinal());
             }
 
             this.builders.put(pass, new BakedChunkModelBuilder(vertexBuffers, !pass.isSorted()));
