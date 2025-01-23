@@ -70,8 +70,20 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
 
     @Override
     public void prepareToRenderBlockFace(BlockRenderContext ctx, @Nullable Direction side) {
-        this.blockId = (short) this.blockStateIds.getOrDefault(ctx.state(), -1);
-        this.blockState = ctx.state();
+        var state = ctx.state();
+        this.blockId = (short) this.blockStateIds.getOrDefault(state, -1);
+        //? if forgelike && >=1.19 {
+        if (this.blockId == -1 && side != null) {
+            // Attempt fallback using getAppearance. This is the plan B for block IDs; plan C will use the quad texture
+            // to deduce a material.
+            BlockState appearanceState = state.getAppearance(ctx.localSlice(), ctx.pos(), side, null, null);
+            if (appearanceState != state && !appearanceState.isAir()) {
+                this.blockId = (short)this.blockStateIds.getOrDefault(appearanceState, -1);
+                state = appearanceState;
+            }
+        }
+        //? }
+        this.blockState = state;
         this.renderType = 0;
         this.lightValue = (byte)ctx.lightEmission();
         this.setLocalPos(ctx);
