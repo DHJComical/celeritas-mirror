@@ -24,6 +24,7 @@ import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
 import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
 import org.embeddedt.embeddium.impl.model.color.ColorProvider;
 import org.embeddedt.embeddium.impl.model.color.DefaultColorProviders;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ContextAwareChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.modern.render.chunk.MojangVertexConsumer;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
@@ -243,6 +244,7 @@ public class FluidRenderer {
         var blockPos = ctx.pos();
         var world = ctx.localSlice();
         var offset = ctx.origin();
+        var encoder = buffers.getEncoder();
         var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(ctx.renderLayer());
         var meshBuilder = buffers.get(material);
         Fluid fluid = fluidState.getType();
@@ -279,6 +281,10 @@ public class FluidRenderer {
 
         if (sfUp && sfDown && sfEast && sfWest && sfNorth && sfSouth) {
             return;
+        }
+
+        if (encoder instanceof ContextAwareChunkVertexEncoder contextAwareEncoder) {
+            contextAwareEncoder.prepareToRenderFluidFace(ctx);
         }
 
         // LVT name kept for 1.20.1 in case a mixin captures it, the meaning of this variable is now "does the fluid
@@ -569,6 +575,10 @@ public class FluidRenderer {
                 }
 
             }
+        }
+
+        if (encoder instanceof ContextAwareChunkVertexEncoder contextAwareEncoder) {
+            contextAwareEncoder.finishRenderingBlock();
         }
     }
 

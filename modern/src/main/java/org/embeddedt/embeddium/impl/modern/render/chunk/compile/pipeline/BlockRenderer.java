@@ -15,6 +15,7 @@ import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadOrientation;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ContextAwareChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.modern.render.chunk.MojangVertexConsumer;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
@@ -170,10 +171,15 @@ public class BlockRenderer {
 
         var isMaterialSolid = material == buffers.getRenderPassConfiguration().defaultSolidMaterial();
 
+        var encoder = buffers.getEncoder();
+
         for (Direction face : DirectionUtil.ALL_DIRECTIONS) {
             List<BakedQuad> quads = this.getGeometry(ctx, face);
 
             if (!quads.isEmpty() && this.isFaceVisible(ctx, face, isMaterialSolid)) {
+                if (encoder instanceof ContextAwareChunkVertexEncoder contextAwareEncoder) {
+                    contextAwareEncoder.prepareToRenderBlockFace(ctx, face);
+                }
                 this.quadRenderingFlags = defaultQuadRenderingFlags;
                 this.renderQuadList(ctx, material, lighter, colorizer, renderOffset, buffers, meshBuilder, quads, face);
                 // Make sure any flags that are turned off are also turned off for the null cullface
@@ -184,8 +190,15 @@ public class BlockRenderer {
         List<BakedQuad> all = this.getGeometry(ctx, null);
 
         if (!all.isEmpty()) {
+            if (encoder instanceof ContextAwareChunkVertexEncoder contextAwareEncoder) {
+                contextAwareEncoder.prepareToRenderBlockFace(ctx, null);
+            }
             this.quadRenderingFlags = nullCullFaceFlags;
             this.renderQuadList(ctx, material, lighter, colorizer, renderOffset, buffers, meshBuilder, all, null);
+        }
+
+        if (encoder instanceof ContextAwareChunkVertexEncoder contextAwareEncoder) {
+            contextAwareEncoder.finishRenderingBlock();
         }
     }
 
