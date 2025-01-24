@@ -112,6 +112,7 @@ public class ShaderProperties {
 	private List<String> sliderOptions = new ArrayList<>();
 	private List<String> mainScreenOptions = null;
 	private Integer mainScreenColumnCount = null;
+    private int fallbackTex = 0;
 	private String noiseTexturePath = null;
 	private List<String> requiredFeatureFlags = new ArrayList<>();
 	private List<String> optionalFeatureFlags = new ArrayList<>();
@@ -223,6 +224,7 @@ public class ShaderProperties {
 			});
 			handleBooleanDirective(key, value, "prepareBeforeShadow", bool -> prepareBeforeShadow = bool);
 			handleBooleanDirective(key, value, "supportsColorCorrection", bool -> supportsColorCorrection = bool);
+            handleIntDirective(key, value, "fallbackTex", bool -> fallbackTex = bool);
 
 			if (key.startsWith("particles.ordering")) {
 				Optional<ParticleRenderingSettings> settings = ParticleRenderingSettings.fromString(value.trim().toUpperCase(Locale.US));
@@ -833,6 +835,10 @@ public class ShaderProperties {
 	public ShadowCullState getShadowCulling() {
 		return shadowCulling;
 	}
+
+    public int getFallbackTex() {
+        return fallbackTex;
+    }
 
 	public Object2ObjectMap<String, AlphaTest> getAlphaTestOverrides() {
 		return alphaTestOverrides;

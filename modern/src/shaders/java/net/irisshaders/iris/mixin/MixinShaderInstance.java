@@ -6,14 +6,18 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.blending.DepthColorStorage;
+import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.programs.ExtendedShader;
 import net.irisshaders.iris.pipeline.programs.FallbackShader;
 import net.irisshaders.iris.pipeline.programs.ShaderInstanceInterface;
+import net.irisshaders.iris.shadows.ShadowRenderer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
@@ -36,6 +40,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.io.Reader;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.util.Map;
 import java.util.Objects;
 
 @Mixin(ShaderInstance.class)
@@ -90,18 +98,85 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         }
     }
 
+
+    @Unique
+    private static final MethodHandle NONE = MethodHandles.constant(Integer.class, 2);
+    @Unique
+    private static final MethodHandle ALWAYS = MethodHandles.constant(Integer.class, 1);
+    @Unique
+    private MethodHandle shouldSkip;
+    private static Map<Class<?>, MethodHandle> shouldSkipList = new Object2ObjectOpenHashMap<>();
+
+    static {
+        shouldSkipList.put(ExtendedShader.class, NONE);
+        shouldSkipList.put(FallbackShader.class, NONE);
+    }
+
+    @Inject(method = "/<init>/", at = @At("TAIL"), require = 0)
+    private void iriss$storeSkip(CallbackInfo ci) {
+        shouldSkip = shouldSkipList.computeIfAbsent(getClass(), x -> {
+            try {
+                MethodHandle iris$skipDraw = MethodHandles.lookup().findVirtual(x, "iris$skipDraw", MethodType.methodType(boolean.class));
+                Iris.logger.warn("Class " + x.getName() + " has opted out of being rendered with shaders.");
+                return iris$skipDraw;
+            } catch (NoSuchMethodException | IllegalAccessException e) {
+                return NONE;
+            }
+        });
+    }
+
+    public boolean iris$shouldSkipThis() {
+        // Celeritas always allows unknown shaders
+        if (true) {
+            if (ShadowRenderer.ACTIVE) return true;
+            if (!shouldOverrideShaders()) return false;
+            if (shouldSkip == NONE) return false;
+            if (shouldSkip == ALWAYS) return true;
+            try {
+                return (boolean) shouldSkip.invoke(((ShaderInstance) (Object) this));
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return !(((Object) this) instanceof ExtendedShader || ((Object) this) instanceof FallbackShader || !shouldOverrideShaders());
+        }
+    }
+
     @Inject(method = "apply", at = @At("TAIL"))
     private void iris$lockDepthColorState(CallbackInfo ci) {
-        if (((Object) this) instanceof ExtendedShader || ((Object) this) instanceof FallbackShader || !shouldOverrideShaders()) {
+        if (!iris$shouldSkipThis()) {
+            if (!isKnownShader() && shouldOverrideShaders()) {
+                WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
+                if (pipeline instanceof IrisRenderingPipeline) {
+                    if (ShadowRenderer.ACTIVE) {
+                        // Fallback shadow rendering is disabled by Iris rn
+                        //((IrisRenderingPipeline) pipeline).bindDefaultShadow();
+                    } else {
+                        ((IrisRenderingPipeline) pipeline).bindDefault();
+                    }
+                }
+            }
+
             return;
         }
 
         DepthColorStorage.disableDepthColor();
     }
 
+    private boolean isKnownShader() {
+        return ((Object) this) instanceof ExtendedShader || ((Object) this) instanceof FallbackShader;
+    }
+
     @Inject(method = "clear", at = @At("HEAD"))
     private void iris$unlockDepthColorState(CallbackInfo ci) {
-        if (((Object) this) instanceof ExtendedShader || ((Object) this) instanceof FallbackShader || !shouldOverrideShaders()) {
+        if (!iris$shouldSkipThis()) {
+            if (!isKnownShader() && shouldOverrideShaders()) {
+                WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
+                if (pipeline instanceof IrisRenderingPipeline) {
+                    Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+                }
+            }
+
             return;
         }
 
