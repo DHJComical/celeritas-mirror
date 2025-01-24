@@ -82,7 +82,7 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
                 state = appearanceState;
             }
         }
-        //? }
+        //?}
         this.blockState = state;
         this.renderType = 0;
         this.lightValue = (byte)ctx.lightEmission();
