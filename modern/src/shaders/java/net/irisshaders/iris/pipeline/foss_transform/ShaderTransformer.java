@@ -177,6 +177,12 @@ public class ShaderTransformer {
 
             var transformer = new Transformer(translationUnit);
             if (Objects.requireNonNull(parameters.patch) == Patch.COMPUTE) {
+                // Always core profile
+                if (Integer.parseInt(versionString) < 330) {
+                    profileString = "#version 330 core";
+                } else {
+                    profileString = "#version " + versionString + " core";
+                }
                 commonPatch(transformer, parameters, true);
             } else {
                 boolean isLine = (parameters.patch == Patch.VANILLA && ((VanillaParameters) parameters).isLines());
