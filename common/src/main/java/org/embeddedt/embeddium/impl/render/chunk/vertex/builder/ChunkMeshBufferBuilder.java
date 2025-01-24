@@ -60,7 +60,7 @@ public class ChunkMeshBufferBuilder {
         int cap = Math.max(this.capacity * 2, this.capacity + len);
 
         // Update the buffer and capacity now
-        this.setBufferSize(cap * this.stride);
+        this.setBufferSize(cap);
     }
 
     private void setBufferSize(int capacity) {
