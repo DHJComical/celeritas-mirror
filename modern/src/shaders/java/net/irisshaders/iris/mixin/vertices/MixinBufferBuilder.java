@@ -191,13 +191,13 @@ public abstract class MixinBufferBuilder implements BlockSensitiveBufferBuilder,
 
 		int stride = format.getVertexSize();
 
-        long writePointer = MemoryUtil.memAddress(buffer) + nextElementByte;
+        long writePointer = nextElementByte;
 
         for (int i = 0; i < 4; i++) {
             vertexPointers[i] = writePointer - (long)stride * (vertexAmount - i);
         }
 
-		polygon.setup(vertexPointers);
+		polygon.setup(MemoryUtil.memAddress(buffer), vertexPointers);
 
 		float midU = 0;
 		float midV = 0;
@@ -348,11 +348,7 @@ public abstract class MixinBufferBuilder implements BlockSensitiveBufferBuilder,
 	}
 }
 //?} else {
-/*import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
+/*import com.mojang.blaze3d.vertex.*;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.vertices.BlockSensitiveBufferBuilder;
@@ -362,6 +358,7 @@ import net.irisshaders.iris.vertices.ImmediateState;
 import net.irisshaders.iris.vertices.IrisVertexFormats;
 import net.irisshaders.iris.vertices.NormI8;
 import net.irisshaders.iris.vertices.NormalHelper;
+import org.embeddedt.embeddium.impl.mixin.core.render.immediate.consumer.ByteBufferBuilderAccessor;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 import org.spongepowered.asm.mixin.Dynamic;
@@ -411,6 +408,9 @@ public abstract class MixinBufferBuilder implements VertexConsumer, BlockSensiti
     private long vertexPointer;
     @Shadow
     private int vertices;
+    @Shadow
+    @Final
+    private ByteBufferBuilder buffer;
     @Unique
     private final BufferBuilderPolygonView polygon = new BufferBuilderPolygonView();
     @Unique
@@ -435,7 +435,7 @@ public abstract class MixinBufferBuilder implements VertexConsumer, BlockSensiti
     private int currentLocalPosZ;
 
     @Unique
-    private long[] vertexPointers = new long[4];
+    private long[] vertexOffsets = new long[4];
 
     @ModifyVariable(method = "<init>", at = @At(value = "FIELD", target = "Lcom/mojang/blaze3d/vertex/VertexFormatElement;POSITION:Lcom/mojang/blaze3d/vertex/VertexFormatElement;", ordinal = 0), argsOnly = true)
     private VertexFormat iris$extendFormat(VertexFormat format) {
@@ -517,7 +517,7 @@ public abstract class MixinBufferBuilder implements VertexConsumer, BlockSensiti
             return;
         }
 
-        vertexPointers[iris$vertexCount] = vertexPointer;
+        vertexOffsets[iris$vertexCount] = vertexPointer - ((ByteBufferBuilderAccessor)this.buffer).getPointer();
 
         iris$vertexCount++;
 
@@ -550,7 +550,7 @@ public abstract class MixinBufferBuilder implements VertexConsumer, BlockSensiti
 
         int stride = format.getVertexSize();
 
-        polygon.setup(vertexPointers);
+        polygon.setup(((ByteBufferBuilderAccessor)this.buffer).getPointer(), vertexOffsets);
 
         float midU = 0;
         float midV = 0;
@@ -566,17 +566,21 @@ public abstract class MixinBufferBuilder implements VertexConsumer, BlockSensiti
         int midTexOffset = this.offsetsByElement[IrisVertexFormats.MID_TEXTURE_ELEMENT.id()];
         int normalOffset = this.offsetsByElement[VertexFormatElement.NORMAL.id()];
         int tangentOffset = this.offsetsByElement[IrisVertexFormats.TANGENT_ELEMENT.id()];
+
+        long basePtr = ((ByteBufferBuilderAccessor)this.buffer).getPointer();
+
         if (vertexAmount == 3) {
             // NormalHelper.computeFaceNormalTri(normal, polygon);	// Removed to enable smooth shaded triangles. Mods rendering triangles with bad normals need to recalculate their normals manually or otherwise shading might be inconsistent.
 
             for (int vertex = 0; vertex < vertexAmount; vertex++) {
-                int vertexNormal = MemoryUtil.memGetInt(vertexPointers[vertex] + normalOffset); // retrieve per-vertex normal
+                long newPointer = basePtr + vertexOffsets[vertex];
+                int vertexNormal = MemoryUtil.memGetInt(newPointer + normalOffset); // retrieve per-vertex normal
 
                 int tangent = NormalHelper.computeTangentSmooth(NormI8.unpackX(vertexNormal), NormI8.unpackY(vertexNormal), NormI8.unpackZ(vertexNormal), polygon);
 
-                MemoryUtil.memPutFloat(vertexPointers[vertex] + midTexOffset, midU);
-                MemoryUtil.memPutFloat(vertexPointers[vertex] + midTexOffset + 4, midV);
-                MemoryUtil.memPutInt(vertexPointers[vertex] + tangentOffset, tangent);
+                MemoryUtil.memPutFloat(newPointer + midTexOffset, midU);
+                MemoryUtil.memPutFloat(newPointer + midTexOffset + 4, midV);
+                MemoryUtil.memPutInt(newPointer + tangentOffset, tangent);
             }
         } else {
             NormalHelper.computeFaceNormal(normal, polygon);
@@ -584,14 +588,16 @@ public abstract class MixinBufferBuilder implements VertexConsumer, BlockSensiti
             int tangent = NormalHelper.computeTangent(normal.x, normal.y, normal.z, polygon);
 
             for (int vertex = 0; vertex < vertexAmount; vertex++) {
-                MemoryUtil.memPutFloat(vertexPointers[vertex] + midTexOffset, midU);
-                MemoryUtil.memPutFloat(vertexPointers[vertex] + midTexOffset + 4, midV);
-                MemoryUtil.memPutInt(vertexPointers[vertex] + normalOffset, packedNormal);
-                MemoryUtil.memPutInt(vertexPointers[vertex] + tangentOffset, tangent);
+                long newPointer = basePtr + vertexOffsets[vertex];
+
+                MemoryUtil.memPutFloat(newPointer + midTexOffset, midU);
+                MemoryUtil.memPutFloat(newPointer + midTexOffset + 4, midV);
+                MemoryUtil.memPutInt(newPointer + normalOffset, packedNormal);
+                MemoryUtil.memPutInt(newPointer + tangentOffset, tangent);
             }
         }
 
-        Arrays.fill(vertexPointers, 0);
+        Arrays.fill(vertexOffsets, 0);
     }
 }
 

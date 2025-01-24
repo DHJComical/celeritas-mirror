@@ -3,37 +3,37 @@ package net.irisshaders.iris.vertices;
 import net.irisshaders.iris.vertices.views.QuadView;
 import org.lwjgl.system.MemoryUtil;
 
-import java.nio.ByteBuffer;
-
 public class BufferBuilderPolygonView implements QuadView {
-    private long[] writePointers;
+    private long[] writeOffsets;
+    private long pointer;
 
-    public void setup(long[] writePointers) {
-        this.writePointers = writePointers;
+    public void setup(long pointer, long[] writeOffsets) {
+        this.pointer = pointer;
+        this.writeOffsets = writeOffsets;
     }
 
     @Override
     public float x(int index) {
-        return MemoryUtil.memGetFloat(writePointers[index]);
+        return MemoryUtil.memGetFloat(pointer + writeOffsets[index]);
     }
 
     @Override
     public float y(int index) {
-        return MemoryUtil.memGetFloat(writePointers[index] + 4);
+        return MemoryUtil.memGetFloat(pointer + writeOffsets[index] + 4);
     }
 
     @Override
     public float z(int index) {
-        return MemoryUtil.memGetFloat(writePointers[index] + 8);
+        return MemoryUtil.memGetFloat(pointer + writeOffsets[index] + 8);
     }
 
     @Override
     public float u(int index) {
-        return MemoryUtil.memGetFloat(writePointers[index] + 16);
+        return MemoryUtil.memGetFloat(pointer + writeOffsets[index] + 16);
     }
 
     @Override
     public float v(int index) {
-        return MemoryUtil.memGetFloat(writePointers[index] + 20);
+        return MemoryUtil.memGetFloat(pointer + writeOffsets[index] + 20);
     }
 }
