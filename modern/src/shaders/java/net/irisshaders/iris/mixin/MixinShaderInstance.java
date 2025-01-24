@@ -127,7 +127,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
 
     public boolean iris$shouldSkipThis() {
         // Celeritas always allows unknown shaders
-        if (true) {
+        if (!Iris.getIrisConfig().isBlockUnknownShaders()) {
             if (ShadowRenderer.ACTIVE) return true;
             if (!shouldOverrideShaders()) return false;
             if (shouldSkip == NONE) return false;

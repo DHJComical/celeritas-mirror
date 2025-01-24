@@ -1,5 +1,6 @@
 package net.irisshaders.iris.config;
 
+import lombok.Getter;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
@@ -35,6 +36,11 @@ public class IrisConfig {
 	 * If the update notification should be disabled or not.
 	 */
 	private boolean disableUpdateMessage;
+    /**
+     * Whether unknown shaders are blocked.
+     */
+    @Getter
+    private boolean blockUnknownShaders;
 
 	public IrisConfig(Path propertiesPath) {
 		shaderPackName = null;
@@ -132,7 +138,8 @@ public class IrisConfig {
 		shaderPackName = properties.getProperty("shaderPack");
 		enableShaders = !"false".equals(properties.getProperty("enableShaders"));
 		enableDebugOptions = "true".equals(properties.getProperty("enableDebugOptions"));
-		disableUpdateMessage = "true".equals(properties.getProperty("disableUpdateMessage"));
+        disableUpdateMessage = "true".equals(properties.getProperty("disableUpdateMessage"));
+        blockUnknownShaders = "true".equals(properties.getProperty("blockUnknownShaders"));
 		try {
 			IrisVideoSettings.shadowDistance = Integer.parseInt(properties.getProperty("maxShadowRenderDistance", "32"));
 			IrisVideoSettings.colorSpace = ColorSpace.valueOf(properties.getProperty("colorSpace", "SRGB"));
@@ -160,7 +167,8 @@ public class IrisConfig {
 		properties.setProperty("shaderPack", getShaderPackName().orElse(""));
 		properties.setProperty("enableShaders", enableShaders ? "true" : "false");
 		properties.setProperty("enableDebugOptions", enableDebugOptions ? "true" : "false");
-		properties.setProperty("disableUpdateMessage", disableUpdateMessage ? "true" : "false");
+        properties.setProperty("disableUpdateMessage", disableUpdateMessage ? "true" : "false");
+        properties.setProperty("blockUnknownShaders", blockUnknownShaders ? "true" : "false");
 		properties.setProperty("maxShadowRenderDistance", String.valueOf(IrisVideoSettings.shadowDistance));
 		properties.setProperty("colorSpace", IrisVideoSettings.colorSpace.name());
 		// NB: This uses ISO-8859-1 with unicode escapes as the encoding
