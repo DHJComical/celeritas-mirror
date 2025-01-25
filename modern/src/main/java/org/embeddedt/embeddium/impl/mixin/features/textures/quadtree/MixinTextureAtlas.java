@@ -55,7 +55,7 @@ public class MixinTextureAtlas implements TextureAtlasExtended {
 
     @Override
     public TextureAtlasSprite celeritas$findFromUV(float u, float v) {
-        int x = (int)(u * this.width), y = (int)(v * this.height);
+        int x = Math.round(u * this.width), y = Math.round(v * this.height);
 
         return this.celeritas$quadTree.find(x, y);
     }
