@@ -291,7 +291,13 @@ public class ModelTextureAnalyzer {
 
         private void voteOnStates(List<BlockState> states) {
             int sz = states.size();
-            //noinspection ForLoopReplaceableByForEach
+
+            if (sz == 0) {
+                return;
+            }
+
+            String namespace = states.get(0).getBlock().builtInRegistryHolder().key().location().getNamespace();
+
             for (int i = 0; i < sz; i++) {
                 var state = states.get(i);
 
@@ -303,10 +309,10 @@ public class ModelTextureAnalyzer {
 
                 try {
                     for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
-                        conductVoting(model, state, stateProps, direction, materialId);
+                        conductVoting(model, state, stateProps, namespace, direction, materialId);
                     }
 
-                    conductVoting(model, state, stateProps, null, materialId);
+                    conductVoting(model, state, stateProps, namespace, null, materialId);
                 } catch (Exception ignored) {
                     // No problem, we'll just skip this block.
                     break;
@@ -316,7 +322,7 @@ public class ModelTextureAnalyzer {
             seenQuads.clear();
         }
 
-        private void conductVoting(BakedModel model, BlockState state, int stateProps, @Nullable Direction direction, int vote) {
+        private void conductVoting(BakedModel model, BlockState state, int stateProps, String namespace, @Nullable Direction direction, int vote) {
             random.setSeed(42L);
             //? if forge
             List<BakedQuad> quadList = model.getQuads(state, direction, random, net.minecraftforge.client.model.data.ModelData.EMPTY, null);
@@ -340,7 +346,7 @@ public class ModelTextureAnalyzer {
 
                 var sprite = quad.getSprite();
 
-                if (sprite != null) {
+                if (sprite != null && sprite.contents().name().getNamespace().equals(namespace)) {
                     var votes = votingMap.get(sprite);
                     if (votes == null) {
                         votes = new Int2ObjectArrayMap<>();
