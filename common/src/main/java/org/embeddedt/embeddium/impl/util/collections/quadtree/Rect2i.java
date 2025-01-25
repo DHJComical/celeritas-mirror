@@ -20,7 +20,7 @@ public class Rect2i {
     }
 
     public boolean contains(int x, int y) {
-        return x >= this.x && y >= this.y && x <= this.x + this.width && y <= this.y + this.height;
+        return x >= this.x && y >= this.y && x < this.x + this.width && y < this.y + this.height;
     }
 
     public boolean contains(Rect2i r2)
