@@ -36,6 +36,7 @@ public class ModelTextureAnalyzer {
      * slow down analysis with dynamic model loading.
      */
     private static final boolean USE_MULTITHREADING = false;
+    private static final boolean DUMP_TEXTURE_MAPPING = false;
     private final List<AnalyzerThread> threads;
 
     private static boolean shouldSkipAnalyzingState(BlockState state) {
@@ -104,12 +105,25 @@ public class ModelTextureAnalyzer {
 
     private static final Int2ObjectMap<Object2IntFunction<BlockState>> FIXED_ID_CACHE = new Int2ObjectOpenHashMap<>();
 
-    private static Object2IntFunction<BlockState> fixedId(int id) {
-        return FIXED_ID_CACHE.computeIfAbsent(id, i -> state -> i);
+    private record FixedIdFn(int id) implements Object2IntFunction<BlockState> {
+        @Override
+        public int getInt(Object key) {
+            return id;
+        }
+
+        @Override
+        public String toString() {
+            return "fixed ID " + id;
+        }
     }
 
-    private static Object2IntFunction<BlockState> forPropertyMap(Int2IntMap byPropertyMap) {
-        return state -> {
+    private static Object2IntFunction<BlockState> fixedId(int id) {
+        return FIXED_ID_CACHE.computeIfAbsent(id, FixedIdFn::new);
+    }
+
+    private record PropertyMapFn(Int2IntMap byPropertyMap) implements Object2IntFunction<BlockState> {
+        @Override
+        public int getInt(Object state) {
             if (!(state instanceof BlockState)) {
                 return -1;
             }
@@ -135,8 +149,14 @@ public class ModelTextureAnalyzer {
             }
 
             return bestBlockId;
-        };
+        }
+
+        @Override
+        public String toString() {
+            return "property-based ID: " + byPropertyMap.toString();
+        }
     }
+
     private static final Object2IntFunction<BlockState> NONE = fixedId(-1);
 
     public static int fetchBlockIdForTexturedState(Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> fallbackMaterialMap, BlockState state, TextureAtlasSprite sprite) {
@@ -218,11 +238,21 @@ public class ModelTextureAnalyzer {
                 } else if (materialByProperty.size() == 1 || materialByProperty.values().intStream().distinct().count() == 1) {
                     finalMap.put(entry.getKey(), fixedId(materialByProperty.values().iterator().nextInt()));
                 } else {
-                    finalMap.put(entry.getKey(), forPropertyMap(materialByProperty));
+                    finalMap.put(entry.getKey(), new PropertyMapFn(materialByProperty));
                 }
             }
 
             populateVanillaFluids(finalMap, blockStateIds);
+
+            if (DUMP_TEXTURE_MAPPING) {
+                StringBuilder sb = new StringBuilder();
+                finalMap.object2ObjectEntrySet().stream()
+                        .sorted(Comparator.comparing(e -> e.getKey().contents().name().toString()))
+                        .forEach((entry) -> {
+                    sb.append(" - ").append(entry.getKey().contents().name()).append( " to ").append(entry.getValue().toString()).append('\n');
+                });
+                Celeritas.logger().info("Texture mappings:\n\n{}", sb);
+            }
 
             return finalMap;
         });
