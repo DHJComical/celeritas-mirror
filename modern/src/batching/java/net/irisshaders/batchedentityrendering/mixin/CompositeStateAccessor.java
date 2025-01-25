@@ -9,4 +9,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface CompositeStateAccessor {
 	@Accessor("transparencyState")
 	RenderStateShard.TransparencyStateShard getTransparency();
+
+    @Accessor("depthTestState")
+    RenderStateShard.DepthTestStateShard getDepth();
 }
