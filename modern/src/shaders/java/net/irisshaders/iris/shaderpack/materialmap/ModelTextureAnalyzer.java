@@ -20,6 +20,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
+import net.minecraft.world.phys.shapes.Shapes;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.util.DirectionUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,12 +38,31 @@ public class ModelTextureAnalyzer {
     private static final boolean USE_MULTITHREADING = false;
     private final List<AnalyzerThread> threads;
 
+    private static boolean shouldSkipAnalyzingState(BlockState state) {
+        if (state.getBlock().hasDynamicShape()) {
+            // Suspicious - avoid.
+            return true;
+        }
+        // TODO - do we really never want to analyze non-full blocks? Consider chains, for instance.
+        if (!state.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO)) {
+            return true;
+        }
+
+        return false;
+    }
+
     private static List<ImmutableList<BlockState>> getBlockStateGroups(Object2IntMap<BlockState> blockStateIds) {
         Object2ObjectMap<Block, List<BlockState>> statesByBlock = new Object2ObjectOpenHashMap<>();
 
         // Group states by block. This means that all models for the same block will be retrieved at once, which may
         // help dynamic model loading implementations.
         for (var state : blockStateIds.keySet()) {
+            try {
+                if (shouldSkipAnalyzingState(state)) continue;
+            } catch (Exception e) {
+                Celeritas.logger().error("Error filtering states to analyze", e);
+                continue;
+            }
             statesByBlock.computeIfAbsent(state.getBlock(), b -> new ArrayList<>(2)).add(state);
         }
 
