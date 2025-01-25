@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.VertexSorting;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.sampler.SamplerLimits;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
+import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3i;
@@ -453,6 +454,18 @@ public class IrisRenderSystem {
 	public static int createBuffers() {
 		return dsaState.createBuffers();
 	}
+
+    private static boolean cullingState;
+
+    public static void backupAndDisableCullingState(boolean b) {
+        cullingState = Minecraft.getInstance().smartCull;
+        Minecraft.getInstance().smartCull = Minecraft.getInstance().smartCull && !b;
+    }
+
+    public static void restoreCullingState() {
+        Minecraft.getInstance().smartCull = cullingState;
+        cullingState = true;
+    }
 
 	public interface DSAAccess {
 		void generateMipmaps(int texture, int target);

@@ -107,7 +107,7 @@ public class MixinLevelRenderer {
 			this.cullingFrustum = new NonCullingFrustum();
 		}
 
-		Minecraft.getInstance().smartCull = !pipeline.shouldDisableOcclusionCulling();
+        IrisRenderSystem.backupAndDisableCullingState(pipeline.shouldDisableOcclusionCulling());
 
 		if (Iris.shouldActivateWireframe() && this.minecraft.isLocalServer()) {
 			IrisRenderSystem.setPolygonMode(GL43C.GL_LINE);
@@ -142,6 +142,8 @@ public class MixinLevelRenderer {
 		Minecraft.getInstance().getProfiler().popPush("iris_final");
 		pipeline.finalizeLevelRendering();
 		pipeline = null;
+
+        IrisRenderSystem.restoreCullingState();
 
 		if (Iris.shouldActivateWireframe() && this.minecraft.isLocalServer()) {
 			IrisRenderSystem.setPolygonMode(GL43C.GL_FILL);
