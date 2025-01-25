@@ -23,6 +23,8 @@ public class BlockMaterialMapping {
 	public static Object2IntMap<BlockState> createBlockStateIdMap(Int2ObjectMap<List<BlockEntry>> blockPropertiesMap) {
 		Object2IntMap<BlockState> blockStateIds = new Object2IntOpenHashMap<>();
 
+        blockStateIds.defaultReturnValue(-1);
+
 		blockPropertiesMap.forEach((intId, entries) -> {
 			for (BlockEntry entry : entries) {
 				addBlockStates(entry, blockStateIds, intId);
