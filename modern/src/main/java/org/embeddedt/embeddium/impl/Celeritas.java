@@ -31,6 +31,7 @@ import net.fabricmc.loader.api.FabricLoader;
 //? if neoforge {
 /*import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
@@ -112,7 +113,7 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         }
 
         // TODO remove
-        //? if forge && 1.20.1 {
+        //? if forgelike {
         modEventBus.addListener((RegisterKeyMappingsEvent ev) -> {
             ev.register(net.irisshaders.iris.Iris.reloadKeybind);
             ev.register(net.irisshaders.iris.Iris.shaderpackScreenKeybind);
