@@ -1,11 +1,8 @@
 package net.irisshaders.iris.shaderpack.materialmap;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntFunction;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +14,7 @@ public class WorldRenderingSettings {
 
 	private boolean reloadRequired;
     private Object2IntMap<BlockState> blockStateIds;
-    private Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> fallbackTextureMaterialMapping;
+    private FallbackTextureMaterials fallbackTextureMaterialMapping;
 	private Map<Block, RenderType> blockTypeIds;
 	private Object2IntFunction<NamespacedId> entityIds;
 	private Object2IntFunction<NamespacedId> itemIds;
@@ -65,11 +62,11 @@ public class WorldRenderingSettings {
 	}
 
     @Nullable
-    public Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> getFallbackTextureMaterialMapping() {
+    public FallbackTextureMaterials getFallbackTextureMaterialMapping() {
         return fallbackTextureMaterialMapping;
     }
 
-    public void setFallbackTextureMaterialMapping(Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> fallbackTextureMaterialMapping) {
+    public void setFallbackTextureMaterialMapping(FallbackTextureMaterials fallbackTextureMaterialMapping) {
         if (this.fallbackTextureMaterialMapping != null && this.fallbackTextureMaterialMapping.equals(fallbackTextureMaterialMapping)) {
             return;
         }

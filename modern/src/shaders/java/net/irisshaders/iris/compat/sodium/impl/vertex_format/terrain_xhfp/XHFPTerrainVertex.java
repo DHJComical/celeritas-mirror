@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntFunction;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.shaderpack.materialmap.FallbackTextureMaterials;
 import net.irisshaders.iris.shaderpack.materialmap.ModelTextureAnalyzer;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.Minecraft;
@@ -49,7 +50,7 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
     private final Object2IntMap<BlockState> blockStateIds = WorldRenderingSettings.INSTANCE.getBlockStateIds();
 
     private final TextureAtlas blocksAtlas = (TextureAtlas)Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS);
-    private final Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> fallbackMaterials = WorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
+    private final FallbackTextureMaterials fallbackMaterials = WorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
 
     private static int encodeDrawParameters(Material material, int sectionIndex) {
         return (sectionIndex & 255) << 8 | (material.bits() & 255) << 0;
@@ -179,7 +180,7 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
                 // the visuals of facade-style blocks
                 TextureAtlasSprite sprite = ((TextureAtlasExtended)blocksAtlas).celeritas$findFromUV(uSum, vSum);
                 if (sprite != null) {
-                    blockId = (short) ModelTextureAnalyzer.fetchBlockIdForTexturedState(fallbackMaterials, this.blockState, sprite);
+                    blockId = (short) fallbackMaterials.getFallbackId(sprite, this.blockState);
                 }
             }
 

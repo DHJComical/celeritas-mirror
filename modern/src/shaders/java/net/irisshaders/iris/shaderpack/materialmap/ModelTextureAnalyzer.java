@@ -18,6 +18,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.EmptyBlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 public class ModelTextureAnalyzer {
     /**
@@ -159,16 +161,6 @@ public class ModelTextureAnalyzer {
 
     private static final Object2IntFunction<BlockState> NONE = fixedId(-1);
 
-    public static int fetchBlockIdForTexturedState(Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> fallbackMaterialMap, BlockState state, TextureAtlasSprite sprite) {
-        var byPropertyMap = fallbackMaterialMap.get(sprite);
-
-        if (byPropertyMap == null) {
-            return -1;
-        }
-
-        return byPropertyMap.applyAsInt(state);
-    }
-
     private static void mergeIntoMainMap(Object2ObjectMap<TextureAtlasSprite, Int2ObjectMap<Int2IntMap>> dest, Object2ObjectMap<TextureAtlasSprite, Int2ObjectMap<Int2IntMap>> src) {
         src.forEach((sprite, votesByProperty) -> {
             dest.merge(sprite, votesByProperty, (oldVotesByProperty, newVotesByProperty) -> {
@@ -188,7 +180,7 @@ public class ModelTextureAnalyzer {
         });
     }
 
-    public static @Nullable Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>> runAnalysisSync(@Nullable Object2IntMap<BlockState> blockStateIds) {
+    public static @Nullable FallbackTextureMaterials runAnalysisSync(@Nullable Object2IntMap<BlockState> blockStateIds) {
         Stopwatch watch = Stopwatch.createStarted();
         var result = runAnalysis(blockStateIds).join();
         watch.stop();
@@ -196,7 +188,7 @@ public class ModelTextureAnalyzer {
         return result;
     }
 
-    public static CompletableFuture<@Nullable Object2ObjectMap<TextureAtlasSprite, Object2IntFunction<BlockState>>> runAnalysis(@Nullable Object2IntMap<BlockState> blockStateIds) {
+    public static CompletableFuture<@Nullable FallbackTextureMaterials> runAnalysis(@Nullable Object2IntMap<BlockState> blockStateIds) {
         if (blockStateIds == null) {
             return CompletableFuture.completedFuture(null);
         }
@@ -254,7 +246,9 @@ public class ModelTextureAnalyzer {
                 Celeritas.logger().info("Texture mappings:\n\n{}", sb);
             }
 
-            return finalMap;
+            var blacklistedBlocksSet = blockStateIds.keySet().stream().map(BlockBehaviour.BlockStateBase::getBlock).collect(Collectors.toCollection(ObjectOpenHashSet::new));
+            blacklistedBlocksSet.trim();
+            return new FallbackTextureMaterials(finalMap, blacklistedBlocksSet);
         });
     }
 
