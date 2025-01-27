@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.phys.shapes.Shapes;
 import org.embeddedt.embeddium.impl.Celeritas;
+import org.embeddedt.embeddium.impl.model.CompositeModel;
 import org.embeddedt.embeddium.impl.util.DirectionUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -332,18 +333,31 @@ public class ModelTextureAnalyzer {
                 var stateProps = computePropertiesForState(state);
 
                 try {
-                    for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
-                        conductVoting(model, state, stateProps, namespace, direction, materialId);
-                    }
-
-                    conductVoting(model, state, stateProps, namespace, null, materialId);
-                } catch (Exception ignored) {
-                    // No problem, we'll just skip this block.
+                    conductVotingForAllDirections(model, state, stateProps, namespace, materialId);
+                } catch (Exception e) {
                     break;
                 }
             }
 
             seenQuads.clear();
+        }
+
+        private void conductVotingForAllDirections(BakedModel model, BlockState state, int stateProps, String namespace, int materialId) {
+            if (model instanceof CompositeModel modelWithChildren) {
+                random.setSeed(42L);
+                var iterable = modelWithChildren.celeritas$getInnerModels(state, random);
+                if (iterable != null) {
+                    iterable.forEach(inner -> conductVotingForAllDirections(inner, state, stateProps, namespace, materialId));
+                    return;
+                }
+            }
+
+            for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
+                conductVoting(model, state, stateProps, namespace, direction, materialId);
+            }
+
+            conductVoting(model, state, stateProps, namespace, null, materialId);
+
         }
 
         private void conductVoting(BakedModel model, BlockState state, int stateProps, String namespace, @Nullable Direction direction, int vote) {
