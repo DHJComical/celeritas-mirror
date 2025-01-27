@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
 //? if >=1.18 <=1.21.4 {
+import com.google.common.collect.Iterables;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
@@ -23,6 +24,7 @@ import net.minecraftforge.client.model.data.ModelData;
 /*import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.model.data.ModelData;
 *///?}
+import org.embeddedt.embeddium.impl.model.CompositeModel;
 import org.embeddedt.embeddium.impl.model.UnwrappableBakedModel;
 import org.embeddedt.embeddium.impl.util.collections.WeightedRandomListExtended;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +34,7 @@ import org.spongepowered.asm.mixin.*;
 import java.util.*;
 
 @Mixin(WeightedBakedModel.class)
-public class WeightedBakedModelMixin implements UnwrappableBakedModel {
+public class WeightedBakedModelMixin implements UnwrappableBakedModel, CompositeModel {
     //? if <1.21.2 {
     @Shadow
     @Final
@@ -123,6 +125,14 @@ public class WeightedBakedModelMixin implements UnwrappableBakedModel {
         }
 
         return null;
+    }
+
+    @Override
+    public @Nullable Iterable<BakedModel> celeritas$getInnerModels(BlockState state) {
+        //? if <1.20.6
+        return Iterables.transform(this.list, WeightedEntry.Wrapper::getData);
+        //? if >=1.20.6
+        /*return Iterables.transform(this.list, WeightedEntry.Wrapper::data);*/
     }
 }
 //?}

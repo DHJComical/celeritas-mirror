@@ -31,6 +31,7 @@ import net.neoforged.neoforge.client.model.data.MultipartModelData;
 *///?}
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.embeddedt.embeddium.impl.model.CompositeModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
@@ -43,7 +44,7 @@ import java.util.concurrent.locks.StampedLock;
 import java.util.function.Predicate;
 
 @Mixin(MultiPartBakedModel.class)
-public class MultipartBakedModelMixin {
+public class MultipartBakedModelMixin implements CompositeModel {
     @Unique
     private final Map<BlockState, BakedModel[]> stateCacheFast = new Reference2ReferenceOpenHashMap<>();
     @Unique
@@ -220,6 +221,13 @@ public class MultipartBakedModelMixin {
         }
 
         return quads != null ? quads : Collections.emptyList();
+    }
+
+    @Override
+    public @Nullable Iterable<BakedModel> celeritas$getInnerModels(BlockState state) {
+        BakedModel[] models = getModelComponents(state);
+
+        return Arrays.asList(models);
     }
 
     //? if forgelike && >=1.19 {

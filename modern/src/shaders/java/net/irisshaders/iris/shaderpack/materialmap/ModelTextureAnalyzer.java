@@ -344,8 +344,7 @@ public class ModelTextureAnalyzer {
 
         private void conductVotingForAllDirections(BakedModel model, BlockState state, int stateProps, String namespace, int materialId) {
             if (model instanceof CompositeModel modelWithChildren) {
-                random.setSeed(42L);
-                var iterable = modelWithChildren.celeritas$getInnerModels(state, random);
+                var iterable = modelWithChildren.celeritas$getInnerModels(state);
                 if (iterable != null) {
                     iterable.forEach(inner -> conductVotingForAllDirections(inner, state, stateProps, namespace, materialId));
                     return;
