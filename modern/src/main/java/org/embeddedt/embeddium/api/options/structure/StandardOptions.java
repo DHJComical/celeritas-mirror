@@ -25,6 +25,7 @@ public final class StandardOptions {
         public static final OptionIdentifier<Void> QUALITY = OptionIdentifier.create(Celeritas.MODID, "quality");
         public static final OptionIdentifier<Void> PERFORMANCE = OptionIdentifier.create(Celeritas.MODID, "performance");
         public static final OptionIdentifier<Void> ADVANCED = OptionIdentifier.create(Celeritas.MODID, "advanced");
+        public static final OptionIdentifier<Void> SHADERS = OptionIdentifier.create(Celeritas.MODID, "shaders");
     }
 
     public static class Option {

@@ -904,7 +904,11 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
             WorldRenderingSettings.INSTANCE.setBlockStateIds(
                     BlockMaterialMapping.createBlockStateIdMap(pack.getIdMap().getBlockProperties()));
             WorldRenderingSettings.INSTANCE.setBlockTypeIds(BlockMaterialMapping.createBlockTypeMap(pack.getIdMap().getBlockRenderTypeMap()));
-            WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(ModelTextureAnalyzer.runAnalysisSync(WorldRenderingSettings.INSTANCE.getBlockStateIds()));
+            if (Iris.getIrisConfig().isEnableTextureMaterialFallback()) {
+                WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(ModelTextureAnalyzer.runAnalysisSync(WorldRenderingSettings.INSTANCE.getBlockStateIds()));
+            } else {
+                WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(null);
+            }
             Minecraft.getInstance().levelRenderer.allChanged();
             blockIdsNeedPopulation = false;
         }

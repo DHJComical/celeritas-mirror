@@ -1,6 +1,8 @@
 package net.irisshaders.iris.compat.sodium.impl.options;
 
+import com.google.common.collect.ImmutableList;
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.config.IrisConfig;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 import net.minecraft.client.Options;
@@ -10,13 +12,35 @@ import org.embeddedt.embeddium.api.OptionGroupConstructionEvent;
 import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
 import org.embeddedt.embeddium.api.options.control.CyclingControl;
 import org.embeddedt.embeddium.api.options.control.SliderControl;
+import org.embeddedt.embeddium.api.options.control.TickBoxControl;
 import org.embeddedt.embeddium.api.options.storage.MinecraftOptionsStorage;
 import org.embeddedt.embeddium.api.options.structure.*;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptionPages;
 
 import java.io.IOException;
+import java.util.Set;
 
 public class IrisSodiumOptions {
+    private static final OptionStorage<IrisConfig> irisOpts = new OptionStorage<IrisConfig>() {
+        @Override
+        public IrisConfig getData() {
+            return Iris.getIrisConfig();
+        }
+
+        @Override
+        public void save(Set<OptionFlag> flags) {
+            try {
+                getData().save();
+
+                if (flags.contains(OptionFlag.REQUIRES_SHADER_PIPELINE_RELOAD)) {
+                    Iris.reload();
+                }
+            } catch (IOException e) {
+                Iris.logger.error("Error saving config", e);
+            }
+        }
+    };
+
     public static void init() {
         OptionGroupConstructionEvent.BUS.addListener(ev -> {
             if(ev.getId().matches(StandardOptions.Group.RENDERING)) {
@@ -24,6 +48,26 @@ public class IrisSodiumOptions {
             } else if(ev.getId().matches(StandardOptions.Group.GRAPHICS)) {
                 ev.getOptions().add(createColorSpaceButton(SodiumGameOptionPages.getVanillaOpts()));
             }
+        });
+        OptionGUIConstructionEvent.BUS.addListener(ev -> {
+            ev.addPage(new OptionPage(StandardOptions.Pages.SHADERS, Component.literal("Shaders"), ImmutableList.of(
+                    OptionGroup.createBuilder()
+                            .add(OptionImpl.createBuilder(boolean.class, irisOpts)
+                                    .setName(Component.literal("Enable Texture Material Fallback"))
+                                    .setTooltip(Component.literal("Uses textures to guess block.properties IDs if they are not set."))
+                                    .setControl(TickBoxControl::new)
+                                    .setBinding(IrisConfig::setEnableTextureMaterialFallback, IrisConfig::isEnableTextureMaterialFallback)
+                                    .setFlags(OptionFlag.REQUIRES_SHADER_PIPELINE_RELOAD)
+                                    .build())
+                            .add(OptionImpl.createBuilder(boolean.class, irisOpts)
+                                    .setName(Component.literal("Enable Modded Core Shaders"))
+                                    .setTooltip(Component.literal("Allows modded core shaders to be active with the Iris pipeline."))
+                                    .setControl(TickBoxControl::new)
+                                    .setBinding(IrisConfig::setBlockUnknownShaders, IrisConfig::isBlockUnknownShaders)
+                                    .setFlags(OptionFlag.REQUIRES_SHADER_PIPELINE_RELOAD)
+                                    .build())
+                            .build()
+            )));
         });
     }
 

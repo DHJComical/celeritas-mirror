@@ -270,28 +270,13 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
             dirtyStorages.add(option.getStorage());
         }));
 
-        Minecraft client = Minecraft.getInstance();
-
-        if (client.level != null) {
-            if (flags.contains(OptionFlag.REQUIRES_RENDERER_RELOAD)) {
-                client.levelRenderer.allChanged();
-            } else if (flags.contains(OptionFlag.REQUIRES_RENDERER_UPDATE)) {
-                client.levelRenderer.needsUpdate();
-            }
-        }
-
-        if (flags.contains(OptionFlag.REQUIRES_ASSET_RELOAD)) {
-            client.updateMaxMipLevel(client.options.mipmapLevels/*? if >=1.19 {*/().get()/*?}*/);
-            client.delayTextureReload();
-        }
-
         if (flags.contains(OptionFlag.REQUIRES_GAME_RESTART)) {
             Console.instance().logMessage(MessageLevel.WARN,
                     ComponentUtil.translatable("sodium.console.game_restart"), 10.0);
         }
 
         for (OptionStorage<?> storage : dirtyStorages) {
-            storage.save();
+            storage.save(flags);
         }
     }
 

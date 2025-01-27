@@ -1,6 +1,7 @@
 package net.irisshaders.iris.config;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
@@ -40,13 +41,21 @@ public class IrisConfig {
      * Whether unknown shaders are blocked.
      */
     @Getter
+    @Setter
     private boolean blockUnknownShaders;
+    /**
+     * Whether block ID selection can fall back to using textures to guess the material.
+     */
+    @Getter
+    @Setter
+    private boolean enableTextureMaterialFallback;
 
 	public IrisConfig(Path propertiesPath) {
 		shaderPackName = null;
 		enableShaders = true;
 		enableDebugOptions = false;
 		disableUpdateMessage = false;
+        enableTextureMaterialFallback = true;
 		this.propertiesPath = propertiesPath;
 	}
 
@@ -140,6 +149,7 @@ public class IrisConfig {
 		enableDebugOptions = "true".equals(properties.getProperty("enableDebugOptions"));
         disableUpdateMessage = "true".equals(properties.getProperty("disableUpdateMessage"));
         blockUnknownShaders = "true".equals(properties.getProperty("blockUnknownShaders"));
+        enableTextureMaterialFallback = !"false".equals(properties.getProperty("enableTextureMaterialFallback"));
 		try {
 			IrisVideoSettings.shadowDistance = Integer.parseInt(properties.getProperty("maxShadowRenderDistance", "32"));
 			IrisVideoSettings.colorSpace = ColorSpace.valueOf(properties.getProperty("colorSpace", "SRGB"));
