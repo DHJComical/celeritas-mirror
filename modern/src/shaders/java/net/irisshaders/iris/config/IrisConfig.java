@@ -179,6 +179,7 @@ public class IrisConfig {
 		properties.setProperty("enableDebugOptions", enableDebugOptions ? "true" : "false");
         properties.setProperty("disableUpdateMessage", disableUpdateMessage ? "true" : "false");
         properties.setProperty("blockUnknownShaders", blockUnknownShaders ? "true" : "false");
+        properties.setProperty("enableTextureMaterialFallback", enableTextureMaterialFallback ? "true" : "false");
 		properties.setProperty("maxShadowRenderDistance", String.valueOf(IrisVideoSettings.shadowDistance));
 		properties.setProperty("colorSpace", IrisVideoSettings.colorSpace.name());
 		// NB: This uses ISO-8859-1 with unicode escapes as the encoding
