@@ -22,4 +22,9 @@ public record FallbackTextureMaterials(Object2ObjectMap<TextureAtlasSprite, Obje
 
         return byPropertyMap.applyAsInt(state);
     }
+
+    @Override
+    public String toString() {
+        return "texture materials for " + fallbackMaterialMap.size() + " sprites with " + blacklistedBlocks.size() + " blocks blacklisted";
+    }
 }
