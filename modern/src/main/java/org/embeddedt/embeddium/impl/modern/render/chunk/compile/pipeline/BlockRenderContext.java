@@ -181,4 +181,9 @@ public class BlockRenderContext {
         }
         return this.lightValue;
     }
+
+    @Override
+    public String toString() {
+        return "BlockRenderContext{state=" + this.state + ",pos=" + this.pos + "}";
+    }
 }
