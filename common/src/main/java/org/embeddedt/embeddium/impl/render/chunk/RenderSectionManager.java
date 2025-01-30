@@ -40,7 +40,9 @@ import org.joml.Vector3i;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public abstract class RenderSectionManager {
@@ -83,12 +85,12 @@ public abstract class RenderSectionManager {
 
     private final int minSection, maxSection;
 
-    public RenderSectionManager(ChunkBuilder.ManagedBlocker blocker, RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier, BiFunction<RenderDevice, ChunkVertexType, ChunkRenderer> chunkRenderer, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
+    public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier, BiFunction<RenderDevice, ChunkVertexType, ChunkRenderer> chunkRenderer, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
         this.chunkRenderer = chunkRenderer.apply(RenderDevice.INSTANCE, configuration.vertexType());
 
         this.renderPassConfiguration = configuration;
 
-        this.builder = new ChunkBuilder(blocker, contextSupplier, requestedThreads);
+        this.builder = new ChunkBuilder(this::managedBlock, contextSupplier, requestedThreads);
 
         this.needsUpdate = true;
         this.renderDistance = renderDistance;
@@ -107,6 +109,17 @@ public abstract class RenderSectionManager {
         }
 
         this.disabledRenderPasses = new ReferenceArraySet<>();
+    }
+
+    public void managedBlock(BooleanSupplier shouldContinueRunning) {
+        while (shouldContinueRunning.getAsBoolean()) {
+            Runnable task = this.asyncSubmittedTasks.poll();
+            if (task != null) {
+                task.run();
+            } else {
+                LockSupport.parkNanos("Wait", 100000L);
+            }
+        }
     }
 
     public void runAsyncTasks() {
@@ -518,8 +531,12 @@ public abstract class RenderSectionManager {
         return sections;
     }
 
+    public void scheduleAsyncTask(Runnable runnable) {
+        asyncSubmittedTasks.add(runnable);
+    }
+
     private void scheduleRebuildOffThread(int x, int y, int z, boolean important) {
-        asyncSubmittedTasks.add(() -> this.scheduleSectionForRebuild(x, y, z, important));
+        scheduleAsyncTask(() -> this.scheduleSectionForRebuild(x, y, z, important));
     }
 
     public final void scheduleRebuild(int x, int y, int z, boolean important) {

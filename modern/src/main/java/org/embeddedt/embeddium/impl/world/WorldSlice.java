@@ -59,6 +59,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -503,18 +504,17 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         if (section != null) {
             return section;
         }
-        var sectionFuture = Minecraft.getInstance().submit(() -> {
-            var renderer = CeleritasWorldRenderer.instanceNullable();
-            if (renderer == null) {
-                return null;
-            }
-            var manager = renderer.getRenderSectionManager();
-            if (manager != null) {
-                return manager.getSectionCache().acquire(sX, sY, sZ);
-            } else {
-                return null;
-            }
-        });
+        var renderer = CeleritasWorldRenderer.instanceNullable();
+        if (renderer == null) {
+            return null;
+        }
+        var manager = renderer.getRenderSectionManager();
+        if (manager == null) {
+            return null;
+        }
+        var sectionFuture = CompletableFuture.supplyAsync(() -> {
+            return manager.getSectionCache().acquire(sX, sY, sZ);
+        }, manager::scheduleAsyncTask);
         // The game will discard the future if the player disconnects, so we need to check that they are still connected.
         while (Minecraft.getInstance().level != null) {
             try {
