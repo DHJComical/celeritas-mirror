@@ -909,7 +909,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
             } else {
                 WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(null);
             }
-            Minecraft.getInstance().levelRenderer.allChanged();
+            WorldRenderingSettings.INSTANCE.reloadRendererIfRequired();
             blockIdsNeedPopulation = false;
         }
 

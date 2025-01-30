@@ -33,13 +33,7 @@ public class PipelineManager {
 			pipeline = pipelineFactory.apply(currentDimension);
 			pipelinesPerDimension.put(currentDimension, pipeline);
 
-			if (WorldRenderingSettings.INSTANCE.isReloadRequired()) {
-				if (Minecraft.getInstance().levelRenderer != null) {
-					Minecraft.getInstance().levelRenderer.allChanged();
-				}
-
-				WorldRenderingSettings.INSTANCE.clearReloadRequired();
-			}
+			WorldRenderingSettings.INSTANCE.reloadRendererIfRequired();
 		} else {
 			pipeline = pipelinesPerDimension.get(currentDimension);
 		}

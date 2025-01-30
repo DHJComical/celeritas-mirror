@@ -2,12 +2,14 @@ package net.irisshaders.iris.shaderpack.materialmap;
 
 import it.unimi.dsi.fastutil.objects.Object2IntFunction;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class WorldRenderingSettings {
 	public static final WorldRenderingSettings INSTANCE = new WorldRenderingSettings();
@@ -47,13 +49,23 @@ public class WorldRenderingSettings {
 		reloadRequired = false;
 	}
 
+    public void reloadRendererIfRequired() {
+        if (isReloadRequired()) {
+            if (Minecraft.getInstance().levelRenderer != null) {
+                Minecraft.getInstance().levelRenderer.allChanged();
+            }
+
+            clearReloadRequired();
+        }
+    }
+
 	@Nullable
 	public Object2IntMap<BlockState> getBlockStateIds() {
 		return blockStateIds;
 	}
 
 	public void setBlockStateIds(Object2IntMap<BlockState> blockStateIds) {
-		if (this.blockStateIds != null && this.blockStateIds.equals(blockStateIds)) {
+		if (Objects.equals(this.blockStateIds, blockStateIds)) {
 			return;
 		}
 
@@ -67,7 +79,7 @@ public class WorldRenderingSettings {
     }
 
     public void setFallbackTextureMaterialMapping(FallbackTextureMaterials fallbackTextureMaterialMapping) {
-        if (this.fallbackTextureMaterialMapping != null && this.fallbackTextureMaterialMapping.equals(fallbackTextureMaterialMapping)) {
+        if (Objects.equals(this.fallbackTextureMaterialMapping, fallbackTextureMaterialMapping)) {
             return;
         }
 
@@ -82,7 +94,7 @@ public class WorldRenderingSettings {
 	}
 
 	public void setBlockTypeIds(Map<Block, RenderType> blockTypeIds) {
-		if (this.blockTypeIds != null && this.blockTypeIds.equals(blockTypeIds)) {
+		if (Objects.equals(this.blockTypeIds, blockTypeIds)) {
 			return;
 		}
 
