@@ -111,8 +111,8 @@ public abstract class RenderSectionManager {
         this.disabledRenderPasses = new ReferenceArraySet<>();
     }
 
-    public void managedBlock(BooleanSupplier shouldContinueRunning) {
-        while (shouldContinueRunning.getAsBoolean()) {
+    public void managedBlock(BooleanSupplier isDone) {
+        while (!isDone.getAsBoolean()) {
             Runnable task = this.asyncSubmittedTasks.poll();
             if (task != null) {
                 task.run();
