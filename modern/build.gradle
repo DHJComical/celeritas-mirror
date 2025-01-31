@@ -77,6 +77,9 @@ repositories {
     maven {
         url = "https://maven.fabricmc.net/"
     }
+    maven {
+        url = "https://maven.taumc.org/releases"
+    }
     // For CurseForge
     exclusiveContent {
         forRepository {
