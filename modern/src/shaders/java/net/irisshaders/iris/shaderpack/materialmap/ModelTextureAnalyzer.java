@@ -267,6 +267,7 @@ public class ModelTextureAnalyzer {
 
                 if (correctFluidId != -1) {
                     var idFn = fixedId(correctFluidId);
+                    //? if forgelike {
                     var flowingTexture = attributes.getFlowingTexture();
                     if (flowingTexture != null) {
                         map.put(atlas.apply(flowingTexture), idFn);
@@ -279,6 +280,7 @@ public class ModelTextureAnalyzer {
                     if (overlayTexture != null) {
                         map.put(atlas.apply(overlayTexture), idFn);
                     }
+                    //?}
                 }
             }
         }
