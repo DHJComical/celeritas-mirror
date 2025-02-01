@@ -51,47 +51,48 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
                        CameraTransform camera) {
         super.begin(renderPass);
 
-        boolean useBlockFaceCulling = this.useBlockFaceCulling;
+        // If there is no active program, shader compilation probably failed, and we can't render anything.
+        if (this.activeProgram != null) {
+            boolean useBlockFaceCulling = this.useBlockFaceCulling;
 
-        GLDebug.pushGroup(770, renderPass.name() + " terrain pass");
+            GLDebug.pushGroup(770, renderPass.name() + " terrain pass");
 
-        ChunkShaderInterface shader = this.activeProgram.getInterface();
-        shader.setProjectionMatrix(matrices.projection());
-        shader.setModelViewMatrix(matrices.modelView());
+            ChunkShaderInterface shader = this.activeProgram.getInterface();
+            shader.setProjectionMatrix(matrices.projection());
+            shader.setModelViewMatrix(matrices.modelView());
 
-        Iterator<ChunkRenderList> iterator = renderLists.iterator(renderPass.isReverseOrder());
+            Iterator<ChunkRenderList> iterator = renderLists.iterator(renderPass.isReverseOrder());
 
-        this.isIndexedPass = renderPass.isSorted();
+            this.isIndexedPass = renderPass.isSorted();
 
-        while (iterator.hasNext()) {
-            ChunkRenderList renderList = iterator.next();
+            while (iterator.hasNext()) {
+                ChunkRenderList renderList = iterator.next();
 
-            var region = renderList.getRegion();
-            var storage = region.getStorage(renderPass);
+                var region = renderList.getRegion();
+                var storage = region.getStorage(renderPass);
 
-            if (storage == null) {
-                continue;
+                if (storage == null) {
+                    continue;
+                }
+
+                fillCommandBuffer(this.batch, region, storage, renderList, camera, renderPass, useBlockFaceCulling && !renderPass.isSorted());
+
+                if (this.batch.isEmpty()) {
+                    continue;
+                }
+
+                if (!this.isIndexedPass) {
+                    this.sharedIndexBuffer.ensureCapacity(commandList, this.batch.getIndexBufferSize());
+                }
+
+                var tessellation = this.prepareTessellation(commandList, region);
+
+                setModelMatrixUniforms(shader, region, camera);
+                executeDrawBatch(commandList, tessellation, this.batch);
             }
 
-            fillCommandBuffer(this.batch, region, storage, renderList, camera, renderPass, useBlockFaceCulling && !renderPass.isSorted());
-
-            if (this.batch.isEmpty()) {
-                continue;
-            }
-
-
-
-            if (!this.isIndexedPass) {
-                this.sharedIndexBuffer.ensureCapacity(commandList, this.batch.getIndexBufferSize());
-            }
-
-            var tessellation = this.prepareTessellation(commandList, region);
-
-            setModelMatrixUniforms(shader, region, camera);
-            executeDrawBatch(commandList, tessellation, this.batch);
+            GLDebug.popGroup();
         }
-
-        GLDebug.popGroup();
 
         super.end(renderPass);
     }

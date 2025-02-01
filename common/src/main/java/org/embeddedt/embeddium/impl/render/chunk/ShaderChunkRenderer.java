@@ -1,6 +1,8 @@
 package org.embeddedt.embeddium.impl.render.chunk;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
@@ -12,11 +14,15 @@ import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.shader.ShaderLoader;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Objects;
 
 public abstract class ShaderChunkRenderer implements ChunkRenderer {
-    private final Map<ChunkShaderOptions, GlProgram<ChunkShaderInterface>> programs = new Object2ObjectOpenHashMap<>();
+    private static final Logger LOGGER = LogManager.getLogger(ShaderChunkRenderer.class);
+
+    private final Map<ChunkShaderOptions, @Nullable GlProgram<ChunkShaderInterface>> programs = new Object2ObjectOpenHashMap<>();
 
     protected final ChunkVertexType vertexType;
     protected final GlVertexFormat vertexFormat;
@@ -31,11 +37,16 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         this.vertexFormat = vertexType.getVertexFormat();
     }
 
-    protected GlProgram<ChunkShaderInterface> compileProgram(ChunkShaderOptions options) {
+    protected @Nullable GlProgram<ChunkShaderInterface> compileProgram(ChunkShaderOptions options) {
         GlProgram<ChunkShaderInterface> program = this.programs.get(options);
 
-        if (program == null) {
-            this.programs.put(options, program = this.createShader("blocks/block_layer_opaque", options));
+        if (program == null && !this.programs.containsKey(options)) {
+            try {
+                program = this.createShader("blocks/block_layer_opaque", options);
+            } catch(Exception e) {
+                LOGGER.error("There was an error creating a chunk program. Terrain will not render until this is fixed.", e);
+            }
+            this.programs.put(options, program);
         }
 
         return program;
@@ -70,21 +81,27 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         ChunkShaderOptions options = new ChunkShaderOptions(ChunkShaderFogComponent.FOG_SERVICE.getFogMode(), pass, this.vertexType);
 
         this.activeProgram = this.compileProgram(options);
-        this.activeProgram.bind();
-        this.activeProgram.getInterface()
-                .setupState();
+
+        if (this.activeProgram != null) {
+            this.activeProgram.bind();
+            this.activeProgram.getInterface()
+                    .setupState();
+        }
     }
 
     protected void end(TerrainRenderPass pass) {
-        this.activeProgram.unbind();
-        this.activeProgram = null;
+        if (this.activeProgram != null) {
+            this.activeProgram.unbind();
+            this.activeProgram = null;
+        }
+
 
         pass.endDrawing();
     }
 
     @Override
     public void delete(CommandList commandList) {
-        this.programs.values()
+        this.programs.values().stream().filter(Objects::nonNull)
                 .forEach(GlProgram::delete);
     }
 
