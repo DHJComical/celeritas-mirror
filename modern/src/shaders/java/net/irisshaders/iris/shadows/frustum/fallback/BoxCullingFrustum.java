@@ -3,9 +3,12 @@ package net.irisshaders.iris.shadows.frustum.fallback;
 import net.irisshaders.iris.shadows.frustum.BoxCuller;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.phys.AABB;
+import org.embeddedt.embeddium.impl.render.viewport.Viewport;
+import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.joml.Matrix4f;
+import org.joml.Vector3d;
 
-public class BoxCullingFrustum extends Frustum {
+public class BoxCullingFrustum extends Frustum implements ViewportProvider, org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum {
 	private final BoxCuller boxCuller;
 	private double x, y, z;
 	private int worldMinYDH;
@@ -35,4 +38,16 @@ public class BoxCullingFrustum extends Frustum {
 	public boolean isVisible(AABB box) {
 		return !boxCuller.isCulled(box);
 	}
+
+    private final Vector3d position = new Vector3d();
+
+    @Override
+    public Viewport sodium$createViewport() {
+        return new Viewport(this, position.set(x, y, z));
+    }
+
+    @Override
+    public boolean testAab(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
+        return !boxCuller.isCulledSodium(minX, minY, minZ, maxX, maxY, maxZ);
+    }
 }
