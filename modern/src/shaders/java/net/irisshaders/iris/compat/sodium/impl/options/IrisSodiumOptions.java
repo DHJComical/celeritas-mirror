@@ -71,8 +71,8 @@ public class IrisSodiumOptions {
         });
     }
 
-	public static OptionImpl<Options, Integer> createMaxShadowDistanceSlider(OptionStorage<Options> vanillaOpts) {
-		OptionImpl<Options, Integer> maxShadowDistanceSlider = OptionImpl.createBuilder(int.class, vanillaOpts)
+	public static OptionImpl<IrisConfig, Integer> createMaxShadowDistanceSlider(OptionStorage<Options> vanillaOpts) {
+		return OptionImpl.createBuilder(int.class, irisOpts)
 			.setName(Component.translatable("options.iris.shadowDistance"))
 			.setTooltip(Component.translatable("options.iris.shadowDistance.sodium_tooltip"))
 			.setControl(option -> new SliderControl(option, 0, 32, 1, translateVariableOrDisabled("options.chunks", "Disabled")))
@@ -88,8 +88,6 @@ public class IrisSodiumOptions {
 			.setImpact(OptionImpact.HIGH)
 			.setEnabledPredicate(IrisVideoSettings::isShadowDistanceSliderEnabled)
 			.build();
-
-		return maxShadowDistanceSlider;
 	}
 
 	public static OptionImpl<Options, ColorSpace> createColorSpaceButton(OptionStorage<Options> vanillaOpts) {

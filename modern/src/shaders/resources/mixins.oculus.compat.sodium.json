@@ -12,7 +12,6 @@
   },
   "client": [
     "clouds.MixinCloudRenderer",
-    "options.MixinSodiumGameOptions",
     "pbr_animation.MixinSpriteContents",
     "shader_overrides.MixinShaderChunkRenderer",
     "shadow_map.MixinRenderSectionManager",
