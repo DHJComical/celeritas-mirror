@@ -115,7 +115,7 @@ public class CeleritasWorldRenderer {
         this.client = client;
     }
 
-    public void setWorld(ClientLevel world) {
+    public void setWorldWithoutReload(ClientLevel world) {
         // Check that the world is actually changing
         if (this.world == world) {
             return;
@@ -126,18 +126,7 @@ public class CeleritasWorldRenderer {
             this.unloadWorld();
         }
 
-        // If we're loading a new world, load the renderer
-        if (world != null) {
-            this.loadWorld(world);
-        }
-    }
-
-    private void loadWorld(ClientLevel world) {
         this.world = world;
-
-        try (CommandList commandList = RenderDevice.INSTANCE.createCommandList()) {
-            this.initRenderer(commandList);
-        }
     }
 
     private void unloadWorld() {

@@ -116,12 +116,12 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         this.renderer = new CeleritasWorldRenderer(client);
     }
 
-    @Inject(method = "setLevel", at = @At("RETURN"))
+    @Inject(method = "setLevel", at = @At("HEAD"))
     private void onWorldChanged(ClientLevel world, CallbackInfo ci) {
         RenderDevice.enterManagedCode();
 
         try {
-            this.renderer.setWorld(world);
+            this.renderer.setWorldWithoutReload(world);
         } finally {
             RenderDevice.exitManagedCode();
         }
