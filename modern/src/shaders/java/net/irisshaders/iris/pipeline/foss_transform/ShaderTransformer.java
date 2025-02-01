@@ -227,7 +227,9 @@ public class ShaderTransformer {
             }
             CompTransformer.transformEach(transformer, parameters);
             types.put(type, transformer);
-            prepatched.put(type, profileString);
+
+            var extensions = versionPattern.matcher(getFormattedShader(parsedShader.pre(), "")).replaceFirst("").trim();
+            prepatched.put(type, profileString + "\n" + extensions);
         }
         CompTransformer.transformGrouped(types, parameters);
         for (var entry : types.entrySet()) {
