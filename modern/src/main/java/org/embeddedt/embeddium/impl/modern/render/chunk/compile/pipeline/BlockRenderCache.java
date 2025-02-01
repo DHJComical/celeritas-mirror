@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
 import lombok.Getter;
+import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
@@ -43,11 +44,11 @@ public class BlockRenderCache {
         this.worldSlice = new WorldSlice(world);
         this.lightDataCache = new ArrayLightDataCache(this.worldSlice);
 
-        LightPipelineProvider lightPipelineProvider = new LightPipelineProvider(this.lightDataCache, true);
+        LightPipelineProvider lightPipelineProvider = new LightPipelineProvider(this.lightDataCache, !WorldRenderingSettings.INSTANCE.shouldDisableDirectionalShading());
 
         var colorRegistry = new ColorProviderRegistry(client.getBlockColors());
 
-        this.blockRenderer = new BlockRenderer(colorRegistry, lightPipelineProvider, null);
+        this.blockRenderer = new BlockRenderer(colorRegistry, lightPipelineProvider, WorldRenderingSettings.INSTANCE.getBlockTypeIds());
         this.fluidRenderer = new FluidRenderer(colorRegistry, lightPipelineProvider);
         this.lightPipelineProvider = lightPipelineProvider;
 
