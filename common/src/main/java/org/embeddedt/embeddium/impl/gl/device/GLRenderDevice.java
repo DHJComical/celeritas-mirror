@@ -260,8 +260,8 @@ public class GLRenderDevice implements RenderDevice {
         }
 
         @Override
-        public GlTessellation createTessellation(GlPrimitiveType primitiveType, TessellationBinding[] bindings) {
-            GlVertexArrayTessellation tessellation = new GlVertexArrayTessellation(new GlVertexArray(), primitiveType, bindings);
+        public GlTessellation createTessellation(TessellationBinding[] bindings) {
+            GlVertexArrayTessellation tessellation = new GlVertexArrayTessellation(new GlVertexArray(), bindings);
             tessellation.init(this);
 
             return tessellation;
@@ -274,9 +274,7 @@ public class GLRenderDevice implements RenderDevice {
         }
 
         @Override
-        public void multiDrawElementsBaseVertex(MultiDrawBatch batch, GlIndexType indexType) {
-            GlPrimitiveType primitiveType = GLRenderDevice.this.activeTessellation.getPrimitiveType();
-
+        public void multiDrawElementsBaseVertex(MultiDrawBatch batch, GlPrimitiveType primitiveType, GlIndexType indexType) {
             GL32C.nglMultiDrawElementsBaseVertex(primitiveType.getId(),
                     batch.pElementCount,
                     indexType.getFormatId(),

@@ -6,17 +6,10 @@ import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
 
 public abstract class GlAbstractTessellation implements GlTessellation {
-    protected final GlPrimitiveType primitiveType;
     protected final TessellationBinding[] bindings;
 
-    protected GlAbstractTessellation(GlPrimitiveType primitiveType, TessellationBinding[] bindings) {
-        this.primitiveType = primitiveType;
+    protected GlAbstractTessellation(TessellationBinding[] bindings) {
         this.bindings = bindings;
-    }
-
-    @Override
-    public GlPrimitiveType getPrimitiveType() {
-        return this.primitiveType;
     }
 
     protected void bindAttributes(CommandList commandList) {

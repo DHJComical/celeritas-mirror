@@ -15,7 +15,6 @@
     "clouds.MixinCloudRenderer",
     "options.MixinSodiumGameOptions",
     "pbr_animation.MixinSpriteContents",
-    "shader_overrides.MixinGlRenderDevice",
     "shader_overrides.MixinShaderChunkRenderer",
     "shadow_map.MixinDefaultChunkRenderer",
     "shadow_map.MixinRenderSectionManager",

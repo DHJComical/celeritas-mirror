@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.gl.buffer.GlMutableBuffer;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.*;
+import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -133,8 +134,12 @@ public class IrisChunkShaderInterface implements ChunkShaderInterface {
 		}
 	}
 
+    @Override
+    public GlPrimitiveType getPrimitiveType() {
+        return isTess ? GlPrimitiveType.PATCHES : ChunkShaderInterface.super.getPrimitiveType();
+    }
 
-	@Override
+    @Override
 	public void setProjectionMatrix(Matrix4fc matrix) {
 		if (this.uniformProjectionMatrix != null) {
 			this.uniformProjectionMatrix.set(matrix);

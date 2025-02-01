@@ -58,6 +58,8 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
             shader.setProjectionMatrix(matrices.projection());
             shader.setModelViewMatrix(matrices.modelView());
 
+            var primitiveType = shader.getPrimitiveType();
+
             Iterator<ChunkRenderList> iterator = renderLists.iterator(renderPass.isReverseOrder());
 
             this.isIndexedPass = renderPass.isSorted();
@@ -85,7 +87,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
                 var tessellation = this.prepareTessellation(commandList, region);
 
                 setModelMatrixUniforms(shader, region, camera);
-                executeDrawBatch(commandList, tessellation, this.batch);
+                executeDrawBatch(commandList, tessellation, primitiveType, this.batch);
             }
 
             GLDebug.popGroup();
@@ -250,15 +252,15 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
     }
 
     private GlTessellation createRegionTessellation(CommandList commandList, RenderRegion.DeviceResources resources) {
-        return commandList.createTessellation(GlPrimitiveType.TRIANGLES, new TessellationBinding[] {
+        return commandList.createTessellation(new TessellationBinding[] {
                 TessellationBinding.forVertexBuffer(resources.getVertexBuffer(), this.generateVertexAttributeBindings()),
                 TessellationBinding.forElementBuffer(this.isIndexedPass ? resources.getIndexBuffer() : this.sharedIndexBuffer.getBufferObject())
         });
     }
 
-    private static void executeDrawBatch(CommandList commandList, GlTessellation tessellation, MultiDrawBatch batch) {
+    private static void executeDrawBatch(CommandList commandList, GlTessellation tessellation, GlPrimitiveType primitiveType, MultiDrawBatch batch) {
         try (DrawCommandList drawCommandList = commandList.beginTessellating(tessellation)) {
-            drawCommandList.multiDrawElementsBaseVertex(batch, GlIndexType.UNSIGNED_INT);
+            drawCommandList.multiDrawElementsBaseVertex(batch, primitiveType, GlIndexType.UNSIGNED_INT);
         }
     }
 
