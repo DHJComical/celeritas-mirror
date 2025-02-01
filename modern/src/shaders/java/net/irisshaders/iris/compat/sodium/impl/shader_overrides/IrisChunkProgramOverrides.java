@@ -4,6 +4,7 @@ import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.shader.GlProgram;
 import org.embeddedt.embeddium.impl.gl.shader.GlShader;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkFogMode;
@@ -246,7 +247,7 @@ public class IrisChunkProgramOverrides {
 			return builder
 				.link((shader) -> {
 					int handle = ((GlObject) shader).handle();
-					ShaderBindingContextExt contextExt = (ShaderBindingContextExt) shader;
+					ShaderBindingContext contextExt = shader;
 					GLDebug.nameObject(GL43C.GL_PROGRAM, handle, "sodium-terrain-" + pass.toString().toLowerCase(Locale.ROOT));
 					return new IrisChunkShaderInterface(handle, contextExt, pipeline, new ChunkShaderOptions(ChunkFogMode.SMOOTH, pass.toTerrainPass(configuration), configuration.vertexType()),
 						tessCShader != null || tessEShader != null, pass == IrisTerrainPass.SHADOW || pass == IrisTerrainPass.SHADOW_CUTOUT, blendOverride, bufferOverrides, alpha, pipeline.getCustomUniforms());
@@ -277,16 +278,6 @@ public class IrisChunkProgramOverrides {
 			return pipeline.getTranslucentAlpha().orElse(AlphaTest.ALWAYS).reference();
 		} else {
 			throw new IllegalArgumentException("Unknown pass type " + pass);
-		}
-	}
-
-	private SodiumTerrainPipeline getSodiumTerrainPipeline() {
-		WorldRenderingPipeline worldRenderingPipeline = Iris.getPipelineManager().getPipelineNullable();
-
-		if (worldRenderingPipeline != null) {
-			return worldRenderingPipeline.getSodiumTerrainPipeline();
-		} else {
-			return null;
 		}
 	}
 
@@ -349,35 +340,6 @@ public class IrisChunkProgramOverrides {
 			} else {
 				return this.programs.get(IrisTerrainPass.GBUFFER_SOLID);
 			}
-		}
-	}
-
-	public void bindFramebuffer(TerrainRenderPass pass) {
-		SodiumTerrainPipeline pipeline = getSodiumTerrainPipeline();
-		boolean isShadowPass = ShadowRenderingState.areShadowsCurrentlyBeingRendered();
-
-		if (pipeline != null) {
-			GlFramebuffer framebuffer;
-
-			if (isShadowPass) {
-				framebuffer = pipeline.getShadowFramebuffer();
-			} else if (pass.isReverseOrder()) {
-				framebuffer = pipeline.getTranslucentFramebuffer();
-			} else {
-				framebuffer = pipeline.getTerrainSolidFramebuffer();
-			}
-
-			if (framebuffer != null) {
-				framebuffer.bind();
-			}
-		}
-	}
-
-	public void unbindFramebuffer() {
-		SodiumTerrainPipeline pipeline = getSodiumTerrainPipeline();
-
-		if (pipeline != null) {
-			Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
 		}
 	}
 

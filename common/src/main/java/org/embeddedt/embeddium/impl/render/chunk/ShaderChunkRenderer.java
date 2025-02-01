@@ -7,10 +7,7 @@ import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.shader.*;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderBindingPoints;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
+import org.embeddedt.embeddium.impl.render.chunk.shader.*;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.shader.ShaderLoader;
@@ -68,7 +65,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
                 builder.bindAttribute(attr.getName(), i++);
             }
             builder.bindFragmentData("fragColor", ChunkShaderBindingPoints.FRAG_COLOR);
-            return builder.link((shader) -> new ChunkShaderInterface(shader, options));
+            return builder.link((shader) -> new DefaultChunkShaderInterface(shader, options));
         } finally {
             vertShader.delete();
             fragShader.delete();
@@ -85,12 +82,13 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         if (this.activeProgram != null) {
             this.activeProgram.bind();
             this.activeProgram.getInterface()
-                    .setupState();
+                    .setupState(pass);
         }
     }
 
     protected void end(TerrainRenderPass pass) {
         if (this.activeProgram != null) {
+            this.activeProgram.getInterface().restoreState();
             this.activeProgram.unbind();
             this.activeProgram = null;
         }

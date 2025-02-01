@@ -1,11 +1,18 @@
 package net.irisshaders.iris.compat.sodium.impl.shader_overrides;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
+import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
+import net.irisshaders.iris.shadows.ShadowRenderingState;
+import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.gl.buffer.GlMutableBuffer;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.*;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.TextureUtil;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
@@ -26,9 +33,8 @@ import org.joml.Matrix4fc;
 import org.lwjgl.opengl.GL32C;
 
 import java.util.List;
-import java.util.function.IntFunction;
 
-public class IrisChunkShaderInterface extends ChunkShaderInterface {
+public class IrisChunkShaderInterface implements ChunkShaderInterface {
 	@Nullable
 	private final GlUniformMatrix4f uniformModelViewMatrix;
 	@Nullable
@@ -55,19 +61,8 @@ public class IrisChunkShaderInterface extends ChunkShaderInterface {
 	private final boolean isTess;
 	private final CustomUniforms customUniforms;
 
-	public IrisChunkShaderInterface(int handle, ShaderBindingContextExt contextExt, SodiumTerrainPipeline pipeline, ChunkShaderOptions options,
+	public IrisChunkShaderInterface(int handle, ShaderBindingContext contextExt, SodiumTerrainPipeline pipeline, ChunkShaderOptions options,
 									boolean isTess, boolean isShadowPass, BlendModeOverride blendModeOverride, List<BufferBlendOverride> bufferOverrides, float alpha, CustomUniforms customUniforms) {
-		super(new ShaderBindingContext() {
-			@Override
-			public <U extends GlUniform<?>> U bindUniform(String s, IntFunction<U> intFunction) {
-				return contextExt.bindUniformIfPresent(s, intFunction);
-			}
-
-			@Override
-			public GlUniformBlock bindUniformBlock(String s, int i) {
-				return contextExt.bindUniformBlockIfPresent(s, i);
-			}
-		}, options);
 		this.uniformModelViewMatrix = contextExt.bindUniformIfPresent("iris_ModelViewMatrix", GlUniformMatrix4f::new);
 		this.uniformModelViewMatrixInverse = contextExt.bindUniformIfPresent("iris_ModelViewMatrixInverse", GlUniformMatrix4f::new);
 		this.uniformProjectionMatrix = contextExt.bindUniformIfPresent("iris_ProjectionMatrix", GlUniformMatrix4f::new);
@@ -94,7 +89,15 @@ public class IrisChunkShaderInterface extends ChunkShaderInterface {
 	}
 
 	@Override
-	public void setupState() {
+	public void setupState(TerrainRenderPass pass) {
+        bindFramebuffer(pass);
+
+        if (ShadowRenderingState.areShadowsCurrentlyBeingRendered()) {
+            // No back face culling during the shadow pass
+            // TODO: Hopefully this won't be necessary in the future...
+            RenderSystem.disableCull();
+        }
+
 		// See IrisSamplers#addLevelSamplers
 		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.ALBEDO_TEXTURE_UNIT, TextureUtil.getBlockTextureId());
 		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, TextureUtil.getLightTextureId());
@@ -120,7 +123,9 @@ public class IrisChunkShaderInterface extends ChunkShaderInterface {
 		customUniforms.push(this);
 	}
 
-	public void restore() {
+	public void restoreState() {
+        unbindFramebuffer();
+
 		ImmediateState.usingTessellation = false;
 
 		if (blendModeOverride != null || hasOverrides) {
@@ -176,4 +181,43 @@ public class IrisChunkShaderInterface extends ChunkShaderInterface {
 			this.uniformRegionOffset.set(x, y, z);
 		}
 	}
+
+    private SodiumTerrainPipeline getSodiumTerrainPipeline() {
+        WorldRenderingPipeline worldRenderingPipeline = Iris.getPipelineManager().getPipelineNullable();
+
+        if (worldRenderingPipeline != null) {
+            return worldRenderingPipeline.getSodiumTerrainPipeline();
+        } else {
+            return null;
+        }
+    }
+
+    public void bindFramebuffer(TerrainRenderPass pass) {
+        SodiumTerrainPipeline pipeline = getSodiumTerrainPipeline();
+        boolean isShadowPass = ShadowRenderingState.areShadowsCurrentlyBeingRendered();
+
+        if (pipeline != null) {
+            GlFramebuffer framebuffer;
+
+            if (isShadowPass) {
+                framebuffer = pipeline.getShadowFramebuffer();
+            } else if (pass.isReverseOrder()) {
+                framebuffer = pipeline.getTranslucentFramebuffer();
+            } else {
+                framebuffer = pipeline.getTerrainSolidFramebuffer();
+            }
+
+            if (framebuffer != null) {
+                framebuffer.bind();
+            }
+        }
+    }
+
+    public void unbindFramebuffer() {
+        SodiumTerrainPipeline pipeline = getSodiumTerrainPipeline();
+
+        if (pipeline != null) {
+            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+        }
+    }
 }

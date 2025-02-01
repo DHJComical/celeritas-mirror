@@ -44,15 +44,6 @@ public class MixinGlStateManager_FramebufferBinding {
 		}
 	}
 
-	@Inject(method = "_glUseProgram", at = @At("HEAD"), cancellable = true)
-	private static void iris$avoidRedundantBind2(int pInt0, CallbackInfo ci) {
-		if (iris$program == pInt0) {
-			ci.cancel();
-		} else {
-			iris$program = pInt0;
-		}
-	}
-
 	@Inject(method = "_glDeleteFramebuffers(I)V", at = @At("HEAD"))
 	private static void iris$trackFramebufferDelete(int framebuffer, CallbackInfo ci) {
 		if (iris$drawFramebuffer == framebuffer) {
