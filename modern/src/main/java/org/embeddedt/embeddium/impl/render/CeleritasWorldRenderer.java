@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import lombok.Getter;
+import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
@@ -290,6 +291,18 @@ public class CeleritasWorldRenderer {
         }
     }
 
+    private ChunkVertexType chooseVertexType() {
+        if (WorldRenderingSettings.INSTANCE.shouldUseExtendedVertexFormat()) {
+            return net.irisshaders.iris.compat.sodium.impl.vertex_format.IrisModelVertexFormats.MODEL_VERTEX_XHFP;
+        }
+
+        if (Celeritas.canUseVanillaVertices()) {
+            return ChunkMeshFormats.VANILLA_LIKE;
+        }
+
+        return ChunkMeshFormats.COMPACT;
+    }
+
     private void initRenderer(CommandList commandList) {
         if (this.renderSectionManager != null) {
             this.renderSectionManager.destroy();
@@ -298,9 +311,7 @@ public class CeleritasWorldRenderer {
 
         this.renderDistance = getEffectiveRenderDistance();
 
-        ChunkVertexType vertexType = Celeritas.canUseVanillaVertices() ? ChunkMeshFormats.VANILLA_LIKE : ChunkMeshFormats.COMPACT;
-
-        this.renderSectionManager = ModernRenderSectionManager.create(vertexType, this.world, this.renderDistance, commandList);
+        this.renderSectionManager = ModernRenderSectionManager.create(chooseVertexType(), this.world, this.renderDistance, commandList);
 
         var tracker = ChunkTrackerHolder.get(this.world);
         ChunkTracker.forEachChunk(tracker.getReadyChunks(), this.renderSectionManager::onChunkAdded);

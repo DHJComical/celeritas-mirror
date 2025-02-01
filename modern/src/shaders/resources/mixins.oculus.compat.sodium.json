@@ -18,7 +18,6 @@
     "shadow_map.MixinRenderSectionManager",
     "shadow_map.MixinSodiumWorldRenderer",
     "shadow_map.SodiumWorldRendererAccessor",
-    "vertex_format.MixinRenderSectionManager",
     "vertex_format.MixinVertexSerializerCache",
     "vertex_format.entity.MixinModelVertex"
   ]
