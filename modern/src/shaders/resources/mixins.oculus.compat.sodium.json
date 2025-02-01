@@ -15,7 +15,6 @@
     "options.MixinSodiumGameOptions",
     "pbr_animation.MixinSpriteContents",
     "shader_overrides.MixinShaderChunkRenderer",
-    "shadow_map.MixinDefaultChunkRenderer",
     "shadow_map.MixinRenderSectionManager",
     "shadow_map.MixinSodiumWorldRenderer",
     "shadow_map.SodiumWorldRendererAccessor",

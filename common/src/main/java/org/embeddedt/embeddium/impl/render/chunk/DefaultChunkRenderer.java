@@ -31,13 +31,15 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
 
     private boolean isIndexedPass;
 
-    protected boolean useBlockFaceCulling;
-
     public DefaultChunkRenderer(RenderDevice device, ChunkVertexType vertexType) {
         super(device, vertexType);
 
         this.batch = new MultiDrawBatch((ModelQuadFacing.COUNT * RenderRegion.REGION_SIZE) + 1);
         this.sharedIndexBuffer = new SharedQuadIndexBuffer(device.createCommandList(), SharedQuadIndexBuffer.IndexType.INTEGER);
+    }
+
+    protected boolean useBlockFaceCulling() {
+        return true;
     }
 
     @Override
@@ -50,7 +52,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
 
         // If there is no active program, shader compilation probably failed, and we can't render anything.
         if (this.activeProgram != null) {
-            boolean useBlockFaceCulling = this.useBlockFaceCulling;
+            boolean useBlockFaceCulling = this.useBlockFaceCulling();
 
             GLDebug.pushGroup(770, renderPass.name() + " terrain pass");
 

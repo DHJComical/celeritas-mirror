@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk;
 
+import net.irisshaders.iris.shadows.ShadowRenderingState;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
@@ -27,8 +28,12 @@ public class ModernChunkRenderer extends DefaultChunkRenderer {
      */
 
     @Override
+    protected boolean useBlockFaceCulling() {
+        return Celeritas.options().performance.useBlockFaceCulling && !ShadowRenderingState.areShadowsCurrentlyBeingRendered();
+    }
+
+    @Override
     public void render(ChunkRenderMatrices matrices, CommandList commandList, ChunkRenderListIterable renderLists, TerrainRenderPass renderPass, CameraTransform camera) {
-        this.useBlockFaceCulling = Celeritas.options().performance.useBlockFaceCulling;
         super.render(matrices, commandList, renderLists, renderPass, camera);
     }
 }
