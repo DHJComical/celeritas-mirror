@@ -1,8 +1,10 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.world.level.block.LightBlock;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
@@ -103,6 +105,8 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         //? if forgelike
         ModelDataSnapshotter.Getter modelDataGetter = slice.getModelDataGetter(this.render.getChunkX(), this.render.getChunkY(), this.render.getChunkZ());
 
+        boolean voxelizingLight = WorldRenderingSettings.INSTANCE.shouldVoxelizeLightBlocks();
+
         try {
             for (int y = minY; y < maxY; y++) {
                 if (cancellationToken.isCancelled()) {
@@ -120,6 +124,10 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
                         blockPos.set(x, y, z);
                         modelOffset.set(x & 15, y & 15, z & 15);
+
+                        if (voxelizingLight && blockState.getBlock() instanceof LightBlock) {
+                            cache.getSpecialBlockRenderer().voxelizeLightBlock(blockPos, blockState, buffers);
+                        }
 
                         if (blockState.getRenderShape() == RenderShape.MODEL) {
                             long seed = blockState.getSeed(blockPos);

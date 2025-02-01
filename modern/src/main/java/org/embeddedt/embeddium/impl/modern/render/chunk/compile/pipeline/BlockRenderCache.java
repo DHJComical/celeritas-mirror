@@ -29,6 +29,8 @@ public class BlockRenderCache {
     private final BlockRenderer blockRenderer;
     private final FluidRenderer fluidRenderer;
     private final LightPipelineProvider lightPipelineProvider;
+    @Getter
+    private final SpecialBlockRenderer specialBlockRenderer;
 
     private final BlockModelShaper blockModels;
     private final WorldSlice worldSlice;
@@ -51,6 +53,7 @@ public class BlockRenderCache {
         this.blockRenderer = new BlockRenderer(colorRegistry, lightPipelineProvider, WorldRenderingSettings.INSTANCE.getBlockTypeIds());
         this.fluidRenderer = new FluidRenderer(colorRegistry, lightPipelineProvider);
         this.lightPipelineProvider = lightPipelineProvider;
+        this.specialBlockRenderer = new SpecialBlockRenderer();
 
         this.blockModels = client.getModelManager().getBlockModelShaper();
     }
