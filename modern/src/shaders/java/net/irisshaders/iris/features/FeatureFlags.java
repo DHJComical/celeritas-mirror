@@ -59,6 +59,10 @@ public enum FeatureFlags {
 	}
 
 	public static FeatureFlags getValue(String value) {
+        if(value.equalsIgnoreCase("TESSELATION_SHADERS")) {
+            value = "TESSELLATION_SHADERS";
+        }
+
 		try {
 			return FeatureFlags.valueOf(value.toUpperCase(Locale.US));
 		} catch (IllegalArgumentException e) {
