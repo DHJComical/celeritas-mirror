@@ -3,6 +3,7 @@ package net.irisshaders.iris.compat.sodium.mixin.block_id;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ContextAwareChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks.ChunkBuilderMeshingTask;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
@@ -10,13 +11,10 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
-import net.irisshaders.iris.compat.sodium.impl.block_context.ChunkBuildBuffersExt;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
-import net.irisshaders.iris.vertices.ExtendedDataHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FluidState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -42,12 +40,10 @@ public class MixinChunkRenderRebuildTask {
 		int relY = relativeBlockPos.getY();
 		int relZ = relativeBlockPos.getZ();
 
-		if (WorldRenderingSettings.INSTANCE.shouldVoxelizeLightBlocks() && blockState.getBlock() instanceof LightBlock) {
+		if (WorldRenderingSettings.INSTANCE.shouldVoxelizeLightBlocks() && blockState.getBlock() instanceof LightBlock && buffers.getEncoder() instanceof ContextAwareChunkVertexEncoder encoder) {
 			var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(RenderType.cutout());
 			ChunkModelBuilder buildBuffers = buffers.get(material);
-			((ChunkBuildBuffersExt) buffers).iris$setLocalPos(0, 0, 0);
-			((ChunkBuildBuffersExt) buffers).iris$ignoreMidBlock(true);
-			((ChunkBuildBuffersExt) buffers).iris$setMaterialId(blockState, (short) 0, (byte) blockState.getLightEmission());
+            encoder.prepareToVoxelizeLight(blockState);
 			for (int i = 0; i < 4; i++) {
 				vertices[i].x = (float) ((relX & 15)) + 0.25f;
 				vertices[i].y = (float) ((relY & 15)) + 0.25f;
@@ -58,12 +54,8 @@ public class MixinChunkRenderRebuildTask {
 				vertices[i].light = blockState.getLightEmission() << 4 | blockState.getLightEmission() << 20;
 			}
 			buildBuffers.getVertexBuffer(ModelQuadFacing.UNASSIGNED).push(vertices, material);
-			((ChunkBuildBuffersExt) buffers).iris$ignoreMidBlock(false);
+            encoder.finishRenderingBlock();
 			return;
-		}
-
-		if (context.buffers instanceof ChunkBuildBuffersExt) {
-			((ChunkBuildBuffersExt) context.buffers).iris$setLocalPos(relX, relY, relZ);
 		}
 	}
 }

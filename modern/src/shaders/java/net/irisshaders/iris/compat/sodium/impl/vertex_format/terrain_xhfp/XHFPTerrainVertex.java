@@ -91,6 +91,18 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
     }
 
     @Override
+    public void prepareToVoxelizeLight(BlockState state) {
+        this.blockId = (short)this.blockStateIds.getOrDefault(state, -1);
+        this.blockState = state;
+        this.renderType = 0;
+        this.lightValue = (byte)state.getLightEmission();
+        this.ignoreMidBlock = true;
+        this.localPosX = 0;
+        this.localPosY = 0;
+        this.localPosZ = 0;
+    }
+
+    @Override
     public void prepareToRenderFluidFace(BlockRenderContext ctx) {
         var state = ctx.state().getFluidState().createLegacyBlock();
         this.blockId = (short) this.blockStateIds.getOrDefault(state, -1);
@@ -109,6 +121,7 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
         this.localPosY = 0;
         this.localPosZ = 0;
         this.lightValue = 0;
+        this.ignoreMidBlock = false;
     }
 
     @Override
