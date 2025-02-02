@@ -23,8 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // Inject after most other mods
 @Mixin(value = ModelPart.class, priority = 1500)
@@ -113,6 +112,11 @@ public class ModelPartMixin implements ModelPartData {
         ((CachingPoseStack)stack).embeddium$setCachingEnabled(false);
     }
 
+    @Redirect(method = RENDER, at = @At(value = "INVOKE", target = "Ljava/util/Collection;iterator()Ljava/util/Iterator;"))
+    private <E> Iterator<E> skipAllocIfEmpty(Collection<E> instance) {
+        return instance.isEmpty() ? Collections.emptyIterator() : instance.iterator();
+    }
+
     /**
      * @author JellySquid, embeddedt
      * @reason Rewrite entity rendering to use faster code path. Original approach of replacing the entire render loop
@@ -199,7 +203,7 @@ public class ModelPartMixin implements ModelPartData {
 
         //? if >=1.20 {
         if (this.xRot != 0.0F || this.yRot != 0.0F || this.zRot != 0.0F) {
-            MatrixHelper.rotateZYX(matrixStack.last(), this.zRot, this.yRot, this.xRot);
+            MatrixHelper.rotateZYX(((CachingPoseStack)matrixStack).celeritas$last(), this.zRot, this.yRot, this.xRot);
         }
         //?} else {
         /*// TODO do rotations without allocating so many Quaternions

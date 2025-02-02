@@ -77,6 +77,11 @@ public abstract class MatrixStackMixin implements CachingPoseStack {
         ((CachingPoseStack.Pose)(Object)original).celeritas$setEscaped();
         return original;
     }
+
+    @Override
+    public PoseStack.Pose celeritas$last() {
+        return this.poseStack.getLast();
+    }
     //?}
 
     @Override
