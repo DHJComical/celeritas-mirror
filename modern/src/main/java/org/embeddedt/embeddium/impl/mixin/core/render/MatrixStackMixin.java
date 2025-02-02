@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.core.render;
 
-import org.embeddedt.embeddium.api.math.Matrix4fExtended;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import org.embeddedt.embeddium.impl.render.matrix_stack.CachingPoseStack;
 //? if >=1.20 {
 import org.joml.Matrix3f;
@@ -11,6 +11,7 @@ import com.mojang.math.Matrix4f;
 *///?}
 import org.spongepowered.asm.mixin.*;
 import com.mojang.blaze3d.vertex.PoseStack;
+import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -37,7 +38,7 @@ public abstract class MatrixStackMixin implements CachingPoseStack {
 
         PoseStack.Pose entry;
 
-        if (this.cacheEnabled > 0 && !this.cache.isEmpty()) {
+        if (!this.cache.isEmpty()) {
             entry = this.cache.removeLast();
             //? if >=1.20 {
             entry.pose().set(prev.pose());
@@ -66,14 +67,20 @@ public abstract class MatrixStackMixin implements CachingPoseStack {
     @Overwrite
     public void popPose() {
         PoseStack.Pose pose = this.poseStack.removeLast();
-        if(this.cacheEnabled > 0) {
+        if (this.cacheEnabled > 0 || !((CachingPoseStack.Pose)(Object)pose).celeritas$hasEscaped()) {
             this.cache.addLast(pose);
         }
+    }
+
+    @ModifyReturnValue(method = "last", at = @At("RETURN"))
+    private PoseStack.Pose celeritas$markEscaped(PoseStack.Pose original) {
+        ((CachingPoseStack.Pose)(Object)original).celeritas$setEscaped();
+        return original;
     }
     //?}
 
     @Override
     public void embeddium$setCachingEnabled(boolean flag) {
-        this.cacheEnabled += flag ? 1 : -1;
+        this.cacheEnabled += (flag ? 1 : -1);
     }
 }

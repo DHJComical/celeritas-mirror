@@ -7,4 +7,9 @@ public interface CachingPoseStack {
      * @param flag whether caching should be enabled
      */
     void embeddium$setCachingEnabled(boolean flag);
+
+    interface Pose {
+        boolean celeritas$hasEscaped();
+        void celeritas$setEscaped();
+    }
 }
