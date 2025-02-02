@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -68,7 +69,12 @@ public class MixinBlockEntityRenderDispatcher {
 	@Inject(method = "render", at = @At(value = "INVOKE", target = RUN_REPORTED, shift = At.Shift.AFTER))
 	private void iris$afterRender(BlockEntity blockEntity, float tickDelta, PoseStack matrix,
 								  MultiBufferSource bufferSource, CallbackInfo ci) {
-		CapturedRenderingState.INSTANCE.setCurrentBlockEntity(0);
-        celeritas$outerWrapper.setTargetBufferSource(null);
+		iris$finishRender();
 	}
+
+    @Unique
+    private void iris$finishRender() {
+        CapturedRenderingState.INSTANCE.setCurrentBlockEntity(0);
+        celeritas$outerWrapper.setTargetBufferSource(null);
+    }
 }
