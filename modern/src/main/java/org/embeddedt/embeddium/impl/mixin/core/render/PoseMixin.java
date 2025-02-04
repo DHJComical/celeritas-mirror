@@ -19,4 +19,4 @@ public class PoseMixin implements CachingPoseStack.Pose {
         celeritas$hasEscaped = true;
     }
 }
-//? }
+//?}
