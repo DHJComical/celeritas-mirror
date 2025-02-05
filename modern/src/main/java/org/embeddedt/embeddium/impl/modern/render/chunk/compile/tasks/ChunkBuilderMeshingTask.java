@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.world.level.block.LightBlock;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
@@ -125,9 +124,11 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         blockPos.set(x, y, z);
                         modelOffset.set(x & 15, y & 15, z & 15);
 
-                        if (voxelizingLight && blockState.getBlock() instanceof LightBlock) {
+                        //? if >=1.17 {
+                        if (voxelizingLight && blockState.getBlock() instanceof net.minecraft.world.level.block.LightBlock) {
                             cache.getSpecialBlockRenderer().voxelizeLightBlock(blockPos, blockState, buffers);
                         }
+                        //?}
 
                         if (blockState.getRenderShape() == RenderShape.MODEL) {
                             long seed = blockState.getSeed(blockPos);

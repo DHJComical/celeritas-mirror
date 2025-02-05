@@ -72,7 +72,7 @@ public class FrustumMixin implements ViewportProvider {
 
     *///?}
 
-    //? if forge {
+    //? if forge && >=1.19 {
     /**
      * @author embeddedt
      * @reason Avoid AABB#equals in hot path, turns out Double.compare can be slow

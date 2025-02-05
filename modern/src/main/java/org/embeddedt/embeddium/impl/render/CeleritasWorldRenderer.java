@@ -292,9 +292,11 @@ public class CeleritasWorldRenderer {
     }
 
     private ChunkVertexType chooseVertexType() {
+        //? if shaders {
         if (WorldRenderingSettings.INSTANCE.shouldUseExtendedVertexFormat()) {
             return net.irisshaders.iris.compat.sodium.impl.vertex_format.IrisModelVertexFormats.MODEL_VERTEX_XHFP;
         }
+        //?}
 
         if (Celeritas.canUseVanillaVertices()) {
             return ChunkMeshFormats.VANILLA_LIKE;

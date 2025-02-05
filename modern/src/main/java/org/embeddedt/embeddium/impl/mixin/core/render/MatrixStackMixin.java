@@ -47,7 +47,7 @@ public abstract class MatrixStackMixin implements CachingPoseStack {
             /*entry.pose().load(prev.pose());
             entry.normal().load(prev.normal());
             *///?} else {
-            /*Matrix4fExtended.get(entry.pose()).embeddium$load(prev.pose());
+            /*org.embeddedt.embeddium.api.math.Matrix4fExtended.get(entry.pose()).embeddium$load(prev.pose());
             entry.normal().load(prev.normal());
             *///?}
         } else {

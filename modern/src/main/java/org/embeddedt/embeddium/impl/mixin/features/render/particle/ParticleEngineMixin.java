@@ -16,8 +16,10 @@ public class ParticleEngineMixin {
      * @reason use cached section visibility information instead of going through frustum
      */
     @Redirect(method = {
-            //? if forge
+            //? if forge && >=1.17
             "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V"
+            //? if forge && <1.17
+            /*"renderParticles"*/
             //? if neoforge
             /*"render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V"*/
     }, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/culling/Frustum;isVisible(Lnet/minecraft/world/phys/AABB;)Z"))

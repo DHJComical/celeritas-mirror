@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.render.texture.NameableTexture;
-import org.lwjgl.opengl.GL43C;
+import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,7 +21,7 @@ public class AbstractTextureMixin implements NameableTexture {
     @ModifyExpressionValue(method = "getId", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/TextureUtil;generateTextureId()I"))
     private int assignName(int id) {
         if (id != -1 && celeritas$name != null) {
-            GLDebug.nameObject(GL43C.GL_TEXTURE, id, celeritas$name);
+            GLDebug.nameObject(GL11.GL_TEXTURE, id, celeritas$name);
         }
         return id;
     }
@@ -30,7 +30,7 @@ public class AbstractTextureMixin implements NameableTexture {
     public void celeritas$setName(String name) {
         this.celeritas$name = name;
         if (RenderSystem.isOnRenderThread() && this.id != -1) {
-            GLDebug.nameObject(GL43C.GL_TEXTURE, this.id, name);
+            GLDebug.nameObject(GL11.GL_TEXTURE, this.id, name);
         }
     }
 }

@@ -112,10 +112,12 @@ public class ModelPartMixin implements ModelPartData {
         ((CachingPoseStack)stack).embeddium$setCachingEnabled(false);
     }
 
+    //? if >=1.17 {
     @Redirect(method = RENDER, at = @At(value = "INVOKE", target = "Ljava/util/Collection;iterator()Ljava/util/Iterator;"))
     private <E> Iterator<E> skipAllocIfEmpty(Collection<E> instance) {
         return instance.isEmpty() ? Collections.emptyIterator() : instance.iterator();
     }
+    //?}
 
     /**
      * @author JellySquid, embeddedt

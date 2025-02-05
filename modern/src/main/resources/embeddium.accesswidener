@@ -111,3 +111,10 @@ accessible field net/minecraft/client/renderer/BiomeColors WATER_COLOR_RESOLVER 
 accessible field net/minecraft/client/renderer/BiomeColors WATER_FOG_COLOR_RESOLVER Lnet/minecraft/client/renderer/BiomeColors$ColorResolver;
 
 accessible method com/mojang/blaze3d/vertex/VertexBuffer bindVertexArray ()V
+
+# 1.16
+
+accessible field net/minecraft/client/renderer/texture/TextureAtlas$Preparations width I
+accessible field net/minecraft/client/renderer/texture/TextureAtlas$Preparations height I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite x I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite y I

@@ -113,7 +113,7 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         }
 
         // TODO remove
-        //? if forgelike {
+        //? if shaders {
         modEventBus.addListener((RegisterKeyMappingsEvent ev) -> {
             ev.register(net.irisshaders.iris.Iris.reloadKeybind);
             ev.register(net.irisshaders.iris.Iris.shaderpackScreenKeybind);

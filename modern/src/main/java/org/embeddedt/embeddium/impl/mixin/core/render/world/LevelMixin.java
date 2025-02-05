@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.core.render.world;
 
+//? if forgelike && >=1.18 {
+
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.core.BlockPos;
@@ -19,8 +21,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-
-//? if forgelike {
 
 @Mixin(Level.class)
 public abstract class LevelMixin {
@@ -79,8 +79,10 @@ public abstract class LevelMixin {
                     Method method = clz.getMethod("getModelData");
                     //? if neoforge
                     /*return method.getDeclaringClass() != net.neoforged.neoforge.common.extensions.IBlockEntityExtension.class;*/
-                    //? if forge
+                    //? if forge && >=1.17
                     return method.getDeclaringClass() != net.minecraftforge.common.extensions.IForgeBlockEntity.class;
+                    //? if forge && <1.17
+                    /*return method.getDeclaringClass() != net.minecraftforge.common.extensions.IForgeTileEntity.class;*/
                 } catch (NoSuchMethodException e) {
                     return false;
                 }

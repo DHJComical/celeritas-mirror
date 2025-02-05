@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk;
 
+//? if >=1.17 {
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.embeddedt.embeddium.impl.gl.shader.GlProgram;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
@@ -14,3 +15,4 @@ public class CoreShaderSupport {
         throw new UnsupportedOperationException("incomplete");
     }
 }
+//?}

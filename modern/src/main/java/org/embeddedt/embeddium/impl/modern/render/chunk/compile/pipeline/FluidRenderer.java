@@ -4,7 +4,6 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 /*import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;*/
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.LeavesBlock;
