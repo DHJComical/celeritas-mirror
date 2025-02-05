@@ -50,7 +50,7 @@ public class MixinTextureAtlas implements TextureAtlasExtended {
         Rect2i treeRect = new Rect2i(0, 0, width, height);
         int minSize = this.texturesByName.values().stream()
                 //? if >=1.19.3 {
-                .mapToInt(c -> Math.max(c.width(), c.height()))
+                .mapToInt(c -> Math.max(c.contents().width(), c.contents().height()))
                 //?} else
                 /*.mapToInt(c -> Math.max(c.getWidth(), c.getHeight()))*/
                 .min().orElseThrow();
