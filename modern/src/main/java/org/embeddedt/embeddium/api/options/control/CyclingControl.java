@@ -74,21 +74,22 @@ public class CyclingControl<T extends Enum<T>> implements Control<T> {
     private static class CyclingControlElement<T extends Enum<T>> extends ControlElement<T> {
         private final T[] allowedValues;
         private final Component[] names;
-        private int currentIndex;
 
         public CyclingControlElement(Option<T> option, Dim2i dim, T[] allowedValues, Component[] names) {
             super(option, dim);
 
             this.allowedValues = allowedValues;
             this.names = names;
-            this.currentIndex = 0;
+        }
 
+        private int getCurrentIndex() {
             for (int i = 0; i < allowedValues.length; i++) {
                 if (allowedValues[i] == option.getValue()) {
-                    this.currentIndex = i;
-                    break;
+                    return i;
                 }
             }
+
+            return 0;
         }
 
         @Override
@@ -131,12 +132,13 @@ public class CyclingControl<T extends Enum<T>> implements Control<T> {
         }
 
         public void cycleControl(boolean reverse) {
+            int currentIndex = getCurrentIndex();
             if (reverse) {
-                this.currentIndex = (this.currentIndex + this.allowedValues.length - 1) % this.allowedValues.length;
+                currentIndex = (currentIndex + this.allowedValues.length - 1) % this.allowedValues.length;
             } else {
-                this.currentIndex = (this.currentIndex + 1) % this.allowedValues.length;
+                currentIndex = (currentIndex + 1) % this.allowedValues.length;
             }
-            this.option.setValue(this.allowedValues[this.currentIndex]);
+            this.option.setValue(this.allowedValues[currentIndex]);
         }
     }
 }

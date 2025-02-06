@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.Validate;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -31,8 +32,10 @@ public class OptionImpl<S, T> implements Option<T> {
 
     private final OptionImpact impact;
 
-    private T value;
-    private T modifiedValue;
+    /**
+     * The new value the user wants to provide, or null if they have not changed the option yet.
+     */
+    private @Nullable T modifiedValue;
 
     private final BooleanSupplier enabled;
 
@@ -85,7 +88,7 @@ public class OptionImpl<S, T> implements Option<T> {
 
     @Override
     public T getValue() {
-        return this.modifiedValue;
+        return this.modifiedValue != null ? this.modifiedValue : this.binding.getValue(this.storage.getData());
     }
 
     @Override
@@ -95,8 +98,7 @@ public class OptionImpl<S, T> implements Option<T> {
 
     @Override
     public void reset() {
-        this.value = this.binding.getValue(this.storage.getData());
-        this.modifiedValue = this.value;
+        this.modifiedValue = null;
     }
 
     @Override
@@ -111,13 +113,15 @@ public class OptionImpl<S, T> implements Option<T> {
 
     @Override
     public boolean hasChanged() {
-        return !this.value.equals(this.modifiedValue);
+        return this.modifiedValue != null && !this.binding.getValue(this.storage.getData()).equals(this.modifiedValue);
     }
 
     @Override
     public void applyChanges() {
-        this.binding.setValue(this.storage.getData(), this.modifiedValue);
-        this.value = this.modifiedValue;
+        if (this.modifiedValue != null) {
+            this.binding.setValue(this.storage.getData(), this.modifiedValue);
+            this.modifiedValue = null;
+        }
     }
 
     @Override

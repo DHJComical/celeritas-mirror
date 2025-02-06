@@ -156,7 +156,7 @@ public class SliderControl implements Control<Integer> {
 
             int value = this.getIntValue();
 
-            if (this.option.getValue() != value) {
+            if (!this.option.getValue().equals(value)) {
                 this.option.setValue(value);
             }
         }
