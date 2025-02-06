@@ -74,7 +74,7 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     public boolean isInShadowPass() {
         return net.irisshaders.iris.shadows.ShadowRenderingState.areShadowsCurrentlyBeingRendered();
     }
-    //? }
+    //?}
 
     @Override
     protected boolean shouldUseOcclusionCulling(PositionedViewport positionedViewport, boolean spectator) {
