@@ -38,19 +38,14 @@ public class BlockOcclusionCache {
         }
     }
 
-    public boolean shouldDrawSide(BlockState selfState, BlockGetter view, BlockPos pos, Direction facing) {
-        return shouldDrawSide(selfState, view, pos, facing, false);
-    }
-
     /**
      * @param selfState The state of the block in the world
      * @param view The world view for this render context
      * @param pos The position of the block
      * @param facing The facing direction of the side to check
-     * @param isMaterialSolid Whether the quads being rendered will be completely solid
      * @return True if the block side facing {@param dir} is not occluded, otherwise false
      */
-    public boolean shouldDrawSide(BlockState selfState, BlockGetter view, BlockPos pos, Direction facing, boolean isMaterialSolid) {
+    public boolean shouldDrawSide(BlockState selfState, BlockGetter view, BlockPos pos, Direction facing) {
         // self = occluded block
         // adj = occluding block
 
@@ -76,7 +71,7 @@ public class BlockOcclusionCache {
 
             //? if <1.21.2
             if (adjShape == Shapes.block() && selfShape == Shapes.block()) return false;
-        } else if (this.leavesRenderingAsSolid && isMaterialSolid && adjState.getBlock() instanceof LeavesBlock) {
+        } else if (this.leavesRenderingAsSolid && adjState.getBlock() instanceof LeavesBlock) {
             // Allow leaves to cull like a regular solid block when in fast mode, despite not being marked as occluding
             // We use the collision shape as a way of "guessing" what the block's visual shape is, since the occlusion
             // shape might be set to empty by vanilla/mods

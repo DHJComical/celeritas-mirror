@@ -176,7 +176,7 @@ public class BlockRenderer {
         for (Direction face : DirectionUtil.ALL_DIRECTIONS) {
             List<BakedQuad> quads = this.getGeometry(ctx, face);
 
-            if (!quads.isEmpty() && this.isFaceVisible(ctx, face, isMaterialSolid)) {
+            if (!quads.isEmpty() && this.isFaceVisible(ctx, face)) {
                 if (encoder instanceof ContextAwareChunkVertexEncoder contextAwareEncoder) {
                     contextAwareEncoder.prepareToRenderBlockFace(ctx, face);
                 }
@@ -209,8 +209,8 @@ public class BlockRenderer {
         return ctx.model().getQuads(ctx.state(), face, random/*? if forgelike && >=1.19 {*/, ctx.modelData(), ctx.renderLayer()/*?}*/ /*? if forgelike && <1.19 {*//*, ctx.modelData()*//*?}*/);
     }
 
-    private boolean isFaceVisible(BlockRenderContext ctx, Direction face, boolean isMaterialSolid) {
-        return this.occlusionCache.shouldDrawSide(ctx.state(), ctx.localSlice(), ctx.pos(), face, isMaterialSolid);
+    private boolean isFaceVisible(BlockRenderContext ctx, Direction face) {
+        return this.occlusionCache.shouldDrawSide(ctx.state(), ctx.localSlice(), ctx.pos(), face);
     }
 
     private static int computeLightFlagMask(BakedQuad quad) {
