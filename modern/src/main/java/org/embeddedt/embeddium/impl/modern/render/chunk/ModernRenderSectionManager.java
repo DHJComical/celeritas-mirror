@@ -69,6 +69,13 @@ public class ModernRenderSectionManager extends RenderSectionManager {
         return WorldUtil.isSectionEmpty(section) && ChunkMeshEvent.post(this.world, SectionPos.of(x, y, z)).isEmpty();
     }
 
+    //? if shaders {
+    @Override
+    public boolean isInShadowPass() {
+        return net.irisshaders.iris.shadows.ShadowRenderingState.areShadowsCurrentlyBeingRendered();
+    }
+    //? }
+
     @Override
     protected boolean shouldUseOcclusionCulling(PositionedViewport positionedViewport, boolean spectator) {
         final boolean useOcclusionCulling;

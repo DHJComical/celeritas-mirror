@@ -14,8 +14,6 @@
     "clouds.MixinCloudRenderer",
     "pbr_animation.MixinSpriteContents",
     "shader_overrides.MixinShaderChunkRenderer",
-    "shadow_map.MixinRenderSectionManager",
-    "shadow_map.MixinSodiumWorldRenderer",
     "vertex_format.MixinVertexSerializerCache",
     "vertex_format.entity.MixinModelVertex"
   ]

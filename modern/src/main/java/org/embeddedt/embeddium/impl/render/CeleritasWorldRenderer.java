@@ -230,7 +230,8 @@ public class CeleritasWorldRenderer {
 
         this.renderSectionManager.uploadChunks();
 
-        if (this.renderSectionManager.needsUpdate()) {
+        // TODO: detect sun not moving and skip update during shadow pass
+        if (this.renderSectionManager.needsUpdate() || this.renderSectionManager.isInShadowPass()) {
             profiler.popPush("chunk_render_lists");
 
             var camPosition = new Vector3d(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
@@ -623,7 +624,7 @@ public class CeleritasWorldRenderer {
      * @return True if the entity is visible, otherwise false
      */
     public boolean isEntityVisible(Entity entity, EntityRenderer renderer) {
-        if (!this.useEntityCulling) {
+        if (!this.useEntityCulling || this.renderSectionManager.isInShadowPass()) {
             return true;
         }
 

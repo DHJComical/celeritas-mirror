@@ -64,7 +64,7 @@ public abstract class RenderSectionManager {
     private final int renderDistance;
 
     @NotNull
-    private SortedRenderLists renderLists;
+    private SortedRenderLists renderLists, shadowRenderLists;
 
     @NotNull
     private Map<ChunkUpdateType, ArrayDeque<RenderSection>> rebuildLists;
@@ -98,6 +98,7 @@ public abstract class RenderSectionManager {
         this.regions = new RenderRegionManager(commandList, this.renderPassConfiguration);
 
         this.renderLists = SortedRenderLists.empty();
+        this.shadowRenderLists = SortedRenderLists.empty();
         this.minSection = minSection;
         this.maxSection = maxSection;
         this.occlusionCuller = new OcclusionCuller(Long2ReferenceMaps.unmodifiable(this.sectionByPosition), this.minSection, this.maxSection);
@@ -130,11 +131,22 @@ public abstract class RenderSectionManager {
         }
     }
 
+    /**
+     * Whether terrain is being rendered for shadows.
+     */
+    public boolean isInShadowPass() {
+        return false;
+    }
+
     public void update(PositionedViewport positionedViewport, int frame, boolean spectator) {
         this.lastCameraPosition = positionedViewport.blockPosition();
         this.cameraPosition = positionedViewport.position();
 
         this.createTerrainRenderList(positionedViewport, frame, spectator);
+
+        if (isInShadowPass()) {
+            return;
+        }
 
         this.needsUpdate = false;
         this.lastUpdatedFrame = frame;
@@ -722,11 +734,15 @@ public abstract class RenderSectionManager {
     }
 
     public @NotNull SortedRenderLists getRenderLists() {
-        return this.renderLists;
+        return isInShadowPass() ? this.shadowRenderLists : this.renderLists;
     }
 
     protected void setRenderLists(@NotNull SortedRenderLists renderLists) {
-        this.renderLists = renderLists;
+        if (isInShadowPass()) {
+            this.shadowRenderLists = renderLists;
+        } else {
+            this.renderLists = renderLists;
+        }
     }
 
     public boolean isSectionBuilt(int x, int y, int z) {
