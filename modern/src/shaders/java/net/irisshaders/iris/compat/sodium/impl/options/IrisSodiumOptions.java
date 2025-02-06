@@ -13,7 +13,6 @@ import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
 import org.embeddedt.embeddium.api.options.control.CyclingControl;
 import org.embeddedt.embeddium.api.options.control.SliderControl;
 import org.embeddedt.embeddium.api.options.control.TickBoxControl;
-import org.embeddedt.embeddium.api.options.storage.MinecraftOptionsStorage;
 import org.embeddedt.embeddium.api.options.structure.*;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptionPages;
 
@@ -117,20 +116,5 @@ public class IrisSodiumOptions {
 		return (v) -> {
 			return v == 0 ? Component.literal(disabled) : (Component.translatable(key, v));
 		};
-	}
-
-	public static OptionImpl<Options, SupportedGraphicsMode> createLimitedVideoSettingsButton(MinecraftOptionsStorage vanillaOpts) {
-		return OptionImpl.createBuilder(SupportedGraphicsMode.class, vanillaOpts)
-			.setName(Component.translatable("options.graphics"))
-			// TODO: State that Fabulous Graphics is incompatible with Shader Packs in the tooltip
-			.setTooltip(Component.translatable("sodium.options.graphics_quality.tooltip"))
-			.setControl(option -> new CyclingControl<>(option, SupportedGraphicsMode.class,
-				new Component[]{Component.translatable("options.graphics.fast"), Component.translatable("options.graphics.fancy")}))
-			.setBinding(
-				(opts, value) -> opts.graphicsMode().set(value.toVanilla()),
-				opts -> SupportedGraphicsMode.fromVanilla(opts.graphicsMode().get()))
-			.setImpact(OptionImpact.HIGH)
-			.setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
-			.build();
 	}
 }

@@ -3,8 +3,6 @@ package net.irisshaders.iris.compat.sodium.impl.vertex_format.entity_xhfp;
 import net.irisshaders.iris.vertices.views.QuadView;
 import org.lwjgl.system.MemoryUtil;
 
-import java.nio.ByteBuffer;
-
 public abstract class QuadViewEntity implements QuadView {
 	long writePointer;
 	int stride;
@@ -45,21 +43,6 @@ public abstract class QuadViewEntity implements QuadView {
 		@Override
 		float getFloat(long writePointer) {
 			return MemoryUtil.memGetFloat(writePointer);
-		}
-	}
-
-	public static class QuadViewEntityNio extends QuadViewEntity {
-		private ByteBuffer buffer;
-
-		public void setup(ByteBuffer buffer, int writePointer, int stride) {
-			this.buffer = buffer;
-			this.writePointer = writePointer;
-			this.stride = stride;
-		}
-
-		@Override
-		float getFloat(long writePointer) {
-			return buffer.getFloat((int) writePointer);
 		}
 	}
 }
