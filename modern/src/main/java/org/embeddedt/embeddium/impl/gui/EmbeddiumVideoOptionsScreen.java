@@ -235,14 +235,6 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         boolean hasChanges = this.getAllOptions()
                 .anyMatch(Option::hasChanged);
 
-        for (OptionPage page : this.pages) {
-            for (Option<?> option : page.getOptions()) {
-                if (option.hasChanged()) {
-                    hasChanges = true;
-                }
-            }
-        }
-
         this.applyButton.setEnabled(hasChanges);
         this.undoButton.setVisible(hasChanges);
         this.closeButton.setEnabled(!hasChanges);
