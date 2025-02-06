@@ -293,7 +293,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         //? if >=1.20.6
         /*PoseStack matrices = new PoseStack();*/
 
-        this.renderer.renderBlockEntities(matrices, this.renderBuffers, this.destructionProgress, camera, tickDelta);
+        this.renderer.renderBlockEntities(matrices, this.renderBuffers, this.destructionProgress, camera, tickDelta, null);
     }
     //?} else {
     /*@Overwrite

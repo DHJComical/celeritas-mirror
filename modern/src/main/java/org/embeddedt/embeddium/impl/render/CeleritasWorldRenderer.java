@@ -58,11 +58,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Provides an extension to vanilla's {@link LevelRenderer}.
@@ -417,11 +419,12 @@ public class CeleritasWorldRenderer {
         }
     }
 
-    public void renderBlockEntities(PoseStack poseStack,
+    public int renderBlockEntities(PoseStack poseStack,
                                     RenderBuffers bufferBuilders,
                                     Long2ObjectMap<SortedSet<BlockDestructionProgress>> blockBreakingProgressions,
                                     Camera camera,
-                                    float tickDelta) {
+                                    float tickDelta,
+                                    @Nullable Predicate<BlockEntity> blockEntityFilter) {
         MultiBufferSource.BufferSource immediate = bufferBuilders.bufferSource();
 
         Vec3 cameraPos = camera.getPosition();
@@ -436,8 +439,12 @@ public class CeleritasWorldRenderer {
 
         this.blockEntityRequestedOutline = false;
 
-        this.renderBlockEntities(poseStack, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer);
-        this.renderGlobalBlockEntities(poseStack, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer);
+        int numRendered = 0;
+
+        numRendered += this.renderBlockEntities(poseStack, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer, blockEntityFilter);
+        numRendered += this.renderGlobalBlockEntities(poseStack, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer, blockEntityFilter);
+
+        return numRendered;
     }
 
     private static boolean isBoxVisible(Viewport viewport, AABB box) {
@@ -448,7 +455,7 @@ public class CeleritasWorldRenderer {
         return viewport.isBoxVisible(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
     }
 
-    private void renderBlockEntities(PoseStack matrices,
+    private int renderBlockEntities(PoseStack matrices,
                                      RenderBuffers bufferBuilders,
                                      Long2ObjectMap<SortedSet<BlockDestructionProgress>> blockBreakingProgressions,
                                      float tickDelta,
@@ -456,9 +463,11 @@ public class CeleritasWorldRenderer {
                                      double x,
                                      double y,
                                      double z,
-                                     BlockEntityRenderDispatcher blockEntityRenderer) {
+                                     BlockEntityRenderDispatcher blockEntityRenderer,
+                                     @Nullable Predicate<BlockEntity> blockEntityFilter) {
         SortedRenderLists renderLists = this.renderSectionManager.getRenderLists();
         Iterator<ChunkRenderList> renderListIterator = renderLists.iterator();
+        int numRendered = 0;
 
         while (renderListIterator.hasNext()) {
             var renderList = renderListIterator.next();
@@ -481,6 +490,10 @@ public class CeleritasWorldRenderer {
                 }
 
                 for (BlockEntity blockEntity : blockEntities) {
+                    if (blockEntityFilter != null && !blockEntityFilter.test(blockEntity)) {
+                        continue;
+                    }
+
                     //? if forge {
                     if(ENABLE_BLOCKENTITY_CULLING && !isBoxVisible(currentViewport, blockEntity.getRenderBoundingBox()))
                         continue;
@@ -493,12 +506,15 @@ public class CeleritasWorldRenderer {
                     //?}
 
                     renderBlockEntity(matrices, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer, blockEntity);
+                    numRendered++;
                 }
             }
         }
+
+        return numRendered;
     }
 
-    private void renderGlobalBlockEntities(PoseStack matrices,
+    private int renderGlobalBlockEntities(PoseStack matrices,
                                            RenderBuffers bufferBuilders,
                                            Long2ObjectMap<SortedSet<BlockDestructionProgress>> blockBreakingProgressions,
                                            float tickDelta,
@@ -506,7 +522,10 @@ public class CeleritasWorldRenderer {
                                            double x,
                                            double y,
                                            double z,
-                                           BlockEntityRenderDispatcher blockEntityRenderer) {
+                                           BlockEntityRenderDispatcher blockEntityRenderer,
+                                           @Nullable Predicate<BlockEntity> blockEntityFilter) {
+        int numRendered = 0;
+
         for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
             var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
 
@@ -515,6 +534,10 @@ public class CeleritasWorldRenderer {
             }
 
             for (var blockEntity : blockEntities) {
+                if (blockEntityFilter != null && !blockEntityFilter.test(blockEntity)) {
+                    continue;
+                }
+
                 //? if forge {
                 if(ENABLE_BLOCKENTITY_CULLING && !isBoxVisible(currentViewport, blockEntity.getRenderBoundingBox()))
                     continue;
@@ -527,8 +550,11 @@ public class CeleritasWorldRenderer {
                 //?}
 
                 renderBlockEntity(matrices, bufferBuilders, blockBreakingProgressions, tickDelta, immediate, x, y, z, blockEntityRenderer, blockEntity);
+                numRendered++;
             }
         }
+
+        return numRendered;
     }
 
     private static void renderBlockEntity(PoseStack matrices,

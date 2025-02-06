@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import net.irisshaders.batchedentityrendering.impl.BatchingDebugMessageHelper;
 import net.irisshaders.batchedentityrendering.impl.DrawCallTrackingRenderBuffers;
 import net.irisshaders.batchedentityrendering.impl.FullyBufferedMultiBufferSource;
@@ -43,6 +44,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
+import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
+import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
@@ -55,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 public class ShadowRenderer {
 	public static boolean ACTIVE = false;
@@ -516,11 +521,16 @@ public class ShadowRenderer {
 
 		levelRenderer.getLevel().getProfiler().popPush("build blockentities");
 
-		if (shouldRenderBlockEntities) {
-			renderedShadowBlockEntities = ShadowRenderingState.renderBlockEntities(this, bufferSource, modelView, playerCamera, cameraX, cameraY, cameraZ, tickDelta, hasEntityFrustum, false);
-		} else if (shouldRenderLightBlockEntities) {
-			renderedShadowBlockEntities = ShadowRenderingState.renderBlockEntities(this, bufferSource, modelView, playerCamera, cameraX, cameraY, cameraZ, tickDelta, hasEntityFrustum, true);
-		}
+        Predicate<BlockEntity> blockEntityFilter;
+		if (shouldRenderLightBlockEntities && !shouldRenderBlockEntities) {
+            blockEntityFilter = be -> WorldUtil.getLightEmission(be.getBlockState(), be.getLevel(), be.getBlockPos()) > 0;
+        } else {
+            blockEntityFilter = null;
+        }
+
+        if (shouldRenderLightBlockEntities || shouldRenderBlockEntities) {
+            renderedShadowBlockEntities = ((WorldRendererExtended)levelRenderer).sodium$getWorldRenderer().renderBlockEntities(modelView, buffers, Long2ObjectMaps.emptyMap(), playerCamera, tickDelta, blockEntityFilter);
+        }
 
 		levelRenderer.getLevel().getProfiler().popPush("draw entities");
 
