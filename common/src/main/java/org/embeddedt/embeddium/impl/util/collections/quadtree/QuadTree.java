@@ -1,7 +1,9 @@
 package org.embeddedt.embeddium.impl.util.collections.quadtree;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -9,7 +11,7 @@ import java.util.function.Function;
  */
 public final class QuadTree<T> extends Rect2i
 {
-    private static final QuadTree<?> EMPTY = new QuadTree<>(new Rect2i(0, 0, 0, 0), 0);
+    private static final QuadTree<?> EMPTY = new QuadTree<>(new Rect2i(0, 0, 0, 0), 0, List.of(), null);
 
     private static final int MAX_DEPTH = 12;
 
@@ -22,9 +24,14 @@ public final class QuadTree<T> extends Rect2i
         return (QuadTree<T>)EMPTY;
     }
 
-    public QuadTree(Rect2i rect, int minSize)
+    public QuadTree(Rect2i rect, int minSize, Collection<T> contents, Function<T, Rect2i> sizeFactory)
     {
         this(rect, minSize, 0);
+        if (!contents.isEmpty()) {
+            Objects.requireNonNull(sizeFactory);
+            contents.forEach(c -> this.insert(c, sizeFactory.apply(c)));
+            this.bake();
+        }
     }
 
     private QuadTree(Rect2i rect, int minSize, int depth)
@@ -69,12 +76,7 @@ public final class QuadTree<T> extends Rect2i
         }
     }
 
-    public void insert(T item, Function<T, Rect2i> sizeFactory)
-    {
-        insert(item, sizeFactory.apply(item));
-    }
-
-    public void bake() {
+    private void bake() {
         // Postorder traversal
         if (child0 != null) {
             child0.bake();

@@ -54,14 +54,14 @@ public class MixinTextureAtlas implements TextureAtlasExtended {
                 //?} else
                 /*.mapToInt(c -> Math.max(c.getWidth(), c.getHeight()))*/
                 .min().orElseThrow();
-        this.celeritas$quadTree = new QuadTree<>(treeRect, minSize);
-        for (TextureAtlasSprite sprite : this.texturesByName.values()) {
-            //? if >=1.19.3 {
-            this.celeritas$quadTree.insert(sprite, s -> new Rect2i(s.getX(), s.getY(), s.contents().width(), s.contents().height()));
-            //?} else
-            /*this.celeritas$quadTree.insert(sprite, s -> new Rect2i(s.x, s.y, s.getWidth(), s.getHeight()));*/
-        }
-        this.celeritas$quadTree.bake();
+        this.celeritas$quadTree = new QuadTree<>(treeRect, minSize,
+                this.texturesByName.values(),
+                s ->
+                //? if >=1.19.3 {
+                new Rect2i(s.getX(), s.getY(), s.contents().width(), s.contents().height())
+                //?} else
+                /*new Rect2i(s.x, s.y, s.getWidth(), s.getHeight())*/
+                );
     }
 
     @Inject(method = "clearTextureData", at = @At("RETURN"))
