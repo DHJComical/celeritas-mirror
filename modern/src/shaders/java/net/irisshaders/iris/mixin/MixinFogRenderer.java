@@ -1,5 +1,6 @@
 package net.irisshaders.iris.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -21,9 +22,9 @@ public class MixinFogRenderer {
 	@Shadow
 	private static float fogRed, fogGreen, fogBlue;
 
-	@Inject(method = "setupFog", at = @At("HEAD"))
-	private static void iris$setupLegacyWaterFog(Camera camera, FogRenderer.FogMode $$1, float $$2, boolean $$3, float $$4, CallbackInfo ci) {
-		if (camera.getFluidInCamera() == FogType.WATER) {
+	@Inject(method = "setupFog", at = @At("RETURN"))
+	private static void iris$setupLegacyWaterFog(Camera camera, FogRenderer.FogMode $$1, float $$2, boolean $$3, float $$4, CallbackInfo ci, @Local(ordinal = 0) FogType fluidInCamera) {
+		if (fluidInCamera == FogType.WATER) {
 			Entity entity = camera.getEntity();
 
 			float density = 0.05F;
