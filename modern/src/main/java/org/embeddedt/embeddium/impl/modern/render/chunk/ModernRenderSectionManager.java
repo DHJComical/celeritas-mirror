@@ -35,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 public class ModernRenderSectionManager extends RenderSectionManager {
     private final ClientLevel world;
@@ -136,13 +137,12 @@ public class ModernRenderSectionManager extends RenderSectionManager {
                     continue;
                 }
 
-                var sprites = section.getContextOrDefault(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES);
+                var sprites = (List<TextureAtlasSprite>)section.getContextOrDefault(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES);
 
-                if (sprites.isEmpty()) {
-                    continue;
+                //noinspection ForLoopReplaceableByForEach
+                for (int i = 0; i < sprites.size(); i++) {
+                    SpriteUtil.markSpriteActive(sprites.get(i));
                 }
-
-                sprites.forEach(SpriteUtil::markSpriteActive);
             }
         }
     }

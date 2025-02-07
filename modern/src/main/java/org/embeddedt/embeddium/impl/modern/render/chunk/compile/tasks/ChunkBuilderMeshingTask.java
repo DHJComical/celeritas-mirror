@@ -256,7 +256,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         }));
         renderData.mapContext(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, List::copyOf);
         renderData.mapContext(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES, SetUtil::copyOf);
+        renderData.mapContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES, List::copyOf);
     }
 
     private ReportedException fillCrashInfo(CrashReport report, WorldSlice slice, BlockPos pos) {
