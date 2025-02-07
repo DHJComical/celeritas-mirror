@@ -337,8 +337,21 @@ public abstract class RenderSectionManager {
         return render.getLastVisibleFrame() == this.lastUpdatedFrame;
     }
 
+    private boolean rebuildListHasUpdates() {
+        for (var queue : this.rebuildLists.values()) {
+            if (!queue.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void updateChunks(boolean updateImmediately) {
         this.regions.update();
+
+        if (!rebuildListHasUpdates()) {
+            return;
+        }
 
         var blockingRebuilds = new ChunkJobCollector(Integer.MAX_VALUE, this.buildResults::add);
         var deferredRebuilds = new ChunkJobCollector(this.builder.getSchedulingBudget(), this.buildResults::add);
