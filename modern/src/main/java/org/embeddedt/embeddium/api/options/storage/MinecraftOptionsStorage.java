@@ -24,22 +24,6 @@ public class MinecraftOptionsStorage implements OptionStorage<Options> {
     public void save(Set<OptionFlag> flags) {
         this.getData().save();
 
-
-        Minecraft client = Minecraft.getInstance();
-
-        if (client.level != null) {
-            if (flags.contains(OptionFlag.REQUIRES_RENDERER_RELOAD)) {
-                client.levelRenderer.allChanged();
-            } else if (flags.contains(OptionFlag.REQUIRES_RENDERER_UPDATE)) {
-                client.levelRenderer.needsUpdate();
-            }
-        }
-
-        if (flags.contains(OptionFlag.REQUIRES_ASSET_RELOAD)) {
-            client.updateMaxMipLevel(client.options.mipmapLevels/*? if >=1.19 {*/().get()/*?}*/);
-            client.delayTextureReload();
-        }
-
         Celeritas.logger().info("Flushed changes to Minecraft configuration");
     }
 
