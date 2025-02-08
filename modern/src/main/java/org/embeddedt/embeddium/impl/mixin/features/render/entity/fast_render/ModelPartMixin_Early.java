@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.mixin.features.render.entity.fast_render;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.geom.ModelPart;
-import org.embeddedt.embeddium.api.util.ColorABGR;
+import org.embeddedt.embeddium.api.util.*;
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import org.embeddedt.embeddium.impl.model.ModelCuboidAccessor;
 import org.embeddedt.embeddium.impl.render.immediate.model.EntityRenderer;
@@ -36,7 +36,7 @@ public class ModelPartMixin_Early {
                         //? if <1.21
                           , float red, float green, float blue, float alpha
                         //? if >=1.21
-                          /*,int color*/) {
+                          /*,int color) {*/
         VertexBufferWriter writer = VertexBufferWriter.tryOf(vertices);
 
         EntityRenderer.prepareNormals(matrixPose);
