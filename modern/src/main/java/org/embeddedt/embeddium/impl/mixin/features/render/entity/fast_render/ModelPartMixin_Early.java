@@ -36,7 +36,8 @@ public class ModelPartMixin_Early {
                         //? if <1.21
                           , float red, float green, float blue, float alpha
                         //? if >=1.21
-                          /*,int color) {*/
+                          /*,int color*/
+    ) {
         VertexBufferWriter writer = VertexBufferWriter.tryOf(vertices);
 
         EntityRenderer.prepareNormals(matrixPose);

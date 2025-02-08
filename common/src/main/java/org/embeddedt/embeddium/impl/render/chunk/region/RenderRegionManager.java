@@ -2,7 +2,9 @@ package org.embeddedt.embeddium.impl.render.chunk.region;
 
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.embeddedt.embeddium.impl.gl.arena.PendingUpload;
 import org.embeddedt.embeddium.impl.gl.arena.staging.FallbackStagingBuffer;
 import org.embeddedt.embeddium.impl.gl.arena.staging.MappedStagingBuffer;
@@ -63,21 +65,17 @@ public class RenderRegionManager {
         boolean needIndexBuffer = false;
 
         for (ChunkBuildOutput result : results) {
-            for (TerrainRenderPass pass : renderPassConfiguration.renderPasses()) {
-                var storage = region.getStorage(pass);
+            // Delete all existing data for the section in the region
+            region.removeMeshes(result.render.getSectionIndex());
 
-                if (storage != null) {
-                    storage.removeMeshes(result.render.getSectionIndex());
-                }
+            // Add uploads for any new data
+            for (var entry : Reference2ReferenceMaps.fastIterable(result.meshes)) {
+                BuiltSectionMeshParts mesh = Objects.requireNonNull(entry.getValue());
 
-                BuiltSectionMeshParts mesh = result.getMesh(pass);
+                needIndexBuffer |= mesh.getIndexData() != null;
 
-                if (mesh != null) {
-                    needIndexBuffer |= mesh.getIndexData() != null;
-
-                    uploads.add(new PendingSectionUpload(result.render, mesh, pass,
-                            new PendingUpload(mesh.getVertexData()), mesh.getIndexData() != null ? new PendingUpload(mesh.getIndexData()) : null));
-                }
+                uploads.add(new PendingSectionUpload(result.render, mesh, entry.getKey(),
+                        new PendingUpload(mesh.getVertexData()), mesh.getIndexData() != null ? new PendingUpload(mesh.getIndexData()) : null));
             }
         }
 
@@ -118,12 +116,9 @@ public class RenderRegionManager {
         var uploads = new ArrayList<PendingResortUpload>();
 
         for (ChunkBuildOutput result : results) {
-            for (TerrainRenderPass pass : renderPassConfiguration.renderPasses()) {
-                BuiltSectionMeshParts mesh = result.getMesh(pass);
-
-                if(mesh == null) {
-                    continue;
-                }
+            for (var entry : Reference2ReferenceMaps.fastIterable(result.meshes)) {
+                var pass = entry.getKey();
+                var mesh = entry.getValue();
 
                 var storage = region.getStorage(pass);
 

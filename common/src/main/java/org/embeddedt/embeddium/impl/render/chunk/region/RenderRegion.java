@@ -149,6 +149,15 @@ public class RenderRegion {
         });
     }
 
+    public void removeMeshes(int sectionIndex) {
+        if (this.sectionRenderData.isEmpty()) {
+            return;
+        }
+        for (var storage : this.sectionRenderData.values()) {
+            storage.removeMeshes(sectionIndex);
+        }
+    }
+
     public boolean hasSectionsInPass(TerrainRenderPass pass) {
         return this.sectionRenderData.containsKey(pass);
     }

@@ -11,7 +11,6 @@ import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 
-import java.nio.ByteBuffer;
 import java.util.Map;
 
 public class ChunkBuilderSortTask extends ChunkBuilderTask<ChunkBuildOutput> {
@@ -29,16 +28,9 @@ public class ChunkBuilderSortTask extends ChunkBuilderTask<ChunkBuildOutput> {
         this.translucentMeshes = translucentMeshes;
     }
 
-    private static NativeBuffer makeNativeBuffer(ByteBuffer heapBuffer) {
-        heapBuffer.rewind();
-        NativeBuffer nb = new NativeBuffer(heapBuffer.capacity());
-        nb.getDirectBuffer().put(heapBuffer);
-        return nb;
-    }
-
     @Override
     public ChunkBuildOutput execute(ChunkBuildContext context, CancellationToken cancellationSource) {
-        Map<TerrainRenderPass, BuiltSectionMeshParts> meshes = new Reference2ReferenceOpenHashMap<>();
+        Reference2ReferenceOpenHashMap<TerrainRenderPass, BuiltSectionMeshParts> meshes = new Reference2ReferenceOpenHashMap<>();
         for(Map.Entry<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> entry : translucentMeshes.entrySet()) {
             var sortBuffer = entry.getValue();
             var newIndexBuffer = new NativeBuffer(ChunkBufferSorter.getIndexBufferSize(sortBuffer.centersLength() / 3));

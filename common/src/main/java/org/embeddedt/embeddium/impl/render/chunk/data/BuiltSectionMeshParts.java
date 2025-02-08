@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.data;
 
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.gl.util.VertexRange;
@@ -42,10 +43,10 @@ public class BuiltSectionMeshParts {
         return this.sortState;
     }
 
-    public static Map<TerrainRenderPass, BuiltSectionMeshParts> groupFromBuildBuffers(ChunkBuildBuffers buffers, float relativeCameraX, float relativeCameraY, float relativeCameraZ) {
-        Map<TerrainRenderPass, BuiltSectionMeshParts> meshes = new Reference2ReferenceOpenHashMap<>();
+    public static Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> groupFromBuildBuffers(ChunkBuildBuffers buffers, float relativeCameraX, float relativeCameraY, float relativeCameraZ) {
+        Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes = new Reference2ReferenceOpenHashMap<>();
 
-        for (TerrainRenderPass pass : buffers.getRenderPassConfiguration().renderPasses()) {
+        for (TerrainRenderPass pass : buffers.getBuilderPasses()) {
             BuiltSectionMeshParts mesh = buffers.createMesh(pass, relativeCameraX, relativeCameraY, relativeCameraZ);
 
             if (mesh != null) {

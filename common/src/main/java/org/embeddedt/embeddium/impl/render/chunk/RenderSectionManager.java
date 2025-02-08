@@ -500,7 +500,7 @@ public abstract class RenderSectionManager {
                     section.setTranslucencySortStates(Collections.emptyMap());
                 }
             } else {
-                var result = ChunkJobResult.successfully(new ChunkBuildOutput(section, ContextBundle.empty(), Collections.emptyMap(), frame));
+                var result = ChunkJobResult.successfully(new ChunkBuildOutput(section, ContextBundle.empty(), Reference2ReferenceMaps.emptyMap(), frame));
                 this.buildResults.add(result);
 
                 section.setBuildCancellationToken(null);

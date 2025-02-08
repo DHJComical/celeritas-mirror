@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile;
 
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -16,13 +17,13 @@ public class ChunkBuildOutput {
     public final RenderSection render;
 
     public final ContextBundle<RenderSection> info;
-    public final Map<TerrainRenderPass, BuiltSectionMeshParts> meshes;
+    public final Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes;
 
     public final int buildTime;
 
     private boolean partialUpload;
 
-    public ChunkBuildOutput(RenderSection render, ContextBundle<RenderSection> info, Map<TerrainRenderPass, BuiltSectionMeshParts> meshes, int buildTime) {
+    public ChunkBuildOutput(RenderSection render, ContextBundle<RenderSection> info, Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes, int buildTime) {
         this.render = render;
         this.info = info;
         this.meshes = meshes;

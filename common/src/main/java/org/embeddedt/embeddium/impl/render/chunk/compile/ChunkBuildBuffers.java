@@ -12,7 +12,6 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuild
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.builder.ChunkMeshBufferBuilder;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
@@ -20,13 +19,15 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncode
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * A collection of temporary buffers for each worker thread which will be used to build chunk meshes for given render
  * passes. This makes a best-effort attempt to pick a suitable size for each scratch buffer, but will never try to
  * shrink a buffer.
  */
-public class ChunkBuildBuffers {
+public final class ChunkBuildBuffers {
     private static final ModelQuadFacing[] ONLY_UNASSIGNED = new ModelQuadFacing[] { ModelQuadFacing.UNASSIGNED };
     private final Reference2ReferenceOpenHashMap<TerrainRenderPass, BakedChunkModelBuilder> builders = new Reference2ReferenceOpenHashMap<>();
 
@@ -35,38 +36,45 @@ public class ChunkBuildBuffers {
 
     @Getter
     private final ChunkVertexEncoder encoder;
+    private final int stride;
+
+    private ContextBundle<RenderSection> renderData;
+    private int sectionIndex;
 
     public ChunkBuildBuffers(RenderPassConfiguration<?> configuration) {
         this.renderPassConfiguration = configuration;
 
-        var encoder = configuration.vertexType().getEncoder();
-        var stride = configuration.vertexType().getVertexFormat().getStride();
-
-        this.encoder = encoder;
-
-        for (TerrainRenderPass pass : configuration.renderPasses()) {
-            var vertexBuffers = new ChunkMeshBufferBuilder[ModelQuadFacing.COUNT];
-
-            for (int facing = 0; facing < ModelQuadFacing.COUNT; facing++) {
-                vertexBuffers[facing] = new ChunkMeshBufferBuilder(encoder, stride, 64 * 1024, pass.isSorted() && facing == ModelQuadFacing.UNASSIGNED.ordinal());
-            }
-
-            this.builders.put(pass, new BakedChunkModelBuilder(vertexBuffers, !pass.isSorted()));
-        }
+        this.encoder = configuration.vertexType().getEncoder();
+        this.stride = configuration.vertexType().getVertexFormat().getStride();
     }
 
     public void init(ContextBundle<RenderSection> renderData, int sectionIndex) {
+        this.renderData = renderData;
+        this.sectionIndex = sectionIndex;
         for (var builder : this.builders.values()) {
             builder.begin(renderData, sectionIndex);
         }
     }
 
     public ChunkModelBuilder get(Material material) {
-        return this.builders.get(material.pass);
+        return this.get(material.pass);
+    }
+
+    private ChunkModelBuilder createBuilder(TerrainRenderPass pass) {
+        var builder = new BakedChunkModelBuilder(encoder, stride, pass);
+        Objects.requireNonNull(renderData, "Buffers have not been started");
+        builder.begin(renderData, sectionIndex);
+        this.builders.put(pass, builder);
+        return builder;
     }
 
     public ChunkModelBuilder get(TerrainRenderPass pass) {
-        return this.builders.get(pass);
+        var builder = this.builders.get(pass);
+        return builder != null ? builder : createBuilder(pass);
+    }
+
+    public Set<TerrainRenderPass> getBuilderPasses() {
+        return this.builders.keySet();
     }
 
     /**
@@ -76,6 +84,10 @@ public class ChunkBuildBuffers {
      */
     public BuiltSectionMeshParts createMesh(TerrainRenderPass pass, float camX, float camY, float camZ) {
         var builder = this.builders.get(pass);
+
+        if (builder == null || builder.isEmpty()) {
+            return null;
+        }
 
         List<ByteBuffer> vertexBuffers = new ArrayList<>();
         VertexRange[] vertexRanges = new VertexRange[ModelQuadFacing.COUNT];
@@ -141,6 +153,8 @@ public class ChunkBuildBuffers {
     }
 
     public void destroy() {
+        this.sectionIndex = 0;
+        this.renderData = null;
         for (var builder : this.builders.values()) {
             builder.destroy();
         }
