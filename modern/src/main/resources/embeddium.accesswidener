@@ -118,3 +118,7 @@ accessible field net/minecraft/client/renderer/texture/TextureAtlas$Preparations
 accessible field net/minecraft/client/renderer/texture/TextureAtlas$Preparations height I
 accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite x I
 accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite y I
+
+# 1.17
+
+accessible class net/minecraft/world/level/chunk/EmptyLevelChunk$EmptyChunkBiomeContainer
