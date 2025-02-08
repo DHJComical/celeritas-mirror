@@ -12,7 +12,6 @@
   },
   "client": [
     "clouds.MixinCloudRenderer",
-    "pbr_animation.MixinSpriteContents",
     "shader_overrides.MixinShaderChunkRenderer",
     "vertex_format.MixinVertexSerializerCache",
     "vertex_format.entity.MixinModelVertex"
