@@ -184,12 +184,19 @@ public class CeleritasWorldRenderer {
                              boolean updateChunksImmediately) {
         NativeBuffer.reclaim(false);
 
-        this.processChunkEvents();
+        boolean isShadowPass = this.renderSectionManager.isInShadowPass();
 
-        this.useEntityCulling = Celeritas.options().performance.useEntityCulling;
+        // Skip some unnecessary work in the shadow pass
+        if (!isShadowPass) {
+            this.processChunkEvents();
 
-        if (getEffectiveRenderDistance() != this.renderDistance) {
-            this.reload();
+            this.renderSectionManager.runAsyncTasks();
+
+            this.useEntityCulling = Celeritas.options().performance.useEntityCulling;
+
+            if (getEffectiveRenderDistance() != this.renderDistance) {
+                this.reload();
+            }
         }
 
         ProfilerFiller profiler = ProfilerUtil.get();
@@ -222,18 +229,19 @@ public class CeleritasWorldRenderer {
         this.lastCameraYaw = yaw;
         this.lastFogDistance = fogDistance;
 
-        this.renderSectionManager.runAsyncTasks();
-
         profiler.popPush("chunk_update");
 
         this.renderSectionManager.updateChunks(updateChunksImmediately);
 
-        profiler.popPush("chunk_upload");
+        // We don't need to upload chunks during shadow, they will be uploaded on the next real frame.
+        if (!isShadowPass) {
+            profiler.popPush("chunk_upload");
 
-        this.renderSectionManager.uploadChunks();
+            this.renderSectionManager.uploadChunks();
+        }
 
         // TODO: detect sun not moving and skip update during shadow pass
-        if (this.renderSectionManager.needsUpdate() || this.renderSectionManager.isInShadowPass()) {
+        if (this.renderSectionManager.needsUpdate() || isShadowPass) {
             profiler.popPush("chunk_render_lists");
 
             var camPosition = new Vector3d(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
