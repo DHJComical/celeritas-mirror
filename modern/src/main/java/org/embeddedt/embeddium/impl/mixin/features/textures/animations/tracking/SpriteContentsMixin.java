@@ -36,7 +36,7 @@ public abstract class SpriteContentsMixin implements SpriteContentsExtended {
                 SpriteUtil.markSpriteActive(specularSprite);
             }
         }
-        //? }
+        //?}
     }
 
     @Override
