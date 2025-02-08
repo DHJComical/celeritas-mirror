@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import lombok.Getter;
+import lombok.Setter;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import org.embeddedt.embeddium.impl.Celeritas;
@@ -83,6 +84,7 @@ public class CeleritasWorldRenderer {
 
     private boolean useEntityCulling;
 
+    @Setter
     private Viewport currentViewport;
 
     @Getter

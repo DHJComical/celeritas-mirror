@@ -45,6 +45,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
+import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
 import org.joml.Matrix4f;
@@ -498,6 +499,10 @@ public class ShadowRenderer {
 		Frustum entityShadowFrustum = entityFrustumHolder.getFrustum();
 		entityShadowFrustum.prepare(cameraX, cameraY, cameraZ);
 
+        var celeritasRenderer = ((WorldRendererExtended)levelRenderer).sodium$getWorldRenderer();
+
+        celeritasRenderer.setCurrentViewport(((ViewportProvider)entityShadowFrustum).sodium$createViewport());
+
 		// Render nearby entities
 		//
 		// Note: We must use a separate BuilderBufferStorage object here, or else very weird things will happen during
@@ -529,7 +534,7 @@ public class ShadowRenderer {
         }
 
         if (shouldRenderLightBlockEntities || shouldRenderBlockEntities) {
-            renderedShadowBlockEntities = ((WorldRendererExtended)levelRenderer).sodium$getWorldRenderer().renderBlockEntities(modelView, buffers, Long2ObjectMaps.emptyMap(), playerCamera, tickDelta, blockEntityFilter);
+            renderedShadowBlockEntities = celeritasRenderer.renderBlockEntities(modelView, buffers, Long2ObjectMaps.emptyMap(), playerCamera, tickDelta, blockEntityFilter);
         }
 
 		levelRenderer.getLevel().getProfiler().popPush("draw entities");
