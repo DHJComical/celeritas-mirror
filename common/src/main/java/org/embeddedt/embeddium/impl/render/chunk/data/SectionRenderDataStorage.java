@@ -14,6 +14,8 @@ public class SectionRenderDataStorage {
 
     private final long pMeshDataArray;
 
+    private int numAllocations;
+
     public SectionRenderDataStorage() {
         this.pMeshDataArray = SectionRenderDataUnsafe.allocateHeap(RenderRegion.REGION_SIZE);
         if (this.pMeshDataArray == 0) {
@@ -21,11 +23,16 @@ public class SectionRenderDataStorage {
         }
     }
 
+    public boolean isEmpty() {
+        return this.numAllocations == 0;
+    }
+
     public void setMeshes(int localSectionIndex,
                           GlBufferSegment allocation, @Nullable GlBufferSegment indexAllocation, VertexRange[] ranges) {
         if (this.allocations[localSectionIndex] != null) {
             this.allocations[localSectionIndex].delete();
             this.allocations[localSectionIndex] = null;
+            this.numAllocations--;
         }
 
         if (this.indexAllocations[localSectionIndex] != null) {
@@ -35,6 +42,7 @@ public class SectionRenderDataStorage {
 
         this.allocations[localSectionIndex] = allocation;
         this.indexAllocations[localSectionIndex] = indexAllocation;
+        this.numAllocations++;
 
         var pMeshData = this.getDataPointer(localSectionIndex);
 
@@ -75,6 +83,8 @@ public class SectionRenderDataStorage {
             this.allocations[localSectionIndex] = null;
 
             SectionRenderDataUnsafe.clear(this.getDataPointer(localSectionIndex));
+
+            this.numAllocations--;
         }
 
         removeIndexBuffer(localSectionIndex);
@@ -154,5 +164,7 @@ public class SectionRenderDataStorage {
         Arrays.fill(this.indexAllocations, null);
 
         SectionRenderDataUnsafe.freeHeap(this.pMeshDataArray);
+
+        this.numAllocations = 0;
     }
 }

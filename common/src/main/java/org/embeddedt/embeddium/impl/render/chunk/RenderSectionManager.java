@@ -167,9 +167,16 @@ public abstract class RenderSectionManager {
         var sortRebuildList = this.rebuildLists.get(ChunkUpdateType.SORT);
         var importantSortRebuildList = this.rebuildLists.get(ChunkUpdateType.IMPORTANT_SORT);
         var allowImportant = allowImportantRebuilds();
+        var translucentPass = this.renderPassConfiguration.defaultTranslucentMaterial().pass;
+        if (!this.getRenderLists().hasPass(translucentPass)) {
+            return;
+        }
         for (Iterator<ChunkRenderList> it = this.getRenderLists().iterator(); it.hasNext(); ) {
             ChunkRenderList entry = it.next();
             var region = entry.getRegion();
+            if (!region.hasSectionsInPass(translucentPass)) {
+                continue;
+            }
             ByteIterator sectionIterator = entry.sectionsWithGeometryIterator(false);
             if (sectionIterator == null) {
                 continue;

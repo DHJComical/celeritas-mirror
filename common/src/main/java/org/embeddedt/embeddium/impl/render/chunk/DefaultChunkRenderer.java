@@ -48,6 +48,10 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
                        ChunkRenderListIterable renderLists,
                        TerrainRenderPass renderPass,
                        CameraTransform camera) {
+        if (!renderLists.hasPass(renderPass)) {
+            return;
+        }
+
         super.begin(renderPass);
 
         // If there is no active program, shader compilation probably failed, and we can't render anything.

@@ -110,6 +110,8 @@ public class RenderRegionManager {
             storage.setMeshes(upload.section.getSectionIndex(),
                     upload.vertexUpload.getResult(), upload.indexUpload != null ? upload.indexUpload.getResult() : null, upload.meshData.getVertexRanges());
         }
+
+        region.removeEmptyStorages();
     }
 
     private void uploadResorts(CommandList commandList, RenderRegion region, Collection<ChunkBuildOutput> results) {

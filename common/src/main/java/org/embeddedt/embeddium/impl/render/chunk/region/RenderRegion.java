@@ -16,6 +16,7 @@ import org.embeddedt.embeddium.impl.util.PositionUtil;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 
 public class RenderRegion {
     public static final int REGION_WIDTH = 8;
@@ -131,6 +132,29 @@ public class RenderRegion {
         }
 
         return storage;
+    }
+
+    public void removeEmptyStorages() {
+        if (this.sectionRenderData.isEmpty()) {
+            return;
+        }
+
+        this.sectionRenderData.values().removeIf(s -> {
+            if (s.isEmpty()) {
+                s.delete();
+                return true;
+            } else {
+                return false;
+            }
+        });
+    }
+
+    public boolean hasSectionsInPass(TerrainRenderPass pass) {
+        return this.sectionRenderData.containsKey(pass);
+    }
+
+    public Set<TerrainRenderPass> getPasses() {
+        return this.sectionRenderData.keySet();
     }
 
     public void refresh(CommandList commandList) {

@@ -1,17 +1,29 @@
 package org.embeddedt.embeddium.impl.render.chunk.lists;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.iterator.ReversibleObjectArrayIterator;
-import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 
 public class SortedRenderLists implements ChunkRenderListIterable {
     private static final SortedRenderLists EMPTY = new SortedRenderLists(new ObjectArrayList<>());
 
     private final ObjectArrayList<ChunkRenderList> lists;
+    private final ReferenceOpenHashSet<TerrainRenderPass> passes;
 
     SortedRenderLists(ObjectArrayList<ChunkRenderList> lists) {
         this.lists = lists;
+        this.passes = getAllPassesInLists(lists);
+    }
+
+    private static ReferenceOpenHashSet<TerrainRenderPass> getAllPassesInLists(ObjectArrayList<ChunkRenderList> lists) {
+        ReferenceOpenHashSet<TerrainRenderPass> usedPasses = new ReferenceOpenHashSet<>();
+
+        for (var list : lists) {
+            usedPasses.addAll(list.getRegion().getPasses());
+        }
+
+        return usedPasses;
     }
 
     @Override
@@ -19,47 +31,12 @@ public class SortedRenderLists implements ChunkRenderListIterable {
         return new ReversibleObjectArrayIterator<>(this.lists, reverse);
     }
 
-    public static SortedRenderLists empty() {
-        return EMPTY;
+    @Override
+    public boolean hasPass(TerrainRenderPass pass) {
+        return this.passes.contains(pass);
     }
 
-    public static class Builder {
-        private final ObjectArrayList<ChunkRenderList> lists = new ObjectArrayList<>();
-        private final int frame;
-
-        public Builder(int frame) {
-            this.frame = frame;
-        }
-
-        public void add(RenderSection section) {
-            RenderRegion region = section.getRegion();
-            ChunkRenderList list = region.getRenderList();
-
-            // Even if a section does not have render objects, we must ensure the render list is initialized and put
-            // into the sorted queue of lists, so that we maintain the correct order of draw calls.
-            if (list.getLastVisibleFrame() != this.frame) {
-                list.reset(this.frame);
-
-                this.lists.add(list);
-            }
-
-            // Only add the section to the render list if it actually contains render objects
-            if (section.hasAnythingToRender()) {
-                list.add(section);
-            }
-        }
-
-        public SortedRenderLists build() {
-            var filtered = new ObjectArrayList<ChunkRenderList>(this.lists.size());
-
-            // Filter any empty render lists
-            for (var list : this.lists) {
-                if (list.size() > 0) {
-                    filtered.add(list);
-                }
-            }
-
-            return new SortedRenderLists(filtered);
-        }
+    public static SortedRenderLists empty() {
+        return EMPTY;
     }
 }

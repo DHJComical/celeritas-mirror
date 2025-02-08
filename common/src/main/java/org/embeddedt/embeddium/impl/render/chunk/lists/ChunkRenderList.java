@@ -7,9 +7,6 @@ import org.embeddedt.embeddium.impl.util.iterator.ByteArrayIterator;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
-import java.util.ServiceLoader;
-
 public class ChunkRenderList {
     private final RenderRegion region;
 
