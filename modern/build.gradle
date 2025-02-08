@@ -254,7 +254,7 @@ unimined.minecraft {
         }
     }
 
-    if(stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.17")) {
+    if(stonecutter.eval(ModLoader.getMinecraftVersion(project), "<1.18")) {
         def downgradeClient = tasks.register("downgradeClient", DowngradeFiles) {
             inputCollection = sourceSet.output.classesDirs + sourceSet.runtimeClasspath
             classpath = project.files()
