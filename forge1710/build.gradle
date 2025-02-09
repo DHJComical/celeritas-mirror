@@ -21,6 +21,23 @@ repositories {
         name "GTNH Maven"
         url "https://nexus.gtnewhorizons.com/repository/public/"
     }
+    exclusiveContent {
+        forRepository {
+            ivy {
+                name = 'CoreTweaks releases'
+                url = 'https://github.com/makamys/CoreTweaks/releases/download/'
+                patternLayout {
+                    artifact '[revision]/[module]-1.7.10-[revision]+nomixin(-[classifier])(.[ext])'
+                }
+                metadataSources {
+                    artifact()
+                }
+            }
+        }
+        filter {
+            includeGroup('CoreTweaks')
+        }
+    }
     mavenCentral()
 }
 
@@ -83,6 +100,7 @@ dependencies {
 
     implementation("io.github.legacymoddingmc:unimixins:0.1.19:dev")
     implementation("com.github.GTNewHorizons:GTNHLib:0.6.8:dev")
+    modImplementation("CoreTweaks:CoreTweaks:0.3.3.2")
 }
 
 processResources {
