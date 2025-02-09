@@ -105,7 +105,7 @@ public abstract class RenderGlobalMixin implements RenderGlobalExtension {
         RenderDevice.enterManagedCode();
 
         try {
-            this.renderer.setupTerrain(((ViewportProvider)camera).sodium$createViewport(), tick, this.frame++, false, false);
+            this.renderer.setupTerrain(((ViewportProvider)camera).sodium$createViewport(), tick, this.frame++, this.mc.thePlayer.noClip, false);
         } finally {
             RenderDevice.exitManagedCode();
         }
