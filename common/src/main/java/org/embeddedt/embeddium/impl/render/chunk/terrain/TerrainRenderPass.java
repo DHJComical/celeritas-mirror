@@ -71,4 +71,9 @@ public class TerrainRenderPass {
     public boolean supportsFragmentDiscard() {
         return this.fragmentDiscard;
     }
+
+    @Override
+    public String toString() {
+        return "TerrainRenderPass[name=" + this.name + "]";
+    }
 }
