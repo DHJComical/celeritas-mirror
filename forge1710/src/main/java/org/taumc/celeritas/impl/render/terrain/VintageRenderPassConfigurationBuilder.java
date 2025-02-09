@@ -7,13 +7,19 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Map;
 
 public class VintageRenderPassConfigurationBuilder {
 
     private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(int pass) {
-        return TerrainRenderPass.builder().setupState(() -> {}).clearState(() -> {});
+        return TerrainRenderPass.builder().setupState(() -> {
+            if (pass == 0) {
+                // Force alpha test to use 0.1F threshold
+                GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
+            }
+        }).clearState(() -> {});
     }
 
     public static RenderPassConfiguration<Integer> build(ChunkVertexType vertexType) {
