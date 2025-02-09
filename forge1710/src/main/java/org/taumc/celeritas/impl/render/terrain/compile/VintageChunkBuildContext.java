@@ -1,27 +1,39 @@
 package org.taumc.celeritas.impl.render.terrain.compile;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
+import org.taumc.celeritas.impl.extensions.TextureMapExtension;
 
 import java.util.Arrays;
 
 public class VintageChunkBuildContext extends ChunkBuildContext {
     public static final int NUM_PASSES = 2;
 
+    private final TextureMapExtension textureAtlas;
+
     public VintageChunkBuildContext(WorldClient world, RenderPassConfiguration renderPassConfiguration) {
         super(renderPassConfiguration);
+        this.textureAtlas = (TextureMapExtension)Minecraft.getMinecraft().getTextureMapBlocks();
     }
 
     private final ChunkVertexEncoder.Vertex[] vertices = ChunkVertexEncoder.Vertex.uninitializedQuad();
 
     public void copyRawBuffer(int[] rawBuffer, int vertexCount, ChunkBuildBuffers buffers, Material material) {
-        var buffer = buffers.get(material).getVertexBuffer(ModelQuadFacing.UNASSIGNED);
+        if (vertexCount == 0) {
+            return;
+        }
+
+        var holder = buffers.get(material);
+        var animatedSpritesList = holder.getSectionContextBundle().getContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES);
+        var buffer = holder.getVertexBuffer(ModelQuadFacing.UNASSIGNED);
 
         // Require
         if ((vertexCount & 0x3) != 0) {
@@ -33,17 +45,26 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
         int ptr = 0;
         int numQuads = vertexCount / 4;
         for (int quadIdx = 0; quadIdx < numQuads; quadIdx++) {
+            float uSum = 0, vSum = 0;
             for (int vIdx = 0; vIdx < 4; vIdx++) {
                 var vertex = celeritasVertices[vIdx];
                 vertex.x = Float.intBitsToFloat(rawBuffer[ptr++]);
                 vertex.y = Float.intBitsToFloat(rawBuffer[ptr++]);
                 vertex.z = Float.intBitsToFloat(rawBuffer[ptr++]);
-                vertex.u = Float.intBitsToFloat(rawBuffer[ptr++]);
-                vertex.v = Float.intBitsToFloat(rawBuffer[ptr++]);
+                float u = Float.intBitsToFloat(rawBuffer[ptr++]);
+                float v = Float.intBitsToFloat(rawBuffer[ptr++]);
+                vertex.u = u;
+                uSum += u;
+                vertex.v = v;
+                vSum += v;
                 vertex.color = rawBuffer[ptr++];
                 vertex.vanillaNormal = rawBuffer[ptr++];
                 vertex.light = rawBuffer[ptr++];
                 vertex.trueNormal = vertex.vanillaNormal;
+            }
+            TextureAtlasSprite sprite = this.textureAtlas.celeritas$findFromUV(uSum * 0.25f, vSum * 0.25f);
+            if (sprite != null && sprite.hasAnimationMetadata()) {
+                animatedSpritesList.add(sprite);
             }
             buffer.push(celeritasVertices, material);
         }

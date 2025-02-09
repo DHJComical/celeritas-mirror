@@ -4,21 +4,26 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSets;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.chunk.Chunk;
 import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.render.chunk.*;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
+import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
 import org.jetbrains.annotations.Nullable;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageRenderSectionBuiltInfo;
 import org.taumc.celeritas.impl.render.terrain.compile.task.ChunkBuilderMeshingTask;
+import org.taumc.celeritas.impl.render.terrain.sprite.SpriteUtil;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 public class VintageRenderSectionManager extends RenderSectionManager {
     private final WorldClient world;
@@ -102,5 +107,36 @@ public class VintageRenderSectionManager extends RenderSectionManager {
 
     public Collection<RenderSection> getSectionsWithGlobalEntities() {
         return ReferenceSets.unmodifiable(this.sectionsWithGlobalEntities);
+    }
+
+    @Override
+    public void tickVisibleRenders() {
+        Iterator<ChunkRenderList> it = this.getRenderLists().iterator();
+
+        while (it.hasNext()) {
+            ChunkRenderList renderList = it.next();
+
+            var region = renderList.getRegion();
+            var iterator = renderList.sectionsWithSpritesIterator();
+
+            if (iterator == null) {
+                continue;
+            }
+
+            while (iterator.hasNext()) {
+                var section = region.getSection(iterator.nextByteAsInt());
+
+                if (section == null) {
+                    continue;
+                }
+
+                var sprites = (List<TextureAtlasSprite>)section.getContextOrDefault(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES);
+
+                //noinspection ForLoopReplaceableByForEach
+                for (int i = 0; i < sprites.size(); i++) {
+                    SpriteUtil.markSpriteActive(sprites.get(i));
+                }
+            }
+        }
     }
 }
