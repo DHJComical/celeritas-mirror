@@ -104,3 +104,11 @@ jar {
         ])
     }
 }
+
+tasks.named("remapJar") {
+    mixinRemap {
+        enableBaseMixin()
+        enableMixinExtra()
+        disableRefmap() // like fabric-loom 1.6
+    }
+}

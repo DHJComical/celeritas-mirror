@@ -8,12 +8,12 @@ import java.nio.FloatBuffer;
 
 @Mixin(ActiveRenderInfo.class)
 public interface ActiveRenderInfoAccessor {
-    @Accessor("PROJECTION")
+    @Accessor("projection")
     static FloatBuffer getProjectionMatrix() {
         throw new AssertionError();
     }
 
-    @Accessor("MODELVIEW")
+    @Accessor("modelview")
     static FloatBuffer getModelViewMatrix() {
         throw new AssertionError();
     }

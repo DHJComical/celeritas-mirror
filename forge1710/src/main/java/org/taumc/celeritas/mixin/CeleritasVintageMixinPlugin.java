@@ -15,11 +15,8 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.nio.file.*;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
@@ -59,6 +56,7 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
+        List<FileSystem> fileSystemsToClose = new ArrayList<>();
         List<Path> rootPaths = Stream.of("org.taumc.celeritas.mixin")
                 .flatMap(str -> {
                     URL url = CeleritasVintageMixinPlugin.class.getResource("/" + str.replace('.', '/'));
@@ -66,7 +64,15 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
                         return Stream.empty();
                     }
                     try {
-                        return Stream.of(Path.of(url.toURI()));
+                        var uri = url.toURI();
+                        try {
+                            return Stream.of(Path.of(uri));
+                        } catch (FileSystemNotFoundException e) {
+                            Map<String, String> env = new HashMap<>();
+                            env.put("create", "true");
+                            fileSystemsToClose.add(FileSystems.newFileSystem(uri, env));
+                            return Stream.of(Path.of(uri));
+                        }
                     } catch (Exception e) {
                         LOGGER.error("Exception making URI", e);
                         return Stream.empty();
@@ -82,10 +88,16 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
                         .map(path -> mixinClassify(rootPath, path))
                         .forEach(possibleMixinClasses::add);
             } catch(IOException e) {
-                e.printStackTrace();
+                LOGGER.error("Error reading path", e);
             }
         }
         LOGGER.info("Found {} mixin classes", possibleMixinClasses.size());
+        for (var fs : fileSystemsToClose) {
+            try {
+                fs.close();
+            } catch(IOException ignored) {
+            }
+        }
         return List.copyOf(possibleMixinClasses);
     }
 
