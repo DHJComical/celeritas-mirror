@@ -373,6 +373,9 @@ public abstract class RenderSectionManager {
         this.submitRebuildTasks(updateImmediately ? blockingRebuilds : deferredSorts, ChunkUpdateType.SORT);
 
         blockingRebuilds.awaitCompletion(this.builder);
+
+        // Tick singlethreaded rebuilds
+        this.builder.tick();
     }
 
     public void uploadChunks() {

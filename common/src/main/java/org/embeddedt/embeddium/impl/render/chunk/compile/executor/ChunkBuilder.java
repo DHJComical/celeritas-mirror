@@ -9,6 +9,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.GlobalChunkBuildContext
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -42,17 +43,19 @@ public class ChunkBuilder {
     public ChunkBuilder(ManagedBlocker managedBlocker, Supplier<ChunkBuildContext> contextSupplier, int requestedThreads) {
         GlobalChunkBuildContext.setMainThread();
 
-        int count = getThreadCount(requestedThreads);
+        if (requestedThreads >= 0) {
+            int count = getThreadCount(requestedThreads);
 
-        for (int i = 0; i < count; i++) {
-            ChunkBuildContext context = contextSupplier.get();
-            WorkerRunnable worker = new WorkerRunnable(context);
+            for (int i = 0; i < count; i++) {
+                ChunkBuildContext context = contextSupplier.get();
+                WorkerRunnable worker = new WorkerRunnable(context);
 
-            WorkerThread thread = new WorkerThread(worker, "Chunk Render Task Executor #" + i, context);
-            thread.setPriority(Math.max(0, Thread.NORM_PRIORITY - 2));
-            thread.start();
+                WorkerThread thread = new WorkerThread(worker, "Chunk Render Task Executor #" + i, context);
+                thread.setPriority(Math.max(0, Thread.NORM_PRIORITY - 2));
+                thread.start();
 
-            this.threads.add(thread);
+                this.threads.add(thread);
+            }
         }
 
         LOGGER.info("Started {} worker threads", this.threads.size());
@@ -67,7 +70,7 @@ public class ChunkBuilder {
      * spawn more tasks than the budget allows, it will block until resources become available.
      */
     public int getSchedulingBudget() {
-        return Math.max(0, (this.threads.size() * TASK_QUEUE_LIMIT_PER_WORKER) - this.queue.size());
+        return Math.max(0, (Math.max(1, this.threads.size()) * TASK_QUEUE_LIMIT_PER_WORKER) - this.queue.size());
     }
 
     /**
@@ -153,6 +156,10 @@ public class ChunkBuilder {
             return;
         }
 
+        executeJobWithLocalContext(job);
+    }
+
+    private void executeJobWithLocalContext(ChunkJob job) {
         var localContext = this.localContext;
         GlobalChunkBuildContext.bindMainThread(localContext);
 
@@ -161,6 +168,18 @@ public class ChunkBuilder {
         } finally {
             GlobalChunkBuildContext.bindMainThread(null);
             localContext.cleanup();
+        }
+    }
+
+    public void tick() {
+        // Don't need to run jobs on the main thread if there are worker threads
+        if (!this.threads.isEmpty()) {
+            return;
+        }
+
+        while (!this.queue.isEmpty()) {
+            var job = Objects.requireNonNull(this.queue.pollJob());
+            executeJobWithLocalContext(job);
         }
     }
 

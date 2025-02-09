@@ -32,6 +32,15 @@ class ChunkJobQueue {
     }
 
     @Nullable
+    public ChunkJob pollJob() {
+        if (this.isRunning() && this.semaphore.tryAcquire()) {
+            return this.getNextTask();
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
     public ChunkJob waitForNextJob() throws InterruptedException {
         if (!this.isRunning()) {
             return null;
