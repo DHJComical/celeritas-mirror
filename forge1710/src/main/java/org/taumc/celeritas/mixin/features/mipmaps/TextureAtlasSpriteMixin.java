@@ -26,7 +26,7 @@ public class TextureAtlasSpriteMixin {
 
     @Inject(method = "generateMipmaps", at = @At("HEAD"))
     private void processSprite(int level, CallbackInfo ci) {
-        if (this.framesTextureData.isEmpty()) {
+        if (this.framesTextureData.isEmpty() || this.framesTextureData.getFirst() == null) {
             return;
         }
         embeddium$processTransparentImages(this.framesTextureData.getFirst()[0], level > 0 && !iconName.contains("leaves"));
