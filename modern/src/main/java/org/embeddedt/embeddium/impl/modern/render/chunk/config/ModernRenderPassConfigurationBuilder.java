@@ -20,7 +20,7 @@ public class ModernRenderPassConfigurationBuilder {
 
     public static RenderPassConfiguration<RenderType> build(ChunkVertexType vertexType) {
         // First, build the main passes
-        TerrainRenderPass solidPass, cutoutMippedPass, translucentPass;
+        TerrainRenderPass solidPass, cutoutMippedPass, translucentPass, tripwirePass;
 
         solidPass = builderForRenderType(RenderType.solid())
                 .name("solid")
@@ -39,6 +39,14 @@ public class ModernRenderPassConfigurationBuilder {
                 .useTranslucencySorting(Celeritas.canApplyTranslucencySorting())
                 .build();
 
+        //? if >=1.16 {
+        tripwirePass = builderForRenderType(RenderType.tripwire())
+                .name("tripwire")
+                .fragmentDiscard(true)
+                .useReverseOrder(true)
+                .build();
+        //?}
+
         ImmutableListMultimap.Builder<RenderType, TerrainRenderPass> vanillaRenderStages = ImmutableListMultimap.builder();
 
         // Build the materials for the vanilla render passes
@@ -50,13 +58,17 @@ public class ModernRenderPassConfigurationBuilder {
         vanillaRenderStages.put(RenderType.solid(), solidPass);
         vanillaRenderStages.put(RenderType.translucent(), translucentPass);
 
+        //? if >=1.16 {
+        tripwireMaterial = new Material(tripwirePass, AlphaCutoffParameter.ONE_TENTH, false);
+        vanillaRenderStages.put(RenderType.tripwire(), tripwirePass);
+        //? }
+
         if(Celeritas.options().performance.useRenderPassConsolidation) {
             cutoutMaterial = new Material(cutoutMippedPass, AlphaCutoffParameter.ONE_TENTH, false);
-            tripwireMaterial = cutoutMippedMaterial;
             // Render cutout immediately after solid geometry
             vanillaRenderStages.put(RenderType.solid(), cutoutMippedPass);
         } else {
-            TerrainRenderPass cutoutPass, tripwirePass;
+            TerrainRenderPass cutoutPass;
 
             cutoutPass = builderForRenderType(RenderType.cutout())
                     .name("cutout")
@@ -64,21 +76,9 @@ public class ModernRenderPassConfigurationBuilder {
                     .useReverseOrder(false)
                     .build();
 
-            //? if >=1.16 {
-            tripwirePass = builderForRenderType(RenderType.tripwire())
-                    .name("tripwire")
-                    .fragmentDiscard(true)
-                    .useReverseOrder(false)
-                    .build();
-            //?}
-
             cutoutMaterial = new Material(cutoutPass, AlphaCutoffParameter.ONE_TENTH, false);
-            //? if >=1.16
-            tripwireMaterial = new Material(tripwirePass, AlphaCutoffParameter.ONE_TENTH, false);
             vanillaRenderStages.put(RenderType.cutout(), cutoutPass);
             vanillaRenderStages.put(RenderType.cutoutMipped(), cutoutMippedPass);
-            //? if >=1.16
-            vanillaRenderStages.put(RenderType.tripwire(), tripwirePass);
         }
 
         // Now build the material map
