@@ -20,12 +20,12 @@ import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks.ChunkBuilderMeshingTask;
 import org.embeddedt.embeddium.impl.modern.render.chunk.config.ModernRenderPassConfigurationBuilder;
-import org.embeddedt.embeddium.impl.render.chunk.PositionedViewport;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
@@ -78,10 +78,10 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     //?}
 
     @Override
-    protected boolean shouldUseOcclusionCulling(PositionedViewport positionedViewport, boolean spectator) {
+    protected boolean shouldUseOcclusionCulling(Viewport viewport, boolean spectator) {
         final boolean useOcclusionCulling;
-        var camBlockPos = positionedViewport.blockPosition();
-        BlockPos origin = new BlockPos(camBlockPos.x, camBlockPos.y, camBlockPos.z);
+        var camBlockPos = viewport.getBlockCoord();
+        BlockPos origin = new BlockPos(camBlockPos.x(), camBlockPos.y(), camBlockPos.z());
 
         if (spectator && this.world.getBlockState(origin)
                 .isSolidRender(/*? if <1.21.2 {*/this.world, origin/*?}*/))

@@ -13,6 +13,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
 import org.jetbrains.annotations.Nullable;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
@@ -50,11 +51,11 @@ public class VintageRenderSectionManager extends RenderSectionManager {
     }
 
     @Override
-    protected boolean shouldUseOcclusionCulling(PositionedViewport positionedViewport, boolean spectator) {
+    protected boolean shouldUseOcclusionCulling(Viewport positionedViewport, boolean spectator) {
         final boolean useOcclusionCulling;
-        var camBlockPos = positionedViewport.blockPosition();
+        var camBlockPos = positionedViewport.getBlockCoord();
 
-        useOcclusionCulling = !spectator || !this.world.getBlock(camBlockPos.x, camBlockPos.y, camBlockPos.z).isOpaqueCube();
+        useOcclusionCulling = !spectator || !this.world.getBlock(camBlockPos.x(), camBlockPos.y(), camBlockPos.z()).isOpaqueCube();
 
         return useOcclusionCulling;
     }

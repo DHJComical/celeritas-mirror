@@ -5,7 +5,6 @@ import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.DestroyBlockProgress;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.entity.Entity;
 import net.minecraft.profiler.Profiler;
@@ -16,7 +15,6 @@ import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
-import org.embeddedt.embeddium.impl.render.chunk.PositionedViewport;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
@@ -29,12 +27,9 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.*;
 import org.joml.Matrix4f;
-import org.joml.Vector3d;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
 import org.taumc.celeritas.CeleritasVintage;
 import org.taumc.celeritas.impl.extensions.RenderGlobalExtension;
-import org.taumc.celeritas.impl.render.terrain.VintageRenderSectionManager;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageRenderSectionBuiltInfo;
 import org.taumc.celeritas.mixin.core.terrain.ActiveRenderInfoAccessor;
 
@@ -213,9 +208,7 @@ public class CeleritasWorldRenderer {
         if (this.renderSectionManager.needsUpdate()) {
             profiler.endStartSection("chunk_render_lists");
 
-            var camPosition = new Vector3d(x, y, z);
-
-            this.renderSectionManager.update(new PositionedViewport(viewport, camPosition), frame, spectator);
+            this.renderSectionManager.update(viewport, frame, spectator);
         }
 
         if (updateChunksImmediately) {

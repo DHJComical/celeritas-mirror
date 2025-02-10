@@ -28,6 +28,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
+import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.embeddedt.embeddium.impl.util.iterator.ByteIterator;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
@@ -37,6 +38,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
+import org.joml.Vector3ic;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -73,7 +75,7 @@ public abstract class RenderSectionManager {
 
     private boolean needsUpdate;
 
-    protected @Nullable Vector3i lastCameraPosition;
+    protected @Nullable Vector3ic lastCameraPosition;
     protected Vector3d cameraPosition = new Vector3d();
 
     protected boolean translucencySorting;
@@ -138,9 +140,10 @@ public abstract class RenderSectionManager {
         return false;
     }
 
-    public void update(PositionedViewport positionedViewport, int frame, boolean spectator) {
-        this.lastCameraPosition = positionedViewport.blockPosition();
-        this.cameraPosition = positionedViewport.position();
+    public void update(Viewport positionedViewport, int frame, boolean spectator) {
+        this.lastCameraPosition = positionedViewport.getBlockCoord();
+        var transform = positionedViewport.getTransform();
+        this.cameraPosition = new Vector3d(transform.x, transform.y, transform.z);
 
         this.createTerrainRenderList(positionedViewport, frame, spectator);
 
@@ -232,15 +235,15 @@ public abstract class RenderSectionManager {
 
     protected abstract boolean shouldRespectUpdateTaskQueueSizeLimit();
 
-    private void createTerrainRenderList(PositionedViewport positionedViewport, int frame, boolean spectator) {
+    private void createTerrainRenderList(Viewport viewport, int frame, boolean spectator) {
         this.resetRenderLists();
 
         final var searchDistance = this.getSearchDistance();
-        final var useOcclusionCulling = this.shouldUseOcclusionCulling(positionedViewport, spectator);
+        final var useOcclusionCulling = this.shouldUseOcclusionCulling(viewport, spectator);
 
         var visitor = new VisibleChunkCollector(frame, !this.shouldRespectUpdateTaskQueueSizeLimit());
 
-        this.occlusionCuller.findVisible(visitor, positionedViewport.viewport(), searchDistance, useOcclusionCulling, frame);
+        this.occlusionCuller.findVisible(visitor, viewport, searchDistance, useOcclusionCulling, frame);
 
         this.setRenderLists(visitor.createRenderLists());
         this.rebuildLists = visitor.getRebuildLists();
@@ -263,7 +266,7 @@ public abstract class RenderSectionManager {
         return distance;
     }
 
-    protected abstract boolean shouldUseOcclusionCulling(PositionedViewport positionedViewport, boolean spectator);
+    protected abstract boolean shouldUseOcclusionCulling(Viewport viewport, boolean spectator);
 
     private void resetRenderLists() {
         this.setRenderLists(SortedRenderLists.empty());

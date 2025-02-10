@@ -1,7 +1,6 @@
 package org.embeddedt.embeddium.impl.render;
 
 import com.google.common.collect.Iterators;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 //? if >=1.16 {
 import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
@@ -16,7 +15,6 @@ import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
-import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
@@ -25,9 +23,7 @@ import org.embeddedt.embeddium.impl.modern.render.chunk.ChunkRenderMatricesBuild
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
-import org.embeddedt.embeddium.impl.render.chunk.PositionedViewport;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
-import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkStatus;
@@ -51,7 +47,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -244,9 +239,7 @@ public class CeleritasWorldRenderer {
         if (this.renderSectionManager.needsUpdate() || isShadowPass) {
             profiler.popPush("chunk_render_lists");
 
-            var camPosition = new Vector3d(camera.getPosition().x, camera.getPosition().y, camera.getPosition().z);
-
-            this.renderSectionManager.update(new PositionedViewport(viewport, camPosition), frame, spectator);
+            this.renderSectionManager.update(viewport, frame, spectator);
         }
 
         if (updateChunksImmediately) {
