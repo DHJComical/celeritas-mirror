@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.world.biome;
 
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceFunction;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.core.BlockPos;
 import org.embeddedt.embeddium.impl.util.color.BoxBlur;
@@ -29,6 +30,8 @@ public class BiomeColorCache {
 
     private final int sizeXZ, sizeY;
 
+    private final Reference2ReferenceFunction<ColorResolver, Slice[]> sliceInitializer;
+
     public BiomeColorCache(BiomeSlice biomeData, int blendRadius) {
         this.biomeData = biomeData;
         this.blendRadius = Math.min(7, blendRadius);
@@ -40,6 +43,7 @@ public class BiomeColorCache {
         this.populateStamp = 1;
 
         this.tempColorBuffer = new ColorBuffer(sizeXZ, sizeXZ);
+        this.sliceInitializer = this::initializeSlices;
     }
 
     public void update(ChunkRenderContext context) {
@@ -67,11 +71,7 @@ public class BiomeColorCache {
         var relY = Mth.clamp(blockY, this.minY, this.maxY) - this.minY;
         var relZ = Mth.clamp(blockZ, this.minZ, this.maxZ) - this.minZ;
 
-        if (!this.slices.containsKey(resolver)) {
-            this.initializeSlices(resolver);
-        }
-
-        var slice = this.slices.get(resolver)[relY];
+        var slice = this.slices.computeIfAbsent(resolver, this.sliceInitializer)[relY];
 
         if (slice.lastPopulateStamp < this.populateStamp) {
             this.updateColorBuffers(relY, resolver, slice);
@@ -82,13 +82,14 @@ public class BiomeColorCache {
         return buffer.get(relX, relZ);
     }
 
-    private void initializeSlices(ColorResolver resolver) {
+    private Slice[] initializeSlices(Object resolver) {
         var slice = new Slice[this.sizeY];
-        this.slices.put(resolver, slice);
 
         for (int y = 0; y < this.sizeY; y++) {
             slice[y] = new Slice(this.sizeXZ);
         }
+
+        return slice;
     }
 
     private void updateColorBuffers(int relY, ColorResolver resolver, Slice slice) {
