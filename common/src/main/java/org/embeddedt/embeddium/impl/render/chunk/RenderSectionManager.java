@@ -187,14 +187,7 @@ public abstract class RenderSectionManager {
             while (sectionIterator.hasNext()) {
                 var section = region.getSection(sectionIterator.nextByteAsInt());
 
-                if (section == null || !section.isBuilt()) {
-                    // Nonexistent/unbuilt sections are not relevant
-                    continue;
-                }
-
-                boolean hasTranslucentData = section.isNeedsDynamicTranslucencySorting();
-
-                if (!hasTranslucentData) {
+                if (section == null || !section.isNeedsDynamicTranslucencySorting()) {
                     // Sections without sortable translucent data are not relevant
                     continue;
                 }
