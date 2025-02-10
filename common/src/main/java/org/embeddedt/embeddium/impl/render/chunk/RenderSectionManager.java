@@ -390,8 +390,6 @@ public abstract class RenderSectionManager {
         for (var result : results) {
             result.delete();
         }
-
-        this.needsUpdate = true;
     }
 
     public void tickVisibleRenders() {
@@ -405,6 +403,10 @@ public abstract class RenderSectionManager {
 
         for (var result : filtered) {
             if(result.info != null) {
+                // The chunk graph must be rebuilt whenever a section is remeshed, in order to consider changes in
+                // geometry, visibility data, etc.
+                this.needsUpdate = true;
+
                 this.updateSectionInfo(result.render, result.info);
                 if (this.translucencySorting) {
                     // We only change the translucency info on full rebuilds, as sorts can keep using the same data
