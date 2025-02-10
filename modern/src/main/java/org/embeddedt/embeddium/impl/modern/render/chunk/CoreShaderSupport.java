@@ -10,8 +10,6 @@ public class CoreShaderSupport {
     public static GlProgram<ChunkShaderInterface> createCeleritasCoreShader(ChunkShaderOptions options) {
         String shaderName = "rendertype_" + options.pass().name();
 
-        RenderSystem.getShader().getFragmentProgram().getId();
-
         throw new UnsupportedOperationException("incomplete");
     }
 }

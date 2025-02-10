@@ -61,7 +61,7 @@ public class ModernRenderPassConfigurationBuilder {
         //? if >=1.16 {
         tripwireMaterial = new Material(tripwirePass, AlphaCutoffParameter.ONE_TENTH, false);
         vanillaRenderStages.put(RenderType.tripwire(), tripwirePass);
-        //? }
+        //?}
 
         if(Celeritas.options().performance.useRenderPassConsolidation) {
             cutoutMaterial = new Material(cutoutMippedPass, AlphaCutoffParameter.ONE_TENTH, false);

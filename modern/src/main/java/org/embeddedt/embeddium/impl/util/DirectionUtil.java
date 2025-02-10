@@ -25,7 +25,10 @@ public class DirectionUtil {
     static {
         Direction[] directions = Direction.values();
         for (int i = 0; i < directions.length; i++) {
+            //? if <1.21.5-alpha.25.6.a {
             Vec3i normal = directions[i].getNormal();
+            //?} else
+            /*Vec3i normal = directions[i].getUnitVec3i();*/
             PACKED_NORMALS[i] = NormI8.pack(normal.getX(), normal.getY(), normal.getZ());
         }
     }

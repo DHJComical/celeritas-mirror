@@ -15,7 +15,11 @@ public interface CachingPoseStack {
      * @return the last pose of the stack without marking it as escaped
      */
     PoseStack.Pose celeritas$last();
-    //?}
+    //?} else {
+    /*default PoseStack.Pose celeritas$last() {
+        return ((PoseStack)this).last();
+    }
+    *///?}
 
     interface Pose {
         boolean celeritas$hasEscaped();

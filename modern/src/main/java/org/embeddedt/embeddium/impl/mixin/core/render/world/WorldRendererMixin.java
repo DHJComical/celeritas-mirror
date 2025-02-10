@@ -298,7 +298,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     //?} else {
     /*@Overwrite
     private void renderBlockEntities(PoseStack stack, MultiBufferSource.BufferSource bufferSource, MultiBufferSource.BufferSource bufferSource2, Camera camera, float partialTick) {
-        this.renderer.renderBlockEntities(new PoseStack(), this.renderBuffers, this.destructionProgress, camera, partialTick);
+        this.renderer.renderBlockEntities(new PoseStack(), this.renderBuffers, this.destructionProgress, camera, partialTick, null);
     }
     *///?}
 
