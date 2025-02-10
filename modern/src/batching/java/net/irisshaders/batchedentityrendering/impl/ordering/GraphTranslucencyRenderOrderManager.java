@@ -151,14 +151,18 @@ public class GraphTranslucencyRenderOrderManager implements RenderOrderManager {
             }
 
             if (graph.getVertexCount() == 0) {
+                // Nothing to add
                 continue;
-            }
+            } else if (graph.getVertexCount() == 1) {
+                // Single vertex to add, no need to toposort
+                allLayers.add(graph.vertices().iterator().next());
+            } else {
+                List<RenderType> renderTypesInReverseOrder = Digraphs.toposort(graph, true);
 
-            List<RenderType> renderTypesInReverseOrder = Digraphs.toposort(graph, true);
-
-            // Add in reverse order
-            for (int i = renderTypesInReverseOrder.size() - 1; i >= 0; i--) {
-                allLayers.add(renderTypesInReverseOrder.get(i));
+                // Add in reverse order (using this rather than descending=false avoids extra effort to reverse the list)
+                for (int i = renderTypesInReverseOrder.size() - 1; i >= 0; i--) {
+                    allLayers.add(renderTypesInReverseOrder.get(i));
+                }
             }
 		}
 
