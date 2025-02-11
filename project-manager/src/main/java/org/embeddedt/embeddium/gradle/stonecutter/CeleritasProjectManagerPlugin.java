@@ -69,7 +69,7 @@ public class CeleritasProjectManagerPlugin implements Plugin<Settings> {
         // Create the versioned subprojects under modern
         scSettings.create(projectSettings.project(":modern"));
         // Create the 1.12.2 subproject
-        projectSettings.include("forge122");
+        //projectSettings.include("forge122");
         // Create the 1.7.10 subproject
         projectSettings.include("forge1710");
     }
