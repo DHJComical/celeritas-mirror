@@ -21,6 +21,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
+//? if <1.21.2
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.spongepowered.asm.mixin.Mixin;
@@ -38,6 +39,7 @@ public class MixinGameRenderer {
 	@Shadow
 	private boolean renderHand;
 
+    //? if <1.21.2 {
     @Inject(method = { "*()Lnet/minecraft/client/renderer/ShaderInstance;", "*()Lnet/minecraft/class_5944;" }, at = @At("RETURN"), cancellable = true, remap = false)
     private static void iris$overrideShader(CallbackInfoReturnable<ShaderInstance> cir) {
         var shader = cir.getReturnValue();
@@ -51,6 +53,7 @@ public class MixinGameRenderer {
             }
         }
     }
+    //?}
 
     @Inject(method = "render", at = @At("HEAD"))
     private void iris$startFrame(CallbackInfo ci,
@@ -88,6 +91,7 @@ public class MixinGameRenderer {
 		Iris.getPipelineManager().getPipeline().ifPresent(WorldRenderingPipeline::finalizeGameRendering);
 	}
 
+    //? if <1.21.2 {
 	@Redirect(method = "reloadShaders", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList()Ljava/util/ArrayList;"))
 	private ArrayList<Program> iris$reloadGeometryShaders() {
 		ArrayList<Program> programs = Lists.newArrayList();
@@ -96,4 +100,5 @@ public class MixinGameRenderer {
 		programs.addAll(IrisProgramTypes.TESS_EVAL.getPrograms().values());
 		return programs;
 	}
+    //?}
 }
