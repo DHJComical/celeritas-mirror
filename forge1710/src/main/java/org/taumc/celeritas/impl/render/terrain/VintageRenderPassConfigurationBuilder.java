@@ -56,10 +56,8 @@ public class VintageRenderPassConfigurationBuilder {
         renderTypeToMaterialMap.put(1, translucentMaterial);
 
         var vanillaRenderStageMap = vanillaRenderStages.build();
-        var allPasses = vanillaRenderStageMap.values().stream().distinct().toList();
 
         return new RenderPassConfiguration<>(vertexType,
-                allPasses,
                 renderTypeToMaterialMap,
                 vanillaRenderStageMap.asMap(),
                 cutoutMippedMaterial,

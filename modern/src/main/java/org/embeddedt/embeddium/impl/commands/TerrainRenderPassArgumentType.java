@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 public class TerrainRenderPassArgumentType implements ArgumentType<TerrainRenderPass> {
     private static final List<String> EXAMPLES = Arrays.asList("solid", "translucent");
@@ -30,17 +31,20 @@ public class TerrainRenderPassArgumentType implements ArgumentType<TerrainRender
         return context.getArgument(name, TerrainRenderPass.class);
     }
 
+    private static Stream<TerrainRenderPass> getAllRenderPasses() {
+        return CeleritasWorldRenderer.instance().getRenderPassConfiguration().vanillaRenderStages().values().stream().flatMap(Collection::stream).distinct();
+    }
+
     @Override
     public TerrainRenderPass parse(final StringReader reader) throws CommandSyntaxException {
         String word = reader.readUnquotedString();
-        return CeleritasWorldRenderer.instance().getRenderPassConfiguration().renderPasses()
-                .stream().filter(pass -> pass.name().equals(word)).findFirst()
+        return getAllRenderPasses().filter(pass -> pass.name().equals(word)).findFirst()
                 .orElseThrow(UNKNOWN_PASS::create);
     }
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-        return SharedSuggestionProvider.suggest(() -> CeleritasWorldRenderer.instance().getRenderPassConfiguration().renderPasses().stream().map(TerrainRenderPass::name).iterator(), builder);
+        return SharedSuggestionProvider.suggest(() -> getAllRenderPasses().map(TerrainRenderPass::name).iterator(), builder);
     }
 
     @Override

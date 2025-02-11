@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Objects;
 
 public record RenderPassConfiguration<R>(ChunkVertexType vertexType,
-                                      List<TerrainRenderPass> renderPasses,
                                       Map<R, Material> chunkRenderTypeToMaterialMap,
                                       Map<R, Collection<TerrainRenderPass>> vanillaRenderStages,
                                       Material defaultSolidMaterial,
