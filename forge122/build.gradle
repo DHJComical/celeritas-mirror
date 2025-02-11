@@ -1,3 +1,11 @@
+
+plugins {
+    id "com.cinnober.gradle.semver-git" version "3.0.0" apply false
+}
+
+group = "org.embeddedt"
+ext.snapshotSuffix = 'beta.<count>'
+apply plugin: 'com.cinnober.gradle.semver-git'
 apply plugin: 'xyz.wagyourtail.unimined'
 
 repositories {
@@ -9,8 +17,45 @@ repositories {
         name = "sponge"
         url = "https://repo.spongepowered.org/maven"
     }
+    maven {
+        name "GTCEu Maven"
+        url "https://maven.gtceu.com/"
+    }
+    maven {
+        url 'https://maven.cleanroommc.com'
+    }
+    maven {
+        name "GTNH Maven"
+        url "https://nexus.gtnewhorizons.com/repository/public/"
+    }
+    maven {
+        url = uri("https://files.prismlauncher.org/maven")
+        metadataSources { artifact() }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                url "https://cursemaven.com"
+            }
+        }
+        filter {
+            includeGroup "curse.maven"
+        }
+    }
+    maven {
+        // location of the maven that hosts JEI files
+        name = "Progwml6 maven"
+        url = "https://dvs1.progwml6.com/files/maven/"
+    }
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
     mavenCentral()
 }
+
+archivesBaseName = "celeritas-forge-1.12.2"
 
 evaluationDependsOn(":common")
 
@@ -20,16 +65,33 @@ unimined.minecraft {
     version "1.12.2"
 
     mappings {
+        searge()
         mcp("stable", "39-1.12")
     }
 
-    cleanroom {
-        loader "0.2.2-alpha"
+    minecraftForge {
+        loader "14.23.5.2860"
         mixinConfig "mixins.celeritas.json"
         accessTransformer(file("src/main/resources/META-INF/celeritas_at.cfg"))
     }
 
     runs.config("client") {
+        javaVersion = JavaVersion.VERSION_21
+        mainClass = "com.gtnewhorizons.retrofuturabootstrap.Main"
+        jvmArgs += [
+                "-Dfile.encoding=UTF-8",
+                "-Djava.system.class.loader=com.gtnewhorizons.retrofuturabootstrap.RfbSystemClassLoader",
+                "-Djava.security.manager=allow", "--add-opens", "java.base/jdk.internal.loader=ALL-UNNAMED", "--add-opens",
+                "java.base/java.net=ALL-UNNAMED", "--add-opens", "java.base/java.nio=ALL-UNNAMED", "--add-opens",
+                "java.base/java.io=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens",
+                "java.base/java.lang.reflect=ALL-UNNAMED", "--add-opens", "java.base/java.text=ALL-UNNAMED", "--add-opens",
+                "java.base/java.util=ALL-UNNAMED", "--add-opens", "java.base/jdk.internal.reflect=ALL-UNNAMED", "--add-opens",
+                "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens", "jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED,java.naming",
+                "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED", "--add-opens", "java.desktop/sun.awt.image=ALL-UNNAMED",
+                "--add-opens", "java.desktop/com.sun.imageio.plugins.png=ALL-UNNAMED", "--add-opens",
+                "jdk.dynalink/jdk.dynalink.beans=ALL-UNNAMED", "--add-opens",
+                "java.sql.rowset/javax.sql.rowset.serial=ALL-UNNAMED"
+        ]
         systemProperty("fml.coreMods.load", "org.taumc.celeritas.core.CeleritasLoadingPlugin")
     }
 }
@@ -38,6 +100,22 @@ dependencies {
     implementation("org.joml:joml:1.10.5")
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
+    implementation("io.github.twilightflower:lwjgl3ify:1.0.1")
+    implementation("io.github.twilightflower:lwjgl3ify:1.0.1:forgePatches")
+    implementation("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.7") {
+        exclude group: 'org.apache.logging.log4j'
+    }
+    def lwjglVersion = "3.3.3"
+    implementation "org.lwjgl:lwjgl:${lwjglVersion}"
+    implementation "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
+    implementation "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
+    implementation "org.lwjgl:lwjgl-stb:${lwjglVersion}"
+    implementation "org.lwjgl:lwjgl:${lwjglVersion}:natives-linux"
+    implementation "org.lwjgl:lwjgl-opengl:${lwjglVersion}:natives-linux"
+    implementation "org.lwjgl:lwjgl-glfw:${lwjglVersion}:natives-linux"
+    implementation "org.lwjgl:lwjgl-stb:${lwjglVersion}:natives-linux"
+
+    implementation("zone.rong:mixinbooter:10.5")
 }
 
 processResources {
@@ -54,7 +132,16 @@ jar {
                 "FMLCorePlugin": "org.taumc.celeritas.core.CeleritasLoadingPlugin",
                 "FMLCorePluginContainsFMLMod": "true",
                 "FMLAT": "celeritas_at.cfg",
-                "ForceLoadAsMod": "true"
+                "ForceLoadAsMod": "true",
+                "Lwjgl3ify-Aware": "true"
         ])
+    }
+}
+
+tasks.named("remapJar") {
+    mixinRemap {
+        enableBaseMixin()
+        enableMixinExtra()
+        disableRefmap() // like fabric-loom 1.6
     }
 }

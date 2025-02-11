@@ -12,8 +12,8 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
-import org.lwjgl3.opengl.GL11C;
-import org.lwjgl3.system.MemoryUtil;
+import org.lwjgl.opengl.GL11C;
+import org.lwjgl.system.MemoryUtil;
 import org.taumc.celeritas.impl.world.WorldSlice;
 
 import java.nio.ByteBuffer;

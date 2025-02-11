@@ -1,6 +1,7 @@
 package org.taumc.celeritas.impl.render.terrain.compile.task;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -116,7 +117,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
         buildContext.convertVanillaDataToCeleritasData(buffers);
 
-        Map<TerrainRenderPass, BuiltSectionMeshParts> meshes = BuiltSectionMeshParts.groupFromBuildBuffers(buffers,(float)camera.x - minX, (float)camera.y - minY, (float)camera.z - minZ);
+        Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes = BuiltSectionMeshParts.groupFromBuildBuffers(buffers,(float)camera.x - minX, (float)camera.y - minY, (float)camera.z - minZ);
 
         if (!meshes.isEmpty()) {
             renderData.setContext(VintageRenderSectionBuiltInfo.HAS_BLOCK_GEOMETRY, true);

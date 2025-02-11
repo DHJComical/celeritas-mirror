@@ -19,7 +19,6 @@ import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
-import org.embeddedt.embeddium.impl.render.chunk.PositionedViewport;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
@@ -216,7 +215,7 @@ public class CeleritasWorldRenderer {
 
             var camPosition = new Vector3d(x, y, z);
 
-            this.renderSectionManager.update(new PositionedViewport(viewport, camPosition), frame, spectator);
+            this.renderSectionManager.update(viewport, frame, spectator);
         }
 
         if (updateChunksImmediately) {

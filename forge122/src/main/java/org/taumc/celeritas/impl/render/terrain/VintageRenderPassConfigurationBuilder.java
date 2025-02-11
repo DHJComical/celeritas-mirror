@@ -65,7 +65,6 @@ public class VintageRenderPassConfigurationBuilder {
         var allPasses = vanillaRenderStageMap.values().stream().distinct().toList();
 
         return new RenderPassConfiguration<>(vertexType,
-                allPasses,
                 renderTypeToMaterialMap,
                 vanillaRenderStageMap.asMap(),
                 solidMaterial,

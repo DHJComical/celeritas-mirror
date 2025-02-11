@@ -6,10 +6,10 @@ import org.embeddedt.embeddium.impl.render.chunk.lists.RenderVisualsService;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageRenderSectionBuiltInfo;
 
 public class VintageRenderVisualsService implements RenderVisualsService {
-    private static final int MODERN_HAS_GEO = VintageRenderSectionBuiltInfo.HAS_BLOCK_GEOMETRY.id;
-    private static final int MODERN_HAS_SPRITE = VintageRenderSectionBuiltInfo.ANIMATED_SPRITES.id;
-    private static final int MODERN_HAS_CULLED_BE = VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES.id;
-    private static final int MODERN_HAS_GLOBAL_BE = VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES.id;
+    private static final int MODERN_HAS_GEO = VintageRenderSectionBuiltInfo.HAS_BLOCK_GEOMETRY.id();
+    private static final int MODERN_HAS_SPRITE = VintageRenderSectionBuiltInfo.ANIMATED_SPRITES.id();
+    private static final int MODERN_HAS_CULLED_BE = VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES.id();
+    private static final int MODERN_HAS_GLOBAL_BE = VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES.id();
 
     @Override
     public int getVisualBitmaskForSection(ContextBundle<RenderSection> renderData) {

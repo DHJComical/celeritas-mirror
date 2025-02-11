@@ -14,6 +14,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3i;
@@ -32,7 +33,7 @@ public class VintageRenderSectionManager extends RenderSectionManager {
     private final ClonedChunkSectionCache sectionCache;
 
     public VintageRenderSectionManager(RenderPassConfiguration<?> configuration, WorldClient world, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
-        super(ChunkBuilder.ManagedBlocker.NONE, configuration, () -> new VintageChunkBuildContext(world, configuration), VintageChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
+        super(configuration, () -> new VintageChunkBuildContext(world, configuration), VintageChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
         this.world = world;
         this.sectionCache = new ClonedChunkSectionCache(world);
     }
@@ -53,10 +54,10 @@ public class VintageRenderSectionManager extends RenderSectionManager {
     }
 
     @Override
-    protected boolean shouldUseOcclusionCulling(PositionedViewport positionedViewport, boolean spectator) {
+    protected boolean shouldUseOcclusionCulling(Viewport positionedViewport, boolean spectator) {
         final boolean useOcclusionCulling;
-        var camBlockPos = positionedViewport.blockPosition();
-        BlockPos origin = new BlockPos(camBlockPos.x, camBlockPos.y, camBlockPos.z);
+        var camBlockPos = positionedViewport.getBlockCoord();
+        BlockPos origin = new BlockPos(camBlockPos.x(), camBlockPos.y(), camBlockPos.z());
 
         if (spectator && this.world.getBlockState(origin).isOpaqueCube())
         {
