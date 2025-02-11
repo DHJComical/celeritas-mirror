@@ -10,11 +10,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.taumc.celeritas.impl.extensions.SpriteExtension;
 
 import java.util.List;
 
 @Mixin(TextureAtlasSprite.class)
-public class TextureAtlasSpriteMixin {
+public abstract class TextureAtlasSpriteMixin implements SpriteExtension {
     @Shadow
     protected List<int[][]> framesTextureData;
 
@@ -94,5 +95,10 @@ public class TextureAtlasSpriteMixin {
                 nativeImage[y] = averageColor;
             }
         }
+    }
+
+    @Override
+    public SpriteTransparencyLevel celeritas$getTransparencyLevel() {
+        return this.embeddium$transparencyLevel;
     }
 }
