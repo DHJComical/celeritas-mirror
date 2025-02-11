@@ -19,7 +19,8 @@ import net.irisshaders.iris.pipeline.programs.FallbackShader;
 import net.irisshaders.iris.pipeline.programs.ShaderInstanceInterface;
 import net.irisshaders.iris.shadows.ShadowRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.CompiledShaderProgram;
+//? if >=1.21.2
+/*import net.minecraft.client.renderer.CompiledShaderProgram;*/
 //? if <1.21.2
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
