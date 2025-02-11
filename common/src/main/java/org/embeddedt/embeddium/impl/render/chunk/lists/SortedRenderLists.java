@@ -5,6 +5,8 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.iterator.ReversibleObjectArrayIterator;
 
+import java.util.Set;
+
 public class SortedRenderLists implements ChunkRenderListIterable {
     private static final SortedRenderLists EMPTY = new SortedRenderLists(new ObjectArrayList<>());
 
@@ -34,6 +36,10 @@ public class SortedRenderLists implements ChunkRenderListIterable {
     @Override
     public boolean hasPass(TerrainRenderPass pass) {
         return this.passes.contains(pass);
+    }
+
+    public Set<TerrainRenderPass> getPasses() {
+        return this.passes;
     }
 
     public static SortedRenderLists empty() {

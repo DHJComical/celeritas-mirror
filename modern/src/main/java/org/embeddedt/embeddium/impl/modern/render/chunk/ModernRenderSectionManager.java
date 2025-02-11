@@ -55,7 +55,6 @@ public class ModernRenderSectionManager extends RenderSectionManager {
                 Celeritas.options().performance.chunkBuilderThreads);
         this.world = world;
         this.sectionCache = new ClonedChunkSectionCache(this.world);
-        this.translucencySorting = Celeritas.canApplyTranslucencySorting();
     }
 
     public static ModernRenderSectionManager create(ChunkVertexType vertexType, ClientLevel world, int renderDistance, CommandList commandList) {

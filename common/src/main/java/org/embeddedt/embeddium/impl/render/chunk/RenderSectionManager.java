@@ -78,8 +78,6 @@ public abstract class RenderSectionManager {
     protected @Nullable Vector3ic lastCameraPosition;
     protected Vector3d cameraPosition = new Vector3d();
 
-    protected boolean translucencySorting;
-
     @Getter
     private final RenderPassConfiguration<?> renderPassConfiguration;
 
@@ -156,7 +154,7 @@ public abstract class RenderSectionManager {
     }
 
     private void checkTranslucencyChange() {
-        if(!this.translucencySorting || lastCameraPosition == null)
+        if(lastCameraPosition == null)
             return;
 
         int camSectionX = PositionUtil.posToSectionCoord(cameraPosition.x);
@@ -171,7 +169,7 @@ public abstract class RenderSectionManager {
         var importantSortRebuildList = this.rebuildLists.get(ChunkUpdateType.IMPORTANT_SORT);
         var allowImportant = allowImportantRebuilds();
         var translucentPass = this.renderPassConfiguration.defaultTranslucentMaterial().pass;
-        if (!this.getRenderLists().hasPass(translucentPass)) {
+        if (!this.hasTranslucencySortedSections()) {
             return;
         }
         for (Iterator<ChunkRenderList> it = this.getRenderLists().iterator(); it.hasNext(); ) {
@@ -260,6 +258,10 @@ public abstract class RenderSectionManager {
     }
 
     protected abstract boolean shouldUseOcclusionCulling(Viewport viewport, boolean spectator);
+
+    private boolean hasTranslucencySortedSections() {
+        return this.getRenderLists().getPasses().stream().anyMatch(TerrainRenderPass::isSorted);
+    }
 
     private void resetRenderLists() {
         this.setRenderLists(SortedRenderLists.empty());
@@ -404,10 +406,8 @@ public abstract class RenderSectionManager {
                 this.needsUpdate = true;
 
                 this.updateSectionInfo(result.render, result.info);
-                if (this.translucencySorting) {
-                    // We only change the translucency info on full rebuilds, as sorts can keep using the same data
-                    this.updateTranslucencyInfo(result.render, result.meshes);
-                }
+                // We only change the translucency info on full rebuilds, as sorts can keep using the same data
+                this.updateTranslucencyInfo(result.render, result.meshes);
             }
 
             var job = result.render.getBuildCancellationToken();
@@ -747,7 +747,7 @@ public abstract class RenderSectionManager {
                 this.rebuildLists.get(ChunkUpdateType.INITIAL_BUILD).size())
         );
 
-        if(this.translucencySorting) {
+        if (this.hasTranslucencySortedSections()) {
             list.addAll(getSortingStrings());
         }
 
