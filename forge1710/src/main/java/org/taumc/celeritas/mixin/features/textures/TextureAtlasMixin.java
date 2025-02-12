@@ -35,7 +35,7 @@ public class TextureAtlasMixin implements TextureMapExtension {
         this.celeritas$width = stitcher.getCurrentWidth();
         this.celeritas$height = stitcher.getCurrentHeight();
         Rect2i treeRect = new Rect2i(0, 0, celeritas$width, celeritas$height);
-        int minSize = this.mapUploadedSprites.values().stream().mapToInt(sprite -> Math.max(sprite.getIconWidth(), sprite.getIconHeight())).min().orElseThrow();
+        int minSize = this.mapUploadedSprites.values().stream().mapToInt(sprite -> Math.max(sprite.getIconWidth(), sprite.getIconHeight())).min().orElse(0);
         this.celeritas$quadTree = new QuadTree<>(treeRect, minSize, this.mapUploadedSprites.values(), sprite -> new Rect2i(sprite.getOriginX(), sprite.getOriginY(), sprite.getIconWidth(), sprite.getIconHeight()));
     }
 

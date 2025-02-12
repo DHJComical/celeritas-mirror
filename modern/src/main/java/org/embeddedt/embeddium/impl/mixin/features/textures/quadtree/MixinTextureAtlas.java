@@ -53,7 +53,7 @@ public class MixinTextureAtlas implements TextureAtlasExtended {
                 .mapToInt(c -> Math.max(c.contents().width(), c.contents().height()))
                 //?} else
                 /*.mapToInt(c -> Math.max(c.getWidth(), c.getHeight()))*/
-                .min().orElseThrow();
+                .min().orElse(0);
         this.celeritas$quadTree = new QuadTree<>(treeRect, minSize,
                 this.texturesByName.values(),
                 s ->
