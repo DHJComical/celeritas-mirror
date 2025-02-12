@@ -19,7 +19,7 @@ import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 
 import java.util.Map;
 
-@Mixin(RenderGlobal.class)
+@Mixin(value = RenderGlobal.class, priority = 900)
 public abstract class RenderGlobalMixin implements RenderGlobalExtension {
 
     @Shadow
@@ -68,6 +68,9 @@ public abstract class RenderGlobalMixin implements RenderGlobalExtension {
      */
     @Overwrite
     public int sortAndRender(EntityLivingBase entityIn, int pass, double partialTicks) {
+        // Allow FalseTweaks mixin to replace constant
+        @SuppressWarnings("unused")
+        double magicSortingConstantValue = 1.0D;
         RenderDevice.enterManagedCode();
 
         RenderHelper.disableStandardItemLighting();
