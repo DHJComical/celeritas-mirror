@@ -27,26 +27,34 @@ import static org.embeddedt.embeddium.api.EmbeddiumConstants.MODNAME;
 
 @SuppressWarnings("unused")
 public class SodiumMixinPlugin implements IMixinConfigPlugin {
-    private static final String MIXIN_PACKAGE_ROOT = "me.jellysquid.mods.sodium.mixin.";
-
     private final Logger logger = LogManager.getLogger(MODNAME);
-    private MixinConfig config;
+    private static MixinConfig config;
+    private String basePackage;
+
+    private static boolean hasLoaded;
 
     @Override
     public void onLoad(String mixinPackage) {
-        try {
-            this.config = MixinConfig.load(ConfigMigrator.handleConfigMigration("embeddium-mixins.properties").toFile());
-        } catch (Exception e) {
-            throw new RuntimeException("Could not load configuration file for " + MODNAME, e);
+        this.basePackage = mixinPackage;
+
+        if (!hasLoaded) {
+            hasLoaded = true;
+            try {
+                config = MixinConfig.load(ConfigMigrator.handleConfigMigration("embeddium-mixins.properties").toFile());
+            } catch (Exception e) {
+                throw new RuntimeException("Could not load configuration file for " + MODNAME, e);
+            }
+
+            this.logger.info("Loaded configuration file for " + MODNAME + ": {} options available, {} override(s) found",
+                    config.getOptionCount(), config.getOptionOverrideCount());
+
+            SodiumPreLaunch.onPreLaunch();
+
+            //? if forge && <1.17
+            /*MixinExtrasBootstrap.init();*/
         }
 
-        this.logger.info("Loaded configuration file for " + MODNAME + ": {} options available, {} override(s) found",
-                this.config.getOptionCount(), this.config.getOptionOverrideCount());
 
-        SodiumPreLaunch.onPreLaunch();
-
-        //? if forge && <1.17
-        /*MixinExtrasBootstrap.init();*/
     }
 
     @Override
@@ -60,15 +68,10 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
     }
 
     private boolean isMixinEnabled(String mixin) {
-        MixinOption option = this.config.getEffectiveOptionForMixin(mixin);
+        MixinOption option = config.getEffectiveOptionForMixin(mixin);
 
         if (option == null) {
-            // Missing modcompat options are fine
-            if(!mixin.startsWith("modcompat.")) {
-                this.logger.error("No rules matched mixin '{}', treating as foreign and disabling!", mixin);
-            }
-
-            return false;
+            return true;
         }
 
         if (option.isOverridden()) {
@@ -112,12 +115,10 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
         }
 
         Set<Path> rootPaths = new HashSet<>();
-        // This allows us to see it from multiple sourcesets if need be
-        for(String basePackage : new String[] { "core", "modcompat" }) {
-            Path mixinPackagePath = EarlyLoaderServices.INSTANCE.findEarlyMixinFolder("org/embeddedt/embeddium/impl/mixin/" + basePackage);
-            if(mixinPackagePath != null) {
-                rootPaths.add(mixinPackagePath.getParent().toAbsolutePath());
-            }
+
+        Path mixinPackagePath = EarlyLoaderServices.INSTANCE.findEarlyMixinFolder(basePackage.replace('.', '/') + "/");
+        if(mixinPackagePath != null) {
+            rootPaths.add(mixinPackagePath.toAbsolutePath());
         }
 
         Set<String> possibleMixinClasses = new HashSet<>();

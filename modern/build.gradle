@@ -176,10 +176,6 @@ if (batchingEnabled) {
 if (shadersEnabled) {
     modMixinConfigs.addAll([
             "mixins.oculus.json",
-            "mixins.oculus.fantastic.json",
-            "mixins.oculus.vertexformat.json",
-            "mixins.oculus.bettermipmaps.json",
-            "mixins.oculus.fixes.maxfpscrash.json",
             "mixins.oculus.compat.sodium.json",
             "mixins.oculus.compat.indigo.json",
             "mixins.oculus.compat.indium.json",
