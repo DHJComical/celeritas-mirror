@@ -2,7 +2,6 @@ package net.irisshaders.iris.gl;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexSorting;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.sampler.SamplerLimits;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
@@ -336,11 +335,11 @@ public class IrisRenderSystem {
 
 	public static void setShadowProjection(Matrix4f shadowProjection) {
 		backupProjection = RenderSystem.getProjectionMatrix();
-		RenderSystem.setProjectionMatrix(shadowProjection, VertexSorting.ORTHOGRAPHIC_Z);
+		RenderSystem.setProjectionMatrix(shadowProjection/*? if >=1.20 {*/, com.mojang.blaze3d.vertex.VertexSorting.ORTHOGRAPHIC_Z/*?}*/);
 	}
 
 	public static void restorePlayerProjection() {
-		RenderSystem.setProjectionMatrix(backupProjection, VertexSorting.DISTANCE_TO_ORIGIN);
+		RenderSystem.setProjectionMatrix(backupProjection/*? if >=1.20 {*/, com.mojang.blaze3d.vertex.VertexSorting.DISTANCE_TO_ORIGIN/*?}*/);
 		backupProjection = null;
 	}
 

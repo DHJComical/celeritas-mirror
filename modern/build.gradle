@@ -131,7 +131,7 @@ java {
 
 def skippedFabricApiModules = ["fabric-renderer-api-v1", "fabric-renderer-indigo"]
 
-def shadersEnabled = project.name.startsWith("1.20.1-") || project.name.startsWith("1.20.4-") || project.name.startsWith("1.20.6-") || project.name.startsWith("1.21.1-") || project.name.startsWith("1.21.2-")
+def shadersEnabled = project.name.startsWith("1.19.2-") || project.name.startsWith("1.20.1-") || project.name.startsWith("1.20.4-") || project.name.startsWith("1.20.6-") || project.name.startsWith("1.21.1-") || project.name.startsWith("1.21.2-")
 def batchingEnabled = shadersEnabled
 
 configurations {

@@ -6,7 +6,6 @@ import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.layers.HorseArmorLayer;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.horse.Horse;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,7 +32,12 @@ public class MixinHorseArmorLayer {
         ))
 			return;
 
-		ResourceLocation location = BuiltInRegistries.ITEM.getKey(horseArmorItem);
+
+        //? if >=1.19.3 {
+        ResourceLocation location = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(horseArmorItem);
+         //?} else
+        /*ResourceLocation location = net.minecraft.core.Registry.ITEM.getKey(horseArmorItem);*/
+
 		CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getItemIds().applyAsInt(new NamespacedId(location.getNamespace(), location.getPath())));
 	}
 

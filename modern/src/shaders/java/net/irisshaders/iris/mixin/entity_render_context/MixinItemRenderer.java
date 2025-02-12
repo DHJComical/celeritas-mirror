@@ -1,16 +1,12 @@
 package net.irisshaders.iris.mixin.entity_render_context;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SolidBucketItem;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,7 +21,7 @@ public abstract class MixinItemRenderer {
 	private int previousBeValue;
 
 	@Inject(method = "render", at = @At(value = "HEAD"))
-	private void changeId(ItemStack pItemRenderer0, ItemDisplayContext pItemTransforms$TransformType1, boolean pBoolean2, PoseStack pPoseStack3, MultiBufferSource pMultiBufferSource4, int pInt5, int pInt6, BakedModel pBakedModel7, CallbackInfo ci) {
+	private void changeId(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) ItemStack pItemRenderer0) {
 		iris$setupId(pItemRenderer0);
 	}
 
@@ -41,7 +37,10 @@ public abstract class MixinItemRenderer {
 
 			CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getBlockStateIds().getOrDefault(blockItem.getBlock().defaultBlockState(), 0));
 		} else {
-			ResourceLocation location = BuiltInRegistries.ITEM.getKey(pItemRenderer0.getItem());
+            //? if >=1.19.3 {
+			ResourceLocation location = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(pItemRenderer0.getItem());
+            //?} else
+            /*ResourceLocation location = net.minecraft.core.Registry.ITEM.getKey(pItemRenderer0.getItem());*/
 
 			CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getItemIds().applyAsInt(new NamespacedId(location.getNamespace(), location.getPath())));
 		}

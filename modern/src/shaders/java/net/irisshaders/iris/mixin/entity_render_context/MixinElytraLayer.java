@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.ElytraLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -47,7 +46,10 @@ public abstract class MixinElytraLayer<T extends LivingEntity, M extends EntityM
             }
         }
 
-		ResourceLocation location = BuiltInRegistries.ITEM.getKey(Items.ELYTRA);
+        //? if >=1.19.3 {
+        ResourceLocation location = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(Items.ELYTRA);
+        //?} else
+        /*ResourceLocation location = net.minecraft.core.Registry.ITEM.getKey(Items.ELYTRA);*/
 
 		CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getItemIds().applyAsInt(new NamespacedId(location.getNamespace(), location.getPath())));
 	}

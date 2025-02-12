@@ -2,8 +2,12 @@ package net.irisshaders.iris.shaderpack.materialmap;
 
 import com.google.common.collect.Iterators;
 import net.irisshaders.iris.Iris;
+//? if <1.19.3 {
+/*import net.minecraft.core.Registry;
+*///?} else {
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+//?}
 import net.minecraft.tags.TagKey;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.NotNull;
@@ -101,8 +105,13 @@ public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates
         if (!this.isTag) {
             return Collections.singletonList(this);
         } else {
+            //? if >=1.19.3 {
             var tag = TagKey.create(Registries.BLOCK, ResourceLocationUtil.make(id.getNamespace().toLowerCase(Locale.ROOT), id.getName().toLowerCase(Locale.ROOT)));
             var tagOpt = BuiltInRegistries.BLOCK.getTag(tag);
+            //?} else {
+            /*var tag = TagKey.create(Registry.BLOCK_REGISTRY, ResourceLocationUtil.make(id.getNamespace().toLowerCase(Locale.ROOT), id.getName().toLowerCase(Locale.ROOT)));
+            var tagOpt = Registry.BLOCK.getTag(tag);
+            *///?}
 
             if (!tagOpt.isPresent()) {
                 Iris.logger.warn("Failed to find the block tag {}", tag.location());

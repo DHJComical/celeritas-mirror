@@ -1,5 +1,7 @@
 package net.irisshaders.iris.mixin.entity_render_context;
 
+//? if >=1.20 {
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
@@ -62,3 +64,5 @@ public abstract class MixinHumanoidArmorLayer<T extends LivingEntity, M extends 
 		CapturedRenderingState.INSTANCE.setCurrentRenderedItem(0);
 	}
 }
+
+//?}
