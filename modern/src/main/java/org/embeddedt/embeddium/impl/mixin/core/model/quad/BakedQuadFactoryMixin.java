@@ -82,7 +82,7 @@ public class BakedQuadFactoryMixin {
             //?} else
             /*"fillVertex"*/
             , at = @At("RETURN"))
-    private void undoForgeUVExpansion(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) int[] vertices, @Local(ordinal = 0, argsOnly = true) int cornerIndex, @Local(ordinal = 0, argsOnly = true) TextureAtlasSprite sprite, @Local(ordinal = 0, argsOnly = true) BlockFaceUV element) {
+    private void undoForgeUVExpansion(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) int[] vertices, @Local(ordinal = 0, argsOnly = true) int cornerIndex, @Local(ordinal = 0, argsOnly = true) TextureAtlasSprite sprite, @Local(ordinal = 0, argsOnly = true) net.minecraft.client.renderer.block.model.BlockFaceUV element) {
         int i = cornerIndex * 8;
         vertices[i + 4] = Float.floatToRawIntBits(sprite.getU(element.getU(cornerIndex)));
         vertices[i + 4 + 1] = Float.floatToRawIntBits(sprite.getV(element.getV(cornerIndex)));

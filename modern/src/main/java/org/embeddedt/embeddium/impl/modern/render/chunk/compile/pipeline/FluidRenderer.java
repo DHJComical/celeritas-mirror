@@ -116,10 +116,12 @@ public class FluidRenderer {
         this.colorProviderRegistry = colorProviderRegistry;
 
         this.lavaSprites = new TextureAtlasSprite[2];
-        this.lavaSprites[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState()).particleIcon();
+        this.lavaSprites[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState())
+                /*? if >=1.21.5-alpha.25.7.a {*//*.particleIcon()*//*?} else {*/.getParticleIcon()/*?}*/;
         this.lavaSprites[1] = ModelBakery.LAVA_FLOW.sprite();
         this.waterSprites = new TextureAtlasSprite[3];
-        this.waterSprites[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState()).particleIcon();
+        this.waterSprites[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState())
+                /*? if >=1.21.5-alpha.25.7.a {*//*.particleIcon()*//*?} else {*/.getParticleIcon()/*?}*/;
         this.waterSprites[1] = ModelBakery.WATER_FLOW.sprite();
         this.waterSprites[2] = ModelBakery.WATER_OVERLAY.sprite();
 

@@ -23,7 +23,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import net.minecraft.world.phys.shapes.Shapes;
 import org.embeddedt.embeddium.impl.Celeritas;
-import org.embeddedt.embeddium.impl.model.CompositeModel;
 import org.embeddedt.embeddium.impl.util.DirectionUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -345,14 +344,6 @@ public class ModelTextureAnalyzer {
         }
 
         private void conductVotingForAllDirections(BakedModel model, BlockState state, int stateProps, String namespace, int materialId) {
-            if (model instanceof CompositeModel modelWithChildren) {
-                var iterable = modelWithChildren.celeritas$getInnerModels(state);
-                if (iterable != null) {
-                    iterable.forEach(inner -> conductVotingForAllDirections(inner, state, stateProps, namespace, materialId));
-                    return;
-                }
-            }
-
             for (Direction direction : DirectionUtil.ALL_DIRECTIONS) {
                 conductVoting(model, state, stateProps, namespace, direction, materialId);
             }

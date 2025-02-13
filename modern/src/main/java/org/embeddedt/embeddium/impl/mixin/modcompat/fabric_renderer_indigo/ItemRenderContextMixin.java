@@ -1,12 +1,15 @@
 package org.embeddedt.embeddium.impl.mixin.modcompat.fabric_renderer_indigo;
 
 //? if ffapi && >=1.20 {
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.impl.client.indigo.renderer.render.ItemRenderContext;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import org.embeddedt.embeddium.impl.render.frapi.SpriteFinderCache;
+import org.embeddedt.embeddium.impl.render.texture.TextureAtlasExtended;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,6 +17,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = ItemRenderContext.class, remap = false)
 public class ItemRenderContextMixin {
+    @Unique
+    private final TextureAtlas celeritas$blocksAtlas = (TextureAtlas) Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS);
+
     /**
      * @author embeddedt
      * @reason There is currently no efficient & minimalistic API approach to capture textures rendered on FRAPI models.
@@ -30,7 +36,7 @@ public class ItemRenderContextMixin {
         }
 
         // Detect sprite
-        TextureAtlasSprite sprite = SpriteFinderCache.forBlockAtlas().findNearestSprite(midU / 4, midV / 4);
+        TextureAtlasSprite sprite = ((TextureAtlasExtended)celeritas$blocksAtlas).celeritas$findFromUV(midU / 4, midV / 4);
         if (sprite != null) {
             SpriteUtil.markSpriteActive(sprite);
         }
