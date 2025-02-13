@@ -175,4 +175,9 @@ public abstract class BakedQuadMixin implements BakedQuadView {
         return this.hasAmbientOcclusion;
     }
     //?}
+
+    @Override
+    public int getVerticesCount() {
+        return this.vertices.length / 8;
+    }
 }

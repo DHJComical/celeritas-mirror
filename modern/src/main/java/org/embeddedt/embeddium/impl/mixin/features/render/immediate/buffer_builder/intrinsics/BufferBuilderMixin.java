@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
-import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
 import org.embeddedt.embeddium.impl.render.immediate.model.BakedModelEncoder;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.api.util.ColorABGR;
@@ -35,6 +34,9 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
         //? if <1.20.6
         float a = 1.0f;
     //?}
+
+        BakedQuadView quad = BakedQuadView.of(bakedQuad);
+
         if (!this.fastFormat) {
             //? if <1.20.6
             super.putBulkData(matrices, bakedQuad, r, g, b, light, overlay);
@@ -45,7 +47,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
             //? if >=1.21 && !neoforge
             /*VertexConsumer.super.putBulkData(matrices, bakedQuad, r, g, b, a, light, overlay);*/
 
-            SpriteUtil.markSpriteActive(((BakedQuadView)bakedQuad).getSprite());
+            SpriteUtil.markSpriteActive(quad.getSprite());
 
             return;
         }
@@ -56,13 +58,12 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
         }
         //?}
 
-        if (bakedQuad.getVertices().length < 32) {
+        if (quad.getVerticesCount() < 4) {
             return; // we do not accept quads with less than 4 properly sized vertices
         }
 
         VertexBufferWriter writer = VertexBufferWriter.of(this);
 
-        ModelQuadView quad = (ModelQuadView) bakedQuad;
 
         int color = ColorABGR.pack(r, g, b, a);
         BakedModelEncoder.writeQuadVertices(writer, matrices, quad, color, light, overlay, colorize);
@@ -74,12 +75,15 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
     public void putBulkData(PoseStack.Pose matrices, BakedQuad bakedQuad, float[] brightnessTable, float r, float g, float b, /*? if >=1.20.6 {*/ /*float a, *//*?}*/ int[] light, int overlay, boolean colorize) {
         //? if <1.20.6
         float a = 1.0f;
+
+        BakedQuadView quad = BakedQuadView.of(bakedQuad);
+
         if (!this.fastFormat) {
             //? if >=1.21
             /*VertexConsumer.*/
             super.putBulkData(matrices, bakedQuad, brightnessTable, r, g, b, /*? if >=1.20.6 {*/ /*a, *//*?}*/ light, overlay, colorize);
 
-            SpriteUtil.markSpriteActive(((BakedQuadView)bakedQuad).getSprite());
+            SpriteUtil.markSpriteActive(quad.getSprite());
 
             return;
         }
@@ -90,13 +94,11 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
         }
         //?}
 
-        if (bakedQuad.getVertices().length < 32) {
+        if (quad.getVerticesCount() < 4) {
             return; // we do not accept quads with less than 4 properly sized vertices
         }
 
         VertexBufferWriter writer = VertexBufferWriter.of(this);
-
-        ModelQuadView quad = (ModelQuadView) bakedQuad;
 
         BakedModelEncoder.writeQuadVertices(writer, matrices, quad, r, g, b, a, brightnessTable, colorize, light, overlay);
 

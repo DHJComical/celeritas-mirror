@@ -8,14 +8,14 @@ public class TextureUtil {
 
     public static int getLightTextureId() {
         //? if >=1.17 {
-        return RenderSystem.getShaderTexture(2);
+        return RenderSystem.getShaderTexture(2)/*? if >=1.21.5-alpha.25.7.a {*//*.glId()*//*?}*/;
         //?} else
         /*return 2;*/
     }
 
     public static int getBlockTextureId() {
         //? if >=1.17 {
-        return RenderSystem.getShaderTexture(0);
+        return RenderSystem.getShaderTexture(0)/*? if >=1.21.5-alpha.25.7.a {*//*.glId()*//*?}*/;
         //?} else
         /*return 0;*/
     }

@@ -1,12 +1,12 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
-//? if fabric
+//? if fabric && ffapi
 /*import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;*/
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.world.level.block.HalfTransparentBlock;
-import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.material.FlowingFluid;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
@@ -38,9 +38,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.block.Block;
 //? if >=1.16.2
-import net.minecraft.world.level.block.SupportType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -100,7 +98,7 @@ public class FluidRenderer {
     private final ChunkColorWriter colorEncoder = ChunkColorWriter.get();
     private final MojangVertexConsumer vertexConsumer = new MojangVertexConsumer();
 
-    //? if fabric && >=1.17
+    //? if fabric && ffapi && >=1.17
     /*private final FabricFluidRenderer fabricFluidRenderer = new FabricFluidRenderer();*/
 
     /**
@@ -108,11 +106,22 @@ public class FluidRenderer {
      */
     private final boolean doVanillaRenderedFluidsExist;
 
+    private final TextureAtlasSprite[] lavaSprites;
+    private final TextureAtlasSprite[] waterSprites;
+
     public FluidRenderer(ColorProviderRegistry colorProviderRegistry, LightPipelineProvider lighters) {
         this.quad.setLightFace(Direction.UP);
 
         this.lighters = lighters;
         this.colorProviderRegistry = colorProviderRegistry;
+
+        this.lavaSprites = new TextureAtlasSprite[2];
+        this.lavaSprites[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState()).particleIcon();
+        this.lavaSprites[1] = ModelBakery.LAVA_FLOW.sprite();
+        this.waterSprites = new TextureAtlasSprite[3];
+        this.waterSprites[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState()).particleIcon();
+        this.waterSprites[1] = ModelBakery.WATER_FLOW.sprite();
+        this.waterSprites[2] = ModelBakery.WATER_OVERLAY.sprite();
 
         //? if >=1.18 {
         this.doVanillaRenderedFluidsExist = net.minecraft.core.registries.BuiltInRegistries.FLUID.getTagOrEmpty(EmbeddiumTags.RENDERS_WITH_VANILLA).iterator().hasNext();
@@ -248,10 +257,10 @@ public class FluidRenderer {
         var meshBuilder = buffers.get(material);
         Fluid fluid = fluidState.getType();
 
-        //? if fabric
+        //? if fabric && ffapi
         /*var fabricFluidHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid);*/
 
-        //? if fabric && >=1.17 {
+        //? if fabric && ffapi && >=1.17 {
         /*if (fabricFluidRenderer.renderCustomFluid(ctx, fabricFluidHandler, fluidState, buffers, material)) {
             return;
         }
@@ -300,8 +309,10 @@ public class FluidRenderer {
         TextureAtlasSprite[] sprites;
         //? if forgelike {
         sprites = fluidSpriteCache.getSprites(world, blockPos, fluidState);
-        //?} else
-        /*sprites = fabricFluidHandler.getFluidSprites(world, blockPos, fluidState);*/
+        //?} else if ffapi {
+        /*sprites = fabricFluidHandler.getFluidSprites(world, blockPos, fluidState);
+        *///?} else
+        /*sprites = isWater ? this.waterSprites : this.lavaSprites;*/
 
         float fluidHeight = this.fluidHeight(world, fluid, blockPos, Direction.UP);
         float northWestHeight, southWestHeight, southEastHeight, northEastHeight;
@@ -531,7 +542,7 @@ public class FluidRenderer {
                     if (sprites[2] != null &&
                             /*? if forgelike {*/
                             adjBlock.shouldDisplayFluidOverlay(world, adjPos, fluidState)
-                            /*?} else if >=1.18 {*/
+                            /*?} else if ffapi && >=1.18 {*/
                             /*FluidRenderHandlerRegistry.INSTANCE.isBlockTransparent(adjBlock.getBlock())
                             *//*?} else {*/
                             /*adjBlock.getBlock() instanceof HalfTransparentBlock || adjBlock.getBlock() instanceof LeavesBlock

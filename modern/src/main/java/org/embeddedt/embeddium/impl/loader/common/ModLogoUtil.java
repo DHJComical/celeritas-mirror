@@ -70,7 +70,10 @@ public class ModLogoUtil {
                 throw new IOException("Logo for " + modId + " is not square");
             }
             ResourceLocation texture = ResourceLocationUtil.make(Celeritas.MODID, "logo/" + modId);
-            Minecraft.getInstance().getTextureManager().register(texture, new DynamicTexture(logo));
+            Minecraft.getInstance().getTextureManager().register(texture, new DynamicTexture(
+                    //? if >=1.21.5-alpha.25.7.a
+                    /*() -> modId + " logo",*/
+                    logo));
             return texture;
         } else {
             return null;

@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.model.quad.properties;
 
+import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
 import org.embeddedt.embeddium.api.util.ColorABGR;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -65,8 +66,8 @@ public class ModelQuadFlags {
         float maxZ = -32.0F;
 
         int numVertices = 4;
-        if (quad instanceof BakedQuad bakedQuad) {
-            numVertices = Math.min(numVertices, bakedQuad.getVertices().length / 8);
+        if (quad instanceof BakedQuadView bakedQuad) {
+            numVertices = Math.min(numVertices, bakedQuad.getVerticesCount());
         }
 
         float lX = Float.NaN, lY = Float.NaN, lZ = Float.NaN;

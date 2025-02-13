@@ -28,7 +28,6 @@ import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -213,7 +212,7 @@ public class BlockRenderer {
         return this.occlusionCache.shouldDrawSide(ctx.state(), ctx.localSlice(), ctx.pos(), face);
     }
 
-    private static int computeLightFlagMask(BakedQuad quad) {
+    private static int computeLightFlagMask(BakedQuadView quad) {
         int flag = 0;
 
         //? if forgelike && >=1.19 {
@@ -223,7 +222,7 @@ public class BlockRenderer {
         //?}
 
         //? if >=1.16 {
-        if (quad.isShade()) {
+        if (quad.hasShade()) {
             flag |= 2;
         }
         //?}
@@ -252,7 +251,7 @@ public class BlockRenderer {
 
             // noinspection ForLoopReplaceableByForEach
             for (int i = 0; i < quadsSize; i++) {
-                var quad = quads.get(i);
+                var quad = BakedQuadView.of(quads.get(i));
 
                 int newFlag = computeLightFlagMask(quad);
                 if (flagMask == -1) {
@@ -262,7 +261,7 @@ public class BlockRenderer {
                     this.quadRenderingFlags &= ~USE_REORIENTING;
                 }
 
-                SpriteTransparencyLevel level = getQuadTransparencyLevel((BakedQuadView)quad);
+                SpriteTransparencyLevel level = getQuadTransparencyLevel(quad);
 
                 if (level.ordinal() < highestSeenLevel.ordinal()) {
                     // Downgrading will result in the quads being rendered in the wrong order, disable
@@ -308,7 +307,7 @@ public class BlockRenderer {
         // This is a very hot allocation, iterate over it manually
         // noinspection ForLoopReplaceableByForEach
         for (int i = 0, quadsSize = quads.size(); i < quadsSize; i++) {
-            BakedQuadView quad = (BakedQuadView) quads.get(i);
+            BakedQuadView quad = BakedQuadView.of(quads.get(i));
 
             final var lightData = this.getVertexLight(ctx, quad.hasAmbientOcclusion() ? lighter : this.lighters.getLighter(LightMode.FLAT), cullFace, quad);
             final var vertexColors = this.getVertexColors(ctx, colorizer, quad);
@@ -389,22 +388,22 @@ public class BlockRenderer {
     }
 
     //? if forge || fabric {
-    private boolean modelUsesAO(BlockRenderContext ctx, BakedModel model) {
+    private boolean modelUsesAO(BlockRenderContext ctx) {
         //? if forge && >=1.19 {
-        return model.useAmbientOcclusion(ctx.state(), ctx.renderLayer());
+        return ctx.model().useAmbientOcclusion(ctx.state(), ctx.renderLayer());
         //?} else if forge && >=1.18 {
-        /*return model.useAmbientOcclusion(ctx.state());
+        /*return ctx.model().useAmbientOcclusion(ctx.state());
         *///?} else if forge {
-        /*return model.isAmbientOcclusion(ctx.state());
+        /*return ctx.model().isAmbientOcclusion(ctx.state());
         *///?} else {
-        /*return model.useAmbientOcclusion();
+        /*return ctx.model().useAmbientOcclusion();
         *///?}
     }
 
     private LightMode getLightingMode(BlockRenderContext ctx) {
         var model = ctx.model();
         var state = ctx.state();
-        if (this.useAmbientOcclusion && modelUsesAO(ctx, model)
+        if (this.useAmbientOcclusion && modelUsesAO(ctx)
                 && (((EmbeddiumBakedModelExtension)model).useAmbientOcclusionWithLightEmission(state, ctx.renderLayer()) || ctx.lightEmission() == 0)) {
             return LightMode.SMOOTH;
         } else {

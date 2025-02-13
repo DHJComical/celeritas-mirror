@@ -42,7 +42,6 @@ import net.neoforged.fml.loading.FMLLoader;
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
 import org.embeddedt.embeddium.impl.gl.device.GLRenderDevice;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
-import org.embeddedt.embeddium.impl.render.frapi.SpriteFinderCache;
 import org.embeddedt.embeddium.impl.util.MixinAuditUtil;
 import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
 import org.embeddedt.embeddium.impl.commands.DevCommands;
@@ -136,8 +135,6 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         if (Boolean.getBoolean("embeddium.auditAndExit")) {
             MixinAuditUtil.auditAndExit();
         }
-
-        SpriteFinderCache.registerListener();
     }
     *///?}
 

@@ -6,7 +6,6 @@ import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
-import net.minecraft.client.renderer.block.model.BlockFaceUV;
 import net.minecraft.client.renderer.block.model.FaceBakery;
 //? if >=1.20
 import net.minecraft.client.renderer.texture.SpriteContents;
@@ -38,20 +37,33 @@ public class BakedQuadFactoryMixin {
 
     private static void handleMaterialClassifications(BakedQuad quad, TextureAtlasSprite sprite, BlockElementFace face) {
         if (sprite.getClass() == TextureAtlasSprite.class /*? if >=1.20 {*/ && sprite.contents().getClass() == SpriteContents.class /*?}*/) {
+
+            float minUV = Float.MAX_VALUE, maxUV = Float.MIN_VALUE;
             //? if <1.21
             float[] uvs = face.uv.uvs;
-            //? if >=1.21
-            /*float[] uvs = face.uv().uvs;*/
-            float minUV = Float.MAX_VALUE, maxUV = Float.MIN_VALUE;
+            //? if >=1.21 <1.21.5-alpha.25.7.a
+            /*float[] uvs = face.uvs().uv().uvs;*/
 
+            //? if <1.21.5-alpha.25.7.a {
             for (float uv : uvs) {
                 minUV = Math.min(minUV, uv);
                 maxUV = Math.max(maxUV, uv);
             }
+            //?} else {
+            /*var uvs = face.uvs();
+            if (uvs != null) {
+                minUV = Math.min(uvs.minU(), Math.min(uvs.minV(), Math.min(uvs.maxU(), uvs.maxV())));
+                maxUV = Math.max(uvs.minU(), Math.max(uvs.minV(), Math.max(uvs.maxU(), uvs.maxV())));
+            } else {
+                // assume default bounds are always fine
+                minUV = 0;
+                maxUV = 16;
+            }
+            *///?}
 
             if (minUV >= 0 && maxUV <= 16) {
                 // Quad UVs do not extend outside texture boundary, we can trust the given sprite
-                BakedQuadView view = (BakedQuadView)quad;
+                BakedQuadView view = (BakedQuadView)(Object)quad;
                 view.addFlags(ModelQuadFlags.IS_TRUSTED_SPRITE);
             }
 

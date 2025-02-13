@@ -14,7 +14,6 @@ import org.embeddedt.embeddium.impl.model.color.interop.ItemColorsExtended;
 //?}
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 //$ rng_import
 import net.minecraft.util.RandomSource;
@@ -49,11 +48,12 @@ public class ItemRendererMixin {
      * @reason Avoid allocations
      * @author JellySquid
      */
+    //? if <1.21.5-alpha.25.7.a {
     @Inject(method = "renderModelLists", at = @At("HEAD"), cancellable = true)
     private
     //? if >=1.21.4-alpha.24.45.a
     /*static*/
-    void renderModelFast(BakedModel model,
+    void renderModelFast(net.minecraft.client.resources.model.BakedModel model,
                                  //? if <1.21.4-alpha.24.45.a {
                                  ItemStack itemStack,
                                  //?} else
@@ -98,6 +98,20 @@ public class ItemRendererMixin {
             renderBakedItemQuads(matrices, writer, quads, /*? if <1.21.4-alpha.24.45.a {*/ itemStack,/*?}*/ colorProvider, light, overlay);
         }
     }
+    //?} else {
+    /*@Inject(method = "renderQuadList", at = @At("HEAD"), cancellable = true)
+    private static void renderQuadListFast(PoseStack stack, VertexConsumer vertexConsumer, List<BakedQuad> list, int[] colorProvider, int light, int overlay, CallbackInfo ci) {
+        var writer = VertexConsumerUtils.convertOrLog(vertexConsumer);
+
+        if (writer == null) {
+            return;
+        }
+
+        ci.cancel();
+
+        renderBakedItemQuads(stack.last(), writer, list, colorProvider, light, overlay);
+    }
+    *///?}
 
     @Unique
     @SuppressWarnings("ForLoopReplaceableByForEach")
@@ -108,13 +122,11 @@ public class ItemRendererMixin {
                                       /*int[] colorProvider,*/
                                       int light, int overlay) {
         for (int i = 0; i < quads.size(); i++) {
-            BakedQuad bakedQuad = quads.get(i);
+            BakedQuadView quad = BakedQuadView.of(quads.get(i));
 
-            if (bakedQuad.getVertices().length < 32) {
+            if (quad.getVerticesCount() < 4) {
                 continue; // ignore bad quads
             }
-
-            BakedQuadView quad = (BakedQuadView) bakedQuad;
 
             int color = 0xFFFFFFFF;
 

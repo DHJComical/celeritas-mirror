@@ -6,12 +6,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
-import org.embeddedt.embeddium.impl.model.UnwrappableBakedModel;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 //? if >=1.15
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 //? if forge && >=1.19
@@ -41,7 +39,15 @@ public class BlockRenderContext {
     private PoseStack stack;
 
     private BlockState state;
-    private BakedModel model;
+
+    /**
+     * The model used for this block.
+     */
+    @Getter
+    //? if <1.21.5-alpha.25.7.a {
+    private net.minecraft.client.resources.model.BakedModel model;
+    //?} else
+    /*private net.minecraft.client.renderer.block.model.BlockStateModel model;*/
 
     private long seed;
 
@@ -75,7 +81,12 @@ public class BlockRenderContext {
         this.localSlice = WorldSliceLocalGenerator.generate(world);
     }
 
-    public void update(GeometryCategory category, BlockPos pos, BlockPos origin, BlockState state, BakedModel model, long seed) {
+    public void update(GeometryCategory category, BlockPos pos, BlockPos origin, BlockState state,
+                       //? if <1.21.5-alpha.25.7.a {
+                       net.minecraft.client.resources.model.BakedModel model,
+                       //?} else
+                       /*net.minecraft.client.renderer.block.model.BlockStateModel model,*/
+                       long seed) {
         this.category = category;
         this.pos.set(pos);
         this.origin.set(origin.getX(), origin.getY(), origin.getZ());
@@ -85,7 +96,7 @@ public class BlockRenderContext {
         this.seed = seed;
 
         this.random.setSeed(seed);
-        this.model = UnwrappableBakedModel.unwrapIfPossible(model, this.random);
+        this.model = model;
 
         this.lightValue = -1;
     }
@@ -123,13 +134,6 @@ public class BlockRenderContext {
         return this.stack;
     }
     //?}
-
-    /**
-     * @return The model used for this block
-     */
-    public BakedModel model() {
-        return this.model;
-    }
 
     /**
      * @return The origin of the block within the model

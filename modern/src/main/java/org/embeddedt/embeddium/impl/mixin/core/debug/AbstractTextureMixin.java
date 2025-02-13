@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.core.debug;
 
+//? if <1.21.5-alpha.25.7.a {
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -34,3 +36,5 @@ public class AbstractTextureMixin implements NameableTexture {
         }
     }
 }
+
+//?}

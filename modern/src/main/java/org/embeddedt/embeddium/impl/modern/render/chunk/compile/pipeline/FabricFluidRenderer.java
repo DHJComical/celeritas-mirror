@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
-//? if fabric && >=1.17 {
+//? if fabric && ffapi && >=1.17 {
 
 /*import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.objects.Reference2BooleanOpenHashMap;

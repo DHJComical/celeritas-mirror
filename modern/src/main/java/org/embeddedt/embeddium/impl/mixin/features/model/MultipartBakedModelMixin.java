@@ -1,5 +1,9 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
+// Class split at 25w07a because maintaining the BakedModel renames would be insane
+
+//? if <1.21.5-alpha.25.7.a {
+
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 //? if forgelike && >=1.19 {
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -31,7 +35,6 @@ import net.neoforged.neoforge.client.model.data.MultipartModelData;
 *///?}
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.embeddedt.embeddium.impl.model.CompositeModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
@@ -223,13 +226,6 @@ public class MultipartBakedModelMixin implements CompositeModel {
         return quads != null ? quads : Collections.emptyList();
     }
 
-    @Override
-    public @Nullable Iterable<BakedModel> celeritas$getInnerModels(BlockState state) {
-        BakedModel[] models = getModelComponents(state);
-
-        return Arrays.asList(models);
-    }
-
     //? if forgelike && >=1.19 {
     /**
      * @author embeddedt
@@ -319,3 +315,97 @@ public class MultipartBakedModelMixin implements CompositeModel {
     }
     *///?}
 }
+//?} else {
+
+/*import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.resources.model.MultiPartBakedModel;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.state.BlockState;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.StampedLock;
+import java.util.function.Predicate;
+
+@Mixin(MultiPartBakedModel.class)
+public class MultipartBakedModelMixin {
+    @Shadow
+    @Final
+    private List<MultiPartBakedModel.Selector> selectors;
+    @Unique
+    private final Map<BlockState, BlockStateModel[]> stateCacheFast = new Reference2ReferenceOpenHashMap<>();
+    @Unique
+    private final StampedLock lock = new StampedLock();
+
+    @Unique
+    private BlockStateModel[] getModelComponents(BlockState state) {
+        BlockStateModel[] models;
+
+        long readStamp = this.lock.readLock();
+        try {
+            models = this.stateCacheFast.get(state);
+        } finally {
+            this.lock.unlockRead(readStamp);
+        }
+
+        if (models == null) {
+            long writeStamp = this.lock.writeLock();
+            try {
+                List<BlockStateModel> modelList = new ArrayList<>(this.selectors.size());
+
+                for (var pair : this.selectors) {
+                    if (pair.condition().test(state)) {
+                        modelList.add(pair.model());
+                    }
+                }
+
+                models = modelList.toArray(BlockStateModel[]::new);
+                this.stateCacheFast.put(state, models);
+            } finally {
+                this.lock.unlockWrite(writeStamp);
+            }
+        }
+
+        return models;
+    }
+
+    @Unique
+    private static ArrayList<BakedQuad> addAllQuads(@Nullable ArrayList<BakedQuad> targetList, List<BakedQuad> incomingList) {
+        if (targetList == null) {
+            targetList = new ArrayList<>(incomingList);
+        } else {
+            int n = incomingList.size();
+            targetList.ensureCapacity(targetList.size() + n);
+            for (int i = 0; i < n; i++) {
+                targetList.add(incomingList.get(i));
+            }
+        }
+        return targetList;
+    }
+
+    @Overwrite
+    public List<BakedQuad> getQuads(BlockState state, @Nullable Direction dir, RandomSource rand) {
+        var components = getModelComponents(state);
+
+        long seed = rand.nextLong();
+
+        ArrayList<BakedQuad> results = null;
+
+        for (var model : components) {
+            rand.setSeed(seed);
+            var quads = model.getQuads(state, dir, rand);
+            results = addAllQuads(results, quads);
+        }
+
+        return results != null ? results : ImmutableList.of();
+    }
+}
+*///?}

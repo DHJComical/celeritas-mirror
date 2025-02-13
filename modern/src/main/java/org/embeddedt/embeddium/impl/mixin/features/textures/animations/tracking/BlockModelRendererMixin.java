@@ -1,14 +1,10 @@
 package org.embeddedt.embeddium.impl.mixin.features.textures.animations.tracking;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.llamalad7.mixinextras.sugar.Local;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -22,7 +18,7 @@ public class BlockModelRendererMixin {
      * @author embeddedt
      */
     @Inject(method = "putQuadData", at = @At("HEAD"))
-    private void preRenderQuad(BlockAndTintGetter world, BlockState state, BlockPos pos, VertexConsumer vertexConsumer, PoseStack.Pose matrixEntry, BakedQuad quad, float brightness0, float brightness1, float brightness2, float brightness3, int light0, int light1, int light2, int light3, int overlay, CallbackInfo ci) {
-        SpriteUtil.markSpriteActive(((BakedQuadView)quad).getSprite());
+    private void preRenderQuad(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) BakedQuad quad) {
+        SpriteUtil.markSpriteActive(BakedQuadView.of(quad).getSprite());
     }
 }

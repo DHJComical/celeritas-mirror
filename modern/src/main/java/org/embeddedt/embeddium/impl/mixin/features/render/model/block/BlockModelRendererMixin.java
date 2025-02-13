@@ -10,7 +10,6 @@ import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 //$ rng_import
@@ -46,12 +45,20 @@ public class BlockModelRendererMixin {
      * @reason Use optimized vertex writer intrinsics, avoid allocations
      * @author JellySquid
      */
-    @Inject(method = "renderModel(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/client/resources/model/BakedModel;FFFII" +
+    @Inject(method = "renderModel(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/world/level/block/state/BlockState;" +
+            /*? if <1.21.5-alpha.25.7.a {*/ "Lnet/minecraft/client/resources/model/BakedModel;" + /*?}*/
+            /*? if >=1.21.5-alpha.25.7.a {*/ /*"Lnet/minecraft/client/renderer/block/model/BlockStateModel;" + *//*?}*/
+            "FFFII" +
             /*? if forge && >=1.19 {*/ "Lnet/minecraftforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;" +  /*?}*/
             /*? if forge && <1.19 {*/ /*"Lnet/minecraftforge/client/model/data/IModelData;" +  *//*?}*/
             /*? if neoforge {*/ /*"Lnet/neoforged/neoforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;" +  *//*?}*/
     ")V", at = @At("HEAD"), cancellable = true/*? if forgelike && >=1.17 {*/, remap = false/*?}*/)
-    private void renderFast(PoseStack.Pose entry, VertexConsumer vertexConsumer, BlockState blockState, BakedModel bakedModel, float red, float green, float blue, int light, int overlay,
+    private void renderFast(PoseStack.Pose entry, VertexConsumer vertexConsumer, BlockState blockState,
+                            //? if <1.21.5-alpha.25.7.a {
+                            net.minecraft.client.resources.model.BakedModel bakedModel,
+                            //?} else
+                            /*net.minecraft.client.renderer.block.model.BlockStateModel bakedModel,*/
+                            float red, float green, float blue, int light, int overlay,
                             /*? if forgelike && >=1.19 {*/ModelData modelData, RenderType renderType,/*?}*//*? if forge && <1.19 {*//*IModelData modelData,*//*?}*/ CallbackInfo ci) {
         var writer = VertexConsumerUtils.convertOrLog(vertexConsumer);
         if(writer == null) {
@@ -92,11 +99,11 @@ public class BlockModelRendererMixin {
         for (int i = 0; i < quads.size(); i++) {
             BakedQuad bakedQuad = quads.get(i);
 
-            if (bakedQuad.getVertices().length < 32) {
-                continue; // ignore bad quads
-            }
+            BakedQuadView quad = (BakedQuadView)(Object)bakedQuad;
 
-            BakedQuadView quad = (BakedQuadView) bakedQuad;
+            if (quad.getVerticesCount() < 4) {
+                continue;
+            }
 
             int color = quad.hasColor() ? defaultColor : 0xFFFFFFFF;
 
