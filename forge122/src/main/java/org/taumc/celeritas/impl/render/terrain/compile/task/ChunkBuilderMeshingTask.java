@@ -26,7 +26,6 @@ import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.util.collections.SetUtil;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.joml.Vector3d;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
@@ -171,7 +170,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
         renderData.mapContext(VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, List::copyOf);
         renderData.mapContext(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES, SetUtil::copyOf);
+        renderData.mapContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES, List::copyOf);
     }
 
 }

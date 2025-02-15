@@ -1,8 +1,10 @@
 package org.taumc.celeritas.impl.render.terrain.compile;
 
 import lombok.Getter;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.BlockRenderLayer;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
@@ -14,6 +16,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.system.MemoryUtil;
+import org.taumc.celeritas.impl.extensions.TextureMapExtension;
 import org.taumc.celeritas.impl.world.WorldSlice;
 
 import java.nio.ByteBuffer;
@@ -22,6 +25,7 @@ import java.util.Objects;
 
 public class VintageChunkBuildContext extends ChunkBuildContext {
     public static final BlockRenderLayer[] LAYERS = BlockRenderLayer.values();
+    private final TextureMapExtension textureAtlas;
     private final BufferBuilder[] worldRenderers = new BufferBuilder[LAYERS.length];
     private final boolean[] usedWorldRenderers = new boolean[LAYERS.length];
     private int offX, offY, offZ;
@@ -31,6 +35,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
     public VintageChunkBuildContext(WorldClient world, RenderPassConfiguration renderPassConfiguration) {
         super(renderPassConfiguration);
         this.worldSlice = new WorldSlice(world);
+        this.textureAtlas = (TextureMapExtension) Minecraft.getMinecraft().getTextureMapBlocks();
     }
 
     public void setupTranslation(int x, int y, int z) {
@@ -79,7 +84,9 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
         int numQuads = source.limit() / (vsize * 4);
         long ptr = MemoryUtil.memAddress(source);
         var quad = ChunkVertexEncoder.Vertex.uninitializedQuad();
+        var animatedSpritesList = dest.getSectionContextBundle().getContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES);
         for(int q = 0; q < numQuads; q++) {
+            float uSum = 0, vSum = 0;
             for(int v = 0; v < 4; v++) {
                 var vertex = quad[v];
                 vertex.x = MemoryUtil.memGetFloat(ptr);
@@ -88,8 +95,14 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
                 vertex.color = MemoryUtil.memGetInt(ptr + 12);
                 vertex.u = MemoryUtil.memGetFloat(ptr + 16);
                 vertex.v = MemoryUtil.memGetFloat(ptr + 20);
+                uSum += vertex.u;
+                vSum += vertex.v;
                 vertex.light = MemoryUtil.memGetInt(ptr + 24);
                 ptr += vsize;
+            }
+            TextureAtlasSprite sprite = this.textureAtlas.celeritas$findFromUV(uSum * 0.25f, vSum * 0.25f);
+            if (sprite != null && sprite.hasAnimationMetadata()) {
+                animatedSpritesList.add(sprite);
             }
             dest.getVertexBuffer(ModelQuadFacing.UNASSIGNED).push(quad, material);
         }
