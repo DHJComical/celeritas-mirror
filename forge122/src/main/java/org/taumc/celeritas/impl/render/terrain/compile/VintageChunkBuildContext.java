@@ -14,6 +14,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
+import org.embeddedt.embeddium.impl.util.QuadUtil;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.system.MemoryUtil;
 import org.taumc.celeritas.impl.extensions.TextureMapExtension;
@@ -104,7 +105,14 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
             if (sprite != null && sprite.hasAnimationMetadata()) {
                 animatedSpritesList.add(sprite);
             }
-            dest.getVertexBuffer(ModelQuadFacing.UNASSIGNED).push(quad, material);
+            int trueNormal = QuadUtil.calculateNormal(quad);
+            for (int v = 0; v < 4; v++) {
+                var vertex = quad[v];
+                vertex.vanillaNormal = trueNormal;
+                vertex.trueNormal = trueNormal;
+            }
+            ModelQuadFacing facing = QuadUtil.findNormalFace(trueNormal);
+            dest.getVertexBuffer(facing).push(quad, material);
         }
     }
 }
