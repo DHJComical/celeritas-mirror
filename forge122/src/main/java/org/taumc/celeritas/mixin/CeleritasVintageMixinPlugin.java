@@ -1,5 +1,6 @@
 package org.taumc.celeritas.mixin;
 
+import com.gtnewhorizons.retrofuturabootstrap.SharedConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.util.MixinClassValidator;
@@ -22,6 +23,10 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
     @Override
     public void onLoad(String mixinPackage) {
         LOGGER.info("Loaded Celeritas mixin plugin");
+        // Hack for now
+        var handle = SharedConfig.getRfbTransformers().stream().filter(transformer -> transformer.id().equals("lwjgl3ify:redirect")).findFirst().orElseThrow();
+        handle.exclusions().add("org.embeddedt.embeddium");
+        handle.exclusions().add("org.taumc.celeritas");
     }
 
     @Override

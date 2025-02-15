@@ -1,10 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.region;
 
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceMaps;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import it.unimi.dsi.fastutil.objects.*;
 import org.embeddedt.embeddium.impl.gl.arena.PendingUpload;
 import org.embeddedt.embeddium.impl.gl.arena.staging.FallbackStagingBuffer;
 import org.embeddedt.embeddium.impl.gl.arena.staging.MappedStagingBuffer;
@@ -19,6 +16,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class RenderRegionManager {
     private final Long2ReferenceOpenHashMap<RenderRegion> regions = new Long2ReferenceOpenHashMap<>();
@@ -59,6 +57,12 @@ public class RenderRegionManager {
         }
     }
 
+    /* Copied from fastutil 8 as we don't have access to it when limited to fastutil 7 */
+    private static <K, V> ObjectIterable<Reference2ReferenceMap.Entry<K, V>> fastIterable(Reference2ReferenceMap<K, V> map) {
+        final ObjectSet<Reference2ReferenceMap.Entry<K, V>> entries = map.reference2ReferenceEntrySet();
+        return entries instanceof Reference2ReferenceMap.FastEntrySet ? () -> ((Reference2ReferenceMap.FastEntrySet<K, V>)entries).fastIterator() : entries;
+    }
+
     private void uploadMeshes(CommandList commandList, RenderRegion region, Collection<ChunkBuildOutput> results) {
         var uploads = new ArrayList<PendingSectionUpload>();
 
@@ -69,7 +73,7 @@ public class RenderRegionManager {
             region.removeMeshes(result.render.getSectionIndex());
 
             // Add uploads for any new data
-            for (var entry : Reference2ReferenceMaps.fastIterable(result.meshes)) {
+            for (var entry : fastIterable(result.meshes)) {
                 BuiltSectionMeshParts mesh = Objects.requireNonNull(entry.getValue());
 
                 needIndexBuffer |= mesh.getIndexData() != null;
@@ -116,7 +120,7 @@ public class RenderRegionManager {
         var uploads = new ArrayList<PendingResortUpload>();
 
         for (ChunkBuildOutput result : results) {
-            for (var entry : Reference2ReferenceMaps.fastIterable(result.meshes)) {
+            for (var entry : fastIterable(result.meshes)) {
                 var pass = entry.getKey();
                 var mesh = entry.getValue();
 

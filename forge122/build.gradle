@@ -92,7 +92,7 @@ unimined.minecraft {
                 "jdk.dynalink/jdk.dynalink.beans=ALL-UNNAMED", "--add-opens",
                 "java.sql.rowset/javax.sql.rowset.serial=ALL-UNNAMED"
         ]
-        systemProperty("fml.coreMods.load", "org.taumc.celeritas.core.CeleritasLoadingPlugin")
+        systemProperty("fml.coreMods.load", "zone.rong.mixinbooter.MixinBooterPlugin,me.eigenraven.lwjgl3ify.core.Lwjgl3ifyCoremod,org.taumc.celeritas.core.CeleritasLoadingPlugin")
     }
 }
 
@@ -100,8 +100,15 @@ dependencies {
     implementation("org.joml:joml:1.10.5")
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
-    implementation("io.github.twilightflower:lwjgl3ify:1.0.1")
-    implementation("io.github.twilightflower:lwjgl3ify:1.0.1:forgePatches")
+    implementation("zone.rong:mixinbooter:10.5")
+    implementation("io.github.twilightflower:lwjgl3ify:1.0.1") {
+        exclude group: 'mezz.jei'
+        exclude group: 'curse.maven'
+    }
+    implementation("io.github.twilightflower:lwjgl3ify:1.0.1:forgePatches") {
+        exclude group: 'mezz.jei'
+        exclude group: 'curse.maven'
+    }
     implementation("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.7") {
         exclude group: 'org.apache.logging.log4j'
     }
@@ -115,7 +122,6 @@ dependencies {
     implementation "org.lwjgl:lwjgl-glfw:${lwjglVersion}:natives-linux"
     implementation "org.lwjgl:lwjgl-stb:${lwjglVersion}:natives-linux"
 
-    implementation("zone.rong:mixinbooter:10.5")
 }
 
 processResources {
