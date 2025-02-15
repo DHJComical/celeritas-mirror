@@ -516,7 +516,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
             return manager.getSectionCache().acquire(sX, sY, sZ);
         }, manager::scheduleAsyncTask);
         // The game will discard the future if the player disconnects, so we need to check that they are still connected.
-        while (Minecraft.getInstance().level != null) {
+        while (Minecraft.getInstance().level == this.world) {
             try {
                 section = sectionFuture.get(500, TimeUnit.MILLISECONDS);
                 break;

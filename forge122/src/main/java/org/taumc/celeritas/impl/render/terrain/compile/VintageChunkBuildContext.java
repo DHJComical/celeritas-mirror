@@ -77,6 +77,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
     @Override
     public void cleanup() {
         super.cleanup();
+        this.worldSlice.reset();
         Arrays.fill(this.usedWorldRenderers, false);
     }
 

@@ -1,7 +1,10 @@
 package org.taumc.celeritas.impl.world;
 
+import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
+import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
@@ -17,8 +20,11 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraftforge.client.model.pipeline.LightUtil;
+import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3i;
+import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 import org.taumc.celeritas.impl.world.biome.BiomeColorCache;
 import org.taumc.celeritas.impl.world.cloned.CeleritasBlockAccess;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
@@ -27,6 +33,10 @@ import org.taumc.celeritas.impl.world.cloned.ClonedChunkSectionCache;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Takes a slice of world state (block states, biome and light data arrays) and copies the data for use in off-thread
@@ -61,12 +71,15 @@ public class WorldSlice implements CeleritasBlockAccess {
     // The number of bits needed for each X/Y/Z component in a lookup table.
     private static final int TABLE_BITS = Integer.bitCount(TABLE_LENGTH - 1);
 
+    // The default block state used for out-of-bounds access
+    private static final IBlockState EMPTY_BLOCK_STATE = Blocks.AIR.getDefaultState();
+
     // The array size for the section lookup table.
     private static final int SECTION_TABLE_ARRAY_SIZE = TABLE_LENGTH * TABLE_LENGTH * TABLE_LENGTH;
 
     // The world this slice has copied data from
     private final World world;
-    private WorldType worldType;
+    private final WorldType worldType;
     private final int defaultSkyLightValue;
 
 
@@ -77,7 +90,7 @@ public class WorldSlice implements CeleritasBlockAccess {
     private ClonedChunkSection[] sections;
 
     // Biome caches for each chunk section
-    private Biome[][] biomeCaches;
+    private final Biome[][] biomeCaches;
 
     // The biome blend caches for each color resolver type
     // This map is always re-initialized, but the caches themselves are taken from an object pool
@@ -98,6 +111,12 @@ public class WorldSlice implements CeleritasBlockAccess {
 
     // The volume that this slice contains
     private StructureBoundingBox volume;
+
+    // A fallback BlockPos object to use when retrieving data from the level directly
+    private final BlockPos.MutableBlockPos fallbackPos = new BlockPos.MutableBlockPos();
+
+    // Extra cloned chunk sections that the slice needed
+    private final Long2ReferenceMap<ClonedChunkSection> extraClonedSections = new Long2ReferenceOpenHashMap<>();
 
     public static ChunkRenderContext prepare(World world, SectionPos origin, ClonedChunkSectionCache sectionCache) {
         Chunk chunk = world.getChunk(origin.x(), origin.z());
@@ -155,7 +174,7 @@ public class WorldSlice implements CeleritasBlockAccess {
                     int i = getLocalSectionIndex(x, y, z);
 
                     this.blockStatesArrays[i] = new IBlockState[SECTION_BLOCK_COUNT];
-                    Arrays.fill(this.blockStatesArrays[i], Blocks.AIR.getDefaultState());
+                    Arrays.fill(this.blockStatesArrays[i], EMPTY_BLOCK_STATE);
                 }
             }
         }
@@ -188,6 +207,10 @@ public class WorldSlice implements CeleritasBlockAccess {
                 }
             }
         }
+    }
+
+    public void reset() {
+        this.extraClonedSections.clear();
     }
 
     private void unpackBlockData(IBlockState[] states, ClonedChunkSection section, StructureBoundingBox box) {
@@ -263,7 +286,7 @@ public class WorldSlice implements CeleritasBlockAccess {
 
     public IBlockState getBlockState(int x, int y, int z) {
         if (!blockBoxContains(this.volume, x, y, z)) {
-            return Blocks.AIR.getDefaultState();
+            return this.getBlockStateFallback(x, y, z);
         }
 
         int relX = x - this.baseX;
@@ -446,6 +469,60 @@ public class WorldSlice implements CeleritasBlockAccess {
             return !world.provider.hasSkyLight() ? 0.9f : 1.0f;
         }
         return LightUtil.diffuseLight(direction);
+    }
+
+    @Nullable
+    private ClonedChunkSection fetchFallbackSectionForPos(int x, int y, int z) {
+        int sX = PositionUtil.posToSectionCoord(x);
+        int sY = PositionUtil.posToSectionCoord(y);
+        int sZ = PositionUtil.posToSectionCoord(z);
+        long key = PositionUtil.packSection(sX, sY, sZ);
+        var section = this.extraClonedSections.get(key);
+        if (section != null) {
+            return section;
+        }
+        var renderer = CeleritasWorldRenderer.instanceNullable();
+        if (renderer == null) {
+            return null;
+        }
+        var manager = renderer.getRenderSectionManager();
+        if (manager == null) {
+            return null;
+        }
+        var sectionFuture = CompletableFuture.supplyAsync(() -> {
+            return manager.getSectionCache().acquire(sX, sY, sZ);
+        }, manager::scheduleAsyncTask);
+        // The game will discard the future if the player disconnects, so we need to check that they are still connected.
+        while (Minecraft.getMinecraft().world == this.world) {
+            try {
+                section = sectionFuture.get(500, TimeUnit.MILLISECONDS);
+                break;
+            } catch (ExecutionException e) {
+                throw new RuntimeException("Failed to fetch fallback section", e);
+            } catch (InterruptedException | TimeoutException ignored) {
+            }
+        }
+        if (section != null) {
+            this.extraClonedSections.put(key, section);
+        }
+        return section;
+    }
+
+    /**
+     * Read the block state off the main thread (safely) by cloning the needed section.
+     */
+    private IBlockState getBlockStateFallback(int x, int y, int z) {
+        if (Minecraft.getMinecraft().isCallingFromMinecraftThread()) {
+            this.fallbackPos.setPos(x, y, z);
+            return this.world.getBlockState(this.fallbackPos);
+        } else {
+            ClonedChunkSection sectionSnapshot = this.fetchFallbackSectionForPos(x, y, z);
+            if (sectionSnapshot != null) {
+                return sectionSnapshot.getBlockState(x & 15, y & 15, z & 15);
+            } else {
+                return EMPTY_BLOCK_STATE;
+            }
+        }
     }
 
     // [VanillaCopy] PalettedContainer#toIndex
