@@ -1,5 +1,5 @@
 plugins {
-    id 'java-gradle-plugin' // so we can assign and ID to our plugin
+    id 'java-library'
 }
 
 dependencies {
@@ -12,13 +12,4 @@ repositories {
     mavenCentral()
     maven { url = "https://maven.kikugie.dev/releases" }
     maven { url = "https://maven.kikugie.dev/snapshots" }
-}
-
-gradlePlugin {
-    plugins {
-        register("celeritas-project-manager") {
-            id = "celeritas-project-manager"
-            implementationClass = "org.embeddedt.embeddium.gradle.stonecutter.CeleritasProjectManagerPlugin"
-        }
-    }
 }
