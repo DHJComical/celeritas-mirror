@@ -264,6 +264,10 @@ unimined.minecraft {
         }
     }
 
+    runs.config('server') {
+        enabled = false
+    }
+
 }
 
 tasks.named("runClient") {

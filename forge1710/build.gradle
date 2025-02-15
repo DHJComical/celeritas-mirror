@@ -80,6 +80,10 @@ unimined.minecraft {
         ]
         systemProperty("fml.coreMods.load", "org.taumc.celeritas.core.CeleritasLoadingPlugin")
     }
+
+    runs.config('server') {
+        enabled = false
+    }
 }
 
 dependencies {

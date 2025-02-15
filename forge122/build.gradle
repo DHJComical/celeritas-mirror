@@ -94,6 +94,10 @@ unimined.minecraft {
         ]
         systemProperty("fml.coreMods.load", "zone.rong.mixinbooter.MixinBooterPlugin,me.eigenraven.lwjgl3ify.core.Lwjgl3ifyCoremod,org.taumc.celeritas.core.CeleritasLoadingPlugin")
     }
+
+    runs.config('server') {
+        enabled = false
+    }
 }
 
 dependencies {
