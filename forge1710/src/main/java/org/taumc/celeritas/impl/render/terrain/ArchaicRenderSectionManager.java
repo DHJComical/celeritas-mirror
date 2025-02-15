@@ -16,8 +16,8 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
 import org.jetbrains.annotations.Nullable;
-import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
-import org.taumc.celeritas.impl.render.terrain.compile.VintageRenderSectionBuiltInfo;
+import org.taumc.celeritas.impl.render.terrain.compile.ArchaicChunkBuildContext;
+import org.taumc.celeritas.impl.render.terrain.compile.ArchaicRenderSectionBuiltInfo;
 import org.taumc.celeritas.impl.render.terrain.compile.task.ChunkBuilderMeshingTask;
 import org.taumc.celeritas.impl.render.terrain.sprite.SpriteUtil;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
@@ -26,18 +26,18 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-public class VintageRenderSectionManager extends RenderSectionManager {
+public class ArchaicRenderSectionManager extends RenderSectionManager {
     private final WorldClient world;
     private final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
 
-    public VintageRenderSectionManager(RenderPassConfiguration<?> configuration, WorldClient world, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
-        super(configuration, () -> new VintageChunkBuildContext(world, configuration), VintageChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
+    public ArchaicRenderSectionManager(RenderPassConfiguration<?> configuration, WorldClient world, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
+        super(configuration, () -> new ArchaicChunkBuildContext(world, configuration), ArchaicChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
         this.world = world;
     }
 
-    public static VintageRenderSectionManager create(ChunkVertexType vertexType, WorldClient world, int renderDistance, CommandList commandList) {
+    public static ArchaicRenderSectionManager create(ChunkVertexType vertexType, WorldClient world, int renderDistance, CommandList commandList) {
         // TODO support thread option
-        return new VintageRenderSectionManager(VintageRenderPassConfigurationBuilder.build(vertexType), world, renderDistance, commandList, 0, 16, -1);
+        return new ArchaicRenderSectionManager(ArchaicRenderPassConfigurationBuilder.build(vertexType), world, renderDistance, commandList, 0, 16, -1);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class VintageRenderSectionManager extends RenderSectionManager {
     protected void updateSectionInfo(RenderSection render, ContextBundle<RenderSection> info) {
         super.updateSectionInfo(render, info);
 
-        if (info == null || info.getContext(VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES).isEmpty()) {
+        if (info == null || info.getContext(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES).isEmpty()) {
             this.sectionsWithGlobalEntities.remove(render);
         } else {
             this.sectionsWithGlobalEntities.add(render);
@@ -131,7 +131,7 @@ public class VintageRenderSectionManager extends RenderSectionManager {
                     continue;
                 }
 
-                var sprites = (List<TextureAtlasSprite>)section.getContextOrDefault(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES);
+                var sprites = (List<TextureAtlasSprite>)section.getContextOrDefault(ArchaicRenderSectionBuiltInfo.ANIMATED_SPRITES);
 
                 //noinspection ForLoopReplaceableByForEach
                 for (int i = 0; i < sprites.size(); i++) {

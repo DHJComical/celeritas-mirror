@@ -5,7 +5,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
-import org.taumc.celeritas.mixin.CeleritasVintageMixinPlugin;
+import org.taumc.celeritas.mixin.CeleritasArchaicMixinPlugin;
 
 import java.util.regex.Pattern;
 
@@ -21,7 +21,7 @@ public class CeleritasLWJGLRelocationTransformer implements IClassTransformer {
                 reader.accept(remapper, 0);
                 return writer.toByteArray();
             } catch(Exception e) {
-                CeleritasVintageMixinPlugin.LOGGER.error("Exception remapping class", e);
+                CeleritasArchaicMixinPlugin.LOGGER.error("Exception remapping class", e);
                 return basicClass;
             }
         }

@@ -8,7 +8,7 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import java.util.Collection;
 import java.util.List;
 
-public class VintageRenderSectionBuiltInfo {
+public class ArchaicRenderSectionBuiltInfo {
     /**
      * The collection of animated sprites contained by this rendered chunk section.
      */

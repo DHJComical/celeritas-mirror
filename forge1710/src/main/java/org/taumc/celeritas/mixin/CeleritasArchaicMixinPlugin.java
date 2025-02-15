@@ -19,7 +19,7 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
+public class CeleritasArchaicMixinPlugin implements IMixinConfigPlugin {
     public static final Logger LOGGER = LogManager.getLogger("CeleritasMixins");
 
     @Override
@@ -59,7 +59,7 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
         List<FileSystem> fileSystemsToClose = new ArrayList<>();
         List<Path> rootPaths = Stream.of("org.taumc.celeritas.mixin")
                 .flatMap(str -> {
-                    URL url = CeleritasVintageMixinPlugin.class.getResource("/" + str.replace('.', '/'));
+                    URL url = CeleritasArchaicMixinPlugin.class.getResource("/" + str.replace('.', '/'));
                     if (url == null) {
                         return Stream.empty();
                     }

@@ -12,12 +12,12 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncode
 import org.embeddedt.embeddium.impl.util.QuadUtil;
 import org.taumc.celeritas.impl.extensions.TextureMapExtension;
 
-public class VintageChunkBuildContext extends ChunkBuildContext {
+public class ArchaicChunkBuildContext extends ChunkBuildContext {
     public static final int NUM_PASSES = 2;
 
     private final TextureMapExtension textureAtlas;
 
-    public VintageChunkBuildContext(WorldClient world, RenderPassConfiguration renderPassConfiguration) {
+    public ArchaicChunkBuildContext(WorldClient world, RenderPassConfiguration renderPassConfiguration) {
         super(renderPassConfiguration);
         this.textureAtlas = (TextureMapExtension)Minecraft.getMinecraft().getTextureMapBlocks();
     }
@@ -30,7 +30,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
         }
 
         var holder = buffers.get(material);
-        var animatedSpritesList = holder.getSectionContextBundle().getContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES);
+        var animatedSpritesList = holder.getSectionContextBundle().getContext(ArchaicRenderSectionBuiltInfo.ANIMATED_SPRITES);
 
         // Require
         if ((vertexCount & 0x3) != 0) {

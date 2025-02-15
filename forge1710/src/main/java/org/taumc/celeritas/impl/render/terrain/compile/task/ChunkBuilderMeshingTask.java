@@ -29,8 +29,8 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.joml.Vector3d;
 import org.taumc.celeritas.impl.extensions.TessellatorExtension;
-import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
-import org.taumc.celeritas.impl.render.terrain.compile.VintageRenderSectionBuiltInfo;
+import org.taumc.celeritas.impl.render.terrain.compile.ArchaicChunkBuildContext;
+import org.taumc.celeritas.impl.render.terrain.compile.ArchaicRenderSectionBuiltInfo;
 import org.taumc.celeritas.impl.render.terrain.occlusion.ChunkOcclusionDataBuilder;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
 
@@ -74,7 +74,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
     @Override
     public ChunkBuildOutput execute(ChunkBuildContext context, CancellationToken cancellationToken) {
-        VintageChunkBuildContext buildContext = (VintageChunkBuildContext)context;
+        ArchaicChunkBuildContext buildContext = (ArchaicChunkBuildContext)context;
         ContextBundle<RenderSection> renderData = new ContextBundle<>(RenderSection.class);
         initializeContextBundle(renderData);
         ChunkOcclusionDataBuilder occluder = new ChunkOcclusionDataBuilder();
@@ -121,11 +121,11 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         if (block.hasTileEntity(section.getExtBlockMetadata(x & 15, y & 15, z & 15))) {
                             TileEntity tileEntity = chunk.getBlockTileEntityInChunk(x & 15, y, z & 15);
                             if (TileEntityRendererDispatcher.instance.hasSpecialRenderer(tileEntity)) {
-                                renderData.getContext(VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES).add(tileEntity);
+                                renderData.getContext(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES).add(tileEntity);
                             }
                         }
 
-                        for (int pass = 0; pass < VintageChunkBuildContext.NUM_PASSES; pass++) {
+                        for (int pass = 0; pass < ArchaicChunkBuildContext.NUM_PASSES; pass++) {
                             if (block.canRenderInPass(pass)) {
                                 setForgeRenderPass(pass);
                                 tesselator.startDrawingQuads();
@@ -157,7 +157,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes = BuiltSectionMeshParts.groupFromBuildBuffers(buffers,(float)camera.x - minX, (float)camera.y - minY, (float)camera.z - minZ);
 
         if (!meshes.isEmpty()) {
-            renderData.setContext(VintageRenderSectionBuiltInfo.HAS_BLOCK_GEOMETRY, true);
+            renderData.setContext(ArchaicRenderSectionBuiltInfo.HAS_BLOCK_GEOMETRY, true);
         }
 
         encodeVisibilityData(occluder, renderData);
@@ -199,18 +199,18 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     }
 
     private static void initializeContextBundle(ContextBundle<RenderSection> renderData) {
-        renderData.setContext(VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, new ArrayList<>());
-        renderData.setContext(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, new ArrayList<>());
-        renderData.setContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES, new ObjectOpenHashSet<>());
+        renderData.setContext(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, new ArrayList<>());
+        renderData.setContext(ArchaicRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, new ArrayList<>());
+        renderData.setContext(ArchaicRenderSectionBuiltInfo.ANIMATED_SPRITES, new ObjectOpenHashSet<>());
     }
 
     private static void encodeVisibilityData(ChunkOcclusionDataBuilder occluder, ContextBundle<RenderSection> renderData) {
         var data = occluder.build();
         renderData.setContext(RenderSection.VISIBILITY_DATA, VisibilityEncoding.encode((from, to) -> data.isVisibleThrough(FACINGS[from], FACINGS[to])));
 
-        renderData.mapContext(VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES, List::copyOf);
+        renderData.mapContext(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, List::copyOf);
+        renderData.mapContext(ArchaicRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, List::copyOf);
+        renderData.mapContext(ArchaicRenderSectionBuiltInfo.ANIMATED_SPRITES, List::copyOf);
     }
 
 }

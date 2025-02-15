@@ -11,7 +11,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.Map;
 
-public class VintageRenderPassConfigurationBuilder {
+public class ArchaicRenderPassConfigurationBuilder {
 
     private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(int pass) {
         return TerrainRenderPass.builder().setupState(() -> {

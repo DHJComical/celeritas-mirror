@@ -28,9 +28,9 @@ import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.*;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
-import org.taumc.celeritas.CeleritasVintage;
+import org.taumc.celeritas.CeleritasArchaic;
 import org.taumc.celeritas.impl.extensions.RenderGlobalExtension;
-import org.taumc.celeritas.impl.render.terrain.compile.VintageRenderSectionBuiltInfo;
+import org.taumc.celeritas.impl.render.terrain.compile.ArchaicRenderSectionBuiltInfo;
 import org.taumc.celeritas.mixin.core.terrain.ActiveRenderInfoAccessor;
 
 import java.util.*;
@@ -54,7 +54,7 @@ public class CeleritasWorldRenderer {
     private Viewport currentViewport;
 
     @Getter
-    private VintageRenderSectionManager renderSectionManager;
+    private ArchaicRenderSectionManager renderSectionManager;
 
     /**
      * @return The CeleritasWorldRenderer based on the current dimension
@@ -276,7 +276,7 @@ public class CeleritasWorldRenderer {
         // TODO offer CVF
         ChunkVertexType vertexType = ChunkMeshFormats.VANILLA_LIKE;
 
-        this.renderSectionManager = VintageRenderSectionManager.create(vertexType, this.world, this.renderDistance, commandList);
+        this.renderSectionManager = ArchaicRenderSectionManager.create(vertexType, this.world, this.renderDistance, commandList);
 
         var tracker = ChunkTrackerHolder.get(this.world);
         ChunkTracker.forEachChunk(tracker.getReadyChunks(), this.renderSectionManager::onChunkAdded);
@@ -317,7 +317,7 @@ public class CeleritasWorldRenderer {
                 var renderSectionId = renderSectionIterator.nextByteAsInt();
                 var renderSection = renderRegion.getSection(renderSectionId);
 
-                var blockEntities = renderSection.getContextOrDefault(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
+                var blockEntities = renderSection.getContextOrDefault(ArchaicRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
 
                 if (blockEntities.isEmpty()) {
                     continue;
@@ -328,7 +328,7 @@ public class CeleritasWorldRenderer {
         }
 
         for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
-            var blockEntities = renderSection.getContextOrDefault(VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
+            var blockEntities = renderSection.getContextOrDefault(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
 
             if (blockEntities.isEmpty()) {
                 continue;
@@ -362,13 +362,13 @@ public class CeleritasWorldRenderer {
                 var renderSectionId = renderSectionIterator.nextByteAsInt();
                 var renderSection = renderRegion.getSection(renderSectionId);
 
-                var blockEntities = renderSection.getContextOrDefault(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
+                var blockEntities = renderSection.getContextOrDefault(ArchaicRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
                 blockEntities.forEach(consumer);
             }
         }
 
         for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
-            var blockEntities = renderSection.getContextOrDefault(VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
+            var blockEntities = renderSection.getContextOrDefault(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
             blockEntities.forEach(consumer);
         }
     }
@@ -381,7 +381,7 @@ public class CeleritasWorldRenderer {
             TileEntityRendererDispatcher.instance.renderTileEntity(tileEntity, partialTicks);
         } catch(RuntimeException e) {
             if(tileEntity.isInvalid()) {
-                CeleritasVintage.logger().error("Suppressing crash from invalid tile entity", e);
+                CeleritasArchaic.logger().error("Suppressing crash from invalid tile entity", e);
             } else {
                 throw e;
             }
@@ -406,7 +406,7 @@ public class CeleritasWorldRenderer {
                 var renderSectionId = renderSectionIterator.nextByteAsInt();
                 var renderSection = renderRegion.getSection(renderSectionId);
 
-                var blockEntities = renderSection.getContextOrDefault(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
+                var blockEntities = renderSection.getContextOrDefault(ArchaicRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
 
                 if (blockEntities.isEmpty()) {
                     continue;
@@ -421,7 +421,7 @@ public class CeleritasWorldRenderer {
 
     private void renderGlobalBlockEntities(int pass, float partialTicks) {
         for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
-            var blockEntities = renderSection.getContextOrDefault(VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
+            var blockEntities = renderSection.getContextOrDefault(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
 
             if (blockEntities.isEmpty()) {
                 continue;

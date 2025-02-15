@@ -18,8 +18,8 @@ import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 
 import java.lang.management.ManagementFactory;
 
-@Mod(modid = CeleritasVintage.MODID, useMetadata = true)
-public class CeleritasVintage {
+@Mod(modid = CeleritasArchaic.MODID, useMetadata = true)
+public class CeleritasArchaic {
     public static final String MODID = "celeritas";
     private static final Logger LOGGER = LogManager.getLogger("Celeritas");
     public static String VERSION;
