@@ -163,6 +163,10 @@ public class CeleritasWorldRenderer {
                              boolean updateChunksImmediately) {
         NativeBuffer.reclaim(false);
 
+        if (this.renderSectionManager != null) {
+            this.renderSectionManager.consumeOcclusionResult();
+        }
+
         this.processChunkEvents();
 
         this.useEntityCulling = true;
@@ -324,6 +328,10 @@ public class CeleritasWorldRenderer {
                 var renderSectionId = renderSectionIterator.nextByteAsInt();
                 var renderSection = renderRegion.getSection(renderSectionId);
 
+                if (renderSection == null) {
+                    continue;
+                }
+
                 var blockEntities = renderSection.getContextOrDefault(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
 
                 if (blockEntities.isEmpty()) {
@@ -368,6 +376,10 @@ public class CeleritasWorldRenderer {
             while (renderSectionIterator.hasNext()) {
                 var renderSectionId = renderSectionIterator.nextByteAsInt();
                 var renderSection = renderRegion.getSection(renderSectionId);
+
+                if (renderSection == null) {
+                    continue;
+                }
 
                 var blockEntities = renderSection.getContextOrDefault(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
                 blockEntities.forEach(consumer);
@@ -432,6 +444,10 @@ public class CeleritasWorldRenderer {
             while (renderSectionIterator.hasNext()) {
                 var renderSectionId = renderSectionIterator.nextByteAsInt();
                 var renderSection = renderRegion.getSection(renderSectionId);
+
+                if (renderSection == null) {
+                    continue;
+                }
 
                 var blockEntities = renderSection.getContextOrDefault(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
 

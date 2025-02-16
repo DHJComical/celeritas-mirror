@@ -41,7 +41,10 @@ import org.joml.Vector3i;
 import org.joml.Vector3ic;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
@@ -84,6 +87,8 @@ public abstract class RenderSectionManager {
     private final Set<TerrainRenderPass> disabledRenderPasses;
 
     private final int minSection, maxSection;
+
+    private CompletableFuture<VisibleChunkCollector> currentOcclusionFuture;
 
     public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier, BiFunction<RenderDevice, ChunkVertexType, ChunkRenderer> chunkRenderer, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
         this.chunkRenderer = chunkRenderer.apply(RenderDevice.INSTANCE, configuration.vertexType());
@@ -226,20 +231,46 @@ public abstract class RenderSectionManager {
 
     protected abstract boolean shouldRespectUpdateTaskQueueSizeLimit();
 
-    private void createTerrainRenderList(Viewport viewport, int frame, boolean spectator) {
-        this.resetRenderLists();
-
-        final var searchDistance = this.getSearchDistance();
-        final var useOcclusionCulling = this.shouldUseOcclusionCulling(viewport, spectator);
-
-        var visitor = new VisibleChunkCollector(frame, !this.shouldRespectUpdateTaskQueueSizeLimit());
-
-        this.occlusionCuller.findVisible(visitor, viewport, searchDistance, useOcclusionCulling, frame);
+    private void applyGraphSearchResults(CompletableFuture<VisibleChunkCollector> occlusionFuture) {
+        VisibleChunkCollector visitor = occlusionFuture.join();
 
         this.setRenderLists(visitor.createRenderLists());
         this.rebuildLists = visitor.getRebuildLists();
 
         this.checkTranslucencyChange();
+    }
+
+    public void consumeOcclusionResult() {
+        if (this.currentOcclusionFuture != null) {
+            this.applyGraphSearchResults(this.currentOcclusionFuture);
+            this.regions.flipRenderLists();
+            this.currentOcclusionFuture = null;
+        }
+    }
+
+    private static final Executor OCCLUSION_EXECUTOR = null; // Executors.newSingleThreadExecutor();
+
+    private void createTerrainRenderList(Viewport viewport, int frame, boolean spectator) {
+        final var searchDistance = this.getSearchDistance();
+        final var useOcclusionCulling = this.shouldUseOcclusionCulling(viewport, spectator);
+
+        var visitor = new VisibleChunkCollector(frame, !this.shouldRespectUpdateTaskQueueSizeLimit());
+
+        if (this.currentOcclusionFuture != null) {
+            throw new IllegalStateException("Occlusion work in progress while trying to submit next task");
+        }
+
+        Supplier<VisibleChunkCollector> occlusionTask = () -> {
+            this.occlusionCuller.findVisible(visitor, viewport, searchDistance, useOcclusionCulling, frame);
+            return visitor;
+        };
+
+        if (OCCLUSION_EXECUTOR != null) {
+            this.currentOcclusionFuture = CompletableFuture.supplyAsync(occlusionTask, OCCLUSION_EXECUTOR);
+        } else {
+            this.currentOcclusionFuture = CompletableFuture.completedFuture(occlusionTask.get());
+            this.consumeOcclusionResult();
+        }
     }
 
     protected abstract boolean useFogOcclusion();
@@ -534,6 +565,11 @@ public abstract class RenderSectionManager {
     }
 
     public void destroy() {
+        if (this.currentOcclusionFuture != null) {
+            this.currentOcclusionFuture.join();
+            this.currentOcclusionFuture = null;
+        }
+
         this.builder.shutdown(); // stop all the workers, and cancel any tasks
 
         for (var result : this.collectChunkBuildResults()) {

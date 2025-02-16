@@ -13,6 +13,7 @@ import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class RenderRegion {
     private final StagingBuffer stagingBuffer;
     private final int x, y, z;
 
-    private final ChunkRenderList renderList;
+    private ChunkRenderList frontRenderList, backRenderList;
 
     private final RenderSection[] sections = new RenderSection[RenderRegion.REGION_SIZE];
     private int sectionCount;
@@ -58,7 +59,8 @@ public class RenderRegion {
 
         this.stagingBuffer = stagingBuffer;
         this.stride = stride;
-        this.renderList = new ChunkRenderList(this);
+        this.frontRenderList = new ChunkRenderList(this);
+        this.backRenderList = new ChunkRenderList(this);
     }
 
     public static long key(int x, int y, int z) {
@@ -206,6 +208,7 @@ public class RenderRegion {
         this.sectionCount--;
     }
 
+    @Nullable
     public RenderSection getSection(int id) {
         return this.sections[id];
     }
@@ -234,7 +237,13 @@ public class RenderRegion {
     }
 
     public ChunkRenderList getRenderList() {
-        return this.renderList;
+        return this.frontRenderList;
+    }
+
+    public void flipRenderList() {
+        var tmp = this.backRenderList;
+        this.backRenderList = this.frontRenderList;
+        this.frontRenderList = tmp;
     }
 
     public static class DeviceResources {

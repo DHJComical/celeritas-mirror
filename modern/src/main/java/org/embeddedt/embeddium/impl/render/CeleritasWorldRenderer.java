@@ -179,6 +179,10 @@ public class CeleritasWorldRenderer {
                              boolean updateChunksImmediately) {
         NativeBuffer.reclaim(false);
 
+        if (this.renderSectionManager != null) {
+            this.renderSectionManager.consumeOcclusionResult();
+        }
+
         boolean isShadowPass = this.renderSectionManager.isInShadowPass();
 
         // Skip some unnecessary work in the shadow pass
@@ -367,6 +371,10 @@ public class CeleritasWorldRenderer {
                 var renderSectionId = renderSectionIterator.nextByteAsInt();
                 var renderSection = renderRegion.getSection(renderSectionId);
 
+                if (renderSection == null) {
+                    continue;
+                }
+
                 var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
 
                 if (blockEntities.isEmpty()) {
@@ -411,6 +419,10 @@ public class CeleritasWorldRenderer {
             while (renderSectionIterator.hasNext()) {
                 var renderSectionId = renderSectionIterator.nextByteAsInt();
                 var renderSection = renderRegion.getSection(renderSectionId);
+
+                if (renderSection == null) {
+                    continue;
+                }
 
                 var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
                 blockEntities.forEach(consumer);
@@ -486,6 +498,10 @@ public class CeleritasWorldRenderer {
             while (renderSectionIterator.hasNext()) {
                 var renderSectionId = renderSectionIterator.nextByteAsInt();
                 var renderSection = renderRegion.getSection(renderSectionId);
+
+                if (renderSection == null) {
+                    continue;
+                }
 
                 var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
 

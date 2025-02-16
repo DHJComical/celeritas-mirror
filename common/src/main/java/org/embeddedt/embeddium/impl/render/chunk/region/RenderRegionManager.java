@@ -50,6 +50,12 @@ public class RenderRegionManager {
         }
     }
 
+    public void flipRenderLists() {
+        for (RenderRegion region : this.regions.values()) {
+            region.flipRenderList();
+        }
+    }
+
     public void uploadMeshes(CommandList commandList, Collection<ChunkBuildOutput> results) {
         for (var entry : this.createMeshUploadQueues(results)) {
             this.uploadMeshes(commandList, entry.getKey(), entry.getValue().stream().filter(o -> !o.isIndexOnlyUpload()).toList());
