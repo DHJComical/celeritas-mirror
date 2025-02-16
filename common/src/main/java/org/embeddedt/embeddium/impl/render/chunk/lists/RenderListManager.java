@@ -19,7 +19,12 @@ import java.util.function.Supplier;
 
 public class RenderListManager {
     private static final boolean ENABLE_ASYNC_GRAPH_SEARCH = true;
-    private static final ExecutorService ASYNC_GRAPH_SEARCH_EXECUTOR = Executors.newSingleThreadExecutor();
+    private static final ExecutorService ASYNC_GRAPH_SEARCH_EXECUTOR = Executors.newSingleThreadExecutor(runnable -> {
+        Thread thread = new Thread(runnable);
+        thread.setName("Celeritas chunk graph search thread");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     @Getter
     @NotNull
