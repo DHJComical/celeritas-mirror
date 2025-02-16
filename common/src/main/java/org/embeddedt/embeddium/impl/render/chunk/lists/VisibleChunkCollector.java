@@ -9,6 +9,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Queue;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionCuller;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionNode;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 
 public class VisibleChunkCollector implements OcclusionCuller.Visitor {
@@ -41,7 +42,9 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
     }
 
     @Override
-    public void visit(RenderSection section, boolean visible) {
+    public void visit(OcclusionNode node, boolean visible) {
+        var section = node.getRenderSection();
+
         // Note: even if a section does not have render objects, we must ensure the render list is initialized and put
         // into the sorted queue of lists, so that we maintain the correct order of draw calls.
         RenderRegion region = section.getRegion();

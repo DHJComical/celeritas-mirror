@@ -1,12 +1,16 @@
 package org.embeddedt.embeddium.impl.render.chunk.lists;
 
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
+import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import lombok.Getter;
 import lombok.Setter;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkUpdateType;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionCuller;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionNode;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
+import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayDeque;
@@ -35,6 +39,8 @@ public class RenderListManager {
 
     private final OcclusionCuller occlusionCuller;
 
+    private final Long2ReferenceMap<OcclusionNode> occlusionNodes = new Long2ReferenceOpenHashMap<>();
+
     private CompletableFuture<VisibleChunkCollector> currentOcclusionFuture;
 
     @Getter
@@ -46,8 +52,10 @@ public class RenderListManager {
 
     private int pendingLastUpdatedFrame;
 
-    public RenderListManager(Long2ReferenceMap<RenderSection> sections, int minSectionY, int maxSectionY) {
-        this.occlusionCuller = new OcclusionCuller(sections, minSectionY, maxSectionY);
+    private final ArrayDeque<Runnable> updateTasks = new ArrayDeque<>();
+
+    public RenderListManager(int minSectionY, int maxSectionY) {
+        this.occlusionCuller = new OcclusionCuller(this.occlusionNodes, minSectionY, maxSectionY);
         this.renderLists = SortedRenderLists.empty();
         this.rebuildLists = new EnumMap<>(ChunkUpdateType.class);
 
@@ -81,17 +89,21 @@ public class RenderListManager {
     }
 
     public void finishPreviousGraphUpdate() {
-        if (currentOcclusionFuture == null) {
-            return;
+        if (currentOcclusionFuture != null) {
+            VisibleChunkCollector visitor = currentOcclusionFuture.join();
+
+            this.renderLists = visitor.createRenderLists();
+            this.rebuildLists = visitor.getRebuildLists();
+
+            this.currentOcclusionFuture = null;
+            this.lastUpdatedFrame = this.pendingLastUpdatedFrame;
         }
 
-        VisibleChunkCollector visitor = currentOcclusionFuture.join();
+        Runnable task;
 
-        this.renderLists = visitor.createRenderLists();
-        this.rebuildLists = visitor.getRebuildLists();
-
-        this.currentOcclusionFuture = null;
-        this.lastUpdatedFrame = this.pendingLastUpdatedFrame;
+        while ((task = updateTasks.poll()) != null) {
+            task.run();
+        }
     }
 
     public void destroy() {
@@ -99,5 +111,99 @@ public class RenderListManager {
             currentOcclusionFuture.join();
             currentOcclusionFuture = null;
         }
+    }
+
+    private OcclusionNode getOcclusionNode(int x, int y, int z) {
+        return this.occlusionNodes.get(PositionUtil.packSection(x, y, z));
+    }
+
+    private void connectNeighborNodes(OcclusionNode render) {
+        for (int direction = 0; direction < GraphDirection.COUNT; direction++) {
+            OcclusionNode adj = this.getOcclusionNode(render.getChunkX() + GraphDirection.x(direction),
+                    render.getChunkY() + GraphDirection.y(direction),
+                    render.getChunkZ() + GraphDirection.z(direction));
+
+            if (adj != null) {
+                adj.setAdjacentNode(GraphDirection.opposite(direction), render);
+                render.setAdjacentNode(direction, adj);
+            }
+        }
+    }
+
+    private void disconnectNeighborNodes(OcclusionNode render) {
+        for (int direction = 0; direction < GraphDirection.COUNT; direction++) {
+            OcclusionNode adj = render.getAdjacent(direction);
+
+            if (adj != null) {
+                adj.setAdjacentNode(GraphDirection.opposite(direction), null);
+                render.setAdjacentNode(direction, null);
+            }
+        }
+    }
+
+    private void assertOcclusionNotRunning() {
+        if (this.currentOcclusionFuture != null) {
+            throw new IllegalStateException("Attempted to update occlusion graph during occlusion!");
+        }
+    }
+
+    public void attachRenderSection(RenderSection section) {
+        this.assertOcclusionNotRunning();
+
+        var key = section.positionAsLong();
+
+        OcclusionNode occlusionNode = this.occlusionNodes.get(key);
+
+        if (occlusionNode != null) {
+            throw new IllegalStateException("Occlusion node already exists for section " + section);
+        }
+
+        var node = new OcclusionNode(section);
+        this.occlusionNodes.put(key, node);
+        this.connectNeighborNodes(node);
+        this.needsUpdate = true;
+    }
+
+    public void detachRenderSection(RenderSection section) {
+        this.assertOcclusionNotRunning();
+
+        var key = section.positionAsLong();
+
+        OcclusionNode occlusionNode = this.occlusionNodes.remove(key);
+
+        if (occlusionNode == null) {
+            throw new IllegalStateException("Occlusion node does not exist for section " + section);
+        }
+
+        this.disconnectNeighborNodes(occlusionNode);
+        this.needsUpdate = true;
+    }
+
+    private void submitUpdateTask(Runnable runnable) {
+        if (this.currentOcclusionFuture == null) {
+            runnable.run();
+        } else {
+            this.updateTasks.add(runnable);
+        }
+    }
+
+    public void updateVisibilityData(int x, int y, int z, long visibilityData) {
+        this.submitUpdateTask(() -> {
+            var node = this.getOcclusionNode(x, y, z);
+            if (node != null) {
+                node.setVisibilityData(visibilityData);
+                this.needsUpdate = true;
+            }
+        });
+    }
+
+    public boolean isSectionVisible(int x, int y, int z) {
+        OcclusionNode render = this.getOcclusionNode(x, y, z);
+
+        if (render == null) {
+            return false;
+        }
+
+        return render.getLastVisibleFrame() >= this.lastUpdatedFrame;
     }
 }

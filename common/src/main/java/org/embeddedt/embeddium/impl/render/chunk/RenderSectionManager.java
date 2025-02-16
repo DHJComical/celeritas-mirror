@@ -18,7 +18,9 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.RenderListManager;
+import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegionManager;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
@@ -85,8 +87,8 @@ public abstract class RenderSectionManager {
 
         this.minSection = minSection;
         this.maxSection = maxSection;
-        this.renderListManager = new RenderListManager(Long2ReferenceMaps.unmodifiable(this.sectionByPosition), this.minSection, this.maxSection);
-        this.shadowRenderListManager = new RenderListManager(Long2ReferenceMaps.unmodifiable(this.sectionByPosition), this.minSection, this.maxSection);
+        this.renderListManager = new RenderListManager(this.minSection, this.maxSection);
+        this.shadowRenderListManager = new RenderListManager(this.minSection, this.maxSection);
 
         this.disabledRenderPasses = new ReferenceArraySet<>();
     }
@@ -128,7 +130,7 @@ public abstract class RenderSectionManager {
             return;
         }
 
-        this.getRenderLists().setNeedsUpdate(false);
+        this.getCurrentRenderListManager().setNeedsUpdate(false);
     }
 
     private void checkTranslucencyChange() {
@@ -143,7 +145,7 @@ public abstract class RenderSectionManager {
     }
 
     private void scheduleTranslucencyUpdates(int camSectionX, int camSectionY, int camSectionZ) {
-        var renderListManager = this.getRenderLists();
+        var renderListManager = this.getCurrentRenderListManager();
         var sortRebuildList = renderListManager.getRebuildLists().get(ChunkUpdateType.SORT);
         var importantSortRebuildList = renderListManager.getRebuildLists().get(ChunkUpdateType.IMPORTANT_SORT);
         var allowImportant = allowImportantRebuilds();
@@ -209,7 +211,7 @@ public abstract class RenderSectionManager {
         final var searchDistance = this.getSearchDistance();
         final var useOcclusionCulling = this.shouldUseOcclusionCulling(viewport, spectator);
 
-        this.getRenderLists().startGraphUpdate(viewport, frame, searchDistance, useOcclusionCulling, !this.shouldRespectUpdateTaskQueueSizeLimit());
+        this.getCurrentRenderListManager().startGraphUpdate(viewport, frame, searchDistance, useOcclusionCulling, !this.shouldRespectUpdateTaskQueueSizeLimit());
     }
 
     protected abstract boolean useFogOcclusion();
@@ -230,7 +232,7 @@ public abstract class RenderSectionManager {
     protected abstract boolean shouldUseOcclusionCulling(Viewport viewport, boolean spectator);
 
     private boolean hasTranslucencySortedSections() {
-        return this.getRenderLists().getRenderLists().getPasses().stream().anyMatch(TerrainRenderPass::isSorted);
+        return this.getCurrentRenderListManager().getRenderLists().getPasses().stream().anyMatch(TerrainRenderPass::isSorted);
     }
 
     protected abstract boolean isSectionVisuallyEmpty(int x, int y, int z);
@@ -249,13 +251,15 @@ public abstract class RenderSectionManager {
 
         this.sectionByPosition.put(key, renderSection);
 
+        this.renderListManager.attachRenderSection(renderSection);
+        this.shadowRenderListManager.attachRenderSection(renderSection);
+
         if (this.isSectionVisuallyEmpty(x, y, z)) {
             this.updateSectionInfo(renderSection, ContextBundle.empty());
         } else {
             renderSection.setPendingUpdate(ChunkUpdateType.INITIAL_BUILD);
         }
 
-        this.connectNeighborNodes(renderSection);
 
         this.markGraphDirty();
     }
@@ -273,8 +277,10 @@ public abstract class RenderSectionManager {
             region.removeSection(section);
         }
 
-        this.disconnectNeighborNodes(section);
         this.updateSectionInfo(section, null);
+
+        this.renderListManager.detachRenderSection(section);
+        this.shadowRenderListManager.detachRenderSection(section);
 
         section.delete();
 
@@ -289,23 +295,17 @@ public abstract class RenderSectionManager {
         RenderDevice device = RenderDevice.INSTANCE;
         CommandList commandList = device.createCommandList();
 
-        this.chunkRenderer.render(matrices, commandList, this.getRenderLists().getRenderLists(), pass, new CameraTransform(x, y, z));
+        this.chunkRenderer.render(matrices, commandList, this.getCurrentRenderListManager().getRenderLists(), pass, new CameraTransform(x, y, z));
 
         commandList.flush();
     }
 
     public boolean isSectionVisible(int x, int y, int z) {
-        RenderSection render = this.getRenderSection(x, y, z);
-
-        if (render == null) {
-            return false;
-        }
-
-        return render.getLastVisibleFrame() >= this.getRenderLists().getLastUpdatedFrame();
+        return this.getCurrentRenderListManager().isSectionVisible(x, y, z);
     }
 
     private boolean rebuildListHasUpdates() {
-        for (var queue : this.getRenderLists().getRebuildLists().values()) {
+        for (var queue : this.getCurrentRenderListManager().getRebuildLists().values()) {
             if (!queue.isEmpty()) {
                 return true;
             }
@@ -395,6 +395,9 @@ public abstract class RenderSectionManager {
     @MustBeInvokedByOverriders
     protected void updateSectionInfo(RenderSection render, ContextBundle<RenderSection> info) {
         render.setInfo(info);
+        long visibilityData = info != null ? info.getContext(RenderSection.VISIBILITY_DATA) : VisibilityEncoding.NULL;
+        this.renderListManager.updateVisibilityData(render.getChunkX(), render.getChunkY(), render.getChunkZ(), visibilityData);
+        this.shadowRenderListManager.updateVisibilityData(render.getChunkX(), render.getChunkY(), render.getChunkZ(), visibilityData);
     }
 
     private static List<ChunkBuildOutput> filterChunkBuildResults(ArrayList<ChunkBuildOutput> outputs) {
@@ -428,9 +431,9 @@ public abstract class RenderSectionManager {
     }
 
     private void submitRebuildTasks(ChunkJobCollector collector, ChunkUpdateType type) {
-        var queue = this.getRenderLists().getRebuildLists().get(type);
+        var queue = this.getCurrentRenderListManager().getRebuildLists().get(type);
 
-        int frame = this.getRenderLists().getLastUpdatedFrame();
+        int frame = this.getCurrentRenderListManager().getLastUpdatedFrame();
 
         while (!queue.isEmpty() && collector.canOffer()) {
             RenderSection section = queue.remove();
@@ -489,8 +492,13 @@ public abstract class RenderSectionManager {
         this.renderListManager.setNeedsUpdate(true);
     }
 
+    public void finishAllGraphUpdates() {
+        this.renderListManager.finishPreviousGraphUpdate();
+        this.shadowRenderListManager.finishPreviousGraphUpdate();
+    }
+
     public boolean needsUpdate() {
-        return this.getRenderLists().isNeedsUpdate();
+        return this.getCurrentRenderListManager().isNeedsUpdate();
     }
 
     public ChunkBuilder getBuilder() {
@@ -498,8 +506,7 @@ public abstract class RenderSectionManager {
     }
 
     public void destroy() {
-        this.renderListManager.finishPreviousGraphUpdate();
-        this.shadowRenderListManager.finishPreviousGraphUpdate();
+        this.finishAllGraphUpdates();
 
         this.builder.shutdown(); // stop all the workers, and cancel any tasks
 
@@ -522,7 +529,7 @@ public abstract class RenderSectionManager {
 
     public int getVisibleChunkCount() {
         var sections = 0;
-        var iterator = this.getRenderLists().getRenderLists().iterator();
+        var iterator = this.getCurrentRenderListManager().getRenderLists().iterator();
 
         while (iterator.hasNext()) {
             var renderList = iterator.next();
@@ -597,30 +604,6 @@ public abstract class RenderSectionManager {
         return this.renderDistance * 16.0f;
     }
 
-    private void connectNeighborNodes(RenderSection render) {
-        for (int direction = 0; direction < GraphDirection.COUNT; direction++) {
-            RenderSection adj = this.getRenderSection(render.getChunkX() + GraphDirection.x(direction),
-                    render.getChunkY() + GraphDirection.y(direction),
-                    render.getChunkZ() + GraphDirection.z(direction));
-
-            if (adj != null) {
-                adj.setAdjacentNode(GraphDirection.opposite(direction), render);
-                render.setAdjacentNode(direction, adj);
-            }
-        }
-    }
-
-    private void disconnectNeighborNodes(RenderSection render) {
-        for (int direction = 0; direction < GraphDirection.COUNT; direction++) {
-            RenderSection adj = render.getAdjacent(direction);
-
-            if (adj != null) {
-                adj.setAdjacentNode(GraphDirection.opposite(direction), null);
-                render.setAdjacentNode(direction, null);
-            }
-        }
-    }
-
     private RenderSection getRenderSection(int x, int y, int z) {
         return this.sectionByPosition.get(PositionUtil.packSection(x, y, z));
     }
@@ -630,7 +613,7 @@ public abstract class RenderSectionManager {
 
         int[] sectionCounts = new int[TranslucentQuadAnalyzer.Level.VALUES.length];
 
-        for (Iterator<ChunkRenderList> it = this.getRenderLists().getRenderLists().iterator(); it.hasNext(); ) {
+        for (Iterator<ChunkRenderList> it = this.getCurrentRenderListManager().getRenderLists().iterator(); it.hasNext(); ) {
             var renderList = it.next();
             var region = renderList.getRegion();
             var listIter = renderList.sectionsWithGeometryIterator(false);
@@ -708,7 +691,7 @@ public abstract class RenderSectionManager {
                 this.builder.getScheduledJobCount(), this.builder.getBusyThreadCount(), this.builder.getTotalThreadCount())
         );
 
-        var rebuildLists = this.getRenderLists().getRebuildLists();
+        var rebuildLists = this.getCurrentRenderListManager().getRebuildLists();
 
         list.add(String.format("Chunk Queues: U=%02d (P0=%03d | P1=%03d | P2=%03d)",
                 this.buildResults.size(),
@@ -724,8 +707,12 @@ public abstract class RenderSectionManager {
         return list;
     }
 
-    public RenderListManager getRenderLists() {
+    private RenderListManager getCurrentRenderListManager() {
         return isInShadowPass() ? this.shadowRenderListManager : this.renderListManager;
+    }
+
+    public SortedRenderLists getRenderLists() {
+        return this.getCurrentRenderListManager().getRenderLists();
     }
 
     public boolean isSectionBuilt(int x, int y, int z) {
