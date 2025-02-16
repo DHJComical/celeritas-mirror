@@ -42,7 +42,7 @@ public class BakedQuadFactoryMixin {
             //? if <1.21
             float[] uvs = face.uv.uvs;
             //? if >=1.21 <1.21.5-alpha.25.7.a
-            /*float[] uvs = face.uvs().uv().uvs;*/
+            /*float[] uvs = face.uv().uvs;*/
 
             //? if <1.21.5-alpha.25.7.a {
             for (float uv : uvs) {

@@ -274,7 +274,7 @@ public class MultipartBakedModelMixin {
     public ModelData getModelData(BlockAndTintGetter world, BlockPos pos, BlockState state, ModelData tileModelData) {
         var models = getModelComponents(state);
 
-        Map<BakedModel, ModelData> dataMap = null;
+        Map<net.minecraft.client.resources.model.BakedModel, ModelData> dataMap = null;
 
         for(var model : models) {
             ModelData data = model.getModelData(world, pos, state, tileModelData);
