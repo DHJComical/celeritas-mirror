@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.lists;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkUpdateType;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import java.util.ArrayDeque;
@@ -13,6 +14,7 @@ import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 public class VisibleChunkCollector implements OcclusionCuller.Visitor {
     private final ObjectArrayList<ChunkRenderList> sortedRenderLists;
     private final EnumMap<ChunkUpdateType, ArrayDeque<RenderSection>> sortedRebuildLists;
+    private final Reference2ReferenceOpenHashMap<RenderRegion, ChunkRenderList> renderListsByRegion;
 
     private final int frame;
 
@@ -24,23 +26,29 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
         this.sortedRenderLists = new ObjectArrayList<>();
         this.sortedRebuildLists = new EnumMap<>(ChunkUpdateType.class);
         this.ignoreQueueSizeLimit = ignoreQueueSizeLimit;
+        this.renderListsByRegion = new Reference2ReferenceOpenHashMap<>();
 
         for (var type : ChunkUpdateType.values()) {
             this.sortedRebuildLists.put(type, new ArrayDeque<>());
         }
     }
 
+    private ChunkRenderList createRenderList(RenderRegion region) {
+        ChunkRenderList renderList = new ChunkRenderList(region);
+        this.sortedRenderLists.add(renderList);
+        this.renderListsByRegion.put(region, renderList);
+        return renderList;
+    }
+
     @Override
     public void visit(RenderSection section, boolean visible) {
-        RenderRegion region = section.getRegion();
-        ChunkRenderList renderList = region.getRenderList();
-
-        // Even if a section does not have render objects, we must ensure the render list is initialized and put
+        // Note: even if a section does not have render objects, we must ensure the render list is initialized and put
         // into the sorted queue of lists, so that we maintain the correct order of draw calls.
-        if (renderList.getLastVisibleFrame() != this.frame) {
-            renderList.reset(this.frame);
+        RenderRegion region = section.getRegion();
+        ChunkRenderList renderList = this.renderListsByRegion.get(region);
 
-            this.sortedRenderLists.add(renderList);
+        if (renderList == null) {
+            renderList = this.createRenderList(region);
         }
 
         if (visible && section.hasAnythingToRender()) {

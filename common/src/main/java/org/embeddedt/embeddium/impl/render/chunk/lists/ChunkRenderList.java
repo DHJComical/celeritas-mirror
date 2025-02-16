@@ -21,21 +21,9 @@ public class ChunkRenderList {
 
     private int size;
 
-    private int lastVisibleFrame;
-
     public ChunkRenderList(RenderRegion region) {
         this.region = region;
     }
-
-    public void reset(int frame) {
-        this.sectionsWithGeometryCount = 0;
-        this.sectionsWithSpritesCount = 0;
-        this.sectionsWithEntitiesCount = 0;
-
-        this.size = 0;
-        this.lastVisibleFrame = frame;
-    }
-
 
     public void add(RenderSection render) {
         if (this.size >= RenderRegion.REGION_SIZE) {
@@ -91,10 +79,6 @@ public class ChunkRenderList {
 
     public int getSectionsWithEntitiesCount() {
         return this.sectionsWithEntitiesCount;
-    }
-
-    public int getLastVisibleFrame() {
-        return this.lastVisibleFrame;
     }
 
     public RenderRegion getRegion() {

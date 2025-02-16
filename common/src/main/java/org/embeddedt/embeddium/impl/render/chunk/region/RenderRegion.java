@@ -43,8 +43,6 @@ public class RenderRegion {
     private final StagingBuffer stagingBuffer;
     private final int x, y, z;
 
-    private ChunkRenderList frontRenderList, backRenderList;
-
     private final RenderSection[] sections = new RenderSection[RenderRegion.REGION_SIZE];
     private int sectionCount;
 
@@ -59,8 +57,6 @@ public class RenderRegion {
 
         this.stagingBuffer = stagingBuffer;
         this.stride = stride;
-        this.frontRenderList = new ChunkRenderList(this);
-        this.backRenderList = new ChunkRenderList(this);
     }
 
     public static long key(int x, int y, int z) {
@@ -234,16 +230,6 @@ public class RenderRegion {
                 this.resources.deleteIndexArenaIfPossible(commandList);
             }
         }
-    }
-
-    public ChunkRenderList getRenderList() {
-        return this.frontRenderList;
-    }
-
-    public void flipRenderList() {
-        var tmp = this.backRenderList;
-        this.backRenderList = this.frontRenderList;
-        this.frontRenderList = tmp;
     }
 
     public static class DeviceResources {

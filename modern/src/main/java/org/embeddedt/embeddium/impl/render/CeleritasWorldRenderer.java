@@ -179,9 +179,7 @@ public class CeleritasWorldRenderer {
                              boolean updateChunksImmediately) {
         NativeBuffer.reclaim(false);
 
-        if (this.renderSectionManager != null) {
-            this.renderSectionManager.consumeOcclusionResult();
-        }
+        this.renderSectionManager.consumeOcclusionResult();
 
         boolean isShadowPass = this.renderSectionManager.isInShadowPass();
 

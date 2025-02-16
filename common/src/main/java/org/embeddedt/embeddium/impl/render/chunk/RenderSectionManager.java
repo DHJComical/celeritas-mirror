@@ -243,7 +243,6 @@ public abstract class RenderSectionManager {
     public void consumeOcclusionResult() {
         if (this.currentOcclusionFuture != null) {
             this.applyGraphSearchResults(this.currentOcclusionFuture);
-            this.regions.flipRenderLists();
             this.currentOcclusionFuture = null;
         }
     }
