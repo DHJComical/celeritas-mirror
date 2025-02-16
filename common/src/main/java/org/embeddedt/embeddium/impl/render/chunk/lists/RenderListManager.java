@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 public class RenderListManager {
-    private static final boolean ENABLE_ASYNC_GRAPH_SEARCH = false;
+    private static final boolean ENABLE_ASYNC_GRAPH_SEARCH = true;
     private static final ExecutorService ASYNC_GRAPH_SEARCH_EXECUTOR = Executors.newSingleThreadExecutor();
 
     @Getter
