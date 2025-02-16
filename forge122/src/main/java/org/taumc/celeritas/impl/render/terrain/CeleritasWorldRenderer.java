@@ -164,7 +164,7 @@ public class CeleritasWorldRenderer {
         NativeBuffer.reclaim(false);
 
         if (this.renderSectionManager != null) {
-            this.renderSectionManager.consumeOcclusionResult();
+            this.renderSectionManager.getRenderLists().finishPreviousGraphUpdate();
         }
 
         this.processChunkEvents();
@@ -311,7 +311,7 @@ public class CeleritasWorldRenderer {
     public Iterator<TileEntity> blockEntityIterator() {
         List<Iterator<TileEntity>> iterators = new ArrayList<>();
 
-        SortedRenderLists renderLists = this.renderSectionManager.getRenderLists();
+        SortedRenderLists renderLists = this.renderSectionManager.getRenderLists().getRenderLists();
         Iterator<ChunkRenderList> renderListIterator = renderLists.iterator();
 
         while (renderListIterator.hasNext()) {
@@ -360,7 +360,7 @@ public class CeleritasWorldRenderer {
     }
 
     public void forEachVisibleBlockEntity(Consumer<TileEntity> consumer) {
-        SortedRenderLists renderLists = this.renderSectionManager.getRenderLists();
+        SortedRenderLists renderLists = this.renderSectionManager.getRenderLists().getRenderLists();
         Iterator<ChunkRenderList> renderListIterator = renderLists.iterator();
 
         while (renderListIterator.hasNext()) {
@@ -428,7 +428,7 @@ public class CeleritasWorldRenderer {
     }
 
     private void renderCulledBlockEntities(int pass, float partialTicks) {
-        SortedRenderLists renderLists = this.renderSectionManager.getRenderLists();
+        SortedRenderLists renderLists = this.renderSectionManager.getRenderLists().getRenderLists();
         Iterator<ChunkRenderList> renderListIterator = renderLists.iterator();
 
         while (renderListIterator.hasNext()) {

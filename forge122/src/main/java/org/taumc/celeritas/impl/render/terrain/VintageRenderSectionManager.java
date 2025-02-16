@@ -140,7 +140,7 @@ public class VintageRenderSectionManager extends RenderSectionManager {
 
     @Override
     public void tickVisibleRenders() {
-        Iterator<ChunkRenderList> it = this.getRenderLists().iterator();
+        Iterator<ChunkRenderList> it = this.getRenderLists().getRenderLists().iterator();
 
         while (it.hasNext()) {
             ChunkRenderList renderList = it.next();
