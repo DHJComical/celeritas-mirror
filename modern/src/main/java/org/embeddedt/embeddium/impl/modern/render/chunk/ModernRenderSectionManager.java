@@ -24,6 +24,7 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
+import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
@@ -122,34 +123,8 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     }
 
     @Override
-    public void tickVisibleRenders() {
-        Iterator<ChunkRenderList> it = this.getRenderLists().iterator();
-
-        while (it.hasNext()) {
-            ChunkRenderList renderList = it.next();
-
-            var region = renderList.getRegion();
-            var iterator = renderList.sectionsWithSpritesIterator();
-
-            if (iterator == null) {
-                continue;
-            }
-
-            while (iterator.hasNext()) {
-                var section = region.getSection(iterator.nextByteAsInt());
-
-                if (section == null) {
-                    continue;
-                }
-
-                var sprites = (List<TextureAtlasSprite>)section.getContextOrDefault(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES);
-
-                //noinspection ForLoopReplaceableByForEach
-                for (int i = 0; i < sprites.size(); i++) {
-                    SpriteUtil.markSpriteActive(sprites.get(i));
-                }
-            }
-        }
+    protected @Nullable SectionTicker createSectionTicker() {
+        return new ModernSectionTicker();
     }
 
     @Override

@@ -18,6 +18,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.RenderListManager;
+import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
@@ -74,7 +75,7 @@ public abstract class RenderSectionManager {
     private final int minSection, maxSection;
 
     private final RenderListManager renderListManager;
-    
+
     @Nullable
     private final RenderListManager shadowRenderListManager;
 
@@ -91,9 +92,9 @@ public abstract class RenderSectionManager {
 
         this.minSection = minSection;
         this.maxSection = maxSection;
-        this.renderListManager = new RenderListManager(this.minSection, this.maxSection, this.getAsyncOcclusionMode() == AsyncOcclusionMode.EVERYTHING);
+        this.renderListManager = new RenderListManager(this.minSection, this.maxSection, this.getAsyncOcclusionMode() == AsyncOcclusionMode.EVERYTHING, this.createSectionTicker());
         if (ShaderModBridge.areShadersEnabled()) {
-            this.shadowRenderListManager = new RenderListManager(this.minSection, this.maxSection, this.getAsyncOcclusionMode() != AsyncOcclusionMode.NONE);
+            this.shadowRenderListManager = new RenderListManager(this.minSection, this.maxSection, this.getAsyncOcclusionMode() != AsyncOcclusionMode.NONE, this.createSectionTicker());
         } else {
             this.shadowRenderListManager = null;
         }
@@ -102,6 +103,10 @@ public abstract class RenderSectionManager {
     }
 
     protected abstract AsyncOcclusionMode getAsyncOcclusionMode();
+
+    protected @Nullable SectionTicker createSectionTicker() {
+        return null;
+    }
 
     public void managedBlock(BooleanSupplier isDone) {
         while (!isDone.getAsBoolean()) {
@@ -366,8 +371,8 @@ public abstract class RenderSectionManager {
         }
     }
 
-    public void tickVisibleRenders() {
-
+    public final void tickVisibleRenders() {
+        this.getCurrentRenderListManager().tickVisibleRenders();
     }
 
     private void processChunkBuildResults(ArrayList<ChunkBuildOutput> results) {

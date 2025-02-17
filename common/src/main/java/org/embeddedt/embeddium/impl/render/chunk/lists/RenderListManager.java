@@ -12,6 +12,7 @@ import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionNode;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.EnumMap;
@@ -20,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class RenderListManager {
@@ -49,7 +51,12 @@ public class RenderListManager {
 
     private final ExecutorService asyncGraphExecutor;
 
-    public RenderListManager(int minSectionY, int maxSectionY, boolean useAsyncGraphSearch) {
+    @Nullable
+    private final SectionTicker sectionTicker;
+
+    public RenderListManager(int minSectionY, int maxSectionY, boolean useAsyncGraphSearch, @Nullable SectionTicker sectionTicker) {
+        this.sectionTicker = sectionTicker;
+
         if (useAsyncGraphSearch) {
             this.asyncGraphExecutor = Executors.newSingleThreadExecutor(runnable -> {
                 Thread thread = new Thread(runnable);
@@ -99,6 +106,10 @@ public class RenderListManager {
 
             this.renderLists = visitor.createRenderLists();
             this.rebuildLists = visitor.getRebuildLists();
+
+            if (this.sectionTicker != null) {
+                this.sectionTicker.onRenderListUpdated(this.renderLists);
+            }
 
             this.currentOcclusionFuture = null;
             this.lastUpdatedFrame = this.pendingLastUpdatedFrame;
@@ -222,5 +233,11 @@ public class RenderListManager {
         }
 
         return render.getLastVisibleFrame() >= this.lastUpdatedFrame;
+    }
+
+    public void tickVisibleRenders() {
+        if (this.sectionTicker != null) {
+            this.sectionTicker.tickVisibleRenders();
+        }
     }
 }
