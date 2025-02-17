@@ -19,17 +19,10 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class RenderListManager {
-    private static final boolean ENABLE_ASYNC_GRAPH_SEARCH = true;
-    private static final ExecutorService ASYNC_GRAPH_SEARCH_EXECUTOR = Executors.newSingleThreadExecutor(runnable -> {
-        Thread thread = new Thread(runnable);
-        thread.setName("Celeritas chunk graph search thread");
-        thread.setDaemon(true);
-        return thread;
-    });
-
     @Getter
     @NotNull
     private SortedRenderLists renderLists;
@@ -54,7 +47,19 @@ public class RenderListManager {
 
     private final ArrayDeque<Runnable> updateTasks = new ArrayDeque<>();
 
-    public RenderListManager(int minSectionY, int maxSectionY) {
+    private final ExecutorService asyncGraphExecutor;
+
+    public RenderListManager(int minSectionY, int maxSectionY, boolean useAsyncGraphSearch) {
+        if (useAsyncGraphSearch) {
+            this.asyncGraphExecutor = Executors.newSingleThreadExecutor(runnable -> {
+                Thread thread = new Thread(runnable);
+                thread.setName("Celeritas chunk graph search thread");
+                thread.setDaemon(true);
+                return thread;
+            });
+        } else {
+            this.asyncGraphExecutor = null;
+        }
         this.occlusionCuller = new OcclusionCuller(this.occlusionNodes, minSectionY, maxSectionY);
         this.renderLists = SortedRenderLists.empty();
         this.rebuildLists = new EnumMap<>(ChunkUpdateType.class);
@@ -78,8 +83,8 @@ public class RenderListManager {
 
         this.pendingLastUpdatedFrame = frame;
 
-        if (ENABLE_ASYNC_GRAPH_SEARCH) {
-            this.currentOcclusionFuture = CompletableFuture.supplyAsync(occlusionTask, ASYNC_GRAPH_SEARCH_EXECUTOR);
+        if (this.asyncGraphExecutor != null) {
+            this.currentOcclusionFuture = CompletableFuture.supplyAsync(occlusionTask, this.asyncGraphExecutor);
         } else {
             this.currentOcclusionFuture = CompletableFuture.completedFuture(occlusionTask.get());
             this.finishPreviousGraphUpdate();
@@ -110,6 +115,18 @@ public class RenderListManager {
         if (currentOcclusionFuture != null) {
             currentOcclusionFuture.join();
             currentOcclusionFuture = null;
+        }
+
+        if (asyncGraphExecutor != null) {
+            asyncGraphExecutor.shutdown();
+
+            try {
+                if (!asyncGraphExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
+                    throw new InterruptedException();
+                }
+            } catch (InterruptedException e) {
+                throw new IllegalStateException("Async graph executor has somehow not shut down");
+            }
         }
     }
 

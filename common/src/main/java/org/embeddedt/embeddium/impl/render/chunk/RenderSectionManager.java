@@ -87,8 +87,8 @@ public abstract class RenderSectionManager {
 
         this.minSection = minSection;
         this.maxSection = maxSection;
-        this.renderListManager = new RenderListManager(this.minSection, this.maxSection);
-        this.shadowRenderListManager = new RenderListManager(this.minSection, this.maxSection);
+        this.renderListManager = new RenderListManager(this.minSection, this.maxSection, true);
+        this.shadowRenderListManager = new RenderListManager(this.minSection, this.maxSection, true);
 
         this.disabledRenderPasses = new ReferenceArraySet<>();
     }
