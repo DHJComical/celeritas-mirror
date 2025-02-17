@@ -222,13 +222,19 @@ public class ClonedChunkSection {
 
     @Nullable
     private static Int2ReferenceMap<BlockEntity> copyBlockEntities(LevelChunk chunk, SectionPos chunkCoord) {
+        var chunkBlockEntityMap = chunk.getBlockEntities();
+
+        if (chunkBlockEntityMap.isEmpty()) {
+            return null;
+        }
+
         BoundingBox box = new BoundingBox(chunkCoord.minBlockX(), chunkCoord.minBlockY(), chunkCoord.minBlockZ(),
                 chunkCoord.maxBlockX(), chunkCoord.maxBlockY(), chunkCoord.maxBlockZ());
 
         Int2ReferenceOpenHashMap<BlockEntity> blockEntities = null;
 
         // Copy the block entities from the chunk into our cloned section
-        for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
+        for (Map.Entry<BlockPos, BlockEntity> entry : chunkBlockEntityMap.entrySet()) {
             BlockPos pos = entry.getKey();
             BlockEntity entity = entry.getValue();
 
