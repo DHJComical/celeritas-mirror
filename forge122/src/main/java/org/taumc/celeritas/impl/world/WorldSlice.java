@@ -428,6 +428,7 @@ public class WorldSlice implements CeleritasBlockAccess {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public int getStrongPower(BlockPos pos, EnumFacing direction) {
         IBlockState state = this.getBlockState(pos);
         return state.getBlock().getStrongPower(state, this, pos, direction);
