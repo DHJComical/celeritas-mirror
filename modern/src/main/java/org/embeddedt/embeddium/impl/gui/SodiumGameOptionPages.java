@@ -28,6 +28,7 @@ import net.minecraft.client.*;
 import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.impl.gui.options.FullscreenResolutionHelper;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
@@ -385,6 +386,15 @@ public class SodiumGameOptionPages {
                         .setImpact(OptionImpact.HIGH)
                         .setBinding((opts, value) -> opts.performance.alwaysDeferChunkUpdates = value, opts -> opts.performance.alwaysDeferChunkUpdates)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_UPDATE)
+                        .build())
+                .add(OptionImpl.createBuilder(AsyncOcclusionMode.class, sodiumOpts)
+                        .setId(StandardOptions.Option.ASYNC_GRAPH_SEARCH)
+                        .setName(ComponentUtil.translatable("celeritas.options.async_graph_search.name"))
+                        .setTooltip(ComponentUtil.translatable("celeritas.options.async_graph_search.tooltip"))
+                        .setControl(o -> new CyclingControl<>(o, AsyncOcclusionMode.class, new Component[] { ComponentUtil.literal("Off"), ComponentUtil.literal("Only Shadows"), ComponentUtil.literal("Everything") }))
+                        .setImpact(OptionImpact.MEDIUM)
+                        .setBinding((opts, value) -> opts.performance.asyncOcclusionMode = value, opts -> opts.performance.asyncOcclusionMode)
+                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
                 .build()
         );

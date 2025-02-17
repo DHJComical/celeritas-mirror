@@ -24,6 +24,7 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
@@ -75,6 +76,11 @@ public class ModernRenderSectionManager extends RenderSectionManager {
         return net.irisshaders.iris.shadows.ShadowRenderingState.areShadowsCurrentlyBeingRendered();
     }
     //?}
+
+    @Override
+    protected AsyncOcclusionMode getAsyncOcclusionMode() {
+        return Celeritas.options().performance.asyncOcclusionMode;
+    }
 
     @Override
     protected boolean shouldUseOcclusionCulling(Viewport viewport, boolean spectator) {

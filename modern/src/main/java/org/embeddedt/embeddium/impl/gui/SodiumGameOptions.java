@@ -12,6 +12,7 @@ import org.embeddedt.embeddium.impl.gui.options.TextProvider;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.impl.config.ConfigMigrator;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 import java.io.FileReader;
@@ -58,6 +59,8 @@ public class SodiumGameOptions {
         public boolean useRenderPassConsolidation = true;
         public boolean useFasterClouds = true;
         public boolean useNoErrorGLContext = true;
+
+        public AsyncOcclusionMode asyncOcclusionMode = AsyncOcclusionMode.ONLY_SHADOW;
     }
 
     public static class AdvancedSettings {
