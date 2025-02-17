@@ -43,7 +43,12 @@ public class ModernSectionTicker implements SectionTicker {
 
                 var sprites = (List<TextureAtlasSprite>)section.getContextOrDefault(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES);
 
-                this.sprites.addAll(sprites);
+                // The iterator allocation is very expensive here for large render distances.
+                //noinspection ForLoopReplaceableByForEach
+                for (int i = 0; i < sprites.size(); i++) {
+                    //noinspection UseBulkOperation
+                    this.sprites.add(sprites.get(i));
+                }
             }
         }
     }
