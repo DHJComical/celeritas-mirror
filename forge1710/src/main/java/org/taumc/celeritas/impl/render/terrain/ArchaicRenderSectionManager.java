@@ -12,6 +12,9 @@ import org.embeddedt.embeddium.impl.render.chunk.*;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
+import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
+import org.embeddedt.embeddium.impl.render.chunk.sprite.GenericSectionSpriteTicker;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
@@ -38,6 +41,11 @@ public class ArchaicRenderSectionManager extends RenderSectionManager {
     public static ArchaicRenderSectionManager create(ChunkVertexType vertexType, WorldClient world, int renderDistance, CommandList commandList) {
         // TODO support thread option
         return new ArchaicRenderSectionManager(ArchaicRenderPassConfigurationBuilder.build(vertexType), world, renderDistance, commandList, 0, 16, -1);
+    }
+
+    @Override
+    protected AsyncOcclusionMode getAsyncOcclusionMode() {
+        return AsyncOcclusionMode.EVERYTHING;
     }
 
     @Override
@@ -110,34 +118,9 @@ public class ArchaicRenderSectionManager extends RenderSectionManager {
         return ReferenceSets.unmodifiable(this.sectionsWithGlobalEntities);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void tickVisibleRenders() {
-        Iterator<ChunkRenderList> it = this.getRenderLists().getRenderLists().iterator();
-
-        while (it.hasNext()) {
-            ChunkRenderList renderList = it.next();
-
-            var region = renderList.getRegion();
-            var iterator = renderList.sectionsWithSpritesIterator();
-
-            if (iterator == null) {
-                continue;
-            }
-
-            while (iterator.hasNext()) {
-                var section = region.getSection(iterator.nextByteAsInt());
-
-                if (section == null) {
-                    continue;
-                }
-
-                var sprites = (List<TextureAtlasSprite>)section.getContextOrDefault(ArchaicRenderSectionBuiltInfo.ANIMATED_SPRITES);
-
-                //noinspection ForLoopReplaceableByForEach
-                for (int i = 0; i < sprites.size(); i++) {
-                    SpriteUtil.markSpriteActive(sprites.get(i));
-                }
-            }
-        }
+    protected @Nullable SectionTicker createSectionTicker() {
+        return new GenericSectionSpriteTicker<>((ContextBundle.Key<RenderSection, List<TextureAtlasSprite>>)(Object)ArchaicRenderSectionBuiltInfo.ANIMATED_SPRITES, SpriteUtil::markSpriteActive);
     }
 }

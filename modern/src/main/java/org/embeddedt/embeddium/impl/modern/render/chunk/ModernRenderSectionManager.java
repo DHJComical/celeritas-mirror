@@ -26,6 +26,7 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
+import org.embeddedt.embeddium.impl.render.chunk.sprite.GenericSectionSpriteTicker;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
@@ -122,9 +123,10 @@ public class ModernRenderSectionManager extends RenderSectionManager {
         super.scheduleSectionForRebuild(x, y, z, important);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected @Nullable SectionTicker createSectionTicker() {
-        return new ModernSectionTicker();
+        return new GenericSectionSpriteTicker<>((ContextBundle.Key<RenderSection, List<TextureAtlasSprite>>)(Object)ModernRenderSectionBuiltInfo.ANIMATED_SPRITES, SpriteUtil::markSpriteActive);
     }
 
     @Override
