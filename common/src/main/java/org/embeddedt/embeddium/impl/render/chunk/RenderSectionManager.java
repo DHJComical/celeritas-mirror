@@ -145,6 +145,8 @@ public abstract class RenderSectionManager {
             return;
         }
 
+        this.checkTranslucencyChange();
+
         this.getCurrentRenderListManager().setNeedsUpdate(false);
     }
 
