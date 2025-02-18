@@ -23,3 +23,11 @@ Celeritas is licensed under the Lesser GNU General Public License version 3.
 
 Portions of the option screen code are based on Reese's Sodium Options by FlashyReese, and are used under the terms of
 the [MIT license](https://opensource.org/license/mit), located in `src/main/resources/licenses/rso.txt`. 
+
+## Credits
+
+* The CaffeineMC team, for developing Sodium 0.5, and making it open source
+* Asek3, for developing Rubidium, the original port of Sodium 0.5 to Forge
+* CelestialAbyss, for developing the Embeddium logo (which is reused here aside from recoloring), and input-Here for some very good visual touchups
+* Ven ([@basdxz](https://github.com/basdxz)), for help with translucency sorting, suggesting the general approach for async occlusion culling, and other suggestions during development
+* XFactHD, Pepper, and anyone else I've forgotten to mention, for providing valuable code insights
