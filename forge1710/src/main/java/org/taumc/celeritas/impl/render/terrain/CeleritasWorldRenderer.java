@@ -389,6 +389,12 @@ public class CeleritasWorldRenderer {
         if(!tileEntity.shouldRenderInPass(pass))
             return;
 
+        var aabb = tileEntity.getRenderBoundingBox();
+
+        if (aabb != TileEntity.INFINITE_EXTENT_AABB && !this.currentViewport.isBoxVisible(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ)) {
+            return;
+        }
+
         try {
             TileEntityRendererDispatcher.instance.renderTileEntity(tileEntity, partialTicks);
         } catch(RuntimeException e) {
