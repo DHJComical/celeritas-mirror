@@ -4,7 +4,7 @@ import lombok.Getter;
 
 public class GlVertexAttribute {
     @Getter
-    private final int format;
+    private final GlVertexAttributeFormat format;
     @Getter
     private final int count;
     @Getter
@@ -28,10 +28,10 @@ public class GlVertexAttribute {
      * @param pointer The offset to the first component in the attribute
      */
     public GlVertexAttribute(GlVertexAttributeFormat format, String name, int count, boolean normalized, int pointer, int stride, boolean intType) {
-        this(format.typeId(), format.size() * count, count, name, normalized, pointer, stride, intType);
+        this(format, format.size() * count, count, name, normalized, pointer, stride, intType);
     }
 
-    protected GlVertexAttribute(int format, int size, int count, String name, boolean normalized, int pointer, int stride, boolean intType) {
+    protected GlVertexAttribute(GlVertexAttributeFormat format, int size, int count, String name, boolean normalized, int pointer, int stride, boolean intType) {
         this.format = format;
         this.size = size;
         this.count = count;

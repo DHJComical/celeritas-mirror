@@ -18,10 +18,10 @@ public abstract class GlAbstractTessellation implements GlTessellation {
 
             for (GlVertexAttributeBinding attrib : binding.attributeBindings()) {
                 if (attrib.isIntType()) {
-                    GL30C.glVertexAttribIPointer(attrib.getIndex(), attrib.getCount(), attrib.getFormat(),
+                    GL30C.glVertexAttribIPointer(attrib.getIndex(), attrib.getCount(), attrib.getFormat().typeId(),
                             attrib.getStride(), attrib.getPointer());
                 } else {
-                    GL20C.glVertexAttribPointer(attrib.getIndex(), attrib.getCount(), attrib.getFormat(), attrib.isNormalized(),
+                    GL20C.glVertexAttribPointer(attrib.getIndex(), attrib.getCount(), attrib.getFormat().typeId(), attrib.isNormalized(),
                             attrib.getStride(), attrib.getPointer());
                 }
                 GL20C.glEnableVertexAttribArray(attrib.getIndex());
