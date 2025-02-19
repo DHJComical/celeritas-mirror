@@ -38,6 +38,12 @@ repositories {
             includeGroup('CoreTweaks')
         }
     }
+    repositories {
+        maven {
+            name "Modrinth"
+            url "https://api.modrinth.com/maven"
+        }
+    }
     mavenCentral()
 }
 
@@ -105,6 +111,7 @@ dependencies {
     implementation("io.github.legacymoddingmc:unimixins:0.1.19:dev")
     implementation("com.github.GTNewHorizons:GTNHLib:0.6.8:dev")
     modImplementation("CoreTweaks:CoreTweaks:0.3.3.2")
+    modImplementation("maven.modrinth:archaicfix:0.7.4")
 }
 
 processResources {
