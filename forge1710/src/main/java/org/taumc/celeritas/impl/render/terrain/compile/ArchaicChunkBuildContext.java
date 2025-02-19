@@ -33,6 +33,9 @@ public class ArchaicChunkBuildContext extends ChunkBuildContext {
             if (transparencyLevel == SpriteTransparencyLevel.OPAQUE && material == ArchaicRenderPassConfigurationBuilder.CUTOUT_MIPPED_MATERIAL) {
                 // Downgrade to solid
                 return ArchaicRenderPassConfigurationBuilder.SOLID_MATERIAL;
+            } else if (material == ArchaicRenderPassConfigurationBuilder.TRANSLUCENT_MATERIAL && transparencyLevel != SpriteTransparencyLevel.TRANSLUCENT) {
+                // Downgrade to cutout
+                return ArchaicRenderPassConfigurationBuilder.CUTOUT_MIPPED_MATERIAL;
             }
         }
         return material;
