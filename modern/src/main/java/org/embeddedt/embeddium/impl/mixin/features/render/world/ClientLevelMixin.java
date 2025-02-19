@@ -84,7 +84,12 @@ public abstract class ClientLevelMixin extends Level {
     }
     *///?}
 
-    //? if >=1.18 {
+    //? if >=1.21.5-alpha.25.8.a {
+    /*@Shadow
+    private void lambda$doAnimateTick$9(BlockPos.MutableBlockPos pos, AmbientParticleSettings settings) {throw new AssertionError();}
+
+    private final Consumer<AmbientParticleSettings> embeddium$particleSettingsConsumer = settings -> lambda$doAnimateTick$9(embeddium$particlePos, settings);
+    *///?} else if >=1.18 <1.21.5-alpha.25.8.a {
     @Shadow
     private void lambda$doAnimateTick$8(BlockPos.MutableBlockPos pos, AmbientParticleSettings settings) {throw new AssertionError();}
 
