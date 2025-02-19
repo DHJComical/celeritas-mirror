@@ -56,6 +56,10 @@ public final class ChunkBuildBuffers {
         }
     }
 
+    public ContextBundle<RenderSection> getSectionContextBundle() {
+        return this.renderData;
+    }
+
     public ChunkModelBuilder get(Material material) {
         return this.get(material.pass);
     }

@@ -7,10 +7,13 @@ import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
+import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.util.QuadUtil;
+import org.taumc.celeritas.impl.extensions.SpriteExtension;
 import org.taumc.celeritas.impl.extensions.TextureMapExtension;
+import org.taumc.celeritas.impl.render.terrain.ArchaicRenderPassConfigurationBuilder;
 
 public class ArchaicChunkBuildContext extends ChunkBuildContext {
     public static final int NUM_PASSES = 2;
@@ -24,13 +27,23 @@ public class ArchaicChunkBuildContext extends ChunkBuildContext {
 
     private final ChunkVertexEncoder.Vertex[] vertices = ChunkVertexEncoder.Vertex.uninitializedQuad();
 
+    private Material selectMaterial(Material material, TextureAtlasSprite sprite) {
+        if (sprite != null && sprite.getClass() == TextureAtlasSprite.class && !sprite.hasAnimationMetadata()) {
+            var transparencyLevel = ((SpriteExtension)sprite).celeritas$getTransparencyLevel();
+            if (transparencyLevel == SpriteTransparencyLevel.OPAQUE && material == ArchaicRenderPassConfigurationBuilder.CUTOUT_MIPPED_MATERIAL) {
+                // Downgrade to solid
+                return ArchaicRenderPassConfigurationBuilder.SOLID_MATERIAL;
+            }
+        }
+        return material;
+    }
+
     public void copyRawBuffer(int[] rawBuffer, int vertexCount, ChunkBuildBuffers buffers, Material material) {
         if (vertexCount == 0) {
             return;
         }
 
-        var holder = buffers.get(material);
-        var animatedSpritesList = holder.getSectionContextBundle().getContext(ArchaicRenderSectionBuiltInfo.ANIMATED_SPRITES);
+        var animatedSpritesList = buffers.getSectionContextBundle().getContext(ArchaicRenderSectionBuiltInfo.ANIMATED_SPRITES);
 
         // Require
         if ((vertexCount & 0x3) != 0) {
@@ -67,7 +80,8 @@ public class ArchaicChunkBuildContext extends ChunkBuildContext {
             if (sprite != null && sprite.hasAnimationMetadata()) {
                 animatedSpritesList.add(sprite);
             }
-            holder.getVertexBuffer(facing).push(celeritasVertices, material);
+            Material correctMaterial = selectMaterial(material, sprite);
+            buffers.get(correctMaterial).getVertexBuffer(facing).push(celeritasVertices, correctMaterial);
         }
     }
 
@@ -75,28 +89,4 @@ public class ArchaicChunkBuildContext extends ChunkBuildContext {
     public void cleanup() {
         super.cleanup();
     }
-
-    /*
-    private void copyBlockData(ByteBuffer source, ChunkModelBuilder dest, Material material) {
-        int vsize = DefaultVertexFormats.BLOCK.getSize();
-        int numQuads = source.limit() / (vsize * 4);
-        long ptr = MemoryUtil.memAddress(source);
-        var quad = ChunkVertexEncoder.Vertex.uninitializedQuad();
-        for(int q = 0; q < numQuads; q++) {
-            for(int v = 0; v < 4; v++) {
-                var vertex = quad[v];
-                vertex.x = MemoryUtil.memGetFloat(ptr);
-                vertex.y = MemoryUtil.memGetFloat(ptr + 4);
-                vertex.z = MemoryUtil.memGetFloat(ptr + 8);
-                vertex.color = MemoryUtil.memGetInt(ptr + 12);
-                vertex.u = MemoryUtil.memGetFloat(ptr + 16);
-                vertex.v = MemoryUtil.memGetFloat(ptr + 20);
-                vertex.light = MemoryUtil.memGetInt(ptr + 24);
-                ptr += vsize;
-            }
-            dest.getVertexBuffer(ModelQuadFacing.UNASSIGNED).push(quad, material);
-        }
-    }
-
-     */
 }

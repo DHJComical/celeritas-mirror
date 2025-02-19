@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.render.frapi;
 //? if ffapi && >=1.20 {
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.impl.client.indigo.renderer.mesh.MutableQuadViewImpl;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.embeddedt.embeddium.impl.modern.render.chunk.MojangVertexConsumer;
@@ -39,14 +39,14 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
     private ChunkBuildBuffers currentBuffers;
     private final BlockOcclusionCache occlusionCache;
     private final LightDataAccess lightDataAccess;
-    private final Reference2ReferenceOpenHashMap<Material, MojangVertexConsumer> mojangVertexConsumers;
+    private final Object2ObjectOpenHashMap<Material, MojangVertexConsumer> mojangVertexConsumers;
 
     private int cullChecked, cullValue;
 
     public IndigoBlockRenderContext(BlockOcclusionCache occlusionCache, LightDataAccess lightDataAccess) {
         this.occlusionCache = occlusionCache;
         this.lightDataAccess = lightDataAccess;
-        this.mojangVertexConsumers = new Reference2ReferenceOpenHashMap<>();
+        this.mojangVertexConsumers = new Object2ObjectOpenHashMap<>();
     }
 
     @Override
