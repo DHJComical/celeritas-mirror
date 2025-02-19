@@ -32,7 +32,7 @@ public class TerrainRenderPassArgumentType implements ArgumentType<TerrainRender
     }
 
     private static Stream<TerrainRenderPass> getAllRenderPasses() {
-        return CeleritasWorldRenderer.instance().getRenderPassConfiguration().vanillaRenderStages().values().stream().flatMap(Collection::stream).distinct();
+        return CeleritasWorldRenderer.instance().getRenderPassConfiguration().getAllKnownRenderPasses();
     }
 
     @Override

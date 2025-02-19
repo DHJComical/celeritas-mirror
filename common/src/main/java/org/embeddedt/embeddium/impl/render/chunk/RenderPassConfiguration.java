@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public record RenderPassConfiguration<R>(ChunkVertexType vertexType,
                                       Map<R, Material> chunkRenderTypeToMaterialMap,
@@ -21,5 +22,9 @@ public record RenderPassConfiguration<R>(ChunkVertexType vertexType,
 
     public Material getMaterialForRenderType(Object type) {
         return Objects.requireNonNull(chunkRenderTypeToMaterialMap.get(type));
+    }
+
+    public Stream<TerrainRenderPass> getAllKnownRenderPasses() {
+        return vanillaRenderStages().values().stream().flatMap(Collection::stream).distinct();
     }
 }
