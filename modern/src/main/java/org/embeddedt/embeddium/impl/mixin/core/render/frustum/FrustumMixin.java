@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.culling.Frustum;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.joml.FrustumIntersection;
-import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -36,7 +35,7 @@ public class FrustumMixin implements ViewportProvider {
 
     @Shadow
     @Final
-    private Matrix4f matrix;
+    private org.joml.Matrix4f matrix;
     //?} else {
     /*@Unique
     private FrustumIntersection intersection;
@@ -57,7 +56,7 @@ public class FrustumMixin implements ViewportProvider {
 
     @Override
     public Viewport sodium$createViewport() {
-        return new Viewport(new SimpleFrustum(new FrustumIntersection(this.matrix)), new Vector3d(this.camX, this.camY, this.camZ));
+        return new Viewport(new SimpleFrustum(this.intersection), new Vector3d(this.camX, this.camY, this.camZ));
     }
 
     //? if <1.20 {

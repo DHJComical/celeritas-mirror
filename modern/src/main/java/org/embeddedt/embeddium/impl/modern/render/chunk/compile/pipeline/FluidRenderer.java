@@ -125,7 +125,7 @@ public class FluidRenderer {
         this.waterSprites[1] = ModelBakery.WATER_FLOW.sprite();
         this.waterSprites[2] = ModelBakery.WATER_OVERLAY.sprite();
 
-        //? if >=1.18 {
+        //? if >=1.20 {
         this.doVanillaRenderedFluidsExist = net.minecraft.core.registries.BuiltInRegistries.FLUID.getTagOrEmpty(EmbeddiumTags.RENDERS_WITH_VANILLA).iterator().hasNext();
         //?} else
         /*this.doVanillaRenderedFluidsExist = false;*/
