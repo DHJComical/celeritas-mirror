@@ -81,7 +81,7 @@ public abstract class BiomeColorCache<BIOME, RESOLVER> {
         return slice;
     }
 
-    protected abstract int resolveColor(RESOLVER resolver, BIOME biome, int relativeX, int relativeZ);
+    protected abstract int resolveColor(RESOLVER resolver, BIOME biome, int relativeX, int relativeY, int relativeZ);
 
     private void updateColorBuffers(int relY, RESOLVER resolver, Slice slice) {
         int worldY = this.minY + relY;
@@ -100,7 +100,7 @@ public abstract class BiomeColorCache<BIOME, RESOLVER> {
                 int relativeX = worldX - this.minX;
                 int relativeZ = worldZ - this.minZ;
 
-                int color = this.resolveColor(resolver, biome, worldX, worldZ);
+                int color = this.resolveColor(resolver, biome, worldX, worldY, worldZ);
 
                 if (firstSeenColor == 0) {
                     firstSeenColor = color;

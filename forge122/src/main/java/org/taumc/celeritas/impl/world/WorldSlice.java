@@ -93,15 +93,7 @@ public class WorldSlice implements CeleritasBlockAccess {
     private final Biome[][] biomeCaches;
 
     // The biome blend caches for each color resolver type
-    // This map is always re-initialized, but the caches themselves are taken from an object pool
-    private final Map<BiomeColorHelper.ColorResolver, BiomeColorCache> biomeColorCaches = new Reference2ObjectOpenHashMap<>();
-
-    // The previously accessed and cached color resolver, used in conjunction with the cached color cache field
-    private BiomeColorHelper.ColorResolver prevColorResolver;
-
-    // The cached lookup result for the previously accessed color resolver to avoid excess hash table accesses
-    // for vertex color blending
-    private BiomeColorCache prevColorCache;
+    private final BiomeColorCache biomeColorCache;
 
     // The starting point from which this slice captures blocks
     private int baseX, baseY, baseZ;
@@ -167,6 +159,7 @@ public class WorldSlice implements CeleritasBlockAccess {
         this.sections = new ClonedChunkSection[SECTION_TABLE_ARRAY_SIZE];
         this.blockStatesArrays = new IBlockState[SECTION_TABLE_ARRAY_SIZE][];
         this.biomeCaches = new Biome[SECTION_TABLE_ARRAY_SIZE][16 * 16];
+        this.biomeColorCache = new BiomeColorCache(this, 3);
 
         for (int x = 0; x < SECTION_LENGTH; x++) {
             for (int y = 0; y < SECTION_LENGTH; y++) {
@@ -185,10 +178,8 @@ public class WorldSlice implements CeleritasBlockAccess {
         this.sections = context.getSections();
         this.volume = context.getVolume();
 
-        this.prevColorCache = null;
-        this.prevColorResolver = null;
 
-        this.biomeColorCaches.clear();
+        this.biomeColorCache.update(context.getOrigin());
 
         this.baseX = (this.origin.x() - NEIGHBOR_CHUNK_RADIUS) << 4;
         this.baseY = (this.origin.y() - NEIGHBOR_CHUNK_RADIUS) << 4;
@@ -409,22 +400,7 @@ public class WorldSlice implements CeleritasBlockAccess {
             return resolver.getColorAtPos(Biomes.PLAINS, pos);
         }
 
-        BiomeColorCache cache;
-
-        if (this.prevColorResolver == resolver) {
-            cache = this.prevColorCache;
-        } else {
-            cache = this.biomeColorCaches.get(resolver);
-
-            if (cache == null) {
-                this.biomeColorCaches.put(resolver, cache = new BiomeColorCache(resolver, this));
-            }
-
-            this.prevColorResolver = resolver;
-            this.prevColorCache = cache;
-        }
-
-        return cache.getBlendedColor(pos);
+        return this.biomeColorCache.getColor(resolver, pos.getX(), pos.getY(), pos.getZ());
     }
 
     @Override

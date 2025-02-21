@@ -13,7 +13,7 @@ public class BiomeColorCache extends org.embeddedt.embeddium.impl.biome.BiomeCol
     }
 
     @Override
-    protected int resolveColor(ColorResolver colorResolver, Holder<Biome> biomeHolder, int relativeX, int relativeZ) {
+    protected int resolveColor(ColorResolver colorResolver, Holder<Biome> biomeHolder, int relativeX, int relativeY, int relativeZ) {
         return colorResolver.getColor(biomeHolder.value(), relativeX, relativeZ);
     }
 }
