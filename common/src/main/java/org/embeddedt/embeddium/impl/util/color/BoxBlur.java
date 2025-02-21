@@ -1,7 +1,6 @@
 package org.embeddedt.embeddium.impl.util.color;
 
 import org.embeddedt.embeddium.api.util.ColorARGB;
-import net.minecraft.util.Mth;
 
 public class BoxBlur {
 
@@ -91,7 +90,7 @@ public class BoxBlur {
      * @author 2No2Name
      */
     private static int getAveragingMultiplier(int size) {
-        return Mth.ceil((1L << 24) / (double) size);
+        return (int)Math.ceil((1L << 24) / (double) size);
     }
 
     /**

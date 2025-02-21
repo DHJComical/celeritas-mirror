@@ -29,4 +29,8 @@ public class MathUtil {
         int truncated = (int)f;
         return truncated < (double)truncated ? truncated - 1 : truncated;
     }
+
+    public static int clamp(int value, int min, int max) {
+        return Math.min(Math.max(value, min), max);
+    }
 }

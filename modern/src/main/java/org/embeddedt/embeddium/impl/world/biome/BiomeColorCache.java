@@ -1,149 +1,19 @@
 package org.embeddedt.embeddium.impl.world.biome;
 
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceFunction;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
-import net.minecraft.core.BlockPos;
-import org.embeddedt.embeddium.impl.util.color.BoxBlur;
-import org.embeddedt.embeddium.impl.util.color.BoxBlur.ColorBuffer;
-import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
-import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.util.Mth;
+import net.minecraft.core.Holder;
 //? if >=1.15 {
 import net.minecraft.world.level.ColorResolver;
 //?} else
 /*import net.minecraft.client.renderer.BiomeColors.ColorResolver;*/
 import net.minecraft.world.level.biome.Biome;
 
-public class BiomeColorCache {
-    private static final int NEIGHBOR_BLOCK_RADIUS = 2;
-    private final BiomeSlice biomeData;
-
-    private final Reference2ReferenceOpenHashMap<ColorResolver, Slice[]> slices;
-    private long populateStamp;
-
-    private final int blendRadius;
-
-    private final ColorBuffer tempColorBuffer;
-
-    private int minX, minY, minZ;
-    private int maxX, maxY, maxZ;
-
-    private final int sizeXZ, sizeY;
-
-    private final Reference2ReferenceFunction<ColorResolver, Slice[]> sliceInitializer;
-
+public class BiomeColorCache extends org.embeddedt.embeddium.impl.biome.BiomeColorCache<Holder<Biome>, ColorResolver> {
     public BiomeColorCache(BiomeSlice biomeData, int blendRadius) {
-        this.biomeData = biomeData;
-        this.blendRadius = Math.min(7, blendRadius);
-
-        this.sizeXZ = 16 + ((NEIGHBOR_BLOCK_RADIUS + this.blendRadius) * 2);
-        this.sizeY = 16 + (NEIGHBOR_BLOCK_RADIUS * 2);
-
-        this.slices = new Reference2ReferenceOpenHashMap<>();
-        this.populateStamp = 1;
-
-        this.tempColorBuffer = new ColorBuffer(sizeXZ, sizeXZ);
-        this.sliceInitializer = this::initializeSlices;
+        super(biomeData::getBiome, blendRadius);
     }
 
-    public void update(ChunkRenderContext context) {
-        this.minX = (context.getOrigin().minBlockX() - NEIGHBOR_BLOCK_RADIUS) - this.blendRadius;
-        this.minY = (context.getOrigin().minBlockY() - NEIGHBOR_BLOCK_RADIUS);
-        this.minZ = (context.getOrigin().minBlockZ() - NEIGHBOR_BLOCK_RADIUS) - this.blendRadius;
-
-        this.maxX = (context.getOrigin().maxBlockX() + NEIGHBOR_BLOCK_RADIUS) + this.blendRadius;
-        this.maxY = (context.getOrigin().maxBlockY() + NEIGHBOR_BLOCK_RADIUS);
-        this.maxZ = (context.getOrigin().maxBlockZ() + NEIGHBOR_BLOCK_RADIUS) + this.blendRadius;
-
-        this.populateStamp++;
-    }
-
-    public int getColor(BiomeColorSource source, int blockX, int blockY, int blockZ) {
-        return switch (source) {
-            case GRASS -> getColor(BiomeColors.GRASS_COLOR_RESOLVER, blockX, blockY, blockZ);
-            case FOLIAGE -> getColor(BiomeColors.FOLIAGE_COLOR_RESOLVER, blockX, blockY, blockZ);
-            case WATER -> getColor(BiomeColors.WATER_COLOR_RESOLVER, blockX, blockY, blockZ);
-        };
-    }
-
-    public int getColor(ColorResolver resolver, int blockX, int blockY, int blockZ) {
-        var relX = Mth.clamp(blockX, this.minX, this.maxX) - this.minX;
-        var relY = Mth.clamp(blockY, this.minY, this.maxY) - this.minY;
-        var relZ = Mth.clamp(blockZ, this.minZ, this.maxZ) - this.minZ;
-
-        var slice = this.slices.computeIfAbsent(resolver, this.sliceInitializer)[relY];
-
-        if (slice.lastPopulateStamp < this.populateStamp) {
-            this.updateColorBuffers(relY, resolver, slice);
-        }
-
-        var buffer = slice.getBuffer();
-
-        return buffer.get(relX, relZ);
-    }
-
-    private Slice[] initializeSlices(Object resolver) {
-        var slice = new Slice[this.sizeY];
-
-        for (int y = 0; y < this.sizeY; y++) {
-            slice[y] = new Slice(this.sizeXZ);
-        }
-
-        return slice;
-    }
-
-    private void updateColorBuffers(int relY, ColorResolver resolver, Slice slice) {
-        int worldY = this.minY + relY;
-
-        //? if <1.15
-        /*BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();*/
-
-        int firstSeenColor = 0;
-
-        boolean uniqueColor = true;
-
-        for (int worldZ = this.minZ; worldZ <= this.maxZ; worldZ++) {
-            for (int worldX = this.minX; worldX <= this.maxX; worldX++) {
-                Biome biome = this.biomeData.getBiome(worldX, worldY, worldZ)/*? if >=1.18.2 {*/ .value() /*?}*/;
-
-                int relativeX = worldX - this.minX;
-                int relativeZ = worldZ - this.minZ;
-
-                //? if >=1.15 {
-                int color = resolver.getColor(biome, worldX, worldZ);
-                //?} else {
-                /*pos.set(worldX, worldY, worldZ);
-                int color = resolver.getColor(biome, pos);
-                *///?}
-
-                if (firstSeenColor == 0) {
-                    firstSeenColor = color;
-                } else if (firstSeenColor != color) {
-                    uniqueColor = false;
-                }
-
-                slice.buffer.set(relativeX, relativeZ, color);
-            }
-        }
-
-        // Skip blurring if all the values are the same anyway
-        if (!uniqueColor && this.blendRadius > 0) {
-            BoxBlur.blur(slice.buffer, this.tempColorBuffer, this.blendRadius);
-        }
-
-        slice.lastPopulateStamp = this.populateStamp;
-    }
-
-    private static class Slice {
-        private final ColorBuffer buffer;
-        private long lastPopulateStamp;
-
-        private Slice(int size) {
-            this.buffer = new ColorBuffer(size, size);
-        }
-
-        public ColorBuffer getBuffer() {
-            return this.buffer;
-        }
+    @Override
+    protected int resolveColor(ColorResolver colorResolver, Holder<Biome> biomeHolder, int relativeX, int relativeZ) {
+        return colorResolver.getColor(biomeHolder.value(), relativeX, relativeZ);
     }
 }

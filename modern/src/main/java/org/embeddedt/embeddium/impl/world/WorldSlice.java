@@ -15,8 +15,6 @@ import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.biome.BiomeColorCache;
-import org.embeddedt.embeddium.impl.world.biome.BiomeColorSource;
-import org.embeddedt.embeddium.impl.world.biome.BiomeColorView;
 import org.embeddedt.embeddium.impl.world.biome.BiomeSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
 import org.embeddedt.embeddium.impl.world.cloned.ClonedChunkSection;
@@ -80,7 +78,7 @@ import java.util.concurrent.TimeoutException;
         FabricBlockView.class,
         RenderAttachedBlockView.class })
 //?}
-public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
+public class WorldSlice implements EmbeddiumBlockAndTintGetter
         /*? if ffapi {*/ /*? if >=1.20.1 {*/ , FabricBlockView /*?}*/, RenderAttachedBlockView /*?}*/ {
     private static final LightLayer[] LIGHT_TYPES = LightLayer.values();
 
@@ -225,7 +223,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         }
 
         this.biomeSlice.update(this.world, context);
-        this.biomeColors.update(context);
+        this.biomeColors.update(new org.embeddedt.embeddium.impl.util.position.SectionPos(context.getOrigin().x(), context.getOrigin().y(), context.getOrigin().z()));
     }
 
     private void copySectionData(ChunkRenderContext context, int sectionIndex) {
@@ -408,11 +406,6 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter, BiomeColorView
         return this.world.getMinY();
     }
     *///?}
-
-    @Override
-    public int getColor(BiomeColorSource source, int x, int y, int z) {
-        return this.biomeColors.getColor(source, x, y, z);
-    }
 
     //? if forge && >=1.19 {
     @Override
