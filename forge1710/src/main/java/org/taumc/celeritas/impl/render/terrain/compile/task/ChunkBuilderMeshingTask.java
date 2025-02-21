@@ -26,12 +26,15 @@ import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
+import org.embeddedt.embeddium.impl.util.position.SectionPos;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.joml.Vector3d;
 import org.taumc.celeritas.impl.extensions.TessellatorExtension;
+import org.taumc.celeritas.impl.extensions.WorldClientExtension;
 import org.taumc.celeritas.impl.render.terrain.compile.ArchaicChunkBuildContext;
 import org.taumc.celeritas.impl.render.terrain.compile.ArchaicRenderSectionBuiltInfo;
 import org.taumc.celeritas.impl.render.terrain.occlusion.ChunkOcclusionDataBuilder;
+import org.taumc.celeritas.impl.world.biome.SmoothBiomeColorCache;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
 
 import java.lang.invoke.MethodHandle;
@@ -94,6 +97,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         BlockPos blockPos = new BlockPos(minX, minY, minZ);
 
         var world = Minecraft.getMinecraft().theWorld;
+        ((WorldClientExtension)world).celeritas$getSmoothBiomeColorCache().update(new SectionPos(this.render.getChunkX(), this.render.getChunkY(), this.render.getChunkZ()));
         var chunk = world.getChunkFromChunkCoords(this.render.getChunkX(), this.render.getChunkZ());
         var section = chunk.getBlockStorageArray()[this.render.getChunkY()];
         var renderBlocks = new RenderBlocks(world);
@@ -101,6 +105,8 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         var extTesselator = (TessellatorExtension)tesselator;
 
         tesselator.setTranslation(-this.render.getOriginX(), -this.render.getOriginY(), -this.render.getOriginZ());
+
+        SmoothBiomeColorCache.enabled = true;
 
         try {
             for (int y = minY; y < maxY; y++) {
@@ -150,6 +156,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
             // Create a new crash report for other exceptions (e.g. thrown in getQuads)
             throw fillCrashInfo(CrashReport.makeCrashReport(ex, "Encountered exception while building chunk meshes"), world, blockPos);
         } finally {
+            SmoothBiomeColorCache.enabled = false;
             tesselator.setTranslation(0, 0, 0);
         }
 
