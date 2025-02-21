@@ -13,8 +13,10 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.chunk.Chunk;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.spongepowered.asm.mixin.Final;
@@ -28,9 +30,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.taumc.celeritas.impl.extensions.RenderGlobalExtension;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Consumer;
 
 @Mixin(RenderGlobal.class)
 public abstract class RenderGlobalMixin implements RenderGlobalExtension {
@@ -199,13 +200,35 @@ public abstract class RenderGlobalMixin implements RenderGlobalExtension {
         return this.renderer.getChunksDebugString();
     }
 
+    private List<Entity> getLoadedEntityList() {
+        // Iterate directly over chunk entity lists where possible - mods may create multipart entities that are not
+        // added to the main loadedEntityList.
+        if (this.world.getChunkProvider() instanceof ChunkProviderClientAccessor provider) {
+            var loadedChunks = provider.celeritas$getLoadedChunks();
+            List<Entity> allEntities = new ArrayList<>(this.world.loadedEntityList.size());
+            Consumer<Entity> addEntity = allEntities::add;
+            for (Chunk chunk : loadedChunks.values()) {
+                ClassInheritanceMultiMap<Entity>[] entityMaps = chunk.getEntityLists();
+                for (ClassInheritanceMultiMap<Entity> map : entityMaps) {
+                    if (map.isEmpty()) {
+                        continue;
+                    }
+                    map.forEach(addEntity);
+                }
+            }
+            return allEntities;
+        } else {
+            // Best we can do is the loaded entity list - this will miss some multipart entities
+            return this.world.loadedEntityList;
+        }
+    }
+
     /**
      * @author embeddedt
      * @reason reimplement entity render loop because vanilla's relies on the renderInfos list
      */
     @Inject(method = "renderEntities", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/RenderGlobal;renderInfos:Ljava/util/List;", ordinal = 0))
     private void renderEntities(Entity renderViewEntity, ICamera camera, float partialTicks, CallbackInfo ci,
-                                @Local(ordinal = 0) List<Entity> loadedEntityList,
                                 @Local(ordinal = 1) List<Entity> outlineEntityList,
                                 @Local(ordinal = 2) List<Entity> multipassEntityList,
                                 @Local(ordinal = 0) double renderViewX,
@@ -216,7 +239,8 @@ public abstract class RenderGlobalMixin implements RenderGlobalExtension {
         BlockPos.MutableBlockPos entityBlockPos = new BlockPos.MutableBlockPos();
         // Apply entity distance scaling
         Entity.setRenderDistanceWeight(MathHelper.clamp((double)this.mc.gameSettings.renderDistanceChunks / 8.0D, 1.0D, 2.5D) * 1);
-        for(Entity entity : loadedEntityList) {
+
+        for(Entity entity : getLoadedEntityList()) {
             // Skip entities that shouldn't render in this pass
             if(!entity.shouldRenderInPass(pass)) {
                 continue;
