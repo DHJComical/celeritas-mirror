@@ -9,12 +9,10 @@ import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.nio.file.*;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
@@ -54,7 +52,10 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
-        List<Path> rootPaths = Stream.of("org.taumc.celeritas.mixin")
+        List<Path> rootPaths = new ArrayList<>();
+
+
+        rootPaths.addAll(Stream.of("org.taumc.celeritas.mixin")
                 .flatMap(str -> {
                     URL url = CeleritasVintageMixinPlugin.class.getResource("/" + str.replace('.', '/'));
                     if (url == null) {
@@ -67,7 +68,23 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
                         return Stream.empty();
                     }
                 })
-                .toList();
+                .toList());
+
+        if (rootPaths.isEmpty()) {
+            try {
+                URI uri = Objects.requireNonNull(CeleritasVintageMixinPlugin.class.getResource("/mixins.celeritas.json")).toURI();
+                FileSystem fs;
+                try {
+                    fs = FileSystems.getFileSystem(uri);
+                } catch (FileSystemNotFoundException var11) {
+                    fs = FileSystems.newFileSystem(uri, Collections.emptyMap());
+                }
+                rootPaths.add(fs.getPath("org", "taumc", "celeritas", "mixin").toAbsolutePath());
+            } catch(Exception e) {
+                LOGGER.error("Error finding mixins", e);
+            }
+        }
+
         Set<String> possibleMixinClasses = new HashSet<>();
         for(Path rootPath : rootPaths) {
             try(Stream<Path> mixinStream = Files.find(rootPath, Integer.MAX_VALUE, (path, attrs) -> attrs.isRegularFile() && path.getFileName().toString().endsWith(".class"))) {
@@ -81,6 +98,9 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
             }
         }
         LOGGER.info("Found {} mixin classes", possibleMixinClasses.size());
+        if (possibleMixinClasses.size() == 0) {
+            throw new IllegalStateException("Found no mixin classes, something went very wrong");
+        }
         return List.copyOf(possibleMixinClasses);
     }
 

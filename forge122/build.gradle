@@ -1,5 +1,10 @@
+import bs.ModLoader
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+import static bs.ModLoader.FORGE
 
 plugins {
+    id "com.gradleup.shadow" version "8.3.0"
     id "com.cinnober.gradle.semver-git" version "3.0.0" apply false
 }
 
@@ -101,6 +106,7 @@ unimined.minecraft {
 }
 
 dependencies {
+    shadow("org.joml:joml:1.10.5")
     implementation("org.joml:joml:1.10.5")
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
@@ -148,10 +154,29 @@ jar {
     }
 }
 
+tasks.named("shadowJar", ShadowJar) {
+    configurations = []
+}
+
+def shadowRemapJar = tasks.register("shadowRemapJar", ShadowJar) {
+    archiveClassifier = ""
+    configurations = [project.configurations.shadow]
+    from(tasks.named("remapJar"))
+    manifest.inheritFrom(tasks.named("jar").get().manifest)
+    relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml")
+    mergeServiceFiles()
+
+    from("COPYING", "COPYING.LESSER", "README.md")
+}
+
+
 tasks.named("remapJar") {
     mixinRemap {
         enableBaseMixin()
         enableMixinExtra()
         disableRefmap() // like fabric-loom 1.6
     }
+    archiveClassifier = "remapped-thin"
 }
+
+assemble.dependsOn(shadowRemapJar)
