@@ -13,7 +13,6 @@ import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
-import org.joml.Vector3i;
 
 import java.util.Map;
 
@@ -23,9 +22,9 @@ public class ClonedChunkSection {
     private final Short2ObjectMap<TileEntity> blockEntities;
     private final World world;
 
-    private ExtendedBlockStorage data;
+    private final ExtendedBlockStorage data;
 
-    private Biome[] biomeData;
+    private final Biome[] biomeData;
 
     private byte[][] lightData;
 
@@ -53,14 +52,16 @@ public class ClonedChunkSection {
         this.data = section;
         this.biomeData = new Biome[chunk.getBiomeArray().length];
 
-        StructureBoundingBox box = new StructureBoundingBox(this.sectionPos.minX(), this.sectionPos.minY(), this.sectionPos.minZ(),
-                this.sectionPos.maxX(), this.sectionPos.maxY(), this.sectionPos.maxZ());
+        if (!chunk.getTileEntityMap().isEmpty()) {
+            StructureBoundingBox box = new StructureBoundingBox(this.sectionPos.minX(), this.sectionPos.minY(), this.sectionPos.minZ(),
+                    this.sectionPos.maxX(), this.sectionPos.maxY(), this.sectionPos.maxZ());
 
-        for (Map.Entry<BlockPos, TileEntity> entry : chunk.getTileEntityMap().entrySet()) {
-            BlockPos entityPos = entry.getKey();
+            for (Map.Entry<BlockPos, TileEntity> entry : chunk.getTileEntityMap().entrySet()) {
+                BlockPos entityPos = entry.getKey();
 
-            if (box.isVecInside(entityPos)) {
-                this.blockEntities.put(packLocal(entityPos.getX() & 15, entityPos.getY() & 15, entityPos.getZ() & 15), entry.getValue());
+                if (box.isVecInside(entityPos)) {
+                    this.blockEntities.put(packLocal(entityPos.getX() & 15, entityPos.getY() & 15, entityPos.getZ() & 15), entry.getValue());
+                }
             }
         }
 
