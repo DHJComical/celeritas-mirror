@@ -6,9 +6,12 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.VisGraph;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
+import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.init.Blocks;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ReportedException;
@@ -90,6 +93,17 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
                         if (block == Blocks.AIR) {
                             continue;
+                        }
+
+                        if (block.hasTileEntity(blockState)) {
+                            TileEntity tileEntity = slice.getTileEntity(blockPos);
+                            if (tileEntity != null) {
+                                TileEntitySpecialRenderer<TileEntity> tesr = TileEntityRendererDispatcher.instance.getRenderer(tileEntity);
+
+                                if (tesr != null) {
+                                    renderData.getContext(tesr.isGlobalRenderer(tileEntity) ? VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES : VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES).add(tileEntity);
+                                }
+                            }
                         }
 
                         for (BlockRenderLayer layer : VintageChunkBuildContext.LAYERS) {

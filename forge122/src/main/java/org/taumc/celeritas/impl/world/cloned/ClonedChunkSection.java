@@ -60,7 +60,7 @@ public class ClonedChunkSection {
             BlockPos entityPos = entry.getKey();
 
             if (box.isVecInside(entityPos)) {
-                this.blockEntities.put(packLocal(entityPos.getX(), entityPos.getY(), entityPos.getZ()), entry.getValue());
+                this.blockEntities.put(packLocal(entityPos.getX() & 15, entityPos.getY() & 15, entityPos.getZ() & 15), entry.getValue());
             }
         }
 
