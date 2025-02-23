@@ -1,5 +1,6 @@
 package org.taumc.celeritas.mixin.core.frustum;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.ClippingHelper;
 import net.minecraft.client.renderer.culling.Frustum;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
@@ -45,6 +46,6 @@ public class FrustumMixin implements ViewportProvider {
 
     @Override
     public Viewport sodium$createViewport() {
-        return new Viewport(this.celeritas$frustum::testAab, new org.joml.Vector3d(this.x, this.y, this.z));
+        return new Viewport(this.celeritas$frustum::testAab, new org.joml.Vector3d(this.x, this.y + Minecraft.getMinecraft().getRenderViewEntity().getEyeHeight(), this.z));
     }
 }
