@@ -22,12 +22,12 @@ public class MathUtil {
 
     public static int mojfloor(float f) {
         int truncated = (int)f;
-        return truncated < (float)truncated ? truncated - 1 : truncated;
+        return f < (float)truncated ? truncated - 1 : truncated;
     }
 
     public static int mojfloor(double f) {
         int truncated = (int)f;
-        return truncated < (double)truncated ? truncated - 1 : truncated;
+        return f < (double)truncated ? truncated - 1 : truncated;
     }
 
     public static int clamp(int value, int min, int max) {
