@@ -14,7 +14,7 @@ import java.util.Map;
 public class VintageRenderPassConfigurationBuilder {
 
     private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(BlockRenderLayer chunkRenderType) {
-        return TerrainRenderPass.builder().setupState(() -> {}).clearState(() -> {});
+        return TerrainRenderPass.builder().pipelineState(TerrainRenderPass.PipelineState.DEFAULT);
     }
 
     public static RenderPassConfiguration<BlockRenderLayer> build(ChunkVertexType vertexType) {

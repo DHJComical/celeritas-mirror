@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.terrain;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
@@ -14,17 +15,19 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
  * for more information.
  */
 @Accessors(fluent = true)
+@EqualsAndHashCode
 public class TerrainRenderPass {
     /**
      * The friendly name of this render pass.
      */
     @Getter
+    @EqualsAndHashCode.Exclude
     private final String name;
 
     /**
      * A callback used to set up/clear GPU pipeline state.
      */
-    private final Runnable setupState, clearState;
+    private final PipelineState pipelineState;
 
     /**
      * Whether sections on this render pass should be rendered farthest-to-nearest, rather than nearest-to-farthest.
@@ -40,13 +43,12 @@ public class TerrainRenderPass {
     private final boolean useTranslucencySorting;
 
     @Builder
-    public TerrainRenderPass(String name, Runnable setupState, Runnable clearState, boolean useReverseOrder, boolean fragmentDiscard, boolean useTranslucencySorting) {
+    public TerrainRenderPass(String name, PipelineState pipelineState, boolean useReverseOrder, boolean fragmentDiscard, boolean useTranslucencySorting) {
         if(name == null || name.length() == 0) {
             throw new IllegalArgumentException("Name not specified for terrain pass");
         }
         this.name = name;
-        this.setupState = setupState;
-        this.clearState = clearState;
+        this.pipelineState = pipelineState;
         this.useReverseOrder = useReverseOrder;
         this.fragmentDiscard = fragmentDiscard;
         this.useTranslucencySorting = useTranslucencySorting;
@@ -61,11 +63,11 @@ public class TerrainRenderPass {
     }
 
     public void startDrawing() {
-        this.setupState.run();
+        this.pipelineState.setup();
     }
 
     public void endDrawing() {
-        this.clearState.run();
+        this.pipelineState.clear();
     }
 
     public boolean supportsFragmentDiscard() {
@@ -75,5 +77,22 @@ public class TerrainRenderPass {
     @Override
     public String toString() {
         return "TerrainRenderPass[name=" + this.name + "]";
+    }
+
+    public interface PipelineState {
+        PipelineState DEFAULT = new PipelineState() {
+            @Override
+            public void setup() {
+
+            }
+
+            @Override
+            public void clear() {
+
+            }
+        };
+
+        void setup();
+        void clear();
     }
 }

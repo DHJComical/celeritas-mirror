@@ -14,8 +14,32 @@ import java.util.Map;
 
 public class ModernRenderPassConfigurationBuilder {
 
+    private record ModernRenderTypePipelineState(RenderType chunkRenderType) implements TerrainRenderPass.PipelineState {
+        @Override
+        public void setup() {
+            this.chunkRenderType.setupRenderState();
+        }
+
+        @Override
+        public void clear() {
+            this.chunkRenderType.clearRenderState();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null || getClass() != o.getClass()) return false;
+            ModernRenderTypePipelineState that = (ModernRenderTypePipelineState) o;
+            return chunkRenderType == that.chunkRenderType;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(chunkRenderType);
+        }
+    }
+
     private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(RenderType chunkRenderType) {
-        return TerrainRenderPass.builder().setupState(chunkRenderType::setupRenderState).clearState(chunkRenderType::clearRenderState);
+        return TerrainRenderPass.builder().pipelineState(new ModernRenderTypePipelineState(chunkRenderType));
     }
 
     public static RenderPassConfiguration<RenderType> build(ChunkVertexType vertexType) {

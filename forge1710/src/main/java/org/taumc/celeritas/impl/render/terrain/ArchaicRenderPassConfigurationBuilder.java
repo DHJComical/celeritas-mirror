@@ -15,8 +15,9 @@ public class ArchaicRenderPassConfigurationBuilder {
     public static final TerrainRenderPass SOLID_PASS, CUTOUT_MIPPED_PASS, TRANSLUCENT_PASS;
     public static final Material SOLID_MATERIAL, CUTOUT_MIPPED_MATERIAL, TRANSLUCENT_MATERIAL;
 
-    private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(int pass, boolean disableBlend) {
-        return TerrainRenderPass.builder().setupState(() -> {
+    private record ArchaicPipelineState(int pass, boolean disableBlend) implements TerrainRenderPass.PipelineState {
+        @Override
+        public void setup() {
             if (pass == 0) {
                 // Force alpha test to use 0.1F threshold
                 GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
@@ -24,11 +25,18 @@ public class ArchaicRenderPassConfigurationBuilder {
             if (disableBlend) {
                 GL11.glDisable(GL11.GL_ALPHA_TEST);
             }
-        }).clearState(() -> {
+        }
+
+        @Override
+        public void clear() {
             if (disableBlend) {
                 GL11.glEnable(GL11.GL_ALPHA_TEST);
             }
-        });
+        }
+    }
+
+    private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(int pass, boolean disableBlend) {
+        return TerrainRenderPass.builder().pipelineState(new ArchaicPipelineState(pass, disableBlend));
     }
 
     static {
