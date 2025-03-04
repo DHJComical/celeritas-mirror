@@ -2,14 +2,15 @@ package net.irisshaders.iris.mixin.entity_render_context;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.irisshaders.batchedentityrendering.impl.Groupable;
-import net.irisshaders.batchedentityrendering.impl.wrappers.OuterWrappingMultiBufferSource;
 import net.irisshaders.iris.layer.BlockEntityRenderStateShard;
 import net.irisshaders.iris.layer.OuterWrappedRenderType;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.vertices.ImmediateState;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,7 +30,7 @@ public class MixinBlockEntityRenderDispatcher {
 	private static final String RUN_REPORTED =
 		"Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;tryRender(Lnet/minecraft/world/level/block/entity/BlockEntity;Ljava/lang/Runnable;)V";
 
-    private final OuterWrappingMultiBufferSource celeritas$outerWrapper = new OuterWrappingMultiBufferSource("iris:is_block_entity", BlockEntityRenderStateShard.INSTANCE);
+    private static final Object2ObjectOpenHashMap<RenderType, RenderType> CACHED_OUTER_RENDER_TYPES = new Object2ObjectOpenHashMap<>();
 
 	// I inject here in the method so that:
 	//
@@ -60,8 +61,8 @@ public class MixinBlockEntityRenderDispatcher {
 
 		CapturedRenderingState.INSTANCE.setCurrentBlockEntity(intId);
 
-        celeritas$outerWrapper.setTargetBufferSource(bufferSource);
-        return celeritas$outerWrapper;
+		return type ->
+			bufferSource.getBuffer(CACHED_OUTER_RENDER_TYPES.computeIfAbsent(type, (RenderType t) -> OuterWrappedRenderType.wrapExactlyOnce("iris:is_block_entity", t, BlockEntityRenderStateShard.INSTANCE)));
 	}
 
 
@@ -69,6 +70,5 @@ public class MixinBlockEntityRenderDispatcher {
 	private void iris$afterRender(BlockEntity blockEntity, float tickDelta, PoseStack matrix,
 								  MultiBufferSource bufferSource, CallbackInfo ci) {
 		CapturedRenderingState.INSTANCE.setCurrentBlockEntity(0);
-        celeritas$outerWrapper.setTargetBufferSource(null);
 	}
 }
