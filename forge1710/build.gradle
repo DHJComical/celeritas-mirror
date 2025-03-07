@@ -38,6 +38,23 @@ repositories {
             includeGroup('CoreTweaks')
         }
     }
+    exclusiveContent {
+        forRepository {
+            ivy {
+                name = 'NotFine releases'
+                url = 'https://github.com/jss2a98aj/NotFine/releases/download/'
+                patternLayout {
+                    artifact '[revision]/[module]-[revision](-[classifier])(.[ext])'
+                }
+                metadataSources {
+                    artifact()
+                }
+            }
+        }
+        filter {
+            includeGroup('NotFine')
+        }
+    }
     repositories {
         maven {
             name "Modrinth"
@@ -111,7 +128,9 @@ dependencies {
     implementation("io.github.legacymoddingmc:unimixins:0.1.19:dev")
     implementation("com.github.GTNewHorizons:GTNHLib:0.6.8:dev")
     modImplementation("CoreTweaks:CoreTweaks:0.3.3.2")
+    modImplementation("NotFine:NotFine:0.2.5")
     modImplementation("maven.modrinth:archaicfix:0.7.4")
+    modImplementation("maven.modrinth:etfuturum:2.6.2")
 }
 
 processResources {
