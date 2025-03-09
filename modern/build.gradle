@@ -28,6 +28,8 @@ group = "org.embeddedt"
 ext.snapshotSuffix = 'beta.<count>'
 apply plugin: 'com.cinnober.gradle.semver-git'
 
+apply from: rootProject.file('buildSrc/maven_repo.gradle')
+
 ModLoader configuredModLoader = ModLoader.fromProject(project)
 archivesBaseName = "celeritas-$configuredModLoader.friendlyName-mc${ModLoader.getMinecraftVersion(project).replaceAll("^1\\.", "")}"
 
@@ -590,20 +592,6 @@ publishing {
             artifactId = archivesBaseName
             artifact(tasks.named("shadeDowngradedShadowRemapJar"))
             artifact(tasks.named("sourcesJar"))
-        }
-    }
-
-    repositories {
-        maven {
-            name = "taumcRepository"
-            url = uri("https://maven.taumc.org/semiprivate")
-            credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_SECRET")
-            }
-            authentication {
-                basic(BasicAuthentication)
-            }
         }
     }
 }

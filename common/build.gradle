@@ -1,13 +1,22 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
+    id "com.cinnober.gradle.semver-git" version "3.0.0" apply false
 }
 
-group = "org.embeddedt"
+group = "org.embeddedt.celeritas"
+ext.snapshotSuffix = 'beta.<count>'
+apply plugin: 'com.cinnober.gradle.semver-git'
+
+apply from: rootProject.file('buildSrc/maven_repo.gradle')
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
 }
+
+
 
 repositories {
     mavenCentral()
@@ -26,4 +35,13 @@ dependencies {
     compileOnly("com.google.guava:guava:31.1-jre")
     compileOnly("org.ow2.asm:asm:9.6")
     compileOnly("org.ow2.asm:asm-tree:9.6")
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId 'celeritas-common'
+            from components.java
+        }
+    }
 }
