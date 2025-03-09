@@ -16,8 +16,6 @@ java {
     withSourcesJar()
 }
 
-
-
 repositories {
     mavenCentral()
 }
@@ -44,4 +42,9 @@ publishing {
             from components.java
         }
     }
+}
+
+tasks.withType(Jar).configureEach {
+    from(rootProject.file("COPYING"))
+    from(rootProject.file("COPYING.LESSER"))
 }

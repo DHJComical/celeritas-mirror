@@ -383,9 +383,6 @@ dependencies {
 }
 
 jar {
-    from(rootProject.file("LICENSE")) {
-        rename { "${it}_${archivesBaseName}"}
-    }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
