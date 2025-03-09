@@ -8,8 +8,6 @@ group = "org.embeddedt.celeritas"
 ext.snapshotSuffix = 'beta.<count>'
 apply plugin: 'com.cinnober.gradle.semver-git'
 
-apply from: rootProject.file('buildSrc/maven_repo.gradle')
-
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -40,6 +38,19 @@ publishing {
         mavenJava(MavenPublication) {
             artifactId 'celeritas-common'
             from components.java
+        }
+    }
+    repositories {
+        maven {
+            name = "taumcRepository"
+            url = uri("https://maven.taumc.org/releases")
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_SECRET")
+            }
+            authentication {
+                basic(BasicAuthentication)
+            }
         }
     }
 }
