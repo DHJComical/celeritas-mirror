@@ -25,7 +25,7 @@ Currently the only vintage version of Minecraft supported is 12.2, in a dedicate
 
 ### Archaic
 
-Currently the only vintage version of Minecraft supported is 12.2, in a dedicated `:forge122` project.
+Currently the only archaic version of Minecraft supported is 7.10, in a dedicated `:forge1710` project.
 
 ## License
 
