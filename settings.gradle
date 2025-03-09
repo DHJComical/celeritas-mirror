@@ -33,9 +33,16 @@ plugins {
 rootProject.name = "celeritas"
 
 include("common")
-include("forge1710")
-include("forge122")
-include("modern")
-tau.stonecutter {
-    createVersionedProjectUsingJson(project(":modern"))
+
+if(file("forge1710").exists()) {
+    include("forge1710")
+}
+if(file("forge122").exists()) {
+    include("forge122")
+}
+if(file("modern").exists()) {
+    include("modern")
+    tau.stonecutter {
+        createVersionedProjectUsingJson(project(":modern"))
+    }
 }
