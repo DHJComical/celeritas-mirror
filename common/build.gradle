@@ -5,8 +5,7 @@ plugins {
 }
 
 group = "org.embeddedt.celeritas"
-ext.snapshotSuffix = 'beta.<count>'
-apply plugin: 'com.cinnober.gradle.semver-git'
+version = rootProject.version
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17

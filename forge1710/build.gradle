@@ -4,8 +4,7 @@ plugins {
 }
 
 group = "org.embeddedt"
-ext.snapshotSuffix = 'beta.<count>'
-apply plugin: 'com.cinnober.gradle.semver-git'
+version = rootProject.version
 apply plugin: 'xyz.wagyourtail.unimined'
 
 repositories {
