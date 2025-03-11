@@ -47,7 +47,7 @@ jobs:
             release-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-
       - name: Build common module
         run: ./gradlew :common:build -Prelease_channel=${{ inputs.release_type }}
-      - name: Publish common module
-        run: ./gradlew :common:publish -Prelease_channel=${{ inputs.release_type }}
       - name: Publish artifacts
         run: ./gradlew :taugradle_publish -Prelease_channel=${{ inputs.release_type }} --stacktrace
+      - name: Publish common module
+        run: ./gradlew :common:publish -Prelease_channel=${{ inputs.release_type }}
