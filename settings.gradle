@@ -27,7 +27,7 @@ buildscript {
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
     id "dev.kikugie.stonecutter" version "$stonecutter_version"
-    id "org.taumc.gradle.stonecutter" version "0.2.4"
+    id "org.taumc.gradle.stonecutter" version "0.3.18"
 }
 
 rootProject.name = "celeritas"

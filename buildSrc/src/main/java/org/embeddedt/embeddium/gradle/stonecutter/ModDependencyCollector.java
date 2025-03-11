@@ -61,14 +61,14 @@ public class ModDependencyCollector {
             var mcVersion = params.getMetadata().getVersion();
             var depMap = dependencyMap(params.getMetadata().getProject());
             depMap.forEach((key, dep) -> {
-                params.getConsts().set(key, dep.versionConditions.stream().anyMatch(c -> scController.eval(mcVersion, c.evalCondition)));
+                params.getConsts().put(key, dep.versionConditions.stream().anyMatch(c -> scController.eval(mcVersion, c.evalCondition)));
             });
             Set<String> allKeys = new HashSet<>();
             allKeys.addAll(FORGELIKE_DEPENDENCY_MAP.keySet());
             allKeys.addAll(FABRIC_DEPENDENCY_MAP.keySet());
             for (String key : allKeys) {
                 if (!depMap.containsKey(key)) {
-                    params.getConsts().set(key, false);
+                   params.getConsts().put(key, false);
                 }
             }
         });

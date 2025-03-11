@@ -545,7 +545,7 @@ afterEvaluate {
     }
 }
 
-if (stonecutter.current.isActive) {
+if (stonecutter.current.isActive()) {
     tasks.register("publishPackagesToDiscord") {
         outputs.upToDateWhen { false }
         doLast {
