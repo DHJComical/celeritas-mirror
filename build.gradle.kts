@@ -4,8 +4,8 @@ import org.taumc.gradle.publishing.api.minecraft.ModLoader
 import xyz.wagyourtail.unimined.api.minecraft.task.RemapJarTask
 
 plugins {
-    id("org.taumc.gradle.versioning") version "0.3.18"
-    id("org.taumc.gradle.publishing") version "0.3.18"
+    id("org.taumc.gradle.versioning") version "0.3.24"
+    id("org.taumc.gradle.publishing") version "0.3.24"
 }
 
 project.version = tau.versioning.version(rootProject.properties["project_base_version"].toString(), rootProject.properties["release_channel"])
@@ -16,7 +16,6 @@ println("Celeritas: ${tau.versioning.version}")
 evaluationDependsOnChildren()
 
 val publishTask = tau.publishing.publish {
-
     useTauGradleVersioning()
     changelog = "Further improvements to overall system stability and other minor adjustments have been made to enhance the user experience."
 
@@ -28,6 +27,17 @@ val publishTask = tau.publishing.publish {
         avatarURL = "https://git.taumc.org/embeddedt/celeritas/raw/branch/stonecutter/modern/src/main/resources/icon.png"
 
         setMessage("Celeritas dev build")
+    }
+
+    github("Gitea") {
+        supportAllChannels()
+        uploadArtifacts = false
+
+        apiEndpoint = "https://git.taumc.org/api/v1/"
+
+        accessToken = System.getenv("GITEA_TOKEN")
+        repository = "embeddedt/celeritas"
+        tagName = tau.versioning.releaseTag
     }
 
     val archaic = project(":forge1710")

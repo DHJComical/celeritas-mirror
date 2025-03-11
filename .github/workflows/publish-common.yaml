@@ -11,6 +11,7 @@ env:
   DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
   MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
   MAVEN_SECRET: ${{ secrets.MAVEN_SECRET }}
+  GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
 
 jobs:
   build:
