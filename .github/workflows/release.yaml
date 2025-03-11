@@ -3,9 +3,15 @@
 name: build-snapshot
 
 on:
-  push:
-    branches:
-      - stonecutter
+  workflow_dispatch:
+    inputs:
+      release_type:
+        type: choice
+        description: Release type
+        options:
+          - DEV_BUILD
+          - PRERELEASE
+          - RELEASE
 
 env:
   DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
@@ -33,10 +39,12 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: common-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('settings.gradle') }}
+          key: release-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('settings.gradle') }}
           restore-keys: |
-            common-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-
+            release-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-
       - name: Build common module
         run: ./gradlew :common:build
       - name: Publish common module
         run: ./gradlew :common:publish
+      - name: Publish artifacts
+        run: ./gradlew :taugradle_publish -Prelease_channel=${{ github.event.inputs.release_type }} --stacktrace
