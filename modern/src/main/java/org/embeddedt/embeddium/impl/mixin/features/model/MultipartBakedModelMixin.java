@@ -297,14 +297,14 @@ public class MultipartBakedModelMixin {
      ^/
     @Overwrite(remap = false)
     public IModelData getModelData(BlockAndTintGetter world, BlockPos pos, BlockState state, IModelData tileModelData) {
-        BakedModel[] models = getModelComponents(state);
+        net.minecraft.client.resources.model.BakedModel[] models = getModelComponents(state);
 
-        Map<BakedModel, IModelData> dataMap = null;
+        Map<net.minecraft.client.resources.model.BakedModel, IModelData> dataMap = null;
 
         var multipartData = new MultipartModelData(tileModelData);
         boolean hadPartData = false;
 
-        for(BakedModel model : models) {
+        for(net.minecraft.client.resources.model.BakedModel model : models) {
             IModelData data = model.getModelData(world, pos, state, tileModelData);
             if(data != tileModelData) {
                 multipartData.setPartData(model, data);

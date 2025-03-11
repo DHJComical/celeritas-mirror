@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 
 //? if forge && >=1.18 {
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
+//? if >=1.19
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.fml.IExtensionPoint;
 //?}

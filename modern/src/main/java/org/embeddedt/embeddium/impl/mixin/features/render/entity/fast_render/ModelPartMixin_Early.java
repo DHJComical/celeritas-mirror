@@ -12,7 +12,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
+//? if >=1.17 {
 import java.util.List;
+//?} else {
+/*import it.unimi.dsi.fastutil.objects.ObjectList;
+import com.mojang.math.Vector3f;
+import com.mojang.math.Vector4f;
+*///?}
 
 // Inject before everyone else
 @Mixin(value = ModelPart.class, priority = 700)
