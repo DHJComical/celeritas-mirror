@@ -24,6 +24,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Verify that release channel is available
+        run: echo "Releasing for ${{ inputs.release_type }}" && test -n "${{ inputs.release_type }}"
       - name: Checkout sources
         uses: actions/checkout@v4
         with:
