@@ -48,4 +48,4 @@ jobs:
       - name: Publish common module
         run: ./gradlew :common:publish
       - name: Publish artifacts
-        run: ./gradlew :taugradle_publish -Prelease_channel=${{ github.event.inputs.release_type }} --stacktrace
+        run: ./gradlew :taugradle_publish -Prelease_channel=${{ inputs.release_type }} --stacktrace
