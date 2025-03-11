@@ -77,6 +77,9 @@ public final class QuadTree<T> extends Rect2i
     }
 
     private void bake() {
+        if (entries != null) {
+            entries = List.copyOf(entries);
+        }
         // Postorder traversal
         if (child0 != null) {
             child0.bake();
@@ -131,14 +134,6 @@ public final class QuadTree<T> extends Rect2i
         entries.add(new Entry<>(size, item));
     }
 
-    private T tryFind(QuadTree<T> child, int x, int y) {
-        if (child != null) {
-            return child.find(x, y);
-        } else {
-            return null;
-        }
-    }
-
     public T find(int x, int y) {
         if (!this.contains(x, y)) {
             return null;
@@ -155,15 +150,18 @@ public final class QuadTree<T> extends Rect2i
             }
         }
 
-        T childItem;
-        childItem = tryFind(child0, x, y);
-        if (childItem != null) return childItem;
-        childItem = tryFind(child1, x, y);
-        if (childItem != null) return childItem;
-        childItem = tryFind(child2, x, y);
-        if (childItem != null) return childItem;
-        childItem = tryFind(child3, x, y);
-        if (childItem != null) return childItem;
+        if (child0 != null && child0.contains(x, y)) {
+            return child0.find(x, y);
+        }
+        if (child1 != null && child1.contains(x, y)) {
+            return child1.find(x, y);
+        }
+        if (child2 != null && child2.contains(x, y)) {
+            return child2.find(x, y);
+        }
+        if (child3 != null && child3.contains(x, y)) {
+            return child3.find(x, y);
+        }
 
         return null;
     }

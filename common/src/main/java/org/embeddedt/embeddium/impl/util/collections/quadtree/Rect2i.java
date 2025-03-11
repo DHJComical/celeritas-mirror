@@ -26,7 +26,7 @@ public class Rect2i {
     public boolean contains(Rect2i r2)
     {
         Rect2i r1 = this;
-        return r1.contains(r2.x(), r2.y()) && r1.contains(r2.x() + r2.width(), r2.y() + r2.height());
+        return r1.contains(r2.x(), r2.y()) && r1.contains(r2.x() + r2.width() - 1, r2.y() + r2.height() - 1);
     }
 
     public int x() {
