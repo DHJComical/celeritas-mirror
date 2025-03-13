@@ -62,7 +62,7 @@ repositories {
     mavenCentral()
 }
 
-archivesBaseName = "celeritas-forge-1.7.10"
+archivesBaseName = "celeritas-forge-mc7.10"
 
 evaluationDependsOn(":common")
 evaluationDependsOn(":common-shaders")
