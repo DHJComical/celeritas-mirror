@@ -1,11 +1,12 @@
+import dev.kikugie.stonecutter.controller.StonecutterController
 import org.taumc.gradle.publishing.api.PublishChannel
 import org.taumc.gradle.publishing.api.minecraft.ModEnvironment
 import org.taumc.gradle.publishing.api.minecraft.ModLoader
 import xyz.wagyourtail.unimined.api.minecraft.task.RemapJarTask
 
 plugins {
-    id("org.taumc.gradle.versioning") version "0.3.24"
-    id("org.taumc.gradle.publishing") version "0.3.24"
+    id("org.taumc.gradle.versioning")
+    id("org.taumc.gradle.publishing")
 }
 
 project.version = tau.versioning.version(rootProject.properties["project_base_version"].toString(), rootProject.properties["release_channel"])
@@ -29,19 +30,25 @@ val publishTask = tau.publishing.publish {
         testBuildPreset("Celeritas", "https://git.taumc.org/embeddedt/celeritas")
     }
 
-    github("Gitea") {
-        supportAllChannels()
-        uploadArtifacts = false
+    if (System.getenv("CELERITAS_PUBLISHING_TEST") == null) {
+        github("Gitea") {
+            supportAllChannels()
+            uploadArtifacts = false
 
-        apiEndpoint = "https://git.taumc.org/api/v1/"
+            apiEndpoint = "https://git.taumc.org/api/v1/"
 
-        accessToken = System.getenv("GITEA_TOKEN")
-        repository = "embeddedt/celeritas"
-        tagName = tau.versioning.releaseTag
+            accessToken = System.getenv("GITEA_TOKEN")
+            repository = "embeddedt/celeritas"
+            tagName = tau.versioning.releaseTag
+        }
     }
 
     val archaic = project(":forge1710")
     dependsOn(archaic.tasks.named("remapJar"))
+
+    val modernStonecutter = project(":modern").extensions.getByType(StonecutterController::class.java)
+
+    dependsOn(project(":modern").tasks.named("chiseledPackage"))
 
     modArtifact {
         files(project.provider { archaic.tasks.named<RemapJarTask>("remapJar").get().asJar.archiveFile })
@@ -51,5 +58,30 @@ val publishTask = tau.publishing.publish {
 
         environment = ModEnvironment.CLIENT_ONLY
         modLoaders.add(ModLoader.LEXFORGE)
+    }
+
+    modernStonecutter.tree.values.flatMap { it.values }.forEach {
+        val name = it.metadata.project
+        val ourLoader = bs.ModLoader.fromName(name) ?: throw IllegalArgumentException("No modloader for ${name}")
+
+        if (ourLoader == bs.ModLoader.FABRIC) {
+            // Skip Fabric for now as the payload to Discord is too large otherwise.
+            return@forEach
+        }
+
+        modArtifact {
+            files(it.project.provider { it.project.tasks.named<Copy>("packageJar").get().inputs.files.singleFile })
+
+            minecraftVersionRange = bs.ModLoader.getMinecraftVersion(name)
+            javaVersions.add(JavaVersion.VERSION_21)
+
+            environment = ModEnvironment.CLIENT_ONLY
+
+            modLoaders.add(when(ourLoader) {
+                bs.ModLoader.FABRIC -> ModLoader.FABRIC
+                bs.ModLoader.FORGE -> ModLoader.LEXFORGE
+                bs.ModLoader.NEOFORGE -> ModLoader.NEOFORGE
+            })
+        }
     }
 }
