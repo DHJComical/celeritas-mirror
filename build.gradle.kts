@@ -16,6 +16,8 @@ println("Celeritas: ${tau.versioning.version}")
 
 evaluationDependsOnChildren()
 
+val modernStonecutter = project(":modern").extensions.getByType(StonecutterController::class.java)
+
 val publishTask = tau.publishing.publish {
     useTauGradleVersioning()
     changelog = "Further improvements to overall system stability and other minor adjustments have been made to enhance the user experience."
@@ -45,10 +47,6 @@ val publishTask = tau.publishing.publish {
 
     val archaic = project(":forge1710")
     dependsOn(archaic.tasks.named("remapJar"))
-
-    val modernStonecutter = project(":modern").extensions.getByType(StonecutterController::class.java)
-
-    dependsOn(project(":modern").tasks.named("chiseledPackage"))
 
     modArtifact {
         files(project.provider { archaic.tasks.named<RemapJarTask>("remapJar").get().asJar.archiveFile })
