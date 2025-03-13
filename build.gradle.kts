@@ -26,7 +26,7 @@ val publishTask = tau.publishing.publish {
         username = "Celeritas Test Builds"
         avatarURL = "https://git.taumc.org/embeddedt/celeritas/raw/branch/stonecutter/modern/src/main/resources/icon.png"
 
-        setMessage("Celeritas dev build")
+        testBuildPreset("Celeritas", "https://git.taumc.org/embeddedt/celeritas")
     }
 
     github("Gitea") {
