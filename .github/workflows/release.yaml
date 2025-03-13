@@ -46,7 +46,7 @@ jobs:
           restore-keys: |
             release-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-
       - name: Build modern
-        run: ./gradlew :modern:chiseledPackage -Prelease_channel=${{ inputs.release_type }}
+        run: ./gradlew chiseledPackage -Prelease_channel=${{ inputs.release_type }}
       - name: Publish artifacts
         run: ./gradlew :taugradle_publish -Prelease_channel=${{ inputs.release_type }} --stacktrace
       - name: Publish common module
