@@ -1,6 +1,5 @@
 
 plugins {
-    id "com.cinnober.gradle.semver-git" version "3.0.0" apply false
 }
 
 group = "org.embeddedt"

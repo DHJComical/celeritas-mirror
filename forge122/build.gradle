@@ -5,12 +5,10 @@ import static bs.ModLoader.FORGE
 
 plugins {
     id "com.gradleup.shadow" version "8.3.0"
-    id "com.cinnober.gradle.semver-git" version "3.0.0" apply false
 }
 
 group = "org.embeddedt"
-ext.snapshotSuffix = 'beta.<count>'
-apply plugin: 'com.cinnober.gradle.semver-git'
+version = rootProject.version
 apply plugin: 'xyz.wagyourtail.unimined'
 
 repositories {
