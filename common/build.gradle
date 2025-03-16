@@ -57,3 +57,11 @@ tasks.withType(Jar).configureEach {
     from(rootProject.file("COPYING"))
     from(rootProject.file("COPYING.LESSER"))
 }
+
+jar {
+    manifest {
+        attributes([
+                "Lwjgl3ify-Aware": "true"
+        ])
+    }
+}
