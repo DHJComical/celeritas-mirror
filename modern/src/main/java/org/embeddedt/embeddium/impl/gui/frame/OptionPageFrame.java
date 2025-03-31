@@ -17,19 +17,17 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 //?}
-import net.minecraft.locale.Language;
-import net.minecraft.network.chat.Component;
 //? if >=1.16.2
-import net.minecraft.util.FormattedCharSequence;
 import org.apache.commons.lang3.Validate;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.theme.DefaultColors;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.Predicate;
+
+import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTIL;
 
 public class OptionPageFrame extends AbstractFrame {
     protected final OptionPage page;
@@ -165,7 +163,7 @@ public class OptionPageFrame extends AbstractFrame {
         var id = option.getId();
 
         if (OptionIdentifier.isPresent(page.getId()) && OptionIdentifier.isPresent(id) && !Objects.equals(normalizeModForTooltip(page.getId().getModId()), normalizeModForTooltip(id.getModId()))) {
-            var addedByModString = ComponentUtil.translatable("embeddium.options.added_by_mod_string", ComponentUtil.literal(PlatformUtil.getModName(id.getModId())).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY);
+            var addedByModString = ComponentUtil.translatable("embeddium.options.added_by_mod_string", ComponentUtil.literal(PLATFORM_UTIL.getModName(id.getModId())).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY);
             tooltip.add(addedByModString.getString());
         }
 

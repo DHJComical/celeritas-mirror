@@ -48,6 +48,7 @@ plugins {
 rootProject.name = "celeritas"
 
 include("common")
+include("common-shaders")
 
 if(file("forge1710").exists()) {
     include("forge1710")

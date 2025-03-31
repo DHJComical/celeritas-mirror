@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import org.apache.commons.codec.binary.Hex;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -26,13 +25,15 @@ import java.util.function.Supplier;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTIL;
+
 public class ShaderTransformationDiskCache {
     /**
      * This value must be incremented whenever a new version of Cornea is published with updated transformers.
      */
     private static final int TRANSFORMER_VERSION = 1;
 
-    private static final Path SHADER_CACHE_PATH = PlatformUtil.getGameDir().resolve("cornea_transform_cache");
+    private static final Path SHADER_CACHE_PATH = PLATFORM_UTIL.getGameDir().resolve("cornea_transform_cache");
 
     private static final MessageDigest DIGEST;
 

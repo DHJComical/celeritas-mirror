@@ -1,33 +1,26 @@
 package net.irisshaders.iris.gl.shader;
 
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
+import static org.embeddedt.embeddium.compat.dh.DHCompatService.DH_COMPAT;
+
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.GlUtil;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.compat.dh.DHCompat;
+import net.irisshaders.iris.IrisConstants;
 import net.irisshaders.iris.helpers.StringPair;
-import net.irisshaders.iris.pathways.HandRenderer;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.texture.format.TextureFormat;
 import net.irisshaders.iris.texture.format.TextureFormatLoader;
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
-import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class StandardMacros {
 	private static final Pattern SEMVER_PATTERN = Pattern.compile("(?<major>\\d+)\\.(?<minor>\\d+)\\.*(?<bugfix>\\d*)(.*)");
@@ -44,7 +37,7 @@ public class StandardMacros {
 		ArrayList<StringPair> standardDefines = new ArrayList<>();
 
 		define(standardDefines, "MC_VERSION", getMcVersion());
-        define(standardDefines, "MC_MIPMAP_LEVEL", String.valueOf(Minecraft.getInstance().options.mipmapLevels().get()));
+        define(standardDefines, "MC_MIPMAP_LEVEL", String.valueOf(MINECRAFT_SHIM.getMipmapLevels()));
 		define(standardDefines, "MC_GL_VERSION", getGlVersion(GL20C.GL_VERSION));
 		define(standardDefines, "MC_GLSL_VERSION", getGlVersion(GL20C.GL_SHADING_LANGUAGE_VERSION));
 		define(standardDefines, getOsString());
@@ -55,7 +48,7 @@ public class StandardMacros {
         define(standardDefines, "IRIS_TAG_SUPPORT", "2");
 
 
-		if (EarlyLoaderServices.INSTANCE.isModLoaded("distanthorizons") && DHCompat.hasRenderingEnabled()) {
+		if (MINECRAFT_SHIM.isModLoaded("distanthorizons") && DH_COMPAT.hasRenderingEnabled()) {
 			define(standardDefines, "DISTANT_HORIZONS");
 		}
 
@@ -84,7 +77,7 @@ public class StandardMacros {
 		define(standardDefines, "MC_SPECULAR_MAP");
 		define(standardDefines, "MC_RENDER_QUALITY", "1.0");
 		define(standardDefines, "MC_SHADOW_QUALITY", "1.0");
-		define(standardDefines, "MC_HAND_DEPTH", Float.toString(HandRenderer.DEPTH));
+		define(standardDefines, "MC_HAND_DEPTH", Float.toString(IrisConstants.DEPTH));
 
 		TextureFormat textureFormat = TextureFormatLoader.getFormat();
 		if (textureFormat != null) {
@@ -151,7 +144,7 @@ public class StandardMacros {
 	 * @see <a href="https://github.com/sp614x/optifine/blob/9c6a5b5326558ccc57c6490b66b3be3b2dc8cbef/OptiFineDoc/doc/shaders.txt#L705-L707">Optifine Doc for GLSL Version</a>
 	 */
 	public static String getGlVersion(int name) {
-		String info = GlStateManager._getString(name);
+		String info = GL_STATE_MANAGER.glGetString(name);
 
 		Matcher matcher = SEMVER_PATTERN.matcher(Objects.requireNonNull(info));
 

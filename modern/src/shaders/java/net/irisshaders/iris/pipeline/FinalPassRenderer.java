@@ -1,9 +1,15 @@
 package net.irisshaders.iris.pipeline;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
+
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.irisshaders.iris.features.FeatureFlags;
@@ -11,11 +17,7 @@ import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.buffer.ShaderStorageBufferHolder;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.image.GlImage;
-import net.irisshaders.iris.gl.program.ComputeProgram;
-import net.irisshaders.iris.gl.program.Program;
-import net.irisshaders.iris.gl.program.ProgramBuilder;
-import net.irisshaders.iris.gl.program.ProgramSamplers;
-import net.irisshaders.iris.gl.program.ProgramUniforms;
+import net.irisshaders.iris.gl.program.*;
 import net.irisshaders.iris.gl.sampler.SamplerLimits;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.gl.state.FogMode;
@@ -45,16 +47,7 @@ import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11C;
-import org.lwjgl.opengl.GL15C;
-import org.lwjgl.opengl.GL20C;
-import org.lwjgl.opengl.GL30C;
-import org.lwjgl.opengl.GL43C;
-
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Supplier;
+import org.lwjgl.opengl.*;
 
 public class FinalPassRenderer {
 	private final RenderTargets renderTargets;
@@ -148,7 +141,7 @@ public class FinalPassRenderer {
 
 		this.swapPasses = swapPasses.build();
 
-		GlStateManager._glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
 	}
 
 	private static void setupMipmapping(RenderTarget target, boolean readFromAlt) {
@@ -189,12 +182,12 @@ public class FinalPassRenderer {
 		IrisRenderSystem.texParameteri(target.getMainTexture(), GL20C.GL_TEXTURE_2D, GL20C.GL_TEXTURE_MIN_FILTER, filter);
 		IrisRenderSystem.texParameteri(target.getAltTexture(), GL20C.GL_TEXTURE_2D, GL20C.GL_TEXTURE_MIN_FILTER, filter);
 
-		RenderSystem.bindTexture(0);
+		RENDER_SYSTEM.bindTexture(0);
 	}
 
 	public void renderFinalPass() {
-		RenderSystem.disableBlend();
-		RenderSystem.depthMask(false);
+		RENDER_SYSTEM.disableBlend();
+		RENDER_SYSTEM.depthMask(false);
 
 		final com.mojang.blaze3d.pipeline.RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
 		final int baseWidth = main.width;
@@ -239,7 +232,7 @@ public class FinalPassRenderer {
 			IrisRenderSystem.memoryBarrier(GL43C.GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL43C.GL_TEXTURE_FETCH_BARRIER_BIT | GL43C.GL_SHADER_STORAGE_BARRIER_BIT);
 
 			if (!finalPass.mipmappedBuffers.isEmpty()) {
-				RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+				RENDER_SYSTEM.glActiveTexture(GL15C.GL_TEXTURE0);
 
 				for (int index : finalPass.mipmappedBuffers) {
 					setupMipmapping(renderTargets.get(index), finalPass.stageReadsFromAlt.contains(index));
@@ -271,7 +264,7 @@ public class FinalPassRenderer {
 			IrisRenderSystem.copyTexSubImage2D(main.getColorTextureId(), GL11C.GL_TEXTURE_2D, 0, 0, 0, 0, 0, baseWidth, baseHeight);
 		}
 
-		RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+		RENDER_SYSTEM.glActiveTexture(GL15C.GL_TEXTURE0);
 
 		for (int i = 0; i < renderTargets.getRenderTargetCount(); i++) {
 			// Reset mipmapping states at the end of the frame.
@@ -289,8 +282,8 @@ public class FinalPassRenderer {
 			// Also note that RenderTargets already calls readBuffer(0) for us.
 			swapPass.from.bind();
 
-			RenderSystem.bindTexture(swapPass.targetTexture);
-			GlStateManager._glCopyTexSubImage2D(GL20C.GL_TEXTURE_2D, 0, 0, 0, 0, 0, swapPass.width, swapPass.height);
+			RENDER_SYSTEM.bindTexture(swapPass.targetTexture);
+			GL_STATE_MANAGER.glCopyTexSubImage2D(GL20C.GL_TEXTURE_2D, 0, 0, 0, 0, 0, swapPass.width, swapPass.height);
 		}
 
 		// Make sure to reset the viewport to how it was before... Otherwise weird issues could occur.
@@ -298,18 +291,18 @@ public class FinalPassRenderer {
 		main.bindWrite(true);
 		ProgramUniforms.clearActiveUniforms();
 		ProgramSamplers.clearActiveSamplers();
-		GlStateManager._glUseProgram(0);
+		GL_STATE_MANAGER.glUseProgram(0);
 
 		for (int i = 0; i < SamplerLimits.get().getMaxTextureUnits(); i++) {
 			// Unbind all textures that we may have used.
 			// NB: This is necessary for shader pack reloading to work properly
 			if (GlStateManagerAccessor.getTEXTURES()[i].binding != 0) {
-				RenderSystem.activeTexture(GL15C.GL_TEXTURE0 + i);
-				RenderSystem.bindTexture(0);
+				RENDER_SYSTEM.glActiveTexture(GL15C.GL_TEXTURE0 + i);
+				RENDER_SYSTEM.bindTexture(0);
 			}
 		}
 
-		RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+		RENDER_SYSTEM.glActiveTexture(GL15C.GL_TEXTURE0);
 	}
 
 	public void recalculateSwapPassSize() {

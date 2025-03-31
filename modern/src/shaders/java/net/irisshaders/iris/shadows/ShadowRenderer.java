@@ -1,16 +1,20 @@
 package net.irisshaders.iris.shadows;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
+
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
-import net.irisshaders.batchedentityrendering.impl.BatchingDebugMessageHelper;
-import net.irisshaders.batchedentityrendering.impl.DrawCallTrackingRenderBuffers;
-import net.irisshaders.batchedentityrendering.impl.FullyBufferedMultiBufferSource;
-import net.irisshaders.batchedentityrendering.impl.MemoryTrackingRenderBuffers;
-import net.irisshaders.batchedentityrendering.impl.RenderBuffersExt;
+import net.irisshaders.batchedentityrendering.impl.*;
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisConstants;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
@@ -44,7 +48,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
-import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
@@ -55,12 +58,6 @@ import org.joml.Vector4f;
 import org.lwjgl.opengl.ARBTextureSwizzle;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Predicate;
 
 public class ShadowRenderer {
 	public static boolean ACTIVE = false;
@@ -215,7 +212,7 @@ public class ShadowRenderer {
 		final Int2ObjectMap<PackShadowDirectives.SamplingSettings> colorSamplingSettings =
 			shadowDirectives.getColorSamplingSettings();
 
-		RenderSystem.activeTexture(GL20C.GL_TEXTURE4);
+		RENDER_SYSTEM.glActiveTexture(GL20C.GL_TEXTURE4);
 
 		configureDepthSampler(targets.getDepthTexture().getTextureId(), depthSamplingSettings.get(0));
 
@@ -229,7 +226,7 @@ public class ShadowRenderer {
 			}
 		}
 
-		RenderSystem.activeTexture(GL20C.GL_TEXTURE0);
+		RENDER_SYSTEM.glActiveTexture(GL20C.GL_TEXTURE0);
 	}
 
 	private void configureDepthSampler(int glTextureId, PackShadowDirectives.DepthSamplingSettings settings) {
@@ -264,13 +261,13 @@ public class ShadowRenderer {
 	}
 
 	private void generateMipmaps() {
-		RenderSystem.activeTexture(GL20C.GL_TEXTURE4);
+		RENDER_SYSTEM.glActiveTexture(GL20C.GL_TEXTURE4);
 
 		for (MipmapPass mipmapPass : mipmapPasses) {
 			setupMipmappingForTexture(mipmapPass.texture(), mipmapPass.targetFilteringMode());
 		}
 
-		RenderSystem.activeTexture(GL20C.GL_TEXTURE0);
+		RENDER_SYSTEM.glActiveTexture(GL20C.GL_TEXTURE0);
 	}
 
 	private void setupMipmappingForTexture(int texture, int filteringMode) {
@@ -360,7 +357,7 @@ public class ShadowRenderer {
 
 	public void setupShadowViewport() {
 		// Set up the viewport
-		RenderSystem.viewport(0, 0, resolution, resolution);
+		RENDER_SYSTEM.glViewport(0, 0, resolution, resolution);
 	}
 
 	public void renderShadows(LevelRendererAccessor levelRenderer, Camera playerCamera) {
@@ -461,7 +458,7 @@ public class ShadowRenderer {
 		// However, it only partially resolves issues of light leaking into caves.
 		//
 		// TODO: Better way of preventing light from leaking into places where it shouldn't
-		RenderSystem.disableCull();
+		RENDER_SYSTEM.disableCullFace();
 
 		// Render all opaque terrain unless pack requests not to
 		if (shouldRenderTerrain) {
@@ -477,7 +474,7 @@ public class ShadowRenderer {
 		}
 
 		// Reset our viewport in case Sodium overrode it
-		RenderSystem.viewport(0, 0, resolution, resolution);
+		RENDER_SYSTEM.glViewport(0, 0, resolution, resolution);
 
 		levelRenderer.getLevel().getProfiler().popPush("entities");
 
@@ -582,12 +579,12 @@ public class ShadowRenderer {
 		levelRenderer.getLevel().getProfiler().popPush("restore gl state");
 
 		// Restore backface culling
-		RenderSystem.enableCull();
+		RENDER_SYSTEM.enableCullFace();
 
 		Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
 
 		// Restore the old viewport
-		RenderSystem.viewport(0, 0, client.getMainRenderTarget().width, client.getMainRenderTarget().height);
+		RENDER_SYSTEM.glViewport(0, 0, client.getMainRenderTarget().width, client.getMainRenderTarget().height);
 
         pipeline.removePhaseIfNeeded();
         GLDebug.pushGroup(901, "shadowcomp");
@@ -714,26 +711,26 @@ public class ShadowRenderer {
 
 	public void addDebugText(List<String> messages) {
 		if (IrisVideoSettings.getOverriddenShadowDistance(IrisVideoSettings.shadowDistance) == 0) {
-			messages.add("[" + Iris.MODNAME + "] Shadow Maps: off, shadow distance 0");
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Maps: off, shadow distance 0");
 			return;
 		}
 
 		if (Iris.getIrisConfig().areDebugOptionsEnabled()) {
-			messages.add("[" + Iris.MODNAME + "] Shadow Maps: " + debugStringOverall);
-			messages.add("[" + Iris.MODNAME + "] Shadow Distance Terrain: " + terrainFrustumHolder.getDistanceInfo() + " Entity: " + entityFrustumHolder.getDistanceInfo());
-			messages.add("[" + Iris.MODNAME + "] Shadow Culling Terrain: " + terrainFrustumHolder.getCullingInfo() + " Entity: " + entityFrustumHolder.getCullingInfo());
-			messages.add("[" + Iris.MODNAME + "] Shadow Terrain: " + debugStringTerrain
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Maps: " + debugStringOverall);
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Distance Terrain: " + terrainFrustumHolder.getDistanceInfo() + " Entity: " + entityFrustumHolder.getDistanceInfo());
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Culling Terrain: " + terrainFrustumHolder.getCullingInfo() + " Entity: " + entityFrustumHolder.getCullingInfo());
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Terrain: " + debugStringTerrain
 				+ (shouldRenderTerrain ? "" : " (no terrain) ") + (shouldRenderTranslucent ? "" : "(no translucent)"));
-			messages.add("[" + Iris.MODNAME + "] Shadow Entities: " + getEntitiesDebugString());
-			messages.add("[" + Iris.MODNAME + "] Shadow Block Entities: " + getBlockEntitiesDebugString());
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Entities: " + getEntitiesDebugString());
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow Block Entities: " + getBlockEntitiesDebugString());
 
 			if (buffers instanceof DrawCallTrackingRenderBuffers drawCallTracker && (shouldRenderEntities || shouldRenderPlayer)) {
-				messages.add("[" + Iris.MODNAME + "] Shadow Entity Batching: " + BatchingDebugMessageHelper.getDebugMessage(drawCallTracker));
+				messages.add("[" + IrisConstants.MODNAME + "] Shadow Entity Batching: " + BatchingDebugMessageHelper.getDebugMessage(drawCallTracker));
 			}
 		} else {
-			messages.add("[" + Iris.MODNAME + "] Shadow info: " + debugStringTerrain);
-			messages.add("[" + Iris.MODNAME + "] E: " + renderedShadowEntities);
-			messages.add("[" + Iris.MODNAME + "] BE: " + renderedShadowBlockEntities);
+			messages.add("[" + IrisConstants.MODNAME + "] Shadow info: " + debugStringTerrain);
+			messages.add("[" + IrisConstants.MODNAME + "] E: " + renderedShadowEntities);
+			messages.add("[" + IrisConstants.MODNAME + "] BE: " + renderedShadowBlockEntities);
 		}
 	}
 

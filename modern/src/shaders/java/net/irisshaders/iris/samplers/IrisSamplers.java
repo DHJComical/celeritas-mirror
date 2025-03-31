@@ -3,6 +3,7 @@ package net.irisshaders.iris.samplers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import net.irisshaders.iris.IrisConstants;
 import net.irisshaders.iris.gl.image.GlImage;
 import net.irisshaders.iris.gl.sampler.GlSampler;
 import net.irisshaders.iris.gl.sampler.SamplerHolder;
@@ -11,7 +12,6 @@ import net.irisshaders.iris.gl.texture.TextureAccess;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shaderpack.properties.PackRenderTargetDirectives;
-import net.irisshaders.iris.shaderpack.properties.PackShadowDirectives;
 import net.irisshaders.iris.shadows.ShadowRenderTargets;
 import net.irisshaders.iris.targets.RenderTarget;
 import net.irisshaders.iris.targets.RenderTargets;
@@ -109,7 +109,7 @@ public class IrisSamplers {
 		ImmutableList.Builder<String> shadowSamplers = ImmutableList.<String>builder().add("shadowtex0", "shadowtex0DH", "shadowtex0HW", "shadowtex1", "shadowtex1HW", "shadowtex1DH", "shadow", "watershadow",
 			"shadowcolor");
 
-		for (int i = 0; i < PackShadowDirectives.MAX_SHADOW_COLOR_BUFFERS_IRIS; i++) {
+		for (int i = 0; i < IrisConstants.MAX_SHADOW_COLOR_BUFFERS_IRIS; i++) {
 			shadowSamplers.add("shadowcolor" + i);
 			shadowSamplers.add("shadowcolorimg" + i);
 		}

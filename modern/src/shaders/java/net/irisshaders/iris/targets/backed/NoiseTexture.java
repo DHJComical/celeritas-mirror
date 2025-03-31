@@ -1,6 +1,10 @@
 package net.irisshaders.iris.targets.backed;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import java.nio.ByteBuffer;
+import java.util.Random;
+
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+
 import net.irisshaders.iris.gl.GlResource;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.texture.TextureUploadHelper;
@@ -9,9 +13,6 @@ import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL13C;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL43C;
-
-import java.nio.ByteBuffer;
-import java.util.Random;
 
 /**
  * An extremely simple noise texture. Each color channel contains a uniform random value from 0 to 255. Essentially just
@@ -38,7 +39,7 @@ public class NoiseTexture extends GlResource {
 
 		GLDebug.nameObject(GL43C.GL_TEXTURE, texture, "noise texture");
 
-		GlStateManager._bindTexture(0);
+		GL_STATE_MANAGER.bindTexture(0);
 	}
 
 	void resize(int texture, int width, int height) {
@@ -50,10 +51,10 @@ public class NoiseTexture extends GlResource {
 		TextureUploadHelper.resetTextureUploadState();
 
 		// Since we're using tightly-packed RGB data, we must use an alignment of 1 byte instead of the usual 4 bytes.
-		GlStateManager._pixelStore(GL20C.GL_UNPACK_ALIGNMENT, 1);
+		GL_STATE_MANAGER.glPixelStorei(GL20C.GL_UNPACK_ALIGNMENT, 1);
 		IrisRenderSystem.texImage2D(texture, GL11C.GL_TEXTURE_2D, 0, GL11C.GL_RGB, width, height, 0, GL11C.GL_RGB, GL11C.GL_UNSIGNED_BYTE, pixels);
 
-		GlStateManager._bindTexture(0);
+		GL_STATE_MANAGER.bindTexture(0);
 	}
 
 	private ByteBuffer generateNoise() {
@@ -75,6 +76,6 @@ public class NoiseTexture extends GlResource {
 
 	@Override
 	protected void destroyInternal() {
-		GlStateManager._deleteTexture(getGlId());
+		GL_STATE_MANAGER.glDeleteTextures(getGlId());
 	}
 }

@@ -24,8 +24,6 @@ import net.irisshaders.iris.uniforms.VanillaUniforms;
 import net.irisshaders.iris.uniforms.builtin.BuiltinReplacementUniforms;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PathPackResources;
@@ -37,7 +35,7 @@ import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.apache.commons.io.IOUtils;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
+import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -45,12 +43,13 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
+
+import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTIL;
 
 public class ShaderCreator {
 	public static CompletableFuture<ExtendedShader> create(WorldRenderingPipeline pipeline, Executor syncExecutor, String name, ProgramSource source, ProgramId programId, GlFramebuffer writingToBeforeTranslucent,
@@ -238,9 +237,9 @@ public class ShaderCreator {
 
         private static PackResources fabricateResourcePack() {
             //? if >=1.20.6 {
-            /*return new PathPackResources(new PackLocationInfo("<iris shaderpack shaders>", Component.literal("iris"), PackSource.BUILT_IN, Optional.of(new KnownPack("iris", "shader", "1.0"))), PlatformUtil.getConfigDir());
+            /*return new PathPackResources(new PackLocationInfo("<iris shaderpack shaders>", ComponentUtil.literal("iris"), PackSource.BUILT_IN, Optional.of(new KnownPack("iris", "shader", "1.0"))), PLATFORM_UTIL.getConfigDir());
             *///?} else
-            return new PathPackResources("<iris shaderpack shaders>", PlatformUtil.getConfigDir(), true);
+            return new PathPackResources("<iris shaderpack shaders>", PLATFORM_UTIL.getConfigDir(), true);
         }
 
 		private StringResource(ResourceLocation id, String content) {

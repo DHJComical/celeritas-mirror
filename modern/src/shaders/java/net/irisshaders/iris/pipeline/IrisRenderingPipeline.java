@@ -1,10 +1,19 @@
 package net.irisshaders.iris.pipeline;
 
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
+
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -42,11 +51,7 @@ import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 import net.irisshaders.iris.pathways.colorspace.ColorSpaceConverter;
 import net.irisshaders.iris.pathways.colorspace.ColorSpaceFragmentConverter;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
-import net.irisshaders.iris.pipeline.programs.ExtendedShader;
-import net.irisshaders.iris.pipeline.programs.FallbackShader;
-import net.irisshaders.iris.pipeline.programs.ShaderCreator;
-import net.irisshaders.iris.pipeline.programs.ShaderKey;
-import net.irisshaders.iris.pipeline.programs.ShaderMap;
+import net.irisshaders.iris.pipeline.programs.*;
 import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.samplers.IrisImages;
@@ -71,12 +76,7 @@ import net.irisshaders.iris.shadows.ShadowCompositeRenderer;
 import net.irisshaders.iris.shadows.ShadowRenderTargets;
 import net.irisshaders.iris.shadows.ShadowRenderer;
 import net.irisshaders.iris.shadows.ShadowRenderingState;
-import net.irisshaders.iris.targets.Blaze3dRenderTargetExt;
-import net.irisshaders.iris.targets.BufferFlipper;
-import net.irisshaders.iris.targets.ClearPass;
-import net.irisshaders.iris.targets.ClearPassCreator;
-import net.irisshaders.iris.targets.RenderTargetStateListener;
-import net.irisshaders.iris.targets.RenderTargets;
+import net.irisshaders.iris.targets.*;
 import net.irisshaders.iris.targets.backed.NativeImageBackedSingleColorTexture;
 import net.irisshaders.iris.texture.TextureInfoCache;
 import net.irisshaders.iris.texture.format.TextureFormat;
@@ -100,25 +100,7 @@ import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.ARBClearTexture;
-import org.lwjgl.opengl.GL15C;
-import org.lwjgl.opengl.GL20C;
-import org.lwjgl.opengl.GL21C;
-import org.lwjgl.opengl.GL30C;
-import org.lwjgl.opengl.GL43C;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.function.IntFunction;
-import java.util.function.Supplier;
+import org.lwjgl.opengl.*;
 
 public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRenderingPipeline, RenderTargetStateListener {
 	private final RenderTargets renderTargets;
@@ -276,12 +258,12 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		);
 
 		// Don't clobber anything in texture unit 0. It probably won't cause issues, but we're just being cautious here.
-		GlStateManager._activeTexture(GL20C.GL_TEXTURE2);
+		GL_STATE_MANAGER.glActiveTexture(GL20C.GL_TEXTURE2);
 
 		customTextureManager = new CustomTextureManager(programSet.getPackDirectives(), programSet.getPack().getCustomTextureDataMap(), programSet.getPack().getIrisCustomTextureDataMap(), programSet.getPack().getCustomNoiseTexture());
 		whitePixel = new NativeImageBackedSingleColorTexture(255, 255, 255, 255);
 
-		GlStateManager._activeTexture(GL20C.GL_TEXTURE0);
+		GL_STATE_MANAGER.glActiveTexture(GL20C.GL_TEXTURE0);
 
 		BufferFlipper flipper = new BufferFlipper();
 
@@ -889,7 +871,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 				int previousBinding = GlStateManagerAccessor.getTEXTURES()[GlStateManagerAccessor.getActiveTexture()].binding;
 				textureFormat.setupTextureParameters(PBRType.NORMAL, pbrHolder.normalTexture());
 				textureFormat.setupTextureParameters(PBRType.SPECULAR, pbrHolder.specularTexture());
-				GlStateManager._bindTexture(previousBinding);
+				GL_STATE_MANAGER.bindTexture(previousBinding);
 			}
 
 			PBRTextureManager.notifyPBRTexturesChanged();
@@ -914,7 +896,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
         }
 
 		// Make sure we're using texture unit 0 for this.
-		RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+		RENDER_SYSTEM.glActiveTexture(GL15C.GL_TEXTURE0);
 		Vector4f emptyClearColor = new Vector4f(1.0F);
 
         GLDebug.pushGroup(100, "Clear textures");
@@ -936,7 +918,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			} else {
 				// Clear depth first, regardless of any color clearing.
 				shadowRenderTargets.getDepthSourceFb().bind();
-				RenderSystem.clear(GL21C.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+				RENDER_SYSTEM.clear(GL21C.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
 
 				ImmutableList<ClearPass> passes;
 
@@ -1062,15 +1044,15 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		DimensionSpecialEffects.SkyType skyType = Minecraft.getInstance().level.effects().skyType();
 
 		if (skyType == DimensionSpecialEffects.SkyType.NORMAL) {
-			RenderSystem.depthMask(false);
+			RENDER_SYSTEM.depthMask(false);
 
-			RenderSystem.setShaderColor(fogColor.x, fogColor.y, fogColor.z, fogColor.w);
+			RENDER_SYSTEM.setShaderColor(fogColor.x, fogColor.y, fogColor.z, fogColor.w);
 
 			horizonRenderer.renderHorizon(CapturedRenderingState.INSTANCE.getGbufferModelView(), CapturedRenderingState.INSTANCE.getGbufferProjection(), GameRenderer.getPositionShader());
 
-			RenderSystem.depthMask(true);
+			RENDER_SYSTEM.depthMask(true);
 
-			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+			RENDER_SYSTEM.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 		}
 	}
 
@@ -1124,7 +1106,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		deferredRenderer.renderAll();
 
-		RenderSystem.enableBlend();
+		RENDER_SYSTEM.enableBlend();
 
 		// note: we are careful not to touch the lightmap texture unit or overlay color texture unit here,
 		// so we don't need to do anything to restore them if needed.
@@ -1245,19 +1227,19 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		//
 		// Without this code, there will be weird issues when reloading certain shaderpacks.
 		for (int i = 0; i < 16; i++) {
-			GlStateManager.glActiveTexture(GL20C.GL_TEXTURE0 + i);
+			GL_STATE_MANAGER.glActiveTexture(GL20C.GL_TEXTURE0 + i);
 			IrisRenderSystem.unbindAllSamplers();
-			GlStateManager._bindTexture(0);
+			GL_STATE_MANAGER.bindTexture(0);
 		}
 
 		// Set the active texture unit to unit 0
 		//
 		// This seems to be what most code expects. It's a sane default in any case.
-		GlStateManager.glActiveTexture(GL20C.GL_TEXTURE0);
+		GL_STATE_MANAGER.glActiveTexture(GL20C.GL_TEXTURE0);
 
 		for (int i = 0; i < 12; i++) {
 			// Clear all shader textures
-			RenderSystem.setShaderTexture(i, 0);
+			RENDER_SYSTEM.setShaderTexture(i, 0);
 		}
 
 		if (shadowCompositeRenderer != null) {
@@ -1274,9 +1256,9 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		horizonRenderer.destroy();
 
-		GlStateManager._glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
-		GlStateManager._glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, 0);
-		GlStateManager._glBindFramebuffer(GL30C.GL_FRAMEBUFFER, 0);
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, 0);
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, 0);
 
 		Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
 

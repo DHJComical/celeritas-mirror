@@ -1,7 +1,9 @@
 package net.irisshaders.iris.uniforms;
 
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static net.irisshaders.iris.gl.uniform.UniformUpdateFrequency.*;
+
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.StateUpdateNotifiers;
@@ -33,16 +35,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
+import org.joml.*;
 import org.joml.Math;
-import org.joml.Vector2f;
-import org.joml.Vector2i;
-import org.joml.Vector3d;
-import org.joml.Vector4f;
-import org.joml.Vector4i;
-
-import static net.irisshaders.iris.gl.uniform.UniformUpdateFrequency.ONCE;
-import static net.irisshaders.iris.gl.uniform.UniformUpdateFrequency.PER_FRAME;
-import static net.irisshaders.iris.gl.uniform.UniformUpdateFrequency.PER_TICK;
 
 public final class CommonUniforms {
 	private static final Minecraft client = Minecraft.getInstance();
@@ -74,7 +68,7 @@ public final class CommonUniforms {
 		// the shader will always be setup (and therefore uniforms will be re-uploaded)
 		// after the texture is changed and before rendering starts.
 		uniforms.uniform2i("atlasSize", () -> {
-			int glId = RenderSystem.getShaderTexture(0);
+			int glId = RENDER_SYSTEM.getShaderTexture(0);
 
 			AbstractTexture texture = TextureTracker.INSTANCE.getTexture(glId);
 			if (texture instanceof TextureAtlas atlas) {

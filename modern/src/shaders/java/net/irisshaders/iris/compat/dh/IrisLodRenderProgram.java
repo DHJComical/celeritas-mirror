@@ -1,7 +1,13 @@
 package net.irisshaders.iris.compat.dh;
 
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+
 import com.google.common.primitives.Ints;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.objects.math.DhApiVec3f;
 import net.irisshaders.iris.gl.IrisRenderSystem;
@@ -30,11 +36,6 @@ import org.joml.Matrix4fc;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL43C;
 import org.lwjgl.system.MemoryStack;
-
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class IrisLodRenderProgram {
 	// Uniforms
@@ -179,7 +180,7 @@ public class IrisLodRenderProgram {
 			matrix.get(buffer);
 			buffer.rewind();
 
-			RenderSystem.glUniformMatrix4(index, false, buffer);
+			RENDER_SYSTEM.glUniformMatrix4(index, false, buffer);
 		}
 	}
 
@@ -191,7 +192,7 @@ public class IrisLodRenderProgram {
 			matrix.get(buffer);
 			buffer.rewind();
 
-			RenderSystem.glUniformMatrix3(index, false, buffer);
+			RENDER_SYSTEM.glUniformMatrix3(index, false, buffer);
 		}
 	}
 
@@ -220,7 +221,7 @@ public class IrisLodRenderProgram {
 		GL43C.glUseProgram(id);
 
 		Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
-		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, RenderSystem.getShaderTexture(2));
+		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, RENDER_SYSTEM.getShaderTexture(2));
 		setUniform(modelViewUniform, modelView);
 		setUniform(modelViewInverseUniform, modelView.invert(new Matrix4f()));
 		setUniform(projectionUniform, projection);

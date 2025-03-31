@@ -1,6 +1,7 @@
 package net.irisshaders.iris.pathways;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexBuffer;
@@ -41,7 +42,7 @@ public class FullScreenQuadRenderer {
 
 	public void begin() {
 		((VertexBufferHelper) quad).saveBinding();
-		RenderSystem.disableDepthTest();
+		RENDER_SYSTEM.disableDepthTest();
 		BufferUploader.reset();
 		quad.bind();
 	}
@@ -59,7 +60,7 @@ public class FullScreenQuadRenderer {
 		// Using quad.getFormat().clearBufferState() causes some Intel drivers to freak out:
 		// https://github.com/IrisShaders/Iris/issues/1214
 
-		RenderSystem.enableDepthTest();
+		RENDER_SYSTEM.enableDepthTest();
 		((VertexBufferHelper) quad).restoreBinding();
 	}
 }

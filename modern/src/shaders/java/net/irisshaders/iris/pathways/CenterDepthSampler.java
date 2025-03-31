@@ -1,8 +1,14 @@
 package net.irisshaders.iris.pathways;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+import java.util.function.IntSupplier;
+
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+
 import com.google.common.collect.ImmutableSet;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.program.Program;
@@ -19,11 +25,6 @@ import org.apache.commons.io.IOUtils;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL21C;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
-import java.util.function.IntSupplier;
-
 public class CenterDepthSampler {
 	private static final double LN2 = Math.log(2);
 	private final Program program;
@@ -35,14 +36,14 @@ public class CenterDepthSampler {
 	private boolean destroyed;
 
 	public CenterDepthSampler(IntSupplier depthSupplier, float halfLife) {
-		this.texture = GlStateManager._genTexture();
-		this.altTexture = GlStateManager._genTexture();
+		this.texture = GL_STATE_MANAGER.glGenTextures();
+		this.altTexture = GL_STATE_MANAGER.glGenTextures();
 		this.framebuffer = new GlFramebuffer();
 
 		InternalTextureFormat format = InternalTextureFormat.R32F;
 		setupColorTexture(texture, format);
 		setupColorTexture(altTexture, format);
-		RenderSystem.bindTexture(0);
+		RENDER_SYSTEM.bindTexture(0);
 
 		this.framebuffer.addColorAttachment(0, texture);
 		ProgramBuilder builder;
@@ -77,7 +78,7 @@ public class CenterDepthSampler {
 		this.framebuffer.bind();
 		this.program.use();
 
-		RenderSystem.viewport(0, 0, 1, 1);
+		RENDER_SYSTEM.glViewport(0, 0, 1, 1);
 
 		FullScreenQuadRenderer.INSTANCE.render();
 
@@ -109,8 +110,8 @@ public class CenterDepthSampler {
 	}
 
 	public void destroy() {
-		GlStateManager._deleteTexture(texture);
-		GlStateManager._deleteTexture(altTexture);
+		GL_STATE_MANAGER.glDeleteTextures(texture);
+		GL_STATE_MANAGER.glDeleteTextures(altTexture);
 		framebuffer.destroy();
 		program.destroy();
 		destroyed = true;

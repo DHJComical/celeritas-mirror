@@ -1,12 +1,12 @@
 package net.irisshaders.iris.texture.pbr;
 
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 import org.jetbrains.annotations.NotNull;
 
 public interface PBRTextureHolder {
 	@NotNull
-	AbstractTexture normalTexture();
+	MCAbstractTexture normalTexture();
 
 	@NotNull
-	AbstractTexture specularTexture();
+    MCAbstractTexture specularTexture();
 }

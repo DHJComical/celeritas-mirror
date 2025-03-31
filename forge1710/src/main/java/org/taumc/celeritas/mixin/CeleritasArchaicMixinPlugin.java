@@ -91,7 +91,7 @@ public class CeleritasArchaicMixinPlugin implements IMixinConfigPlugin {
                 LOGGER.error("Error reading path", e);
             }
         }
-        LOGGER.info("Found {} mixin classes", possibleMixinClasses.size());
+        LOGGER.info("Found {} mixin classes", possibleMixinClasses);
         for (var fs : fileSystemsToClose) {
             try {
                 fs.close();

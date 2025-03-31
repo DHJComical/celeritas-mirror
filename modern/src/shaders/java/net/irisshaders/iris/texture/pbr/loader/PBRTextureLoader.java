@@ -2,6 +2,7 @@ package net.irisshaders.iris.texture.pbr.loader;
 
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 import org.jetbrains.annotations.NotNull;
 
 public interface PBRTextureLoader<T extends AbstractTexture> {
@@ -15,8 +16,8 @@ public interface PBRTextureLoader<T extends AbstractTexture> {
 	void load(T texture, ResourceManager resourceManager, PBRTextureConsumer pbrTextureConsumer);
 
 	interface PBRTextureConsumer {
-		void acceptNormalTexture(@NotNull AbstractTexture texture);
+		void acceptNormalTexture(@NotNull MCAbstractTexture texture);
 
-		void acceptSpecularTexture(@NotNull AbstractTexture texture);
+		void acceptSpecularTexture(@NotNull MCAbstractTexture texture);
 	}
 }

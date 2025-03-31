@@ -8,6 +8,7 @@ import net.irisshaders.iris.Iris;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 //?}
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +17,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates, boolean isTag) {
 

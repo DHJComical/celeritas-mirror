@@ -3,6 +3,7 @@ package net.irisshaders.iris.shadows;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.irisshaders.iris.IrisConstants;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
@@ -42,7 +43,7 @@ public class ShadowRenderTargets {
 	public ShadowRenderTargets(WorldRenderingPipeline pipeline, int resolution, PackShadowDirectives shadowDirectives) {
 		this.pipeline = pipeline;
 		this.shadowDirectives = shadowDirectives;
-		this.size = pipeline.hasFeature(FeatureFlags.HIGHER_SHADOWCOLOR) ? PackShadowDirectives.MAX_SHADOW_COLOR_BUFFERS_IRIS : PackShadowDirectives.MAX_SHADOW_COLOR_BUFFERS_OF;
+		this.size = pipeline.hasFeature(FeatureFlags.HIGHER_SHADOWCOLOR) ? IrisConstants.MAX_SHADOW_COLOR_BUFFERS_IRIS : IrisConstants.MAX_SHADOW_COLOR_BUFFERS_OF;
 		targets = new RenderTarget[size];
 		formats = new InternalTextureFormat[size];
 		flipped = new boolean[size];

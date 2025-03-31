@@ -1,6 +1,10 @@
 package net.irisshaders.iris.texture.pbr;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import java.io.IOException;
+import java.nio.file.Path;
+
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.irisshaders.iris.Iris;
@@ -15,10 +19,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.Dumpable;
 import net.minecraft.resources.ResourceLocation;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
-import java.nio.file.Path;
 
 public class PBRTextureManager {
 	public static final PBRTextureManager INSTANCE = new PBRTextureManager();
@@ -40,13 +42,13 @@ public class PBRTextureManager {
 	// Not PBRTextureHolderImpl to directly reference fields
 	private final PBRTextureHolder defaultHolder = new PBRTextureHolder() {
 		@Override
-		public @NotNull AbstractTexture normalTexture() {
-			return defaultNormalTexture;
+		public @NotNull MCAbstractTexture normalTexture() {
+			return (MCAbstractTexture)defaultNormalTexture;
 		}
 
 		@Override
-		public @NotNull AbstractTexture specularTexture() {
-			return defaultSpecularTexture;
+		public @NotNull MCAbstractTexture specularTexture() {
+			return (MCAbstractTexture)defaultSpecularTexture;
 		}
 	};
 
@@ -61,7 +63,7 @@ public class PBRTextureManager {
 		}
 	}
 
-	private static void closeTexture(AbstractTexture texture) {
+	private static void closeTexture(MCAbstractTexture texture) {
 		try {
 			texture.close();
 		} catch (Exception e) {
@@ -117,7 +119,7 @@ public class PBRTextureManager {
 				} catch (Exception e) {
 					Iris.logger.debug("Failed to load PBR textures for texture " + id, e);
 				} finally {
-					GlStateManager._bindTexture(previousTextureBinding);
+					GL_STATE_MANAGER.bindTexture(previousTextureBinding);
 				}
 			}
 		}
@@ -140,8 +142,8 @@ public class PBRTextureManager {
 	}
 
 	private void dumpHolder(PBRTextureHolder holder, Path path) {
-		AbstractTexture normalTexture = holder.normalTexture();
-		AbstractTexture specularTexture = holder.specularTexture();
+        MCAbstractTexture normalTexture = holder.normalTexture();
+        MCAbstractTexture specularTexture = holder.specularTexture();
 		if (normalTexture != defaultNormalTexture && normalTexture instanceof PBRDumpable dumpable) {
 			dumpTexture(dumpable, dumpable.getDefaultDumpLocation(), path);
 		}
@@ -166,8 +168,8 @@ public class PBRTextureManager {
 	}
 
 	private void closeHolder(PBRTextureHolder holder) {
-		AbstractTexture normalTexture = holder.normalTexture();
-		AbstractTexture specularTexture = holder.specularTexture();
+        MCAbstractTexture normalTexture = holder.normalTexture();
+        MCAbstractTexture specularTexture = holder.specularTexture();
 		if (normalTexture != defaultNormalTexture) {
 			closeTexture(normalTexture);
 		}
@@ -176,39 +178,39 @@ public class PBRTextureManager {
 		}
 	}
 
-	private record PBRTextureHolderImpl(AbstractTexture normalTexture,
-										AbstractTexture specularTexture) implements PBRTextureHolder {
+	private record PBRTextureHolderImpl(MCAbstractTexture normalTexture,
+                                        MCAbstractTexture specularTexture) implements PBRTextureHolder {
 			@Override
-			public @NotNull AbstractTexture normalTexture() {
+			public @NotNull MCAbstractTexture normalTexture() {
 				return normalTexture;
 			}
 
 			@Override
-			public @NotNull AbstractTexture specularTexture() {
+			public @NotNull MCAbstractTexture specularTexture() {
 				return specularTexture;
 			}
 	}
 
 	private class PBRTextureConsumerImpl implements PBRTextureConsumer {
-		private AbstractTexture normalTexture;
-		private AbstractTexture specularTexture;
+		private MCAbstractTexture normalTexture;
+		private MCAbstractTexture specularTexture;
 		private boolean changed;
 
 		@Override
-		public void acceptNormalTexture(@NotNull AbstractTexture texture) {
+		public void acceptNormalTexture(@NotNull MCAbstractTexture texture) {
 			normalTexture = texture;
 			changed = true;
 		}
 
 		@Override
-		public void acceptSpecularTexture(@NotNull AbstractTexture texture) {
+		public void acceptSpecularTexture(@NotNull MCAbstractTexture texture) {
 			specularTexture = texture;
 			changed = true;
 		}
 
 		public void clear() {
-			normalTexture = defaultNormalTexture;
-			specularTexture = defaultSpecularTexture;
+			normalTexture = (MCAbstractTexture)defaultNormalTexture;
+			specularTexture = (MCAbstractTexture)defaultSpecularTexture;
 			changed = false;
 		}
 

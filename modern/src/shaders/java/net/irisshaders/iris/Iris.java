@@ -37,7 +37,6 @@ import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
@@ -59,23 +58,17 @@ import java.util.stream.Stream;
 import java.util.zip.ZipError;
 import java.util.zip.ZipException;
 
-public class Iris {
-	public static final String MODID = "embeddium";
+import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTIL;
 
-	/**
-	 * The user-facing name of the mod. Moved into a constant to facilitate
-	 * easy branding changes (for forks). You'll still need to change this
-	 * separately in mixin plugin classes & the language files.
-	 */
-	public static final String MODNAME = "Celeritas";
-	public static final IrisLogging logger = new IrisLogging(MODNAME);
+public class Iris {
+
+    public static final IrisLogging logger = IrisLogging.IRIS_LOGGER;
 	private static final Map<String, String> shaderPackOptionQueue = new HashMap<>();
 	// Change this for snapshots!
 	private static final String backupVersionNumber = "1.20.3";
 	public static NamespacedId lastDimension = null;
 	public static boolean testing = false;
-	private static Path shaderpacksDirectory;
-	private static ShaderpackDirectoryManager shaderpacksDirectoryManager;
+    private static ShaderpackDirectoryManager shaderpacksDirectoryManager;
 	private static ShaderPack currentPack;
 	private static String currentPackName;
 	private static Optional<Exception> storedError = Optional.empty();
@@ -159,7 +152,7 @@ public class Iris {
 				}
 
 			} catch (Exception e) {
-				logger.error("Error while reloading Shaders for " + MODNAME + "!", e);
+				logger.error("Error while reloading Shaders for " + IrisConstants.MODNAME + "!", e);
 
 				if (minecraft.player != null) {
 					minecraft.player.displayClientMessage(Component.translatable("iris.shaders.reloaded.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED), false);
@@ -242,8 +235,8 @@ public class Iris {
 		Path shaderPackConfigTxt;
 
 		try {
-			shaderPackRoot = getShaderpacksDirectory().resolve(name);
-			shaderPackConfigTxt = getShaderpacksDirectory().resolve(name + ".txt");
+			shaderPackRoot = IrisCommon.getShaderpacksDirectory().resolve(name);
+			shaderPackConfigTxt = IrisCommon.getShaderpacksDirectory().resolve(name + ".txt");
 		} catch (InvalidPathException e) {
 			logger.error("Failed to load the shaderpack \"{}\" because it contains invalid characters in its path", name);
 
@@ -443,7 +436,7 @@ public class Iris {
 			// identified as a shader pack due to it containing
 			// folders which contain "shaders" folders, this is
 			// necessary to check against that
-			if (pack.equals(getShaderpacksDirectory())) {
+			if (pack.equals(IrisCommon.getShaderpacksDirectory())) {
 				return false;
 			}
 			try (Stream<Path> stream = Files.walk(pack)) {
@@ -618,7 +611,7 @@ public class Iris {
 			try {
 				reload();
 			} catch (IOException e) {
-				logger.error("Error while reloading Shaders for " + MODNAME + "!", e);
+				logger.error("Error while reloading Shaders for " + IrisConstants.MODNAME + "!", e);
 
 				if (Minecraft.getInstance().player != null) {
 					Minecraft.getInstance().player.displayClientMessage(Component.translatable("iris.shaders.reloaded.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED), false);
@@ -660,7 +653,7 @@ public class Iris {
 		ChatFormatting color;
 		String version = getVersion();
 
-		if (PlatformUtil.isDevelopmentEnvironment()) {
+		if (PLATFORM_UTIL.isDevelopmentEnvironment()) {
 			color = ChatFormatting.GOLD;
 			version = version + " (Development Environment)";
 		} else if (version.endsWith("-dirty") || version.contains("unknown") || version.endsWith("-nogit")) {
@@ -689,17 +682,9 @@ public class Iris {
 		return backupVersionNumber;
 	}
 
-	public static Path getShaderpacksDirectory() {
-		if (shaderpacksDirectory == null) {
-			shaderpacksDirectory = PlatformUtil.getGameDir().resolve("shaderpacks");
-		}
-
-		return shaderpacksDirectory;
-	}
-
-	public static ShaderpackDirectoryManager getShaderpacksDirectoryManager() {
+    public static ShaderpackDirectoryManager getShaderpacksDirectoryManager() {
 		if (shaderpacksDirectoryManager == null) {
-			shaderpacksDirectoryManager = new ShaderpackDirectoryManager(getShaderpacksDirectory());
+			shaderpacksDirectoryManager = new ShaderpackDirectoryManager(IrisCommon.getShaderpacksDirectory());
 		}
 
 		return shaderpacksDirectoryManager;
@@ -734,15 +719,15 @@ public class Iris {
 		DHCompat.run();
 
 		try {
-			if (!Files.exists(getShaderpacksDirectory())) {
-				Files.createDirectories(getShaderpacksDirectory());
+			if (!Files.exists(IrisCommon.getShaderpacksDirectory())) {
+				Files.createDirectories(IrisCommon.getShaderpacksDirectory());
 			}
 		} catch (IOException e) {
 			logger.warn("Failed to create the shaderpacks directory!");
 			logger.warn("", e);
 		}
 
-		irisConfig = new IrisConfig(PlatformUtil.getConfigDir().resolve(MODID + "-shaders.properties"));
+		irisConfig = new IrisConfig(PLATFORM_UTIL.getConfigDir().resolve(IrisConstants.MODID + "-shaders.properties"));
 
 		try {
 			irisConfig.initialize();

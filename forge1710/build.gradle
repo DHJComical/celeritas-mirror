@@ -65,9 +65,11 @@ repositories {
 archivesBaseName = "celeritas-forge-1.7.10"
 
 evaluationDependsOn(":common")
+evaluationDependsOn(":common-shaders")
 
 unimined.minecraft {
     combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
+    combineWith(project(":common-shaders"), project(":common-shaders").sourceSets.getByName("main"))
 
     version "1.7.10"
 
@@ -123,6 +125,8 @@ dependencies {
     implementation "org.lwjgl:lwjgl-glfw:${lwjglVersion}:natives-linux"
     implementation "org.lwjgl:lwjgl-stb:${lwjglVersion}:natives-linux"
 
+    implementation("org.slf4j:slf4j-api:1.7.12")
+
     implementation("io.github.legacymoddingmc:unimixins:0.1.19:dev")
     implementation("com.github.GTNewHorizons:GTNHLib:0.6.8:dev")
     modImplementation("CoreTweaks:CoreTweaks:0.3.3.2")
@@ -138,6 +142,17 @@ processResources {
         expand "version": project.version
     }
 }
+sourceSets {
+    main {
+        java {
+            srcDirs += "src/shaders/java"
+        }
+        resources {
+            srcDirs += "src/shaders/resources"
+        }
+    }
+}
+
 
 jar {
     manifest {

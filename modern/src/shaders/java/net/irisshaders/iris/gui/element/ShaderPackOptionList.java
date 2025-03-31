@@ -3,6 +3,7 @@ package net.irisshaders.iris.gui.element;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.gui.FileDialogUtil;
 import net.irisshaders.iris.gui.GuiUtil;
 import net.irisshaders.iris.gui.NavigationController;
@@ -279,7 +280,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 
 			FileDialogUtil.fileSelectDialog(
 					FileDialogUtil.DialogType.OPEN, "Import Shader Settings from File",
-					Iris.getShaderpacksDirectory().resolve(Iris.getCurrentPackName() + ".txt"),
+					IrisCommon.getShaderpacksDirectory().resolve(Iris.getCurrentPackName() + ".txt"),
 					"Shader Pack Settings (.txt)", "*.txt")
 				.whenComplete((path, err) -> {
 					if (err != null) {
@@ -315,7 +316,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 
 			FileDialogUtil.fileSelectDialog(
 					FileDialogUtil.DialogType.SAVE, "Export Shader Settings to File",
-					Iris.getShaderpacksDirectory().resolve(Iris.getCurrentPackName() + ".txt"),
+					IrisCommon.getShaderpacksDirectory().resolve(Iris.getCurrentPackName() + ".txt"),
 					"Shader Pack Settings (.txt)", "*.txt")
 				.whenComplete((path, err) -> {
 					if (err != null) {
@@ -329,7 +330,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 
 						// Dirty way of getting the currently applied settings as a Properties, directly
 						// opens and copies out of the saved settings file if it is present
-						Path sourceTxtPath = Iris.getShaderpacksDirectory().resolve(Iris.getCurrentPackName() + ".txt");
+						Path sourceTxtPath = IrisCommon.getShaderpacksDirectory().resolve(Iris.getCurrentPackName() + ".txt");
 						if (Files.exists(sourceTxtPath)) {
 							try (InputStream in = Files.newInputStream(sourceTxtPath)) {
 								toSave.load(in);

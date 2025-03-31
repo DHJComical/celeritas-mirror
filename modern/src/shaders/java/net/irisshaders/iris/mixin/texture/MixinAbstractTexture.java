@@ -2,6 +2,7 @@ package net.irisshaders.iris.mixin.texture;
 
 import net.irisshaders.iris.texture.TextureTracker;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -10,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractTexture.class)
-public class MixinAbstractTexture {
+public abstract class MixinAbstractTexture implements MCAbstractTexture {
 	@Shadow
 	protected int id;
 

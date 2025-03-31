@@ -10,6 +10,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
+
 public class EmbeddiumTags {
     public static final TagKey<Fluid> RENDERS_WITH_VANILLA = TagKey.create(
             //? if <1.20 {

@@ -1,6 +1,7 @@
 package net.irisshaders.iris.compat.dh;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.enums.rendering.EDhApiFogDrawMode;
 import com.seibel.distanthorizons.api.enums.rendering.EDhApiRenderPass;
@@ -33,7 +34,6 @@ import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.lwjgl.opengl.GL43C;
-import org.lwjgl.opengl.GL46C;
 
 public class LodRendererEvents {
 	private static boolean eventHandlersBound = false;
@@ -341,7 +341,7 @@ public class LodRendererEvents {
 						Matrix4fc projection = CapturedRenderingState.INSTANCE.getGbufferProjection();
 						//float nearClip = DhApi.Delayed.renderProxy.getNearClipPlaneDistanceInBlocks(partialTicks);
 						//float farClip = (float) ((double) (DHCompatInternal.getDhBlockRenderDistance() + 512) * Math.sqrt(2.0));
-                        GlStateManager._disableCull();
+                        GL_STATE_MANAGER.disableCullFace();
 						//Iris.logger.info("event near clip: "+event.value.nearClipPlane+" event far clip: "+event.value.farClipPlane+
 						//	" \niris near clip: "+nearClip+" iris far clip: "+farClip);
 

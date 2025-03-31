@@ -18,7 +18,6 @@ import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.option.OrderBackedProperties;
 import net.irisshaders.iris.shaderpack.option.ShaderPackOptions;
 import net.irisshaders.iris.shaderpack.preprocessor.PropertiesPreprocessor;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,6 +28,8 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.*;
+
+import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTIL;
 
 /**
  * A utility class for parsing entries in item.properties, block.properties, and entities.properties files in shaderpacks
@@ -108,7 +109,7 @@ public class IdMap {
 
 		if (Iris.getIrisConfig().areDebugOptionsEnabled()) {
 			ShaderPrinter.deleteIfClearing();
-			try (OutputStream os = Files.newOutputStream(PlatformUtil.getGameDir().resolve("patched_shaders").resolve(name))) {
+			try (OutputStream os = Files.newOutputStream(PLATFORM_UTIL.getGameDir().resolve("patched_shaders").resolve(name))) {
 				properties.store(new OutputStreamWriter(os, StandardCharsets.UTF_8), "Patched version of properties");
 			} catch (IOException e) {
 				throw new RuntimeException(e);

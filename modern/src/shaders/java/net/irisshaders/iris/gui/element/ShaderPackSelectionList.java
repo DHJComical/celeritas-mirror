@@ -1,6 +1,7 @@
 package net.irisshaders.iris.gui.element;
 
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.gui.GuiUtil;
 import net.irisshaders.iris.gui.screen.ShaderPackScreen;
 import net.minecraft.ChatFormatting;
@@ -48,7 +49,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
 		this.topButtonRow = new TopButtonRowEntry(this, Iris.getIrisConfig().areShadersEnabled());
 		try {
 			watcher1 = FileSystems.getDefault().newWatchService();
-			key1 = Iris.getShaderpacksDirectory().register(watcher1,
+			key1 = IrisCommon.getShaderpacksDirectory().register(watcher1,
 				StandardWatchEventKinds.ENTRY_CREATE,
 				StandardWatchEventKinds.ENTRY_MODIFY,
 				StandardWatchEventKinds.ENTRY_DELETE);

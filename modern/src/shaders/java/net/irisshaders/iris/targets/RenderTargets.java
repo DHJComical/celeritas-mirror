@@ -1,7 +1,13 @@
 package net.irisshaders.iris.targets;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+
 import com.google.common.collect.ImmutableSet;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.texture.DepthBufferFormat;
@@ -11,11 +17,6 @@ import net.irisshaders.iris.shaderpack.properties.PackRenderTargetDirectives;
 import org.joml.Vector2i;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 public class RenderTargets {
 	private final RenderTarget[] targets;
@@ -209,7 +210,7 @@ public class RenderTargets {
 	public void copyPreTranslucentDepth() {
 		if (translucentDepthDirty) {
 			translucentDepthDirty = false;
-			RenderSystem.bindTexture(noTranslucents.getTextureId());
+			RENDER_SYSTEM.bindTexture(noTranslucents.getTextureId());
 			depthSourceFb.bindAsReadBuffer();
 			IrisRenderSystem.copyTexImage2D(GL20C.GL_TEXTURE_2D, 0, currentDepthFormat.getGlInternalFormat(), 0, 0, cachedWidth, cachedHeight, 0);
 		} else {
@@ -221,7 +222,7 @@ public class RenderTargets {
 	public void copyPreHandDepth() {
 		if (handDepthDirty) {
 			handDepthDirty = false;
-			RenderSystem.bindTexture(noHand.getTextureId());
+			RENDER_SYSTEM.bindTexture(noHand.getTextureId());
 			depthSourceFb.bindAsReadBuffer();
 			IrisRenderSystem.copyTexImage2D(GL20C.GL_TEXTURE_2D, 0, currentDepthFormat.getGlInternalFormat(), 0, 0, cachedWidth, cachedHeight, 0);
 		} else {

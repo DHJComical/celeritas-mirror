@@ -1,6 +1,10 @@
 package net.irisshaders.iris.pipeline;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import java.util.List;
+import java.util.OptionalInt;
+
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import net.irisshaders.iris.compat.dh.DHCompat;
@@ -16,9 +20,6 @@ import net.irisshaders.iris.targets.RenderTargetStateListener;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-
-import java.util.List;
-import java.util.OptionalInt;
 
 public class VanillaRenderingPipeline implements WorldRenderingPipeline {
 	public VanillaRenderingPipeline() {
@@ -36,7 +37,7 @@ public class VanillaRenderingPipeline implements WorldRenderingPipeline {
 	public void beginLevelRendering() {
 		// Use the default Minecraft framebuffer and ensure that no programs are in use
 		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
-		GlStateManager._glUseProgram(0);
+		GL_STATE_MANAGER.glUseProgram(0);
 	}
 
 	@Override

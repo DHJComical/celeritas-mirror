@@ -1,6 +1,7 @@
 package net.irisshaders.iris.shaderpack.discovery;
 
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,7 +40,7 @@ public class ShaderpackDirectoryManager {
 	}
 
 	public void copyPackIntoDirectory(String name, Path source) throws IOException {
-		Path target = Iris.getShaderpacksDirectory().resolve(name);
+		Path target = IrisCommon.getShaderpacksDirectory().resolve(name);
 
 		// Copy the pack file into the shaderpacks folder.
 		Files.copy(source, target);

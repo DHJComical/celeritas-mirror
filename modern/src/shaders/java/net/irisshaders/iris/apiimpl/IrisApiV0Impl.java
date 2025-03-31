@@ -15,7 +15,6 @@ import java.nio.ByteBuffer;
 import java.util.function.IntFunction;
 
 public class IrisApiV0Impl implements IrisApi {
-	public static final IrisApiV0Impl INSTANCE = new IrisApiV0Impl();
 	private static final IrisApiV0ConfigImpl CONFIG = new IrisApiV0ConfigImpl();
 
 	@Override
@@ -39,7 +38,26 @@ public class IrisApiV0Impl implements IrisApi {
 		return ShadowRenderingState.areShadowsCurrentlyBeingRendered();
 	}
 
-	@Override
+    @Override
+    public int getOverriddenShadowDistance(int base) {
+        return Iris.getPipelineManager().getPipeline()
+                .map(pipeline -> pipeline.getForcedShadowRenderDistanceChunksForDisplay().orElse(base))
+                .orElse(base);
+    }
+
+    @Override
+    public boolean isShadowDistanceSliderEnabled() {
+        return Iris.getPipelineManager().getPipeline()
+                .map(pipeline -> !pipeline.getForcedShadowRenderDistanceChunksForDisplay().isPresent())
+                .orElse(true);
+    }
+
+    @Override
+    public boolean areDebugOptionsEnabled() {
+        return Iris.getIrisConfig().areDebugOptionsEnabled();
+    }
+
+    @Override
 	public Object openMainIrisScreenObj(Object parent) {
 		return new ShaderPackScreen((Screen) parent);
 	}

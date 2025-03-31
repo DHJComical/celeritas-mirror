@@ -185,9 +185,11 @@ if (shadersEnabled) {
 }
 
 evaluationDependsOn(":common")
+evaluationDependsOn(":common-shaders")
 
 unimined.minecraft {
     combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
+    combineWith(project(":common-shaders"), project(":common-shaders").sourceSets.getByName("main"))
 
     version ModLoader.getMinecraftVersion(project)
 
@@ -280,6 +282,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 
     shadow(project(":common"))
+    shadow(project(":common-shaders"))
 
     if (shadersEnabled) {
         modCompileOnly("maven.modrinth:distanthorizonsapi:3.0.0")

@@ -2,10 +2,10 @@ package net.irisshaders.iris.texture.pbr.loader;
 
 import net.irisshaders.iris.mixin.texture.SimpleTextureAccessor;
 import net.irisshaders.iris.texture.pbr.PBRType;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -15,8 +15,8 @@ public class SimplePBRLoader implements PBRTextureLoader<SimpleTexture> {
 	public void load(SimpleTexture texture, ResourceManager resourceManager, PBRTextureConsumer pbrTextureConsumer) {
 		ResourceLocation location = ((SimpleTextureAccessor) texture).getLocation();
 
-		AbstractTexture normalTexture = createPBRTexture(location, resourceManager, PBRType.NORMAL);
-		AbstractTexture specularTexture = createPBRTexture(location, resourceManager, PBRType.SPECULAR);
+        MCAbstractTexture normalTexture = createPBRTexture(location, resourceManager, PBRType.NORMAL);
+        MCAbstractTexture specularTexture = createPBRTexture(location, resourceManager, PBRType.SPECULAR);
 
 		if (normalTexture != null) {
 			pbrTextureConsumer.acceptNormalTexture(normalTexture);
@@ -27,7 +27,7 @@ public class SimplePBRLoader implements PBRTextureLoader<SimpleTexture> {
 	}
 
 	@Nullable
-	protected AbstractTexture createPBRTexture(ResourceLocation imageLocation, ResourceManager resourceManager, PBRType pbrType) {
+	protected MCAbstractTexture createPBRTexture(ResourceLocation imageLocation, ResourceManager resourceManager, PBRType pbrType) {
 		ResourceLocation pbrImageLocation = imageLocation.withPath(pbrType::appendSuffix);
 
 		SimpleTexture pbrTexture = new SimpleTexture(pbrImageLocation);
@@ -37,6 +37,6 @@ public class SimplePBRLoader implements PBRTextureLoader<SimpleTexture> {
 			return null;
 		}
 
-		return pbrTexture;
+		return (MCAbstractTexture)pbrTexture;
 	}
 }

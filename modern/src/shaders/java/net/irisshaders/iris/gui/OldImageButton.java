@@ -1,6 +1,7 @@
 package net.irisshaders.iris.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.CommonComponents;
@@ -111,7 +112,7 @@ public class OldImageButton extends Button {
 			lvInt12 = pInt5 + pInt6;
 		}
 
-		RenderSystem.enableDepthTest();
+		RENDER_SYSTEM.enableDepthTest();
 		pAbstractWidget0.blit(pResourceLocation1, pInt2, pInt3, (float) pInt4, (float) lvInt12, pInt7, pInt8, pInt9, pInt10);
 	}
 }

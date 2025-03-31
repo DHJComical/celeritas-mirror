@@ -24,12 +24,15 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.Mth;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
+
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 	public static final ChannelMipmapGenerator LINEAR_MIPMAP_GENERATOR = new ChannelMipmapGenerator(
@@ -71,12 +74,12 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 
 		if (normalAtlas != null) {
 			if (normalAtlas.tryUpload(atlasWidth, atlasHeight, mipLevel)) {
-				pbrTextureConsumer.acceptNormalTexture(normalAtlas);
+				pbrTextureConsumer.acceptNormalTexture((MCAbstractTexture) normalAtlas);
 			}
 		}
 		if (specularAtlas != null) {
 			if (specularAtlas.tryUpload(atlasWidth, atlasHeight, mipLevel)) {
-				pbrTextureConsumer.acceptSpecularTexture(specularAtlas);
+				pbrTextureConsumer.acceptSpecularTexture((MCAbstractTexture)specularAtlas);
 			}
 		}
 	}

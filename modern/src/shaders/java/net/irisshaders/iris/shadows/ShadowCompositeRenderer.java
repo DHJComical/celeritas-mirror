@@ -1,10 +1,15 @@
 package net.irisshaders.iris.shadows;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.IrisRenderSystem;
@@ -12,11 +17,7 @@ import net.irisshaders.iris.gl.buffer.ShaderStorageBufferHolder;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.framebuffer.ViewportData;
 import net.irisshaders.iris.gl.image.GlImage;
-import net.irisshaders.iris.gl.program.ComputeProgram;
-import net.irisshaders.iris.gl.program.Program;
-import net.irisshaders.iris.gl.program.ProgramBuilder;
-import net.irisshaders.iris.gl.program.ProgramSamplers;
-import net.irisshaders.iris.gl.program.ProgramUniforms;
+import net.irisshaders.iris.gl.program.*;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.texture.TextureAccess;
 import net.irisshaders.iris.pathways.FullScreenQuadRenderer;
@@ -42,10 +43,6 @@ import org.lwjgl.opengl.GL15C;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL43C;
-
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 public class ShadowCompositeRenderer {
 	private final ShadowRenderTargets renderTargets;
@@ -142,7 +139,7 @@ public class ShadowCompositeRenderer {
 		this.passes = passes.build();
 		this.flippedAtLeastOnceFinal = flippedAtLeastOnce.build();
 
-		GlStateManager._glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
 	}
 
 	private static void setupMipmapping(net.irisshaders.iris.targets.RenderTarget target, boolean readFromAlt) {
@@ -181,7 +178,7 @@ public class ShadowCompositeRenderer {
 	}
 
 	public void renderAll() {
-		RenderSystem.disableBlend();
+		RENDER_SYSTEM.disableBlend();
 
 		FullScreenQuadRenderer.INSTANCE.begin();
 
@@ -208,7 +205,7 @@ public class ShadowCompositeRenderer {
 			}
 
 			if (!renderPass.mipmappedBuffers.isEmpty()) {
-				RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+				RENDER_SYSTEM.glActiveTexture(GL15C.GL_TEXTURE0);
 
 				for (int index : renderPass.mipmappedBuffers) {
 					setupMipmapping(renderTargets.get(index), renderPass.stageReadsFromAlt.contains(index));
@@ -219,7 +216,7 @@ public class ShadowCompositeRenderer {
 			float scaledHeight = renderTargets.getResolution() * renderPass.viewportScale.scale();
 			int beginWidth = (int) (renderTargets.getResolution() * renderPass.viewportScale.viewportX());
 			int beginHeight = (int) (renderTargets.getResolution() * renderPass.viewportScale.viewportY());
-			RenderSystem.viewport(beginWidth, beginHeight, (int) scaledWidth, (int) scaledHeight);
+			RENDER_SYSTEM.glViewport(beginWidth, beginHeight, (int) scaledWidth, (int) scaledHeight);
 
 			renderPass.framebuffer.bind();
 			renderPass.program.use();
@@ -233,7 +230,7 @@ public class ShadowCompositeRenderer {
 
 		// Make sure to reset the viewport to how it was before... Otherwise weird issues could occur.
 		ProgramUniforms.clearActiveUniforms();
-		GlStateManager._glUseProgram(0);
+		GL_STATE_MANAGER.glUseProgram(0);
 
 		for (int i = 0; i < renderTargets.getRenderTargetCount(); i++) {
 			// Reset mipmapping states at the end of the frame.
@@ -242,7 +239,7 @@ public class ShadowCompositeRenderer {
 			}
 		}
 
-		RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+		RENDER_SYSTEM.glActiveTexture(GL15C.GL_TEXTURE0);
 	}
 
 	// TODO: Don't just copy this from DeferredWorldRenderingPipeline

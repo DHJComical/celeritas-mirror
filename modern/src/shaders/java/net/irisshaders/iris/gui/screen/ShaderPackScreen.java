@@ -2,6 +2,7 @@ package net.irisshaders.iris.gui.screen;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisConstants;
 import net.irisshaders.iris.api.v0.IrisApi;
 import net.irisshaders.iris.gui.GuiUtil;
 import net.irisshaders.iris.gui.NavigationController;
@@ -23,7 +24,6 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -41,7 +41,9 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+
+import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTIL;
+
 
 public class ShaderPackScreen extends Screen implements HudHideable {
 	/**
@@ -79,9 +81,9 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 
 		this.parent = parent;
 
-		String irisName = Iris.MODNAME + " " + Iris.getVersion();
+		String irisName = IrisConstants.MODNAME + " " + Iris.getVersion();
 
-		if (PlatformUtil.isDevelopmentEnvironment()) {
+		if (PLATFORM_UTIL.isDevelopmentEnvironment()) {
 			this.developmentComponent = Component.literal("Development Environment").withStyle(ChatFormatting.GOLD);
 		}
 

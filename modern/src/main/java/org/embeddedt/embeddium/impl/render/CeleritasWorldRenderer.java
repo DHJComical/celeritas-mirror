@@ -56,17 +56,18 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import org.joml.Vector3d;
 
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTIL;
+
 /**
  * Provides an extension to vanilla's {@link LevelRenderer}.
  */
 public class CeleritasWorldRenderer {
-    private static final boolean ENABLE_BLOCKENTITY_CULLING = PlatformUtil.modPresent("valkyrienskies");
+    private static final boolean ENABLE_BLOCKENTITY_CULLING = PLATFORM_UTIL.modPresent("valkyrienskies");
 
     private final Minecraft client;
 

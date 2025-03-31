@@ -1,6 +1,13 @@
 package net.irisshaders.iris.pipeline;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Optional;
+
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -28,13 +35,8 @@ import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.io.FilenameUtils;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Optional;
 
 public class CustomTextureManager {
 	private final EnumMap<TextureStage, Object2ObjectMap<String, TextureAccess>> customTextureIdMap = new EnumMap<>(TextureStage.class);
@@ -161,7 +163,7 @@ public class CustomTextureManager {
 					if (texture != null) {
 						int id = texture.getId();
 						PBRTextureHolder pbrHolder = PBRTextureManager.INSTANCE.getOrLoadHolder(id);
-						AbstractTexture pbrTexture = switch (pbrType) {
+                        MCAbstractTexture pbrTexture = switch (pbrType) {
 							case NORMAL -> pbrHolder.normalTexture();
 							case SPECULAR -> pbrHolder.specularTexture();
 							default -> throw new IllegalArgumentException("Unknown PBRType '" + pbrType + "'");
@@ -170,9 +172,9 @@ public class CustomTextureManager {
 						TextureFormat textureFormat = TextureFormatLoader.getFormat();
 						if (textureFormat != null) {
 							int previousBinding = GlStateManagerAccessor.getTEXTURES()[GlStateManagerAccessor.getActiveTexture()].binding;
-							GlStateManager._bindTexture(pbrTexture.getId());
-							textureFormat.setupTextureParameters(pbrType, pbrTexture);
-							GlStateManager._bindTexture(previousBinding);
+							GL_STATE_MANAGER.bindTexture(pbrTexture.getId());
+							textureFormat.setupTextureParameters(pbrType, (MCAbstractTexture)pbrTexture);
+							GL_STATE_MANAGER.bindTexture(previousBinding);
 						}
 
 						return pbrTexture.getId();
