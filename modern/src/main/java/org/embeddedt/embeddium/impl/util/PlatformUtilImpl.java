@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.util;
 
 import java.nio.file.Path;
+
 import org.embeddedt.embeddium.compat.mc.PlatformUtilService;
 
 //? if forge {
@@ -34,7 +35,10 @@ public class PlatformUtilImpl implements PlatformUtilService {
     }
 }
 //?} else if fabric {
-/*public class PlatformUtilImpl implements PlatformUtilService {
+/*import net.fabricmc.loader.api.FabricLoader;
+import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
+
+public class PlatformUtilImpl implements PlatformUtilService {
     public boolean isLoadValid() {
         return true;
     }
