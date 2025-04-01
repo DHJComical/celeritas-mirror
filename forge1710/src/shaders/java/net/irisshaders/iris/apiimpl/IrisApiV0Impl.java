@@ -1,18 +1,9 @@
 package net.irisshaders.iris.apiimpl;
 
-import net.irisshaders.iris.api.v0.IrisApi;
 import net.irisshaders.iris.api.v0.IrisApiConfig;
-import net.irisshaders.iris.api.v0.IrisTextVertexSink;
+import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 
-import java.nio.ByteBuffer;
-import java.util.function.IntFunction;
-
-public class IrisApiV0Impl implements IrisApi {
-    @Override
-    public int getMinorApiRevision() {
-        return 2;
-    }
-
+public class IrisApiV0Impl implements CeleritasShadersApi {
     @Override
     public boolean isShaderPackInUse() {
         return false;
@@ -50,11 +41,6 @@ public class IrisApiV0Impl implements IrisApi {
 
     @Override
     public IrisApiConfig getConfig() {
-        return null;
-    }
-
-    @Override
-    public IrisTextVertexSink createTextVertexSink(int maxQuadCount, IntFunction<ByteBuffer> bufferProvider) {
         return null;
     }
 
