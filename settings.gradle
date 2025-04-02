@@ -58,6 +58,9 @@ if(file("forge122").exists()) {
 }
 if(file("modern").exists()) {
     include("modern")
+    stonecutter {
+        centralScript = "build.gradle"
+    }
     tau.stonecutter {
         createVersionedProjectUsingJson(project(":modern"))
     }
