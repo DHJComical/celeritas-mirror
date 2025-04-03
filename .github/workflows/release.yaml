@@ -35,7 +35,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 21
+          java-version: |
+            8
+            17
+            21
       - name: Initialize caches
         uses: actions/cache@v4
         with:
