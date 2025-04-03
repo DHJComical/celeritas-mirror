@@ -282,7 +282,9 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 
     shadow(project(":common"))
-    shadow(project(":common-shaders"))
+    shadow(project(":common-shaders")) {
+        transitive = false
+    }
 
     if (shadersEnabled) {
         modCompileOnly("maven.modrinth:distanthorizonsapi:3.0.0")
