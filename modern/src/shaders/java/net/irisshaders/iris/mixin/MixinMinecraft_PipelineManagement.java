@@ -11,6 +11,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 @Mixin(Minecraft.class)
 public class MixinMinecraft_PipelineManagement {
 	/**
@@ -52,7 +54,7 @@ public class MixinMinecraft_PipelineManagement {
 	@Inject(method = "updateLevelInEngines", at = @At("HEAD"))
 	private void iris$resetPipeline(@Nullable ClientLevel level, CallbackInfo ci) {
 		if (Iris.getCurrentDimension() != Iris.lastDimension) {
-			Iris.logger.info("Reloading pipeline on dimension change: " + Iris.lastDimension + " => " + Iris.getCurrentDimension());
+			IRIS_LOGGER.info("Reloading pipeline on dimension change: " + Iris.lastDimension + " => " + Iris.getCurrentDimension());
 			// Destroy pipelines when changing dimensions.
 			Iris.getPipelineManager().destroyPipeline();
 

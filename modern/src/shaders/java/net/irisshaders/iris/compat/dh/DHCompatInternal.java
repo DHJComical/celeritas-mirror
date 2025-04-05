@@ -3,6 +3,7 @@ package net.irisshaders.iris.compat.dh;
 import java.io.IOException;
 
 import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiFramebuffer;
@@ -54,7 +55,7 @@ public class DHCompatInternal {
 		}
 
 		if (pipeline.getDHTerrainShader().isEmpty() && pipeline.getDHWaterShader().isEmpty()) {
-			Iris.logger.warn("No DH shader found in this pack.");
+			IRIS_LOGGER.warn("No DH shader found in this pack.");
 			incompatible = true;
 			return;
 		}

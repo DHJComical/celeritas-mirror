@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
@@ -29,7 +30,7 @@ public class PipelineManager {
 			SystemTimeUniforms.COUNTER.reset();
 			SystemTimeUniforms.TIMER.reset();
 
-			Iris.logger.info("Creating pipeline for dimension {}", currentDimension);
+			IRIS_LOGGER.info("Creating pipeline for dimension {}", currentDimension);
 			pipeline = pipelineFactory.apply(currentDimension);
 			pipelinesPerDimension.put(currentDimension, pipeline);
 
@@ -76,7 +77,7 @@ public class PipelineManager {
 	 */
 	public void destroyPipeline() {
 		pipelinesPerDimension.forEach((dimensionId, pipeline) -> {
-			Iris.logger.info("Destroying pipeline {}", dimensionId);
+			IRIS_LOGGER.info("Destroying pipeline {}", dimensionId);
 			resetTextureState();
 			pipeline.destroy();
 		});

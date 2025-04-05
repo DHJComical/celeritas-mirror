@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 public class OptionMenuElementScreen {
 	public final List<OptionMenuElement> elements = new ArrayList<>();
 
@@ -34,7 +36,7 @@ public class OptionMenuElementScreen {
 					}
 				}
 			} catch (IllegalArgumentException error) {
-				Iris.logger.warn(error.getMessage());
+				IRIS_LOGGER.warn(error.getMessage());
 
 				this.elements.add(OptionMenuElement.EMPTY);
 			}

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 public class PBRAtlasTexture extends AbstractTexture implements PBRDumpable {
@@ -90,7 +91,7 @@ public class PBRAtlasTexture extends AbstractTexture implements PBRDumpable {
 				writer.write(String.format(Locale.ROOT, "%s\tx=%d\ty=%d\tw=%d\th=%d%n", entry.getKey(), sprite.getX(), sprite.getY(), sprite.contents().width(), sprite.contents().height()));
 			}
 		} catch (IOException e) {
-			Iris.logger.warn("Failed to write file {}", path, e);
+			IRIS_LOGGER.warn("Failed to write file {}", path, e);
 		}
 	}
 

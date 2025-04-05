@@ -10,6 +10,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 @Mixin(value = Window.class, priority = 1010)
 public class MixinWindow {
 	@Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwDefaultWindowHints()V"))
@@ -17,7 +19,7 @@ public class MixinWindow {
 		GLFW.glfwDefaultWindowHints();
 		if (Iris.getIrisConfig().areDebugOptionsEnabled()) {
 			GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GLFW.GLFW_TRUE);
-			Iris.logger.info("OpenGL debug context activated.");
+			IRIS_LOGGER.info("OpenGL debug context activated.");
 		}
 	}
 }

@@ -13,6 +13,8 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.InvocationTargetException;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 public class DHCompat {
 	private static boolean dhPresent = true;
 	private static boolean lastIncompatible;
@@ -81,14 +83,14 @@ public class DHCompat {
 					throw new RuntimeException("DH found, but one or more API methods are missing. Iris requires DH [2.0.4] or DH API version [1.1.0] or newer. Please make sure you are on the latest version of DH and Iris.", e);
 				}
 			} else {
-				Iris.logger.info("DH not found, and classes not found.");
-			}
-		}
-	}
+                IRIS_LOGGER.info("DH not found, and classes not found.");
+            }
+        }
+    }
 
-	public static boolean lastPackIncompatible() {
-		return dhPresent && hasRenderingEnabled() && lastIncompatible;
-	}
+    public static boolean lastPackIncompatible() {
+        return dhPresent && hasRenderingEnabled() && lastIncompatible;
+    }
 
 	public static float getFarPlane() {
 		if (!dhPresent) return 0.01f;

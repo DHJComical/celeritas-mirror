@@ -6,6 +6,8 @@ import net.irisshaders.iris.config.IrisConfig;
 
 import java.io.IOException;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 public class IrisApiV0ConfigImpl implements IrisApiConfig {
 	@Override
 	public boolean areShadersEnabled() {
@@ -21,13 +23,13 @@ public class IrisApiV0ConfigImpl implements IrisApiConfig {
 		try {
 			config.save();
 		} catch (IOException e) {
-			Iris.logger.error("Error saving configuration file!", e);
+			IRIS_LOGGER.error("Error saving configuration file!", e);
 		}
 
 		try {
 			Iris.reload();
 		} catch (IOException e) {
-			Iris.logger.error("Error reloading shader pack while applying changes!", e);
+			IRIS_LOGGER.error("Error reloading shader pack while applying changes!", e);
 		}
 	}
 }

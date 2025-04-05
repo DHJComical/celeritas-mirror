@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 public class LanguageMap {
 	private final Map<String, Map<String, String>> translationMaps;
 
@@ -46,7 +48,7 @@ public class LanguageMap {
 				try (InputStreamReader isr = new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8)) {
 					properties.load(isr);
 				} catch (IOException e) {
-					Iris.logger.error("Failed to parse shader pack language file " + path, e);
+					IRIS_LOGGER.error("Failed to parse shader pack language file " + path, e);
 				}
 
 				ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();

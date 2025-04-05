@@ -19,6 +19,8 @@ import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 public class BlockMaterialMapping {
 	public static Object2IntMap<BlockState> createBlockStateIdMap(Int2ObjectMap<List<BlockEntry>> blockPropertiesMap) {
 		Object2IntMap<BlockState> blockStateIds = new Object2IntOpenHashMap<>();
@@ -104,8 +106,8 @@ public class BlockMaterialMapping {
 		}
 
         if (isAppearanceChangingBlock(block)) {
-            Iris.logger.warn("Warning while parsing the block ID map entry for \"" + "block." + intId + "\":");
-            Iris.logger.warn("- The block {} can change appearance, skipping!", resourceLocation);
+            IRIS_LOGGER.warn("Warning while parsing the block ID map entry for \"" + "block." + intId + "\":");
+            IRIS_LOGGER.warn("- The block {} can change appearance, skipping!", resourceLocation);
             return;
         }
 
@@ -133,8 +135,8 @@ public class BlockMaterialMapping {
 			Property<?> property = stateManager.getProperty(key);
 
 			if (property == null) {
-				Iris.logger.warn("Error while parsing the block ID map entry for \"" + "block." + intId + "\":");
-				Iris.logger.warn("- The block " + resourceLocation + " has no property with the name " + key + ", ignoring!");
+				IRIS_LOGGER.warn("Error while parsing the block ID map entry for \"" + "block." + intId + "\":");
+				IRIS_LOGGER.warn("- The block " + resourceLocation + " has no property with the name " + key + ", ignoring!");
 
 				return;
 			}

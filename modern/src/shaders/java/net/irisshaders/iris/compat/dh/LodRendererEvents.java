@@ -1,6 +1,7 @@
 package net.irisshaders.iris.compat.dh;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.enums.rendering.EDhApiFogDrawMode;
@@ -48,12 +49,12 @@ public class LodRendererEvents {
 	public static void setupEventHandlers() {
 		if (!eventHandlersBound) {
 			eventHandlersBound = true;
-			Iris.logger.info("Queuing DH event binding...");
+			IRIS_LOGGER.info("Queuing DH event binding...");
 
 			DhApiAfterDhInitEvent beforeCleanupEvent = new DhApiAfterDhInitEvent() {
 				@Override
 				public void afterDistantHorizonsInit(DhApiEventParam<Void> event) {
-					Iris.logger.info("DH Ready, binding Iris event handlers...");
+					IRIS_LOGGER.info("DH Ready, binding Iris event handlers...");
 
 					Iris.loadShaderpackWhenPossible();
 
@@ -69,7 +70,7 @@ public class LodRendererEvents {
 					setupBeforeRenderPassEvent();
 					setupBeforeApplyShaderEvent();
 					DHCompatInternal.dhEnabled = DhApi.Delayed.configs.graphics().renderingEnabled().getValue();
-					Iris.logger.info("DH Iris events bound.");
+					IRIS_LOGGER.info("DH Iris events bound.");
 				}
 			};
 			DhApi.events.bind(DhApiAfterDhInitEvent.class, beforeCleanupEvent);
@@ -273,7 +274,7 @@ public class LodRendererEvents {
 					DhApi.Delayed.configs.graphics().fog().drawMode().setValue(EDhApiFogDrawMode.FOG_DISABLED);
 
 					if (event.value.renderPass == EDhApiRenderPass.OPAQUE_AND_TRANSPARENT) {
-						Iris.logger.error("Unexpected; somehow the Opaque + Translucent pass ran with shaders on.");
+						IRIS_LOGGER.error("Unexpected; somehow the Opaque + Translucent pass ran with shaders on.");
 					}
 				} else {
 					DhApi.Delayed.configs.graphics().ambientOcclusion().enabled().clearValue();
@@ -309,7 +310,7 @@ public class LodRendererEvents {
 							//float nearClip = DhApi.Delayed.renderProxy.getNearClipPlaneDistanceInBlocks(partialTicks);
 							//float farClip = (float) ((double) (DHCompatInternal.getDhBlockRenderDistance() + 512) * Math.sqrt(2.0));
 
-							//Iris.logger.info("event near clip: "+event.value.nearClipPlane+" event far clip: "+event.value.farClipPlane+
+							//IRIS_LOGGER.info("event near clip: "+event.value.nearClipPlane+" event far clip: "+event.value.farClipPlane+
 							//	" \niris near clip: "+nearClip+" iris far clip: "+farClip);
 
 							instance.getSolidShader().fillUniformData(
@@ -342,7 +343,7 @@ public class LodRendererEvents {
 						//float nearClip = DhApi.Delayed.renderProxy.getNearClipPlaneDistanceInBlocks(partialTicks);
 						//float farClip = (float) ((double) (DHCompatInternal.getDhBlockRenderDistance() + 512) * Math.sqrt(2.0));
                         GL_STATE_MANAGER.disableCullFace();
-						//Iris.logger.info("event near clip: "+event.value.nearClipPlane+" event far clip: "+event.value.farClipPlane+
+						//IRIS_LOGGER.info("event near clip: "+event.value.nearClipPlane+" event far clip: "+event.value.farClipPlane+
 						//	" \niris near clip: "+nearClip+" iris far clip: "+farClip);
 
 						instance.getTranslucentShader().fillUniformData(

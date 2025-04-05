@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 public class ShaderOverrideEngine {
     private static final Map<String, Supplier<ShaderInstance>> iris$overrides = new Object2ObjectOpenHashMap<>();
     private static final Set<String> missingOverrides = new ObjectOpenHashSet<>();
@@ -41,7 +43,7 @@ public class ShaderOverrideEngine {
         if (overrideSupplier != null) {
             return overrideSupplier.get();
         } else if (missingOverrides.add(name)) {
-            Iris.logger.warn("Missing shader override for '{}'", name);
+            IRIS_LOGGER.warn("Missing shader override for '{}'", name);
         }
 
         return null;

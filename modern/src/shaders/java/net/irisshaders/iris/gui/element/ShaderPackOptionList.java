@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 public class ShaderPackOptionList extends IrisContainerObjectSelectionList<ShaderPackOptionList.BaseEntry> {
 	private final List<AbstractElementWidget<?>> elementWidgets = new ArrayList<>();
 	private final ShaderPackScreen screen;
@@ -284,7 +286,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 					"Shader Pack Settings (.txt)", "*.txt")
 				.whenComplete((path, err) -> {
 					if (err != null) {
-						Iris.logger.error("Error selecting shader settings from file", err);
+						IRIS_LOGGER.error("Error selecting shader settings from file", err);
 
 						return;
 					}
@@ -320,7 +322,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 					"Shader Pack Settings (.txt)", "*.txt")
 				.whenComplete((path, err) -> {
 					if (err != null) {
-						Iris.logger.error("Error selecting file to export shader settings", err);
+						IRIS_LOGGER.error("Error selecting file to export shader settings", err);
 
 						return;
 					}
@@ -342,7 +344,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 						try (OutputStream out = Files.newOutputStream(p)) {
 							toSave.store(out, null);
 						} catch (IOException e) {
-							Iris.logger.error("Error saving properties to \"" + p + "\"", e);
+							IRIS_LOGGER.error("Error saving properties to \"" + p + "\"", e);
 						}
 					});
 				});

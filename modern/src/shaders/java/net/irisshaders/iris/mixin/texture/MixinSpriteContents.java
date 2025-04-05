@@ -16,6 +16,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 @Mixin(SpriteContents.class)
 public class MixinSpriteContents implements SpriteContentsExtension {
 	@Unique
@@ -30,7 +32,7 @@ public class MixinSpriteContents implements SpriteContentsExtension {
 				try {
                     return (NativeImage[])(Object)generator.generateMipLevels((MCNativeImage[])(Object)nativeImages, mipLevel);
 				} catch (Exception e) {
-					Iris.logger.error("ERROR MIPMAPPING", e);
+					IRIS_LOGGER.error("ERROR MIPMAPPING", e);
 				}
 			}
 		}

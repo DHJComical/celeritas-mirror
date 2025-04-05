@@ -19,6 +19,8 @@ import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 public class TransformPatcherBridge {
     private static final boolean USE_GLSL_TRANSFORMER;
 
@@ -35,7 +37,7 @@ public class TransformPatcherBridge {
         }
 
         if(useGlslTransformer && transform == null) {
-            Iris.logger.warn("glsl-transformer is requested, but is not available in this jar");
+            IRIS_LOGGER.warn("glsl-transformer is requested, but is not available in this jar");
             useGlslTransformer = false;
         }
 

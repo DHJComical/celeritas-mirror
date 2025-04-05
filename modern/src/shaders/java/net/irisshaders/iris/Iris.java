@@ -58,11 +58,12 @@ import java.util.stream.Stream;
 import java.util.zip.ZipError;
 import java.util.zip.ZipException;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTIL;
 
 public class Iris {
 
-    public static final IrisLogging logger = IrisLogging.IRIS_LOGGER;
+    public static final IrisLogging logger = IRIS_LOGGER;
 	private static final Map<String, String> shaderPackOptionQueue = new HashMap<>();
 	// Change this for snapshots!
 	private static final String backupVersionNumber = "1.20.3";
@@ -103,7 +104,7 @@ public class Iris {
 	 */
 	public static void onRenderSystemInit() {
 		if (!initialized) {
-			Iris.logger.warn("Iris::onRenderSystemInit was called, but Iris::onEarlyInitialize was not called." +
+			IRIS_LOGGER.warn("Iris::onRenderSystemInit was called, but Iris::onEarlyInitialize was not called." +
 				" Trying to avoid a crash but this is an odd state.");
 			return;
 		}
@@ -128,7 +129,7 @@ public class Iris {
 	 */
 	public static void onLoadingComplete() {
 		if (!initialized) {
-			Iris.logger.warn("Iris::onLoadingComplete was called, but Iris::onEarlyInitialize was not called." +
+			IRIS_LOGGER.warn("Iris::onLoadingComplete was called, but Iris::onEarlyInitialize was not called." +
 				" Trying to avoid a crash but this is an odd state.");
 			return;
 		}
@@ -369,7 +370,7 @@ public class Iris {
 			irisConfig.setDebugEnabled(enable);
 			irisConfig.save();
 		} catch (IOException e) {
-			Iris.logger.fatal("Failed to save config!", e);
+			IRIS_LOGGER.fatal("Failed to save config!", e);
 		}
 
 		int success;
@@ -462,7 +463,7 @@ public class Iris {
 				}
 			} catch (ZipError zipError) {
 				// Java 8 seems to throw a ZipError instead of a subclass of IOException
-				Iris.logger.warn("The ZIP at " + pack + " is corrupt");
+				IRIS_LOGGER.warn("The ZIP at " + pack + " is corrupt");
 			} catch (IOException ignored) {
 				// ignored, not a valid shader pack.
 			}

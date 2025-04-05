@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 import static org.embeddedt.embeddium.compat.dh.DHCompatService.DH_COMPAT;
 
@@ -111,7 +112,7 @@ public class StandardMacros {
 		String[] splitVersion = version.split("\\.");
 
 		if (splitVersion.length < 2) {
-			Iris.logger.error("Could not parse game version \"" + version + "\"");
+			IRIS_LOGGER.error("Could not parse game version \"" + version + "\"");
 			splitVersion = Iris.getBackupVersionNumber().split("\\.");
 		}
 

@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 public class ProgramSet implements ProgramSetInterface {
 	private final PackDirectives packDirectives;
 
@@ -202,7 +204,7 @@ public class ProgramSet implements ProgramSetInterface {
 
 		if (vertexSource == null && fragmentSource != null) {
 			// This is for really old packs that do not use a vertex shader.
-			Iris.logger.warn("Found a program (" + program + ") that has a fragment shader but no vertex shader? This is very legacy behavior and might not work right.");
+			IRIS_LOGGER.warn("Found a program (" + program + ") that has a fragment shader but no vertex shader? This is very legacy behavior and might not work right.");
 			vertexSource = """
 				#version 120
 
@@ -364,7 +366,7 @@ public class ProgramSet implements ProgramSetInterface {
 		}
 
 		packDirectives.getRenderTargetDirectives().getRenderTargetSettings().forEach((index, settings) ->
-			Iris.logger.debug("Render target settings for colortex" + index + ": " + settings));
+			IRIS_LOGGER.debug("Render target settings for colortex" + index + ": " + settings));
 	}
 
 	public Optional<ProgramSource> getShadow() {

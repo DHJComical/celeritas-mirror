@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -430,7 +431,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
         }
 
         watch.stop();
-        Iris.logger.info("Loaded shaders in {}", watch);
+        IRIS_LOGGER.info("Loaded shaders in {}", watch);
 
         // We need to defer creation of the block state mappings, like Iris 1.8, because tags may not exist at launch time
         blockIdsNeedPopulation = true;

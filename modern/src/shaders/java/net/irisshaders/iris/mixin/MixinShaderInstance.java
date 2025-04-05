@@ -50,6 +50,8 @@ import java.lang.invoke.MethodType;
 import java.util.Map;
 import java.util.Objects;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 //? if <1.21.2
 @Mixin(ShaderInstance.class)
 //? if >=1.21.2
@@ -127,7 +129,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         shouldSkip = shouldSkipList.computeIfAbsent(getClass(), x -> {
             try {
                 MethodHandle iris$skipDraw = MethodHandles.lookup().findVirtual(x, "iris$skipDraw", MethodType.methodType(boolean.class));
-                Iris.logger.warn("Class " + x.getName() + " has opted out of being rendered with shaders.");
+                IRIS_LOGGER.warn("Class " + x.getName() + " has opted out of being rendered with shaders.");
                 return iris$skipDraw;
             } catch (NoSuchMethodException | IllegalAccessException e) {
                 return NONE;

@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 public class OptionMenuContainer {
 	public final OptionMenuElementScreen mainScreen;
 	public final Map<String, OptionMenuElementScreen> subScreens = new HashMap<>();
@@ -58,7 +60,7 @@ public class OptionMenuContainer {
 						}
 					}
 				} catch (IllegalArgumentException error) {
-					Iris.logger.warn(error);
+					IRIS_LOGGER.warn(error);
 
 					elementsToInsert.add(OptionMenuElement.EMPTY);
 				}

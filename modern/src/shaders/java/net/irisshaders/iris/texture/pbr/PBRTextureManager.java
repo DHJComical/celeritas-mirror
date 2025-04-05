@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -59,7 +60,7 @@ public class PBRTextureManager {
 		try {
 			dumpable.dumpContents(id, path);
 		} catch (IOException e) {
-			Iris.logger.error("Failed to dump texture {}", id, e);
+			IRIS_LOGGER.error("Failed to dump texture {}", id, e);
 		}
 	}
 
@@ -117,7 +118,7 @@ public class PBRTextureManager {
 					loader.load(texture, Minecraft.getInstance().getResourceManager(), consumer);
 					return consumer.toHolder();
 				} catch (Exception e) {
-					Iris.logger.debug("Failed to load PBR textures for texture " + id, e);
+					IRIS_LOGGER.debug("Failed to load PBR textures for texture " + id, e);
 				} finally {
 					GL_STATE_MANAGER.bindTexture(previousTextureBinding);
 				}

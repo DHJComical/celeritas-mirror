@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTIL;
 
 public class ShaderTransformationDiskCache {
@@ -61,12 +62,12 @@ public class ShaderTransformationDiskCache {
             if(map != null && !map.isEmpty()) {
                 return map;
             } else {
-                Iris.logger.error("Cache data is corrupt");
+                IRIS_LOGGER.error("Cache data is corrupt");
                 Files.deleteIfExists(path);
             }
         } catch(FileNotFoundException | NoSuchFileException ignored) {
         } catch(IOException e) {
-            Iris.logger.error("Error loading transformed shader, will re-transform now", e);
+            IRIS_LOGGER.error("Error loading transformed shader, will re-transform now", e);
         }
 
         Map<PatchShaderType, String> results = transformFn.get();
@@ -77,7 +78,7 @@ public class ShaderTransformationDiskCache {
                 writer.write(new Gson().toJson(results, typeToken.getType()));
             }
         } catch(IOException e) {
-            Iris.logger.error("Error writing transformed shader to disk", e);
+            IRIS_LOGGER.error("Error writing transformed shader to disk", e);
         }
 
         return results;

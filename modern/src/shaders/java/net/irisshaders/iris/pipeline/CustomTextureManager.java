@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -61,7 +62,7 @@ public class CustomTextureManager {
 				try {
 					customTextureIds.put(samplerName, createCustomTexture(textureData));
 				} catch (IOException | ResourceLocationException e) {
-					Iris.logger.error("Unable to parse the image data for the custom texture on stage "
+					IRIS_LOGGER.error("Unable to parse the image data for the custom texture on stage "
 						+ textureStage + ", sampler " + samplerName, e);
 				}
 			});
@@ -73,7 +74,7 @@ public class CustomTextureManager {
 			try {
 				irisCustomTextures.put(name, createCustomTexture(texture));
 			} catch (IOException e) {
-				Iris.logger.error("Unable to parse the image data for the custom texture on sampler " + name, e);
+				IRIS_LOGGER.error("Unable to parse the image data for the custom texture on sampler " + name, e);
 			}
 		});
 
@@ -81,7 +82,7 @@ public class CustomTextureManager {
 			try {
 				return Optional.of(createCustomTexture(textureData));
 			} catch (IOException | ResourceLocationException e) {
-				Iris.logger.error("Unable to parse the image data for the custom noise texture", e);
+				IRIS_LOGGER.error("Unable to parse the image data for the custom noise texture", e);
 
 				return Optional.empty();
 			}

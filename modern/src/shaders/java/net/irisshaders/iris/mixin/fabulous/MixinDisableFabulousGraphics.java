@@ -11,6 +11,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 @Mixin(LevelRenderer.class)
 public class MixinDisableFabulousGraphics {
 	@Inject(method = "onResourceManagerReload", at = @At("HEAD"))
@@ -35,7 +37,7 @@ public class MixinDisableFabulousGraphics {
 		}
 
 		if (options.graphicsMode().get() == GraphicsStatus.FABULOUS) {
-            Iris.logger.warn("Fabulous mode is forcefully disabled if shaders are on");
+            IRIS_LOGGER.warn("Fabulous mode is forcefully disabled if shaders are on");
 			// Disable fabulous graphics when shaders are enabled.
 			options.graphicsMode().set(GraphicsStatus.FANCY);
 		}
