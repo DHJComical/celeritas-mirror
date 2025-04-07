@@ -53,6 +53,8 @@ jobs:
         with:
           path: |
             modern/versions/**/.gradle/unimined
+            forge1710/.gradle/unimined
+            forge122/.gradle/unimined
           key: unimined-v2-${{ runner.os }}-build-snapshot-${{ hashFiles('modern/build.gradle') }}-${{ hashFiles('versions.json') }}
           restore-keys: |
             unimined-v2-${{ runner.os }}-build-snapshot-${{ hashFiles('modern/build.gradle') }}-
