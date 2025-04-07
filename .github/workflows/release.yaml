@@ -48,6 +48,15 @@ jobs:
           key: release-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('settings.gradle') }}
           restore-keys: |
             release-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-
+      - name: Initialize Unimined caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            modern/versions/**/.gradle/unimined
+          key: unimined-v2-${{ runner.os }}-build-snapshot-${{ hashFiles('modern/build.gradle') }}-${{ hashFiles('versions.json') }}
+          restore-keys: |
+            unimined-v2-${{ runner.os }}-build-snapshot-${{ hashFiles('modern/build.gradle') }}-
+            unimined-v2-${{ runner.os }}-build-snapshot-
       - name: Build modern
         run: ./gradlew chiseledPackage -Prelease_channel=${{ inputs.release_type }}
       - name: Publish artifacts
