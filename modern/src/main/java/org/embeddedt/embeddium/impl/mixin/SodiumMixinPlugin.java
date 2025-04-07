@@ -52,6 +52,9 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
 
             //? if forge && <1.17
             /*MixinExtrasBootstrap.init();*/
+
+            //? if forge && <=1.20.1
+            org.embeddedt.embeddium.impl.asm.legacy.LegacyAddonPatcher.install();
         }
 
 
