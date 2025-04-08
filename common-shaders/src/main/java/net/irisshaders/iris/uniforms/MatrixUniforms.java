@@ -3,13 +3,12 @@ package net.irisshaders.iris.uniforms;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.gl.uniform.UniformHolder;
 import net.irisshaders.iris.shaderpack.properties.PackDirectives;
-import net.irisshaders.iris.shadows.ShadowMatrices;
-import net.irisshaders.iris.shadows.ShadowRenderer;
 import org.joml.Matrix4f;
 
 import java.util.function.Supplier;
 
 import static net.irisshaders.iris.gl.uniform.UniformUpdateFrequency.PER_FRAME;
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 public final class MatrixUniforms {
 	private MatrixUniforms() {
@@ -19,9 +18,8 @@ public final class MatrixUniforms {
 		addMatrix(uniforms, "ModelView", CapturedRenderingState.INSTANCE::getGbufferModelView);
 		addMatrix(uniforms, "Projection", CapturedRenderingState.INSTANCE::getGbufferProjection);
 		addDHMatrix(uniforms, "Projection", DHCompat::getProjection);
-		addShadowMatrix(uniforms, "ModelView", () ->
-			new Matrix4f(ShadowRenderer.createShadowModelView(directives.getSunPathRotation(), directives.getShadowDirectives().getIntervalSize()).last().pose()));
-		addShadowMatrix(uniforms, "Projection", () -> ShadowMatrices.createOrthoMatrix(directives.getShadowDirectives().getDistance(),
+		addShadowMatrix(uniforms, "ModelView", () -> MINECRAFT_SHIM.getShadowModelView(directives.getSunPathRotation(), directives.getShadowDirectives().getIntervalSize()));
+		addShadowMatrix(uniforms, "Projection", () -> MINECRAFT_SHIM.getShadowProjection(directives.getShadowDirectives().getDistance(),
 			directives.getShadowDirectives().getNearPlane() < 0 ? -DHCompat.getRenderDistance() : directives.getShadowDirectives().getNearPlane(),
 			directives.getShadowDirectives().getFarPlane() < 0 ? DHCompat.getRenderDistance() : directives.getShadowDirectives().getFarPlane()));
 	}

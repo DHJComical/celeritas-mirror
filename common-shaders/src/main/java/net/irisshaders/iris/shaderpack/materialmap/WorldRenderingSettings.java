@@ -1,23 +1,15 @@
 package net.irisshaders.iris.shaderpack.materialmap;
 
 import it.unimi.dsi.fastutil.objects.Object2IntFunction;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.Objects;
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 public class WorldRenderingSettings {
 	public static final WorldRenderingSettings INSTANCE = new WorldRenderingSettings();
 
 	private boolean reloadRequired;
-    private Object2IntMap<BlockState> blockStateIds;
-    private FallbackTextureMaterials fallbackTextureMaterialMapping;
-	private Map<Block, RenderType> blockTypeIds;
+
 	private Object2IntFunction<NamespacedId> entityIds;
 	private Object2IntFunction<NamespacedId> itemIds;
 	private float ambientOcclusionLevel;
@@ -30,8 +22,6 @@ public class WorldRenderingSettings {
 
 	public WorldRenderingSettings() {
 		reloadRequired = false;
-		blockStateIds = null;
-		blockTypeIds = null;
 		ambientOcclusionLevel = 1.0F;
 		disableDirectionalShading = false;
 		useSeparateAo = false;
@@ -51,56 +41,11 @@ public class WorldRenderingSettings {
 
     public void reloadRendererIfRequired() {
         if (isReloadRequired()) {
-            if (Minecraft.getInstance().levelRenderer != null) {
-                Minecraft.getInstance().levelRenderer.allChanged();
-            }
-
+            MINECRAFT_SHIM.markRendererReloadRequired();
             clearReloadRequired();
         }
     }
 
-	@Nullable
-	public Object2IntMap<BlockState> getBlockStateIds() {
-		return blockStateIds;
-	}
-
-	public void setBlockStateIds(Object2IntMap<BlockState> blockStateIds) {
-		if (Objects.equals(this.blockStateIds, blockStateIds)) {
-			return;
-		}
-
-		this.reloadRequired = true;
-		this.blockStateIds = blockStateIds;
-	}
-
-    @Nullable
-    public FallbackTextureMaterials getFallbackTextureMaterialMapping() {
-        return fallbackTextureMaterialMapping;
-    }
-
-    public void setFallbackTextureMaterialMapping(FallbackTextureMaterials fallbackTextureMaterialMapping) {
-        if (Objects.equals(this.fallbackTextureMaterialMapping, fallbackTextureMaterialMapping)) {
-            return;
-        }
-
-        this.reloadRequired = true;
-        this.fallbackTextureMaterialMapping = fallbackTextureMaterialMapping;
-    }
-
-
-    @Nullable
-	public Map<Block, RenderType> getBlockTypeIds() {
-		return blockTypeIds;
-	}
-
-	public void setBlockTypeIds(Map<Block, RenderType> blockTypeIds) {
-		if (Objects.equals(this.blockTypeIds, blockTypeIds)) {
-			return;
-		}
-
-		this.reloadRequired = true;
-		this.blockTypeIds = blockTypeIds;
-	}
 
 	@Nullable
 	public Object2IntFunction<NamespacedId> getEntityIds() {
@@ -199,4 +144,8 @@ public class WorldRenderingSettings {
 	public boolean hasVillagerConversionId() {
 		return hasVillagerConversionId;
 	}
+
+    public void setReloadRequired() {
+        reloadRequired = true;
+    }
 }

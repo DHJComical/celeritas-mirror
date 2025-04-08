@@ -1,8 +1,5 @@
 package net.irisshaders.iris.gl.state;
 
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
-
 public class ShaderAttributeInputs {
 	private boolean color;
 	private boolean tex;
@@ -14,45 +11,28 @@ public class ShaderAttributeInputs {
 	private boolean text;
 	// WARNING: adding new fields requires updating hashCode and equals methods!
 
-	public ShaderAttributeInputs(VertexFormat format, boolean isFullbright, boolean isLines, boolean glint, boolean text) {
-		if (format == DefaultVertexFormat.POSITION_COLOR_NORMAL && !isLines) {
-			newLines = true;
-		}
-
-		this.text = text;
-		this.glint = glint;
-
-		format.getElementAttributeNames().forEach(name -> {
-			if ("Color".equals(name)) {
-				color = true;
-			}
-
-			if ("UV0".equals(name)) {
-				tex = true;
-			}
-
-			if ("UV1".equals(name)) {
-				overlay = true;
-			}
-
-			if ("UV2".equals(name) && !isFullbright) {
-				light = true;
-			}
-
-			if ("Normal".equals(name)) {
-				normal = true;
-			}
-		});
-	}
-
 	public ShaderAttributeInputs(boolean color, boolean tex, boolean overlay, boolean light, boolean normal) {
 		this.color = color;
 		this.tex = tex;
 		this.overlay = overlay;
 		this.light = light;
 		this.normal = normal;
+
+        this.newLines = false;
+        this.glint = false;
+        this.text = false;
 	}
 
+    public ShaderAttributeInputs(boolean color, boolean tex, boolean overlay, boolean light, boolean normal, boolean newLines, boolean glint, boolean text) {
+        this.color = color;
+        this.tex = tex;
+        this.overlay = overlay;
+        this.light = light;
+        this.normal = normal;
+        this.newLines = newLines;
+        this.glint = glint;
+        this.text = text;
+    }
 	public boolean hasColor() {
 		return color;
 	}

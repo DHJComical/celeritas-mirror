@@ -19,7 +19,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
-import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.IrisRenderSystem;
@@ -38,6 +38,7 @@ import net.irisshaders.iris.gl.sampler.SamplerLimits;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
+import net.irisshaders.iris.gl.state.ShaderAttributeInputsBuilder;
 import net.irisshaders.iris.gl.texture.DepthBufferFormat;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
@@ -45,7 +46,6 @@ import net.irisshaders.iris.helpers.FakeChainedJsonException;
 import net.irisshaders.iris.helpers.OptionalBoolean;
 import net.irisshaders.iris.helpers.Tri;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
-import net.irisshaders.iris.mixin.LevelRendererAccessor;
 import net.irisshaders.iris.pathways.CenterDepthSampler;
 import net.irisshaders.iris.pathways.HorizonRenderer;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
@@ -63,6 +63,7 @@ import net.irisshaders.iris.shaderpack.ShaderPack;
 import net.irisshaders.iris.shaderpack.loading.ProgramId;
 import net.irisshaders.iris.shaderpack.materialmap.BlockMaterialMapping;
 import net.irisshaders.iris.shaderpack.materialmap.ModelTextureAnalyzer;
+import net.irisshaders.iris.shaderpack.materialmap.ModernWorldRenderingSettings;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.shaderpack.programs.ComputeSource;
 import net.irisshaders.iris.shaderpack.programs.ProgramFallbackResolver;
@@ -89,7 +90,6 @@ import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.GameRenderer;
@@ -97,13 +97,15 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import org.apache.commons.lang3.StringUtils;
+import org.embeddedt.embeddium.compat.mc.ICamera;
+import org.embeddedt.embeddium.compat.mc.ILevelRenderer;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.*;
 
-public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRenderingPipeline, RenderTargetStateListener {
+public class ModernIrisRenderingPipeline implements IrisRenderingPipeline, WorldRenderingPipeline, ShaderRenderingPipeline, RenderTargetStateListener {
 	private final RenderTargets renderTargets;
 	private final ShaderMap shaderMap;
 	private final CustomUniforms customUniforms;
@@ -177,7 +179,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
     private GlFramebuffer defaultFBShadow;
 
 
-    public IrisRenderingPipeline(ProgramSet programSet) {
+    public ModernIrisRenderingPipeline(ProgramSet programSet) {
 		ShaderPrinter.resetPrintState();
 
 		this.shouldRenderUnderwaterOverlay = programSet.getPackDirectives().underwaterOverlay();
@@ -693,7 +695,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		boolean isLines = programId == ProgramId.Line && resolver.has(ProgramId.Line);
 
 
-		ShaderAttributeInputs inputs = new ShaderAttributeInputs(vertexFormat, isFullbright, isLines, isGlint, isText);
+		ShaderAttributeInputs inputs = new ShaderAttributeInputsBuilder(vertexFormat, isFullbright, isLines, isGlint, isText).build();
 
 		Supplier<ImmutableSet<Integer>> flipped =
 			() -> isBeforeTranslucent ? flippedAfterPrepare : flippedAfterTranslucent;
@@ -747,7 +749,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		GlFramebuffer framebuffer = shadowRenderTargets.createShadowFramebuffer(ImmutableSet.of(), source.getDirectives().hasUnknownDrawBuffers() ? new int[]{0, 1} : source.getDirectives().getDrawBuffers());
 		boolean isLines = programId == ProgramId.Line && resolver.has(ProgramId.Line);
 
-		ShaderAttributeInputs inputs = new ShaderAttributeInputs(vertexFormat, isFullbright, isLines, false, isText);
+		ShaderAttributeInputs inputs = new ShaderAttributeInputsBuilder(vertexFormat, isFullbright, isLines, false, isText).build();
 
 		Supplier<ImmutableSet<Integer>> flipped = () -> flippedBeforeShadow;
 
@@ -884,13 +886,13 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		isRenderingWorld = true;
 
         if (blockIdsNeedPopulation) {
-            WorldRenderingSettings.INSTANCE.setBlockStateIds(
+            ModernWorldRenderingSettings.INSTANCE.setBlockStateIds(
                     BlockMaterialMapping.createBlockStateIdMap(pack.getIdMap().getBlockProperties()));
-            WorldRenderingSettings.INSTANCE.setBlockTypeIds(BlockMaterialMapping.createBlockTypeMap(pack.getIdMap().getBlockRenderTypeMap()));
-            if (Iris.getIrisConfig().isEnableTextureMaterialFallback()) {
-                WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(ModelTextureAnalyzer.runAnalysisSync(WorldRenderingSettings.INSTANCE.getBlockStateIds()));
+            ModernWorldRenderingSettings.INSTANCE.setBlockTypeIds(BlockMaterialMapping.createBlockTypeMap(pack.getIdMap().getBlockRenderTypeMap()));
+            if (IrisCommon.getIrisConfig().isEnableTextureMaterialFallback()) {
+                ModernWorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(ModelTextureAnalyzer.runAnalysisSync(ModernWorldRenderingSettings.INSTANCE.getBlockStateIds()));
             } else {
-                WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(null);
+                ModernWorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(null);
             }
             WorldRenderingSettings.INSTANCE.reloadRendererIfRequired();
             blockIdsNeedPopulation = false;
@@ -1058,7 +1060,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 	}
 
 	@Override
-	public void renderShadows(LevelRendererAccessor worldRenderer, Camera playerCamera) {
+	public void renderShadows(ILevelRenderer worldRenderer, ICamera playerCamera) {
 		if (shadowRenderer != null) {
 			this.shadowRenderer.renderShadows(worldRenderer, playerCamera);
 		}

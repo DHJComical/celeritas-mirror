@@ -1,12 +1,10 @@
 package net.irisshaders.iris.compat.dh;
 
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
-import net.minecraft.client.Minecraft;
-import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.joml.Matrix4f;
+import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -14,6 +12,7 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.InvocationTargetException;
 
 import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 public class DHCompat {
 	private static boolean dhPresent = true;
@@ -31,7 +30,7 @@ public class DHCompat {
 	public DHCompat(IrisRenderingPipeline pipeline, boolean renderDHShadow) {
 		try {
 			if (dhPresent) {
-				compatInternalInstance = Class.forName("net.irisshaders.iris.compat.dh.DHCompatInternal").getDeclaredConstructor(pipeline.getClass(), boolean.class).newInstance(pipeline, renderDHShadow);
+				compatInternalInstance = CeleritasShadersApi.getInstance().getDHCompatInstance(pipeline, renderDHShadow);
 				lastIncompatible = (boolean) incompatible.invoke(compatInternalInstance);
 			}
 		} catch (Throwable e) {
@@ -58,7 +57,7 @@ public class DHCompat {
 
 	public static void run() {
 		try {
-			if (EarlyLoaderServices.INSTANCE.isModLoaded("distanthorizons")) {
+			if (MINECRAFT_SHIM.isDHPresent()) {
 				deletePipeline = MethodHandles.lookup().findVirtual(Class.forName("net.irisshaders.iris.compat.dh.DHCompatInternal"), "clear", MethodType.methodType(void.class));
 				MethodHandle setupEventHandlers = MethodHandles.lookup().findStatic(Class.forName("net.irisshaders.iris.compat.dh.LodRendererEvents"), "setupEventHandlers", MethodType.methodType(void.class));
 				getDepthTex = MethodHandles.lookup().findVirtual(Class.forName("net.irisshaders.iris.compat.dh.DHCompatInternal"), "getStoredDepthTex", MethodType.methodType(int.class));
@@ -76,7 +75,7 @@ public class DHCompat {
 		} catch (Throwable e) {
 			dhPresent = false;
 
-			if (EarlyLoaderServices.INSTANCE.isModLoaded("distanthorizons")) {
+			if (MINECRAFT_SHIM.isDHPresent()) {
 				if (e instanceof ExceptionInInitializerError eiie) {
 					throw new RuntimeException("Failure loading DH compat.", eiie.getCause());
 				} else {
@@ -113,7 +112,7 @@ public class DHCompat {
 	}
 
 	public static int getRenderDistance() {
-		if (!dhPresent) return Minecraft.getInstance().options.getEffectiveRenderDistance();
+		if (!dhPresent) return MINECRAFT_SHIM.getEffectiveRenderDistance();
 
 		try {
 			return (int) getRenderDistance.invoke();

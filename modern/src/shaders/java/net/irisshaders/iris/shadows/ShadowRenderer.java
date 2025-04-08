@@ -13,13 +13,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import net.irisshaders.batchedentityrendering.impl.*;
-import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.IrisConstants;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.mixin.LevelRendererAccessor;
-import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
 import net.irisshaders.iris.shaderpack.properties.PackDirectives;
 import net.irisshaders.iris.shaderpack.properties.PackShadowDirectives;
@@ -47,6 +47,8 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.embeddedt.embeddium.compat.mc.ICamera;
+import org.embeddedt.embeddium.compat.mc.ILevelRenderer;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
@@ -77,7 +79,7 @@ public class ShadowRenderer {
 	private final ShadowRenderTargets targets;
 	private final ShadowCullState packCullingState;
 	private final ShadowCompositeRenderer compositeRenderer;
-    private final IrisRenderingPipeline pipeline;
+    private final ModernIrisRenderingPipeline pipeline;
 	private final boolean shouldRenderTerrain;
 	private final boolean shouldRenderTranslucent;
 	private final boolean shouldRenderEntities;
@@ -98,7 +100,7 @@ public class ShadowRenderer {
 	private int renderedShadowEntities = 0;
 	private int renderedShadowBlockEntities = 0;
 
-	public ShadowRenderer(IrisRenderingPipeline pipeline, ProgramSource shadow, PackDirectives directives,
+	public ShadowRenderer(ModernIrisRenderingPipeline pipeline, ProgramSource shadow, PackDirectives directives,
                           ShadowRenderTargets shadowRenderTargets, ShadowCompositeRenderer compositeRenderer, CustomUniforms customUniforms, boolean separateHardwareSamplers) {
 
         this.pipeline = pipeline;
@@ -360,10 +362,11 @@ public class ShadowRenderer {
 		RENDER_SYSTEM.glViewport(0, 0, resolution, resolution);
 	}
 
-	public void renderShadows(LevelRendererAccessor levelRenderer, Camera playerCamera) {
+	public void renderShadows(ILevelRenderer levelRendererIn, ICamera playerCamera) {
 		if (IrisVideoSettings.getOverriddenShadowDistance(IrisVideoSettings.shadowDistance) == 0) {
 			return;
 		}
+        LevelRendererAccessor levelRenderer = (LevelRendererAccessor) levelRendererIn;
 
 		Minecraft client = Minecraft.getInstance();
 
@@ -426,7 +429,7 @@ public class ShadowRenderer {
 		levelRenderer.setShouldRegenerateClouds(regenerateClouds);
 
 		// Execute the vanilla terrain setup / culling routines using our shadow frustum.
-		levelRenderer.invokeSetupRender(playerCamera, terrainFrustumHolder.getFrustum(), false, false);
+		levelRenderer.invokeSetupRender((Camera) playerCamera, terrainFrustumHolder.getFrustum(), false, false);
 
 		// Don't forget to increment the frame counter! This variable is arbitrary and only used in terrain setup,
 		// and if it's not incremented, the vanilla culling code will get confused and think that it's already seen
@@ -531,7 +534,7 @@ public class ShadowRenderer {
         }
 
         if (shouldRenderLightBlockEntities || shouldRenderBlockEntities) {
-            renderedShadowBlockEntities = celeritasRenderer.renderBlockEntities(modelView, buffers, Long2ObjectMaps.emptyMap(), playerCamera, tickDelta, blockEntityFilter);
+            renderedShadowBlockEntities = celeritasRenderer.renderBlockEntities(modelView, buffers, Long2ObjectMaps.emptyMap(), (Camera) playerCamera, tickDelta, blockEntityFilter);
         }
 
 		levelRenderer.getLevel().getProfiler().popPush("draw entities");
@@ -715,7 +718,7 @@ public class ShadowRenderer {
 			return;
 		}
 
-		if (Iris.getIrisConfig().areDebugOptionsEnabled()) {
+		if (IrisCommon.getIrisConfig().areDebugOptionsEnabled()) {
 			messages.add("[" + IrisConstants.MODNAME + "] Shadow Maps: " + debugStringOverall);
 			messages.add("[" + IrisConstants.MODNAME + "] Shadow Distance Terrain: " + terrainFrustumHolder.getDistanceInfo() + " Entity: " + entityFrustumHolder.getDistanceInfo());
 			messages.add("[" + IrisConstants.MODNAME + "] Shadow Culling Terrain: " + terrainFrustumHolder.getCullingInfo() + " Entity: " + entityFrustumHolder.getCullingInfo());

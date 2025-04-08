@@ -11,14 +11,11 @@ import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINE
 import static org.embeddedt.embeddium.compat.dh.DHCompatService.DH_COMPAT;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.platform.GlUtil;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.IrisConstants;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.texture.format.TextureFormat;
 import net.irisshaders.iris.texture.format.TextureFormatLoader;
-import net.minecraft.Util;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
@@ -103,7 +100,7 @@ public class StandardMacros {
 	 * @see <a href="https://github.com/sp614x/optifine/blob/9c6a5b5326558ccc57c6490b66b3be3b2dc8cbef/OptiFineDoc/doc/shaders.txt#L696-L699">Optifine Doc</a>
 	 */
 	public static String getMcVersion() {
-		String version = Iris.getReleaseTarget();
+		String version = MINECRAFT_SHIM.getMcVersion();
 
 		if (version == null) {
 			throw new IllegalStateException("Could not get the current minecraft version!");
@@ -113,7 +110,7 @@ public class StandardMacros {
 
 		if (splitVersion.length < 2) {
 			IRIS_LOGGER.error("Could not parse game version \"" + version + "\"");
-			splitVersion = Iris.getBackupVersionNumber().split("\\.");
+			splitVersion = MINECRAFT_SHIM.getBackupVersionNumber().split("\\.");
 		}
 
 		String major = splitVersion[0];
@@ -192,13 +189,7 @@ public class StandardMacros {
 	 * @see <a href="https://github.com/sp614x/optifine/blob/9c6a5b5326558ccc57c6490b66b3be3b2dc8cbef/OptiFineDoc/doc/shaders.txt#L709-L714">Optifine Doc</a>
 	 */
 	public static String getOsString() {
-		return switch (Util.getPlatform()) {
-			case OSX -> "MC_OS_MAC";
-			case LINUX -> "MC_OS_LINUX";
-			case WINDOWS ->
-				"MC_OS_WINDOWS"; // Note: Optifine doesn't have a macro for Solaris. https://github.com/sp614x/optifine/blob/9c6a5b5326558ccc57c6490b66b3be3b2dc8cbef/OptiFineDoc/doc/shaders.txt#L709-L714
-			default -> "MC_OS_UNKNOWN";
-		};
+        return MINECRAFT_SHIM.getOsString();
 	}
 
 	/**
@@ -208,7 +199,7 @@ public class StandardMacros {
 	 * @see <a href="https://github.com/sp614x/optifine/blob/9c6a5b5326558ccc57c6490b66b3be3b2dc8cbef/OptiFineDoc/doc/shaders.txt#L716-L723">Optifine Doc</a>
 	 */
 	public static String getVendor() {
-		String vendor = Objects.requireNonNull(GlUtil.getVendor()).toLowerCase(Locale.ROOT);
+		String vendor = Objects.requireNonNull(GL_STATE_MANAGER.glGetString(GL11.GL_VENDOR).toLowerCase(Locale.ROOT));
 		if (vendor.startsWith("ati")) {
 			return "MC_GL_VENDOR_ATI";
 		} else if (vendor.startsWith("intel")) {
@@ -230,7 +221,7 @@ public class StandardMacros {
 	 * @see <a href="https://github.com/sp614x/optifine/blob/9c6a5b5326558ccc57c6490b66b3be3b2dc8cbef/OptiFineDoc/doc/shaders.txt#L725-L733">Optifine Doc</a>
 	 */
 	public static String getRenderer() {
-		String renderer = Objects.requireNonNull(GlUtil.getRenderer()).toLowerCase(Locale.ROOT);
+		String renderer = Objects.requireNonNull(GL_STATE_MANAGER.glGetString(GL11.GL_RENDERER)).toLowerCase(Locale.ROOT);
 		if (renderer.startsWith("amd")) {
 			return "MC_GL_RENDERER_RADEON";
 		} else if (renderer.startsWith("ati")) {

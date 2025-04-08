@@ -5,30 +5,47 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.math.Axis;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.helpers.JomlConversions;
-import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
+import net.irisshaders.iris.mixin.GlStateManagerAccessor;
+import net.irisshaders.iris.mixin.texture.TextureAtlasAccessor;
 import net.irisshaders.iris.shaderpack.DimensionId;
+import net.irisshaders.iris.shadows.ShadowMatrices;
+import net.irisshaders.iris.shadows.ShadowRenderer;
+import net.irisshaders.iris.texture.TextureInfoCache;
+import net.irisshaders.iris.texture.TextureTracker;
 import net.irisshaders.iris.uniforms.CameraUniforms;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
+import net.minecraft.Util;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.compat.mc.IResourceLocation;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 import org.embeddedt.embeddium.compat.mc.MCNativeImage;
 import org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService;
 import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
+import org.joml.*;
 import org.joml.Math;
-import org.joml.Matrix4f;
-import org.joml.Vector3d;
-import org.joml.Vector4f;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
+
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+
 
 public class MinecraftModernVersionShimImpl implements MinecraftVersionShimService {
 
@@ -80,6 +97,11 @@ public class MinecraftModernVersionShimImpl implements MinecraftVersionShimServi
     public int getRenderDistanceInBlocks() {
         // TODO: Should we ask the game renderer for this?
         return Minecraft.getInstance().options.getEffectiveRenderDistance() * 16;
+    }
+
+    @Override
+    public int getEffectiveRenderDistance() {
+        return Minecraft.getInstance().options.getEffectiveRenderDistance();
     }
 
     @Override
@@ -302,6 +324,263 @@ public class MinecraftModernVersionShimImpl implements MinecraftVersionShimServi
     }
 
     @Override
+    public boolean isOnGround() {
+        final Minecraft client = Minecraft.getInstance();
+        return client.player != null && client.player.onGround();
+    }
+
+    @Override
+    public boolean isHurt() {
+        final Minecraft client = Minecraft.getInstance();
+        if (client.player != null) {
+            return client.player.hurtTime > 0; // Do not use isHurt, that's not what we want!
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isInvisible() {
+        final Minecraft client = Minecraft.getInstance();
+        if (client.player != null) {
+            return client.player.isInvisible();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isBurning() {
+        final Minecraft client = Minecraft.getInstance();
+        if (client.player != null) {
+            return client.player.isOnFire();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isSneaking() {
+        final Minecraft client = Minecraft.getInstance();
+        if (client.player != null) {
+            return client.player.isCrouching();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isSprinting() {
+        final Minecraft client = Minecraft.getInstance();
+        if (client.player != null) {
+            return client.player.isSprinting();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public Vector3d getSkyColor() {
+        final Minecraft client = Minecraft.getInstance();
+        if (client.level == null || client.cameraEntity == null) {
+            return ZERO3D;
+        }
+
+        return JomlConversions.fromVec3(client.level.getSkyColor(client.cameraEntity.position(),
+                CapturedRenderingState.INSTANCE.getTickDelta()));
+    }
+
+    @Override
+    public float getBlindness() {
+        final Minecraft client = Minecraft.getInstance();
+        Entity cameraEntity = client.getCameraEntity();
+
+        if (cameraEntity instanceof LivingEntity) {
+            MobEffectInstance blindness = ((LivingEntity) cameraEntity).getEffect(MobEffects.BLINDNESS);
+
+            if (blindness != null) {
+                // Guessing that this is what OF uses, based on how vanilla calculates the fog value in FogRenderer
+                // TODO: Add this to ShaderDoc
+                if (blindness.isInfiniteDuration()) {
+                    return 1.0f;
+                } else {
+                    return Math.clamp(0.0F, 1.0F, blindness.getDuration() / 20.0F);
+                }
+            }
+        }
+
+        return 0.0F;
+    }
+
+    @Override
+    public float getDarknessFactor() {
+        final Minecraft client = Minecraft.getInstance();
+        Entity cameraEntity = client.getCameraEntity();
+
+        if (cameraEntity instanceof LivingEntity) {
+            MobEffectInstance darkness = ((LivingEntity) cameraEntity).getEffect(MobEffects.DARKNESS);
+
+            //? if <1.20.6 {
+            if (darkness != null && darkness.getFactorData().isPresent()) {
+                return darkness.getFactorData().get().getFactor((LivingEntity) cameraEntity, CapturedRenderingState.INSTANCE.getTickDelta());
+            }
+            //?} else {
+            /*if (darkness != null) {
+                return darkness.getBlendFactor((LivingEntity) cameraEntity, CapturedRenderingState.INSTANCE.getTickDelta());
+            }
+            *///?}
+        }
+
+        return 0.0F;
+    }
+
+    @Override
+    public float getPlayerMood() {
+        final Minecraft client = Minecraft.getInstance();
+        if (!(client.cameraEntity instanceof LocalPlayer)) {
+            return 0.0F;
+        }
+
+        // This should always be 0 to 1 anyways but just making sure
+        return Math.clamp(0.0F, 1.0F, ((LocalPlayer) client.cameraEntity).getCurrentMood());
+    }
+
+    @Override
+    public float getRainStrength() {
+        final Minecraft client = Minecraft.getInstance();
+        if (client.level == null) {
+            return 0f;
+        }
+
+        // Note: Ensure this is in the range of 0 to 1 - some custom servers send out of range values.
+        return Math.clamp(0.0F, 1.0F,
+                client.level.getRainLevel(CapturedRenderingState.INSTANCE.getTickDelta()));
+    }
+
+    @Override
+    public Vector2i getEyeBrightness() {
+        final Minecraft client = Minecraft.getInstance();
+        if (client.cameraEntity == null || client.level == null) {
+            return ZERO2I;
+        }
+
+        Vec3 feet = client.cameraEntity.position();
+        Vec3 eyes = new Vec3(feet.x, client.cameraEntity.getEyeY(), feet.z);
+        BlockPos eyeBlockPos = BlockPos.containing(eyes);
+
+        int blockLight = client.level.getBrightness(LightLayer.BLOCK, eyeBlockPos);
+        int skyLight = client.level.getBrightness(LightLayer.SKY, eyeBlockPos);
+
+        return new Vector2i(blockLight * 16, skyLight * 16);
+    }
+
+    @Override
+    public float getNightVision() {
+        final Minecraft client = Minecraft.getInstance();
+        Entity cameraEntity = client.getCameraEntity();
+
+        if (cameraEntity instanceof LivingEntity livingEntity) {
+
+            try {
+                // See MixinGameRenderer#iris$safecheckNightvisionStrength.
+                //
+                // We modify the behavior of getNightVisionScale so that it's safe for us to call it even on entities
+                // that don't have the effect, allowing us to pick up modified night vision strength values from mods
+                // like Origins.
+                //
+                // See: https://github.com/apace100/apoli/blob/320b0ef547fbbf703de7154f60909d30366f6500/src/main/java/io/github/apace100/apoli/mixin/GameRendererMixin.java#L153
+                float nightVisionStrength =
+                        GameRenderer.getNightVisionScale(livingEntity, CapturedRenderingState.INSTANCE.getTickDelta());
+
+                if (nightVisionStrength > 0) {
+                    // Just protecting against potential weird mod behavior
+                    return Math.clamp(0.0F, 1.0F, nightVisionStrength);
+                }
+            } catch (NullPointerException e) {
+                // If our injection didn't get applied, a NullPointerException will occur from calling that method if
+                // the entity doesn't currently have night vision. This isn't pretty but it's functional.
+                return 0.0F;
+            }
+        }
+
+        // Conduit power gives the player a sort-of night vision effect when underwater.
+        // This lets existing shaderpacks be compatible with conduit power automatically.
+        //
+        // Yes, this should be the player entity, to match LightTexture.
+        if (client.player != null && client.player.hasEffect(MobEffects.CONDUIT_POWER)) {
+            float underwaterVisibility = client.player.getWaterVision();
+
+            if (underwaterVisibility > 0.0f) {
+                // Just protecting against potential weird mod behavior
+                return Math.clamp(0.0F, 1.0F, underwaterVisibility);
+            }
+        }
+
+        return 0.0F;
+    }
+
+    @Override
+    public int isEyeInWater() {
+        // Note: With certain utility / cheat mods, this method will return air even when the player is submerged when
+        // the "No Overlay" feature is enabled.
+        //
+        // I'm not sure what the best way to deal with this is, but the current approach seems to be an acceptable one -
+        // after all, disabling the overlay results in the intended effect of it not really looking like you're
+        // underwater on most shaderpacks. For now, I will leave this as-is, but it is something to keep in mind.
+        final Minecraft client = Minecraft.getInstance();
+        FogType submersionType = client.gameRenderer.getMainCamera().getFluidInCamera();
+
+        if (submersionType == FogType.WATER) {
+            return 1;
+        } else if (submersionType == FogType.LAVA) {
+            return 2;
+        } else if (submersionType == FogType.POWDER_SNOW) {
+            return 3;
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public boolean hideGui() {
+        final Minecraft client = Minecraft.getInstance();
+        return client.options.hideGui;
+    }
+
+    @Override
+    public boolean isRightHanded() {
+        final Minecraft client = Minecraft.getInstance();
+        return client.options.mainHand().get() == HumanoidArm.RIGHT;
+    }
+
+    @Override
+    public float getScreenBrightness() {
+        final Minecraft client = Minecraft.getInstance();
+        return client.options.gamma().get().floatValue();
+    }
+
+    @Override
+    public Vector2i getAtlasSize() {
+        int glId = RENDER_SYSTEM.getShaderTexture(0);
+
+        MCAbstractTexture texture = TextureTracker.INSTANCE.getTexture(glId);
+        if (texture instanceof TextureAtlas atlas) {
+            TextureAtlasAccessor atlasAccessor = (TextureAtlasAccessor) atlas;
+            return new Vector2i(atlasAccessor.callGetWidth(), atlasAccessor.callGetHeight());
+        }
+
+        return ZERO2I;
+    }
+
+    @Override
+    public Vector2i getTextureSize() {
+        int glId = GlStateManagerAccessor.getTEXTURES()[0].binding;
+
+        TextureInfoCache.TextureInfo info = TextureInfoCache.INSTANCE.getInfo(glId);
+        return new Vector2i(info.getWidth(), info.getHeight());
+    }
+
+    @Override
     public MCNativeImage createNativeImage(int width, int height, boolean useCalloc) {
         return (MCNativeImage)(Object) new NativeImage(width, height, useCalloc);
     }
@@ -330,14 +609,52 @@ public class MinecraftModernVersionShimImpl implements MinecraftVersionShimServi
     }
 
     @Override
-    public void reloadIris() throws IOException {
-        Iris.reload();
+    public String getOsString() {
+        return switch (Util.getPlatform()) {
+            case OSX -> "MC_OS_MAC";
+            case LINUX -> "MC_OS_LINUX";
+            case WINDOWS -> "MC_OS_WINDOWS";
+            // Note: Optifine doesn't have a macro for Solaris. https://github.com/sp614x/optifine/blob/9c6a5b5326558ccc57c6490b66b3be3b2dc8cbef/OptiFineDoc/doc/shaders.txt#L709-L714
+            default -> "MC_OS_UNKNOWN";
+        };
+    }
+
+
+    @Override
+    public String getMcVersion() {
+        return Iris.getReleaseTarget();
     }
 
     @Override
-    public boolean irisAllowConcurrentUpdate() {
-        return Iris.getPipelineManager().getPipeline().map(WorldRenderingPipeline::allowConcurrentCompute).orElse(false);
+    public String getBackupVersionNumber() {
+        return Iris.getBackupVersionNumber();
     }
 
+    @Override
+    public void markRendererReloadRequired() {
+        if (Minecraft.getInstance().levelRenderer != null) {
+            Minecraft.getInstance().levelRenderer.allChanged();
+        }
+    }
+
+    @Override
+    public boolean isDHPresent() {
+        return EarlyLoaderServices.INSTANCE.isModLoaded("distanthorizons");
+    }
+
+    @Override
+    public Matrix4f getShadowModelView(float sunPathRotation, float intervalSize) {
+        return new Matrix4f(ShadowRenderer.createShadowModelView(sunPathRotation, intervalSize).last().pose());
+    }
+
+    @Override
+    public Matrix4f getShadowProjection(float shadowDistance, float nearPlane, float farPlane) {
+        return ShadowMatrices.createOrthoMatrix(shadowDistance, nearPlane, farPlane);
+    }
+
+    @Override
+    public void bindFramebuffer() {
+        Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+    }
 
 }

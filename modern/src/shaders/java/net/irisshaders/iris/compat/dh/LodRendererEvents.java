@@ -28,6 +28,7 @@ import com.seibel.distanthorizons.api.methods.events.sharedParameterObjects.DhAp
 import com.seibel.distanthorizons.api.objects.math.DhApiVec3f;
 import com.seibel.distanthorizons.coreapi.DependencyInjection.OverrideInjector;
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shadows.ShadowRenderer;
 import net.irisshaders.iris.shadows.ShadowRenderingState;
@@ -56,7 +57,7 @@ public class LodRendererEvents {
 				public void afterDistantHorizonsInit(DhApiEventParam<Void> event) {
 					IRIS_LOGGER.info("DH Ready, binding Iris event handlers...");
 
-					Iris.loadShaderpackWhenPossible();
+					IrisCommon.loadShaderpackWhenPossible();
 
 					setupSetDeferredBeforeRenderingEvent();
 					setupReconnectDepthTextureEvent();

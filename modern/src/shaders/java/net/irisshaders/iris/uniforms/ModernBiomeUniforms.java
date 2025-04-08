@@ -18,14 +18,14 @@ import java.util.function.ToIntFunction;
 
 import static net.irisshaders.iris.gl.uniform.UniformUpdateFrequency.PER_TICK;
 
-public class BiomeUniforms {
-	private static final Object2IntMap<ResourceKey<Biome>> biomeMap = new Object2IntOpenHashMap<>();
+public class ModernBiomeUniforms implements BiomeUniforms {
+	private final Object2IntMap<ResourceKey<Biome>> biomeMap = new Object2IntOpenHashMap<>();
 
-	public static Object2IntMap<ResourceKey<Biome>> getBiomeMap() {
+	public Object2IntMap<ResourceKey<Biome>> getBiomeMap() {
 		return biomeMap;
 	}
 
-	public static void addBiomeUniforms(UniformHolder uniforms) {
+	public void addBiomeUniforms(UniformHolder uniforms) {
 		uniforms
 			.uniform1i(PER_TICK, "biome", playerI(player ->
 				biomeMap.getInt(player.level().getBiome(player.blockPosition()).unwrapKey().orElse(null))))

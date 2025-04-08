@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import net.irisshaders.iris.gl.shader.StandardMacros;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.parsing.BiomeCategories;
-import net.irisshaders.iris.uniforms.BiomeUniforms;
+import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ public class IrisDefines {
 	public static ImmutableList<StringPair> createIrisReplacements() {
 		ArrayList<StringPair> s = new ArrayList<>(StandardMacros.createStandardEnvironmentDefines());
 
-		BiomeUniforms.getBiomeMap().forEach((biome, id) -> define(s, "BIOME_" + biome.location().getPath().toUpperCase(Locale.ROOT), String.valueOf(id)));
+        CeleritasShadersApi.getInstance().processBiomeMap((key, value) -> define(s, key, value));
 
 		BiomeCategories[] categories = BiomeCategories.values();
 		for (int i = 0; i < categories.length; i++) {

@@ -48,7 +48,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
 		WatchService watcher1;
 
 		this.screen = screen;
-		this.topButtonRow = new TopButtonRowEntry(this, Iris.getIrisConfig().areShadersEnabled());
+		this.topButtonRow = new TopButtonRowEntry(this, IrisCommon.getIrisConfig().areShadersEnabled());
 		try {
 			watcher1 = FileSystems.getDefault().newWatchService();
 			key1 = IrisCommon.getShaderpacksDirectory().register(watcher1,
@@ -161,7 +161,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
 	public void addPackEntry(int index, String name) {
 		ShaderPackEntry entry = new ShaderPackEntry(index, this, name);
 
-		Iris.getIrisConfig().getShaderPackName().ifPresent(currentPackName -> {
+		IrisCommon.getIrisConfig().getShaderPackName().ifPresent(currentPackName -> {
 			if (name.equals(currentPackName)) {
 				setSelected(entry);
 				setFocused(entry);

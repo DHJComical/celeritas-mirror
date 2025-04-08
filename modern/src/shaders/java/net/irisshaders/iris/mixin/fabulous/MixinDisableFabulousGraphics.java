@@ -1,6 +1,6 @@
 package net.irisshaders.iris.mixin.fabulous;
 
-import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -31,7 +31,7 @@ public class MixinDisableFabulousGraphics {
 	private void iris$disableFabulousGraphics() {
 		Options options = Minecraft.getInstance().options;
 
-		if (!Iris.getIrisConfig().areShadersEnabled()) {
+		if (!IrisCommon.getIrisConfig().areShadersEnabled()) {
 			// Nothing to do here, shaders are disabled.
 			return;
 		}

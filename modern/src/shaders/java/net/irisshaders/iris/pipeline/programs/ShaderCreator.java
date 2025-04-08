@@ -10,7 +10,8 @@ import net.irisshaders.iris.gl.blending.BufferBlendOverride;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
-import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.gl.state.ShaderAttributeInputsBuilder;
+import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.fallback.ShaderSynthesizer;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
@@ -55,7 +56,7 @@ public class ShaderCreator {
 	public static CompletableFuture<ExtendedShader> create(WorldRenderingPipeline pipeline, Executor syncExecutor, String name, ProgramSource source, ProgramId programId, GlFramebuffer writingToBeforeTranslucent,
                                                            GlFramebuffer writingToAfterTranslucent, AlphaTest fallbackAlpha,
                                                            VertexFormat vertexFormat, ShaderAttributeInputs inputs, FrameUpdateNotifier updateNotifier,
-                                                           IrisRenderingPipeline parent, Supplier<ImmutableSet<Integer>> flipped, FogMode fogMode, boolean isIntensity,
+                                                           ModernIrisRenderingPipeline parent, Supplier<ImmutableSet<Integer>> flipped, FogMode fogMode, boolean isIntensity,
                                                            boolean isFullbright, boolean isShadowPass, boolean isLines, CustomUniforms customUniforms) throws IOException {
 		AlphaTest alpha = source.getDirectives().getAlphaTestOverride().orElse(fallbackAlpha);
 		BlendModeOverride blendModeOverride = source.getDirectives().getBlendModeOverride().orElse(programId.getBlendModeOverride());
@@ -140,9 +141,9 @@ public class ShaderCreator {
 	public static FallbackShader createFallback(String name, GlFramebuffer writingToBeforeTranslucent,
 												GlFramebuffer writingToAfterTranslucent, AlphaTest alpha,
 												VertexFormat vertexFormat, BlendModeOverride blendModeOverride,
-												IrisRenderingPipeline parent, FogMode fogMode, boolean entityLighting,
+												ModernIrisRenderingPipeline parent, FogMode fogMode, boolean entityLighting,
 												boolean isGlint, boolean isText, boolean intensityTex, boolean isFullbright) throws IOException {
-		ShaderAttributeInputs inputs = new ShaderAttributeInputs(vertexFormat, isFullbright, false, isGlint, isText);
+		ShaderAttributeInputs inputs = new ShaderAttributeInputsBuilder(vertexFormat, isFullbright, false, isGlint, isText).build();
 
 		// TODO: Is this check sound in newer versions?
 		boolean isLeash = vertexFormat == DefaultVertexFormat.POSITION_COLOR_LIGHTMAP;

@@ -4,6 +4,7 @@ import org.embeddedt.embeddium.compat.mc.IResource;
 import org.embeddedt.embeddium.compat.mc.IResourceLocation;
 import org.embeddedt.embeddium.compat.mc.IResourceProvider;
 import org.jetbrains.annotations.Nullable;
+import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -71,7 +72,7 @@ public class TextureFormatLoader {
 
 	private static void onFormatChange() {
 		try {
-			MINECRAFT_SHIM.reloadIris();
+            CeleritasShadersApi.getInstance().reloadIris();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

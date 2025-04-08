@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.OptionalInt;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
@@ -11,17 +12,16 @@ import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.helpers.Tri;
-import net.irisshaders.iris.mixin.LevelRendererAccessor;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.shaderpack.properties.CloudSetting;
-import net.irisshaders.iris.shaderpack.properties.ParticleRenderingSettings;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import net.irisshaders.iris.targets.RenderTargetStateListener;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
-import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 
-public class VanillaRenderingPipeline implements WorldRenderingPipeline {
+import org.embeddedt.embeddium.compat.mc.ICamera;
+import org.embeddedt.embeddium.compat.mc.ILevelRenderer;
+
+public abstract class VanillaRenderingPipeline implements WorldRenderingPipeline {
 	public VanillaRenderingPipeline() {
 		WorldRenderingSettings.INSTANCE.setDisableDirectionalShading(shouldDisableDirectionalShading());
 		WorldRenderingSettings.INSTANCE.setUseSeparateAo(false);
@@ -29,19 +29,18 @@ public class VanillaRenderingPipeline implements WorldRenderingPipeline {
 		WorldRenderingSettings.INSTANCE.setAmbientOcclusionLevel(1.0f);
 		WorldRenderingSettings.INSTANCE.setUseExtendedVertexFormat(false);
 		WorldRenderingSettings.INSTANCE.setVoxelizeLightBlocks(false);
-		WorldRenderingSettings.INSTANCE.setBlockTypeIds(null);
-        WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(null);
+
 	}
 
 	@Override
 	public void beginLevelRendering() {
 		// Use the default Minecraft framebuffer and ensure that no programs are in use
-		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+        MINECRAFT_SHIM.bindFramebuffer();
 		GL_STATE_MANAGER.glUseProgram(0);
 	}
 
 	@Override
-	public void renderShadows(LevelRendererAccessor worldRenderer, Camera camera) {
+	public void renderShadows(ILevelRenderer worldRenderer, ICamera camera) {
 		// stub: nothing to do here
 	}
 
@@ -180,11 +179,6 @@ public class VanillaRenderingPipeline implements WorldRenderingPipeline {
 	@Override
 	public boolean shouldWriteRainAndSnowToDepthBuffer() {
 		return false;
-	}
-
-	@Override
-	public ParticleRenderingSettings getParticleRenderingSettings() {
-		return Minecraft.useShaderTransparency() ? ParticleRenderingSettings.AFTER : ParticleRenderingSettings.MIXED;
 	}
 
 	@Override

@@ -8,11 +8,8 @@ import com.google.gson.stream.JsonReader;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.irisshaders.iris.api.v0.IrisApi;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.texture.TextureDefinition;
-import net.irisshaders.iris.gui.FeatureMissingErrorScreen;
-import net.irisshaders.iris.gui.screen.ShaderPackScreen;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 import net.irisshaders.iris.shaderpack.include.AbsolutePackPath;
@@ -20,10 +17,10 @@ import net.irisshaders.iris.shaderpack.include.IncludeGraph;
 import net.irisshaders.iris.shaderpack.include.IncludeProcessor;
 import net.irisshaders.iris.shaderpack.include.ShaderPackSourceNames;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
+import net.irisshaders.iris.shaderpack.option.menu.OptionMenuContainer;
 import net.irisshaders.iris.shaderpack.option.OrderBackedProperties;
 import net.irisshaders.iris.shaderpack.option.ProfileSet;
 import net.irisshaders.iris.shaderpack.option.ShaderPackOptions;
-import net.irisshaders.iris.shaderpack.option.menu.OptionMenuContainer;
 import net.irisshaders.iris.shaderpack.option.values.MutableOptionValues;
 import net.irisshaders.iris.shaderpack.option.values.OptionValues;
 import net.irisshaders.iris.shaderpack.preprocessor.JcppProcessor;
@@ -35,11 +32,8 @@ import net.irisshaders.iris.shaderpack.texture.CustomTextureData;
 import net.irisshaders.iris.shaderpack.texture.TextureFilteringData;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.Nullable;
+import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -197,15 +191,8 @@ public class ShaderPack {
 		List<String> invalidFeatureFlags = invalidFlagList.stream().map(FeatureFlags::getHumanReadableName).toList();
 
 		if (!invalidFeatureFlags.isEmpty()) {
-			if (Minecraft.getInstance().screen instanceof ShaderPackScreen) {
-				MutableComponent component = Component.translatable("iris.unsupported.pack.description", FeatureFlags.getInvalidStatus(invalidFlagList), invalidFeatureFlags.stream()
-					.collect(Collectors.joining(", ", ": ", ".")));
-				if (SystemUtils.IS_OS_MAC) {
-					component = component.append(Component.translatable("iris.unsupported.pack.macos"));
-				}
-				Minecraft.getInstance().setScreen(new FeatureMissingErrorScreen(Minecraft.getInstance().screen, Component.translatable("iris.unsupported.pack"), component));
-			}
-			IrisApi.getInstance().getConfig().setShadersEnabledAndApply(false);
+            CeleritasShadersApi.getInstance().handleUnsupportedFeatureFlags(invalidFlagList, invalidFeatureFlags);
+            CeleritasShadersApi.getInstance().getConfig().setShadersEnabledAndApply(false);
 		}
 		List<StringPair> newEnvDefines = new ArrayList<>(environmentDefines);
 

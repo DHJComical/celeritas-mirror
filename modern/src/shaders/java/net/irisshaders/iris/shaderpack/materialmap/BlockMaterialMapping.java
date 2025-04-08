@@ -2,7 +2,6 @@ package net.irisshaders.iris.shaderpack.materialmap;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.*;
-import net.irisshaders.iris.Iris;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,6 +13,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.embeddedt.embeddium.compat.iris.IBlockEntry;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 import java.lang.reflect.Method;
@@ -22,13 +22,13 @@ import java.util.*;
 import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 public class BlockMaterialMapping {
-	public static Object2IntMap<BlockState> createBlockStateIdMap(Int2ObjectMap<List<BlockEntry>> blockPropertiesMap) {
+	public static Object2IntMap<BlockState> createBlockStateIdMap(Int2ObjectMap<List<IBlockEntry>> blockPropertiesMap) {
 		Object2IntMap<BlockState> blockStateIds = new Object2IntOpenHashMap<>();
 
         blockStateIds.defaultReturnValue(-1);
 
 		blockPropertiesMap.forEach((intId, entries) -> {
-			for (BlockEntry entry : entries) {
+			for (IBlockEntry entry : entries) {
 				addBlockStates(entry, blockStateIds, intId);
 			}
 		});
@@ -84,7 +84,7 @@ public class BlockMaterialMapping {
         });
     }
 
-	private static void addBlockStates(BlockEntry entry, Object2IntMap<BlockState> idMap, int intId) {
+	private static void addBlockStates(IBlockEntry entry, Object2IntMap<BlockState> idMap, int intId) {
         if (entry.isTag()) {
             entry.expandEntries().forEach(nested -> addBlockStates(nested, idMap, intId));
             return;

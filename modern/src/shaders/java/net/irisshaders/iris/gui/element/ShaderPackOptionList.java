@@ -251,7 +251,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 
 		private boolean resetButtonClicked(IrisElementRow.TextButtonElement button) {
 			if (Screen.hasShiftDown()) {
-				Iris.resetShaderPackOptionsOnNextReload();
+				IrisCommon.resetShaderPackOptionsOnNextReload();
 				this.screen.applyChanges();
 				GuiUtil.playButtonClickSound();
 
@@ -265,7 +265,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 			GuiUtil.playButtonClickSound();
 
 			// Invalid state to be in
-			if (!Iris.getCurrentPack().isPresent()) {
+			if (!IrisCommon.getCurrentPack().isPresent()) {
 				return false;
 			}
 
@@ -303,7 +303,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 			GuiUtil.playButtonClickSound();
 
 			// Invalid state to be in
-			if (!Iris.getCurrentPack().isPresent()) {
+			if (!IrisCommon.getCurrentPack().isPresent()) {
 				return false;
 			}
 

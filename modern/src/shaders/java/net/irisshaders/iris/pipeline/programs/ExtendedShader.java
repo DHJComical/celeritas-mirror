@@ -8,13 +8,11 @@ import java.util.function.Consumer;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
-import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
@@ -28,7 +26,7 @@ import net.irisshaders.iris.gl.program.ProgramUniforms;
 import net.irisshaders.iris.gl.sampler.SamplerHolder;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.gl.uniform.DynamicLocationalUniformHolder;
-import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
@@ -62,7 +60,7 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 	private final Uniform projectionInverse;
 	private final Uniform normalMatrix;
 	private final CustomUniforms customUniforms;
-	private final IrisRenderingPipeline parent;
+	private final ModernIrisRenderingPipeline parent;
 	private final ProgramUniforms uniforms;
 	private final ProgramSamplers samplers;
 	private final ProgramImages images;
@@ -81,7 +79,7 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 						  GlFramebuffer writingToBeforeTranslucent, GlFramebuffer writingToAfterTranslucent,
 						  BlendModeOverride blendModeOverride, AlphaTest alphaTest,
 						  Consumer<DynamicLocationalUniformHolder> uniformCreator, BiConsumer<SamplerHolder, ImageHolder> samplerCreator, boolean isIntensity,
-						  IrisRenderingPipeline parent, @Nullable List<BufferBlendOverride> bufferBlendOverrides, CustomUniforms customUniforms) throws IOException {
+						  ModernIrisRenderingPipeline parent, @Nullable List<BufferBlendOverride> bufferBlendOverrides, CustomUniforms customUniforms) throws IOException {
 		super(resourceFactory, string, vertexFormat);
 
 		GLDebug.nameObject(KHRDebug.GL_SHADER, this.getVertexProgram().getId(), string + "_vertex.vsh");

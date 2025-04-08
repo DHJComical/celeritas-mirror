@@ -6,12 +6,11 @@ import com.llamalad7.mixinextras.sugar.Local;
 //? if <1.21.2
 import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.shaders.Uniform;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.gl.IrisRenderSystem;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.gl.blending.DepthColorStorage;
-import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.programs.ExtendedShader;
@@ -27,10 +26,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.GsonHelper;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
-import org.lwjgl.opengl.ARBTextureSwizzle;
-import org.lwjgl.opengl.GL20C;
-import org.lwjgl.opengl.GL30C;
-import net.minecraft.util.GsonHelper;
 import org.lwjgl.opengl.KHRDebug;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -41,14 +36,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.io.Reader;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.Map;
-import java.util.Objects;
 
 import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
@@ -139,7 +132,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
 
     public boolean iris$shouldSkipThis() {
         // Celeritas always allows unknown shaders
-        if (!Iris.getIrisConfig().isBlockUnknownShaders()) {
+        if (!IrisCommon.getIrisConfig().isBlockUnknownShaders()) {
             if (ShadowRenderer.ACTIVE) return true;
             if (!shouldOverrideShaders()) return false;
             if (shouldSkip == NONE) return false;
@@ -159,12 +152,12 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         if (!iris$shouldSkipThis()) {
             if (!isKnownShader() && shouldOverrideShaders()) {
                 WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
-                if (pipeline instanceof IrisRenderingPipeline) {
+                if (pipeline instanceof ModernIrisRenderingPipeline) {
                     if (ShadowRenderer.ACTIVE) {
                         // Fallback shadow rendering is disabled by Iris rn
                         //((IrisRenderingPipeline) pipeline).bindDefaultShadow();
                     } else {
-                        ((IrisRenderingPipeline) pipeline).bindDefault();
+                        ((ModernIrisRenderingPipeline) pipeline).bindDefault();
                     }
                 }
             }
@@ -184,7 +177,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         if (!iris$shouldSkipThis()) {
             if (!isKnownShader() && shouldOverrideShaders()) {
                 WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
-                if (pipeline instanceof IrisRenderingPipeline) {
+                if (pipeline instanceof ModernIrisRenderingPipeline) {
                     Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
                 }
             }

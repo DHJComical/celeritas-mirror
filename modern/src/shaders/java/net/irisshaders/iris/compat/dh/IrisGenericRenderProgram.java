@@ -29,7 +29,7 @@ import net.irisshaders.iris.gl.shader.GlShader;
 import net.irisshaders.iris.gl.shader.ShaderType;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.texture.TextureType;
-import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
 import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
@@ -73,7 +73,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 	private final int uSkyLight;
 
 	// This will bind  AbstractVertexAttribute
-	private IrisGenericRenderProgram(String name, boolean isShadowPass, boolean translucent, BlendModeOverride override, BufferBlendOverride[] bufferBlendOverrides, String vertex, String tessControl, String tessEval, String geometry, String fragment, CustomUniforms customUniforms, IrisRenderingPipeline pipeline) {
+	private IrisGenericRenderProgram(String name, boolean isShadowPass, boolean translucent, BlendModeOverride override, BufferBlendOverride[] bufferBlendOverrides, String vertex, String tessControl, String tessEval, String geometry, String fragment, CustomUniforms customUniforms, ModernIrisRenderingPipeline pipeline) {
 		id = GL43C.glCreateProgram();
 
 		GL32.glBindAttribLocation(this.id, 0, "vPosition");
@@ -155,7 +155,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 		this.uSkyLight = this.tryGetUniformLocation2("uSkyLight");
 	}
 
-	public static IrisGenericRenderProgram createProgram(String name, boolean isShadowPass, boolean translucent, ProgramSource source, CustomUniforms uniforms, IrisRenderingPipeline pipeline) {
+	public static IrisGenericRenderProgram createProgram(String name, boolean isShadowPass, boolean translucent, ProgramSource source, CustomUniforms uniforms, ModernIrisRenderingPipeline pipeline) {
 		Map<PatchShaderType, String> transformed = TransformPatcherBridge.patchDHGeneric(
 			name,
 			source.getVertexSource().orElseThrow(RuntimeException::new),
@@ -268,7 +268,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 
 	@Override
 	public boolean overrideThisFrame() {
-		return Iris.getPipelineManager().getPipelineNullable() instanceof IrisRenderingPipeline;
+		return Iris.getPipelineManager().getPipelineNullable() instanceof ModernIrisRenderingPipeline;
 	}
 
 	@Override

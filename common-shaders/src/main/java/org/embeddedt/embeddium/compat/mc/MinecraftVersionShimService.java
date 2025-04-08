@@ -1,10 +1,10 @@
 package org.embeddedt.embeddium.compat.mc;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector4f;
 
-import java.io.IOException;
 import java.util.ServiceLoader;
 
 /**
@@ -12,6 +12,7 @@ import java.util.ServiceLoader;
  */
 public interface MinecraftVersionShimService {
     MinecraftVersionShimService MINECRAFT_SHIM = ServiceLoader.load(MinecraftVersionShimService.class).findFirst().orElseThrow();
+    Vector2i ZERO2I = new Vector2i();
     Vector3d ZERO3D = new Vector3d(0);
     Vector4f ZERO4F = new Vector4f(0);
 
@@ -38,6 +39,7 @@ public interface MinecraftVersionShimService {
     boolean isLevelLoaded();
 
     int getRenderDistanceInBlocks();
+    int getEffectiveRenderDistance();
     Vector3d getUnshiftedCameraPosition();
     float getSkyAngle();
     void applyRotationYP(Matrix4f preCelestial, float degrees);
@@ -74,6 +76,25 @@ public interface MinecraftVersionShimService {
     boolean isFirstPersonCamera();
     boolean isSpectator();
     Vector3d getEyePosition();
+    boolean isOnGround();
+    boolean isHurt();
+    boolean isInvisible();
+    boolean isBurning();
+    boolean isSneaking();
+    boolean isSprinting();
+    Vector3d getSkyColor();
+    float getBlindness();
+    float getDarknessFactor();
+    float getPlayerMood();
+    float getRainStrength();
+    Vector2i getEyeBrightness();
+    float getNightVision();
+    int isEyeInWater();
+    boolean hideGui();
+    boolean isRightHanded();
+    float getScreenBrightness();
+    Vector2i getAtlasSize();
+    Vector2i getTextureSize();
 
     MCNativeImage createNativeImage(int width, int height, boolean useCalloc);
     MCNativeImage[] createNativeImageArray(int size);
@@ -81,7 +102,18 @@ public interface MinecraftVersionShimService {
     IResourceLocation makeResourceLocation(String namespace, String path);
     IResourceLocation makeResourceLocation(String str);
 
-    // TODO(mitchej123): Does this belong here?
-    void reloadIris() throws IOException;
-    boolean irisAllowConcurrentUpdate();
+    String getOsString();
+
+    String getMcVersion();
+    String getBackupVersionNumber();
+
+    void markRendererReloadRequired();
+
+    boolean isDHPresent();
+
+
+    Matrix4f getShadowModelView(float sunPathRotation, float intervalSize);
+    Matrix4f getShadowProjection(float shadowDistance, float nearPlane, float farPlane);
+
+    void bindFramebuffer();
 }

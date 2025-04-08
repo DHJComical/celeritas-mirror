@@ -8,17 +8,17 @@ import java.util.function.Function;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20C;
+import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 
 public class PipelineManager {
 	private final Function<NamespacedId, WorldRenderingPipeline> pipelineFactory;
 	private final Map<NamespacedId, WorldRenderingPipeline> pipelinesPerDimension = new HashMap<>();
-	private WorldRenderingPipeline pipeline = new VanillaRenderingPipeline();
+	private WorldRenderingPipeline pipeline = CeleritasShadersApi.getInstance().createVanillaRenderingPipeline();
 	private int versionCounterForSodiumShaderReload = 0;
 
 	public PipelineManager(Function<NamespacedId, WorldRenderingPipeline> pipelineFactory) {

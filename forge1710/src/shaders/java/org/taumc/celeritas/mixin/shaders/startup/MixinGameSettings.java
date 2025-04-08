@@ -1,6 +1,6 @@
-package org.taumc.celeritas.mixin.shaders;
+package org.taumc.celeritas.mixin.shaders.startup;
 
-import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.minecraft.client.settings.GameSettings;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,7 +20,7 @@ public class MixinGameSettings {
         }
 
         iris$initialized = true;
-        Iris.onEarlyInitialize();
+        IrisCommon.onEarlyInitialize();
     }
 
 }

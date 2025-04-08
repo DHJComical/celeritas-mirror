@@ -1,6 +1,7 @@
 package net.irisshaders.iris.apiimpl;
 
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.api.v0.IrisApiConfig;
 import net.irisshaders.iris.config.IrisConfig;
 
@@ -11,12 +12,12 @@ import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 public class IrisApiV0ConfigImpl implements IrisApiConfig {
 	@Override
 	public boolean areShadersEnabled() {
-		return Iris.getIrisConfig().areShadersEnabled();
+		return IrisCommon.getIrisConfig().areShadersEnabled();
 	}
 
 	@Override
 	public void setShadersEnabledAndApply(boolean enabled) {
-		IrisConfig config = Iris.getIrisConfig();
+		IrisConfig config = IrisCommon.getIrisConfig();
 
 		config.setShadersEnabled(enabled);
 
