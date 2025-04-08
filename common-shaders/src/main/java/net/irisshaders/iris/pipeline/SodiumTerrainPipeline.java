@@ -2,6 +2,7 @@ package net.irisshaders.iris.pipeline;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
+import org.embeddedt.embeddium.compat.mc.IResourceLocation;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.blending.AlphaTests;
@@ -23,8 +24,6 @@ import net.irisshaders.iris.targets.RenderTargets;
 import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.builtin.BuiltinReplacementUniforms;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
-import net.minecraft.resources.ResourceLocation;
-import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -296,7 +295,7 @@ public class SodiumTerrainPipeline {
 		String namespace = matcher.group("namespace");
 		String path = matcher.group("path");
 
-		ResourceLocation identifier = ResourceLocationUtil.make(namespace, path);
+        IResourceLocation identifier = MINECRAFT_SHIM.makeResourceLocation(namespace, path);
 		return "";
 	}
 

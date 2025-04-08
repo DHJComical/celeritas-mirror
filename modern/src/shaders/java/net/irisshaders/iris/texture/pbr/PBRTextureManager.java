@@ -8,7 +8,6 @@ import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.state.StateUpdateNotifiers;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.irisshaders.iris.targets.backed.NativeImageBackedSingleColorTexture;
@@ -107,7 +106,7 @@ public class PBRTextureManager {
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	private PBRTextureHolder loadHolder(int id) {
-		AbstractTexture texture = TextureTracker.INSTANCE.getTexture(id);
+		AbstractTexture texture = (AbstractTexture) TextureTracker.INSTANCE.getTexture(id);
 		if (texture != null) {
 			Class<? extends AbstractTexture> clazz = texture.getClass();
 			PBRTextureLoader loader = PBRTextureLoaderRegistry.INSTANCE.getLoader(clazz);

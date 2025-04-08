@@ -2,12 +2,12 @@ package net.irisshaders.iris.texture;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.state.StateUpdateNotifiers;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 import org.jetbrains.annotations.Nullable;
 
 public class TextureTracker {
@@ -19,19 +19,19 @@ public class TextureTracker {
 		StateUpdateNotifiers.bindTextureNotifier = listener -> bindTextureListener = listener;
 	}
 
-	private final Int2ObjectMap<AbstractTexture> textures = new Int2ObjectOpenHashMap<>();
+	private final Int2ObjectMap<MCAbstractTexture> textures = new Int2ObjectOpenHashMap<>();
 
 	private boolean lockBindCallback;
 
 	private TextureTracker() {
 	}
 
-	public void trackTexture(int id, AbstractTexture texture) {
+	public void trackTexture(int id, MCAbstractTexture texture) {
 		textures.put(id, texture);
 	}
 
 	@Nullable
-	public AbstractTexture getTexture(int id) {
+	public MCAbstractTexture getTexture(int id) {
 		return textures.get(id);
 	}
 
@@ -44,7 +44,7 @@ public class TextureTracker {
 			if (bindTextureListener != null) {
 				bindTextureListener.run();
 			}
-			WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
+			WorldRenderingPipeline pipeline = IrisCommon.getPipelineManager().getPipelineNullable();
 			if (pipeline != null) {
 				pipeline.onSetShaderTexture(id);
 			}

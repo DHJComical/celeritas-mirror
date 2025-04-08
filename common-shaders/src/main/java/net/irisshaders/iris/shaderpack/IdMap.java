@@ -8,16 +8,17 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
-import net.irisshaders.iris.shaderpack.materialmap.BlockEntry;
 import net.irisshaders.iris.shaderpack.materialmap.BlockRenderType;
 import net.irisshaders.iris.shaderpack.materialmap.LegacyIdMap;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.option.OrderBackedProperties;
 import net.irisshaders.iris.shaderpack.option.ShaderPackOptions;
 import net.irisshaders.iris.shaderpack.preprocessor.PropertiesPreprocessor;
+import org.embeddedt.embeddium.compat.iris.IBlockEntry;
+import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -49,7 +50,7 @@ public class IdMap {
 	/**
 	 * Maps block states to block ids defined in block.properties
 	 */
-	private Int2ObjectMap<List<BlockEntry>> blockPropertiesMap;
+	private Int2ObjectMap<List<IBlockEntry>> blockPropertiesMap;
 
 	/**
 	 * A set of render type overrides for specific blocks. Allows shader packs to move blocks to different render types.
@@ -108,7 +109,7 @@ public class IdMap {
 			return Optional.empty();
 		}
 
-		if (Iris.getIrisConfig().areDebugOptionsEnabled()) {
+		if (IrisCommon.getIrisConfig().areDebugOptionsEnabled()) {
 			ShaderPrinter.deleteIfClearing();
 			try (OutputStream os = Files.newOutputStream(PLATFORM_UTIL.getGameDir().resolve("patched_shaders").resolve(name))) {
 				properties.store(new OutputStreamWriter(os, StandardCharsets.UTF_8), "Patched version of properties");
@@ -186,8 +187,8 @@ public class IdMap {
 		return Object2IntMaps.unmodifiable(idMap);
 	}
 
-	private static Int2ObjectMap<List<BlockEntry>> parseBlockMap(Properties properties, String keyPrefix, String fileName) {
-		Int2ObjectMap<List<BlockEntry>> entriesById = new Int2ObjectOpenHashMap<>();
+	private static Int2ObjectMap<List<IBlockEntry>> parseBlockMap(Properties properties, String keyPrefix, String fileName) {
+		Int2ObjectMap<List<IBlockEntry>> entriesById = new Int2ObjectOpenHashMap<>();
 
 		properties.forEach((keyObject, valueObject) -> {
 			String key = (String) keyObject;
@@ -208,7 +209,7 @@ public class IdMap {
 				return;
 			}
 
-			List<BlockEntry> entries = new ArrayList<>();
+			List<IBlockEntry> entries = new ArrayList<>();
 
 			// Split on whitespace groups, not just single spaces
 			for (String part : value.split("\\s+")) {
@@ -217,7 +218,7 @@ public class IdMap {
 				}
 
 				try {
-					entries.add(BlockEntry.parse(part));
+					entries.add(CeleritasShadersApi.getInstance().parseBlockEntry(part));
 				} catch (Exception e) {
 					IRIS_LOGGER.warn("Unexpected error while parsing an entry from " + fileName + " for the key " + key + ":", e);
 				}
@@ -292,7 +293,7 @@ public class IdMap {
 		return overrides;
 	}
 
-	public Int2ObjectMap<List<BlockEntry>> getBlockProperties() {
+	public Int2ObjectMap<List<IBlockEntry>> getBlockProperties() {
 		return blockPropertiesMap;
 	}
 
