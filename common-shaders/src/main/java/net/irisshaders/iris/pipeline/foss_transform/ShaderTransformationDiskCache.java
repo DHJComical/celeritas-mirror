@@ -2,7 +2,6 @@ package net.irisshaders.iris.pipeline.foss_transform;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import org.apache.commons.codec.binary.Hex;
 

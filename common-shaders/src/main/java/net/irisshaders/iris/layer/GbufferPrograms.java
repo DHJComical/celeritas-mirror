@@ -1,6 +1,6 @@
 package net.irisshaders.iris.layer;
 
-import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.gl.state.StateUpdateNotifiers;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
@@ -70,7 +70,7 @@ public class GbufferPrograms {
 	}
 
 	public static WorldRenderingPhase getCurrentPhase() {
-		WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
+		WorldRenderingPipeline pipeline = IrisCommon.getPipelineManager().getPipelineNullable();
 
 		if (pipeline != null) {
 			return pipeline.getPhase();
@@ -80,7 +80,7 @@ public class GbufferPrograms {
 	}
 
 	private static void setPhase(WorldRenderingPhase phase) {
-		WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
+		WorldRenderingPipeline pipeline = IrisCommon.getPipelineManager().getPipelineNullable();
 
 		if (pipeline != null) {
 			pipeline.setPhase(phase);
@@ -88,7 +88,7 @@ public class GbufferPrograms {
 	}
 
 	public static void setOverridePhase(WorldRenderingPhase phase) {
-		WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
+		WorldRenderingPipeline pipeline = IrisCommon.getPipelineManager().getPipelineNullable();
 
 		if (pipeline != null) {
 			pipeline.setOverridePhase(phase);

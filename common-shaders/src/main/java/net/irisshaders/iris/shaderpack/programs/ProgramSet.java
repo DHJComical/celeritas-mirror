@@ -1,6 +1,5 @@
 package net.irisshaders.iris.shaderpack.programs;
 
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
 import net.irisshaders.iris.shaderpack.ShaderPack;

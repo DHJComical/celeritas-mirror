@@ -5,8 +5,6 @@ import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.parameter.SodiumParameters;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import org.taumc.glsl.Transformer;
-import org.taumc.glsl.Util;
-import org.taumc.glsl.grammar.GLSLParser;
 
 import static net.irisshaders.iris.pipeline.foss_transform.ShaderTransformer.*;
 

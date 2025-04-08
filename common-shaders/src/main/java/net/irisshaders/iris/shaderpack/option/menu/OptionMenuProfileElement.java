@@ -1,6 +1,6 @@
 package net.irisshaders.iris.shaderpack.option.menu;
 
-import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.shaderpack.option.OptionSet;
 import net.irisshaders.iris.shaderpack.option.ProfileSet;
 import net.irisshaders.iris.shaderpack.option.values.MutableOptionValues;
@@ -24,7 +24,7 @@ public class OptionMenuProfileElement extends OptionMenuElement {
 	 */
 	public OptionValues getPendingOptionValues() {
 		MutableOptionValues values = packAppliedValues.mutableCopy();
-		values.addAll(Iris.getShaderPackOptionQueue());
+		values.addAll(IrisCommon.getShaderPackOptionQueue());
 
 		return values;
 	}

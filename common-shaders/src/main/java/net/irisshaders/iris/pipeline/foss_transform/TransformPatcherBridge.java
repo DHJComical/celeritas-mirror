@@ -1,7 +1,6 @@
 package net.irisshaders.iris.pipeline.foss_transform;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
 import net.irisshaders.iris.gl.texture.TextureType;

@@ -1,7 +1,6 @@
 package net.irisshaders.iris.shaderpack;
 
 import com.google.common.collect.ImmutableMap;
-import net.irisshaders.iris.Iris;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

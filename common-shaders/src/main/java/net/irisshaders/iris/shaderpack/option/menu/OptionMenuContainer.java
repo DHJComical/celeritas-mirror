@@ -1,7 +1,6 @@
 package net.irisshaders.iris.shaderpack.option.menu;
 
 import com.google.common.collect.Lists;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.shaderpack.option.ProfileSet;
 import net.irisshaders.iris.shaderpack.option.ShaderPackOptions;
 import net.irisshaders.iris.shaderpack.properties.ShaderProperties;
