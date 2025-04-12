@@ -96,10 +96,10 @@ public class ImageManipulationUtil {
 
 	private static int blendColor(int c0, int c1, int c2, int c3, float w0, float w1, float w2, float w3) {
 		return ColorABGR.pack(
-			blendChannel(ColorABGR.unpackAlpha(c0), ColorABGR.unpackAlpha(c1), ColorABGR.unpackAlpha(c2), ColorABGR.unpackAlpha(c3), w0, w1, w2, w3),
-			blendChannel(ColorABGR.unpackBlue(c0), ColorABGR.unpackBlue(c1), ColorABGR.unpackBlue(c2), ColorABGR.unpackBlue(c3), w0, w1, w2, w3),
+			blendChannel(ColorABGR.unpackRed(c0), ColorABGR.unpackRed(c1), ColorABGR.unpackRed(c2), ColorABGR.unpackRed(c3), w0, w1, w2, w3),
 			blendChannel(ColorABGR.unpackGreen(c0), ColorABGR.unpackGreen(c1), ColorABGR.unpackGreen(c2), ColorABGR.unpackGreen(c3), w0, w1, w2, w3),
-			blendChannel(ColorABGR.unpackRed(c0), ColorABGR.unpackRed(c1), ColorABGR.unpackRed(c2), ColorABGR.unpackRed(c3), w0, w1, w2, w3)
+			blendChannel(ColorABGR.unpackBlue(c0), ColorABGR.unpackBlue(c1), ColorABGR.unpackBlue(c2), ColorABGR.unpackBlue(c3), w0, w1, w2, w3),
+			blendChannel(ColorABGR.unpackAlpha(c0), ColorABGR.unpackAlpha(c1), ColorABGR.unpackAlpha(c2), ColorABGR.unpackAlpha(c3), w0, w1, w2, w3)
 		);
 	}
 
@@ -109,10 +109,10 @@ public class ImageManipulationUtil {
 
 	private static int blendColor(int c0, int c1, float w0, float w1) {
 		return ColorABGR.pack(
-			blendChannel(ColorABGR.unpackAlpha(c0), ColorABGR.unpackAlpha(c1), w0, w1),
-			blendChannel(ColorABGR.unpackBlue(c0), ColorABGR.unpackBlue(c1), w0, w1),
+			blendChannel(ColorABGR.unpackRed(c0), ColorABGR.unpackRed(c1), w0, w1),
 			blendChannel(ColorABGR.unpackGreen(c0), ColorABGR.unpackGreen(c1), w0, w1),
-			blendChannel(ColorABGR.unpackRed(c0), ColorABGR.unpackRed(c1), w0, w1)
+			blendChannel(ColorABGR.unpackBlue(c0), ColorABGR.unpackBlue(c1), w0, w1),
+			blendChannel(ColorABGR.unpackAlpha(c0), ColorABGR.unpackAlpha(c1), w0, w1)
 		);
 	}
 

@@ -6,7 +6,7 @@ import org.embeddedt.embeddium.api.util.ColorABGR;
 
 public class NativeImageBackedSingleColorTexture extends DynamicTexture {
 	public NativeImageBackedSingleColorTexture(int red, int green, int blue, int alpha) {
-		super(create(ColorABGR.pack(alpha, blue, green, red)));
+		super(create(ColorABGR.pack(red, green, blue, alpha)));
 	}
 
 	public NativeImageBackedSingleColorTexture(int rgba) {
