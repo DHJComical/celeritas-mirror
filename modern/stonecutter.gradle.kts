@@ -84,6 +84,13 @@ stonecutter.parameters {
     swap("rng_import") {
         if(stonecutter.compare(metadata.version, "1.19") >= 0) "import net.minecraft.util.RandomSource;" else "import java.util.Random;"
     }
+
+    val doAnimateTickBiomeLambdaName = "lambda\$doAnimateTick\$" + when {
+        eval (metadata.version, ">=1.18 <1.21.5-alpha.25.8.a") -> 8
+        eval (metadata.version, ">=1.17") -> 5
+        else -> 4
+    }
+    swaps["doAnimateTickBiomeLambda"] = "@Shadow private void ${doAnimateTickBiomeLambdaName}(BlockPos.MutableBlockPos pos, AmbientParticleSettings settings) {throw new AssertionError();} private final Consumer<AmbientParticleSettings> embeddium\$particleSettingsConsumer = settings -> ${doAnimateTickBiomeLambdaName}(embeddium\$particlePos, settings);"
 }
 
 ModDependencyCollector.defineConsts(stonecutter)
