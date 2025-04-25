@@ -6,28 +6,22 @@ import com.mojang.blaze3d.platform.GlDebug;
 /*import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;*/
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.compat.sodium.impl.options.IrisSodiumOptions;
-import net.irisshaders.iris.gl.shader.ShaderCompileException;
-import net.irisshaders.iris.gui.debug.DebugLoadFailedGridScreen;
 import net.irisshaders.iris.gui.screen.ShaderPackScreen;
 import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.PipelineManager;
-import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shaderpack.DimensionId;
 import net.irisshaders.iris.shaderpack.discovery.ShaderpackDirectoryManager;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
-import net.irisshaders.iris.shaderpack.programs.ProgramSet;
 import net.irisshaders.iris.texture.pbr.PBRTextureManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.jetbrains.annotations.NotNull;
-import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,7 +74,7 @@ public class Iris {
 	}
 
 	public static void handleKeybinds(Minecraft minecraft) {
-		if (net.irisshaders.iris.apiimpl.IrisApiV0Impl.reloadKeybind.consumeClick()) {
+		if (IrisModern.reloadKeybind.consumeClick()) {
 			try {
 				reload();
 
@@ -95,7 +89,7 @@ public class Iris {
 					minecraft.player.displayClientMessage(Component.translatable("iris.shaders.reloaded.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED), false);
 				}
 			}
-		} else if (net.irisshaders.iris.apiimpl.IrisApiV0Impl.toggleShadersKeybind.consumeClick()) {
+		} else if (IrisModern.toggleShadersKeybind.consumeClick()) {
 			try {
 				toggleShaders(minecraft, !IrisCommon.getIrisConfig().areShadersEnabled());
 			} catch (Exception e) {
@@ -107,9 +101,9 @@ public class Iris {
 				IrisCommon.setShadersDisabled();
 				IrisCommon.fallback = true;
 			}
-		} else if (net.irisshaders.iris.apiimpl.IrisApiV0Impl.shaderpackScreenKeybind.consumeClick()) {
+		} else if (IrisModern.shaderpackScreenKeybind.consumeClick()) {
 			minecraft.setScreen(new ShaderPackScreen(null));
-		} else if (net.irisshaders.iris.apiimpl.IrisApiV0Impl.wireframeKeybind.consumeClick()) {
+		} else if (IrisModern.wireframeKeybind.consumeClick()) {
 			if (IrisCommon.getIrisConfig().areDebugOptionsEnabled() && minecraft.player != null && !Minecraft.getInstance().isLocalServer()) {
 				minecraft.player.displayClientMessage(Component.literal("No cheating; wireframe only in singleplayer!"), false);
 			}
@@ -117,7 +111,7 @@ public class Iris {
 	}
 
 	public static boolean shouldActivateWireframe() {
-		return IrisCommon.getIrisConfig().areDebugOptionsEnabled() && net.irisshaders.iris.apiimpl.IrisApiV0Impl.wireframeKeybind.isDown();
+		return IrisCommon.getIrisConfig().areDebugOptionsEnabled() && IrisModern.wireframeKeybind.isDown();
 	}
 
 	public static void toggleShaders(Minecraft minecraft, boolean enabled) throws IOException {

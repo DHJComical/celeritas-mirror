@@ -18,7 +18,8 @@ import net.irisshaders.iris.shaderpack.option.OrderBackedProperties;
 import net.irisshaders.iris.shaderpack.option.ShaderPackOptions;
 import net.irisshaders.iris.shaderpack.preprocessor.PropertiesPreprocessor;
 import org.embeddedt.embeddium.compat.iris.IBlockEntry;
-import org.taumc.celeritas.api.v0.CeleritasShadersApi;
+import org.taumc.celeritas.CeleritasShaderVersionService;
+
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -218,7 +219,7 @@ public class IdMap {
 				}
 
 				try {
-					entries.add(CeleritasShadersApi.getInstance().parseBlockEntry(part));
+					entries.add(CeleritasShaderVersionService.INSTANCE.parseBlockEntry(part));
 				} catch (Exception e) {
 					IRIS_LOGGER.warn("Unexpected error while parsing an entry from " + fileName + " for the key " + key + ":", e);
 				}

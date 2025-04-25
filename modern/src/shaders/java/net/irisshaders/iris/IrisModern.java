@@ -1,32 +1,25 @@
-package net.irisshaders.iris.apiimpl;
+package net.irisshaders.iris;
 
 import com.google.common.base.Throwables;
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.IrisCommon;
-import net.irisshaders.iris.IrisConstants;
-import net.irisshaders.iris.api.v0.IrisApi;
-import net.irisshaders.iris.api.v0.IrisApiConfig;
-import net.irisshaders.iris.api.v0.IrisTextVertexSink;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.gui.FeatureMissingErrorScreen;
 import net.irisshaders.iris.gui.debug.DebugLoadFailedGridScreen;
 import net.irisshaders.iris.gui.screen.ShaderPackScreen;
-import net.irisshaders.iris.pipeline.*;
+import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ModernVanillaRenderingPipeline;
+import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shaderpack.materialmap.BlockEntry;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.programs.ProgramSet;
-import net.irisshaders.iris.shadows.ShadowRenderingState;
 import net.irisshaders.iris.texture.pbr.PBRTextureManager;
 import net.irisshaders.iris.uniforms.ModernBiomeUniforms;
-import net.irisshaders.iris.vertices.IrisTextVertexSinkImpl;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -35,98 +28,25 @@ import org.embeddedt.embeddium.compat.iris.IBlockEntry;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
+import org.taumc.celeritas.CeleritasShaderVersionService;
 import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
 import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 import static net.irisshaders.iris.uniforms.BiomeUniforms.BIOME_UNIFORMS;
 
-public class IrisApiV0Impl implements IrisApi {
-	private static final IrisApiV0ConfigImpl CONFIG = new IrisApiV0ConfigImpl();
+public class IrisModern implements CeleritasShaderVersionService {
 
     public static KeyMapping reloadKeybind;
     public static KeyMapping toggleShadersKeybind;
     public static KeyMapping shaderpackScreenKeybind;
     public static KeyMapping wireframeKeybind;
 
-
-    @Override
-	public int getMinorApiRevision() {
-		return 2;
-	}
-
-	@Override
-	public boolean isShaderPackInUse() {
-		WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
-
-		if (pipeline == null) {
-			return false;
-		}
-
-		return !(pipeline instanceof VanillaRenderingPipeline);
-	}
-
-	@Override
-	public boolean isRenderingShadowPass() {
-		return ShadowRenderingState.areShadowsCurrentlyBeingRendered();
-	}
-
-    @Override
-    public int getOverriddenShadowDistance(int base) {
-        return Iris.getPipelineManager().getPipeline()
-                .map(pipeline -> pipeline.getForcedShadowRenderDistanceChunksForDisplay().orElse(base))
-                .orElse(base);
-    }
-
-    @Override
-    public boolean isShadowDistanceSliderEnabled() {
-        return Iris.getPipelineManager().getPipeline()
-                .map(pipeline -> !pipeline.getForcedShadowRenderDistanceChunksForDisplay().isPresent())
-                .orElse(true);
-    }
-
-    @Override
-    public boolean areDebugOptionsEnabled() {
-        return IrisCommon.getIrisConfig().areDebugOptionsEnabled();
-    }
-
-    @Override
-	public Object openMainIrisScreenObj(Object parent) {
-		return new ShaderPackScreen((Screen) parent);
-	}
-
-	@Override
-	public String getMainScreenLanguageKey() {
-		return "options.iris.shaderPackSelection";
-	}
-
-	@Override
-	public IrisApiConfig getConfig() {
-		return CONFIG;
-	}
-
-	@Override
-	public IrisTextVertexSink createTextVertexSink(int maxQuadCount, IntFunction<ByteBuffer> bufferProvider) {
-		return new IrisTextVertexSinkImpl(maxQuadCount, bufferProvider);
-	}
-
-	@Override
-	public float getSunPathRotation() {
-		WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
-
-		if (pipeline == null) {
-			return 0;
-		}
-
-		return pipeline.getSunPathRotation();
-	}
 
 
     @Override
@@ -286,7 +206,7 @@ public class IrisApiV0Impl implements IrisApi {
     public WorldRenderingPipeline createPipeline(NamespacedId dimensionId) {
         if (IrisCommon.getCurrentPack().isEmpty()) {
             // Completely disables shader-based rendering
-            return CeleritasShadersApi.getInstance().createVanillaRenderingPipeline();
+            return createVanillaRenderingPipeline();
         }
 
         ProgramSet programs = IrisCommon.getCurrentPack().get().getProgramSet(dimensionId);
@@ -308,7 +228,7 @@ public class IrisApiV0Impl implements IrisApi {
             // TODO: This should be reverted if a dimension change causes shaders to compile again
             IrisCommon.setFallback(true);
 
-            return CeleritasShadersApi.getInstance().createVanillaRenderingPipeline();
+            return createVanillaRenderingPipeline();
         }
     }
 

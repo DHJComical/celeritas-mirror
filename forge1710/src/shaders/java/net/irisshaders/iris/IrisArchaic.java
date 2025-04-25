@@ -1,7 +1,5 @@
-package net.irisshaders.iris.apiimpl;
+package net.irisshaders.iris;
 
-import net.irisshaders.iris.IrisCommon;
-import net.irisshaders.iris.api.v0.IrisApiConfig;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
@@ -10,7 +8,8 @@ import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import org.apache.commons.lang3.StringUtils;
 import org.embeddedt.embeddium.compat.iris.IBlockEntry;
 import org.jetbrains.annotations.NotNull;
-import org.taumc.celeritas.api.v0.CeleritasShadersApi;
+import org.taumc.celeritas.CeleritasShaderVersionService;
+
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -22,52 +21,7 @@ import java.util.function.BiConsumer;
 
 import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
-public class IrisApiV0Impl implements CeleritasShadersApi {
-    @Override
-    public boolean isShaderPackInUse() {
-        return false;
-    }
-
-    @Override
-    public boolean isRenderingShadowPass() {
-        return false;
-    }
-
-    @Override
-    public int getOverriddenShadowDistance(int base) {
-        return 0;
-    }
-
-    @Override
-    public boolean isShadowDistanceSliderEnabled() {
-        return false;
-    }
-
-    @Override
-    public boolean areDebugOptionsEnabled() {
-        return false;
-    }
-
-    @Override
-    public Object openMainIrisScreenObj(Object parent) {
-        return null;
-    }
-
-    @Override
-    public String getMainScreenLanguageKey() {
-        return "";
-    }
-
-    @Override
-    public IrisApiConfig getConfig() {
-        return null;
-    }
-
-    @Override
-    public float getSunPathRotation() {
-        return 0;
-    }
-
+public class IrisArchaic implements CeleritasShaderVersionService {
     @Override
     public void reloadIris() throws IOException {
 
@@ -204,7 +158,7 @@ public class IrisApiV0Impl implements CeleritasShadersApi {
     public WorldRenderingPipeline createPipeline(NamespacedId dimensionId) {
         if (IrisCommon.getCurrentPack().isEmpty()) {
             // Completely disables shader-based rendering
-            return CeleritasShadersApi.getInstance().createVanillaRenderingPipeline();
+            return createVanillaRenderingPipeline();
         }
 
 
@@ -212,7 +166,7 @@ public class IrisApiV0Impl implements CeleritasShadersApi {
         // TODO: This should be reverted if a dimension change causes shaders to compile again
         IrisCommon.setFallback(true);
 
-        return CeleritasShadersApi.getInstance().createVanillaRenderingPipeline();
+        return createVanillaRenderingPipeline();
     }
 
     @Override

@@ -4,7 +4,7 @@ import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import org.joml.Matrix4f;
-import org.taumc.celeritas.api.v0.CeleritasShadersApi;
+import org.taumc.celeritas.CeleritasShaderVersionService;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -30,7 +30,7 @@ public class DHCompat {
 	public DHCompat(IrisRenderingPipeline pipeline, boolean renderDHShadow) {
 		try {
 			if (dhPresent) {
-				compatInternalInstance = CeleritasShadersApi.getInstance().getDHCompatInstance(pipeline, renderDHShadow);
+				compatInternalInstance = CeleritasShaderVersionService.INSTANCE.getDHCompatInstance(pipeline, renderDHShadow);
 				lastIncompatible = (boolean) incompatible.invoke(compatInternalInstance);
 			}
 		} catch (Throwable e) {

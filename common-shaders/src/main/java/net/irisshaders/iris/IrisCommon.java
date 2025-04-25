@@ -14,7 +14,8 @@ import net.irisshaders.iris.shaderpack.option.Profile;
 import net.irisshaders.iris.shaderpack.option.values.MutableOptionValues;
 import net.irisshaders.iris.shaderpack.option.values.OptionValues;
 import org.jetbrains.annotations.NotNull;
-import org.taumc.celeritas.api.v0.CeleritasShadersApi;
+import org.taumc.celeritas.CeleritasShaderVersionService;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -90,7 +91,7 @@ public class IrisCommon {
         renderSystemInit = true;
 
 
-        CeleritasShadersApi.getInstance().onRenderSystemInit();
+        CeleritasShaderVersionService.INSTANCE.onRenderSystemInit();
 
     }
 
@@ -124,7 +125,7 @@ public class IrisCommon {
         }
 
         initialized = true;
-        CeleritasShadersApi.getInstance().onEarlyInitialize();
+        CeleritasShaderVersionService.INSTANCE.onEarlyInitialize();
     }
     public static void onLoadingComplete() {
         if (!initialized) {
@@ -138,7 +139,7 @@ public class IrisCommon {
         // See: https://github.com/IrisShaders/Iris/issues/323
         lastDimension = DimensionId.OVERWORLD;
 
-        CeleritasShadersApi.getInstance().onLoadingComplete();
+        CeleritasShaderVersionService.INSTANCE.onLoadingComplete();
     }
 
     public static Path getShaderpacksDirectory() {
@@ -460,7 +461,7 @@ public class IrisCommon {
     static void destroyEverything() {
         currentPack = null;
 
-        CeleritasShadersApi.getInstance().destroyEverything();
+        CeleritasShaderVersionService.INSTANCE.destroyEverything();
 
         // Close the zip filesystem that the shaderpack was loaded from
         //
@@ -480,12 +481,12 @@ public class IrisCommon {
     @NotNull
     public static PipelineManager getPipelineManager() {
         if (pipelineManager == null) {
-            pipelineManager = new PipelineManager(CeleritasShadersApi.getInstance()::createPipeline);
+            pipelineManager = new PipelineManager(CeleritasShaderVersionService.INSTANCE::createPipeline);
         }
 
         if (loadPackWhenPossible && renderSystemInit) {
             loadPackWhenPossible = false;
-            CeleritasShadersApi.getInstance().reload();
+            CeleritasShaderVersionService.INSTANCE.reload();
 
         }
 

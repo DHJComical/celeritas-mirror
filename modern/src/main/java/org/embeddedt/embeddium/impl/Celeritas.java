@@ -1,7 +1,5 @@
 package org.embeddedt.embeddium.impl;
 
-import net.minecraft.client.Minecraft;
-
 //? if forge && >=1.18 {
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 //? if >=1.19
@@ -115,10 +113,10 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         // TODO remove
         //? if shaders {
         modEventBus.addListener((RegisterKeyMappingsEvent ev) -> {
-            ev.register(net.irisshaders.iris.apiimpl.IrisApiV0Impl.reloadKeybind);
-            ev.register(net.irisshaders.iris.apiimpl.IrisApiV0Impl.shaderpackScreenKeybind);
-            ev.register(net.irisshaders.iris.apiimpl.IrisApiV0Impl.toggleShadersKeybind);
-            ev.register(net.irisshaders.iris.apiimpl.IrisApiV0Impl.wireframeKeybind);
+            ev.register(net.irisshaders.iris.IrisModern.reloadKeybind);
+            ev.register(net.irisshaders.iris.IrisModern.shaderpackScreenKeybind);
+            ev.register(net.irisshaders.iris.IrisModern.toggleShadersKeybind);
+            ev.register(net.irisshaders.iris.IrisModern.wireframeKeybind);
         });
         //?}
     }

@@ -4,7 +4,8 @@ import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.embeddedt.embeddium.compat.iris.IBlockEntry;
-import org.taumc.celeritas.api.v0.CeleritasShadersApi;
+import org.taumc.celeritas.CeleritasShaderVersionService;
+
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,7 +79,7 @@ public class LegacyIdMap {
 	}
 
 	private static IBlockEntry block(String name) {
-		return CeleritasShadersApi.getInstance().createBlockEntry(new NamespacedId("minecraft", name));
+		return CeleritasShaderVersionService.INSTANCE.createBlockEntry(new NamespacedId("minecraft", name));
 	}
 
 	private static void addMany(Int2ObjectMap<List<IBlockEntry>> blockIdMap, int id, List<String> prefixes, Function<String, IBlockEntry> toId) {

@@ -13,12 +13,12 @@ import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20C;
-import org.taumc.celeritas.api.v0.CeleritasShadersApi;
+import org.taumc.celeritas.CeleritasShaderVersionService;
 
 public class PipelineManager {
 	private final Function<NamespacedId, WorldRenderingPipeline> pipelineFactory;
 	private final Map<NamespacedId, WorldRenderingPipeline> pipelinesPerDimension = new HashMap<>();
-	private WorldRenderingPipeline pipeline = CeleritasShadersApi.getInstance().createVanillaRenderingPipeline();
+	private WorldRenderingPipeline pipeline = CeleritasShaderVersionService.INSTANCE.createVanillaRenderingPipeline();
 	private int versionCounterForSodiumShaderReload = 0;
 
 	public PipelineManager(Function<NamespacedId, WorldRenderingPipeline> pipelineFactory) {

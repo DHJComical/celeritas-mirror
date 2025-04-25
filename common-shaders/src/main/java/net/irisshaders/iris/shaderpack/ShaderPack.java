@@ -33,6 +33,7 @@ import net.irisshaders.iris.shaderpack.texture.TextureFilteringData;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import org.jetbrains.annotations.Nullable;
+import org.taumc.celeritas.CeleritasShaderVersionService;
 import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 
 import java.io.BufferedReader;
@@ -191,7 +192,7 @@ public class ShaderPack {
 		List<String> invalidFeatureFlags = invalidFlagList.stream().map(FeatureFlags::getHumanReadableName).toList();
 
 		if (!invalidFeatureFlags.isEmpty()) {
-            CeleritasShadersApi.getInstance().handleUnsupportedFeatureFlags(invalidFlagList, invalidFeatureFlags);
+            CeleritasShaderVersionService.INSTANCE.handleUnsupportedFeatureFlags(invalidFlagList, invalidFeatureFlags);
             CeleritasShadersApi.getInstance().getConfig().setShadersEnabledAndApply(false);
 		}
 		List<StringPair> newEnvDefines = new ArrayList<>(environmentDefines);

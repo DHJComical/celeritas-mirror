@@ -1,9 +1,9 @@
 package net.irisshaders.iris.texture.util;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 import net.irisshaders.iris.gl.IrisRenderSystem;
-import net.minecraft.client.Minecraft;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
@@ -35,7 +35,7 @@ public class TextureManipulationUtil {
 			int height = GL_STATE_MANAGER.glGetTexLevelParameteri(GL11.GL_TEXTURE_2D, level, GL11.GL_TEXTURE_HEIGHT);
 			GL_STATE_MANAGER.glViewport(0, 0, width, height);
 			GL_STATE_MANAGER.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, textureId, level);
-            GL_STATE_MANAGER.clear(GL11.GL_COLOR_BUFFER_BIT, Minecraft.ON_OSX);
+            GL_STATE_MANAGER.clear(GL11.GL_COLOR_BUFFER_BIT, MINECRAFT_SHIM.isOnOSX());
 			GL_STATE_MANAGER.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, 0, level);
 		}
 
