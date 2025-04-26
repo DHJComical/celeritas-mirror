@@ -3,6 +3,8 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 import lombok.Getter;
 import net.irisshaders.iris.shaderpack.materialmap.ModernWorldRenderingSettings;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
 import org.embeddedt.embeddium.impl.model.light.LightPipelineProvider;
 import org.embeddedt.embeddium.impl.model.light.data.ArrayLightDataCache;
