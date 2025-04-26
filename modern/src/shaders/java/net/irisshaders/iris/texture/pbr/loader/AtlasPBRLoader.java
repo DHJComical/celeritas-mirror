@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
@@ -99,7 +100,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		try {
 			animationMetadata = resource.metadata();
 		} catch (Exception e) {
-			Iris.logger.error("Unable to parse metadata from {}", pbrImageLocation, e);
+			IRIS_LOGGER.error("Unable to parse metadata from {}", pbrImageLocation, e);
 			return null;
 		}
 
@@ -107,7 +108,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		try (InputStream stream = resource.open()) {
 			nativeImage = NativeImage.read(stream);
 		} catch (IOException e) {
-			Iris.logger.error("Using missing texture, unable to load {}", pbrImageLocation, e);
+			IRIS_LOGGER.error("Using missing texture, unable to load {}", pbrImageLocation, e);
 			return null;
 		}
 
@@ -118,7 +119,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		int frameWidth = frameSize.width();
 		int frameHeight = frameSize.height();
 		if (!Mth.isMultipleOf(imageWidth, frameWidth) || !Mth.isMultipleOf(imageHeight, frameHeight)) {
-			Iris.logger.error("Image {} size {},{} is not multiple of frame size {},{}", pbrImageLocation, imageWidth, imageHeight, frameWidth, frameHeight);
+			IRIS_LOGGER.error("Image {} size {},{} is not multiple of frame size {},{}", pbrImageLocation, imageWidth, imageHeight, frameWidth, frameHeight);
 			nativeImage.close();
 			return null;
 		}
@@ -156,7 +157,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 					}
 				}
 			} catch (Exception e) {
-				Iris.logger.error("Something bad happened trying to load PBR texture " + spriteName.getPath() + pbrType.getSuffix() + "!", e);
+				IRIS_LOGGER.error("Something bad happened trying to load PBR texture " + spriteName.getPath() + pbrType.getSuffix() + "!", e);
 				throw e;
 			}
 		}

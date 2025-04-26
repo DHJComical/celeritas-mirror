@@ -11,13 +11,14 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.world.entity.Entity;
+import org.embeddedt.embeddium.compat.mc.ILevelRenderer;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(LevelRenderer.class)
-public interface LevelRendererAccessor {
+public interface LevelRendererAccessor extends ILevelRenderer {
 	@Accessor("entityRenderDispatcher")
 	EntityRenderDispatcher getEntityRenderDispatcher();
 

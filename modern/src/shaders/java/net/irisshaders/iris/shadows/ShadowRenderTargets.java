@@ -289,7 +289,7 @@ public class ShadowRenderTargets {
 			if (drawBuffers[i] >= getRenderTargetCount()) {
 				// If a shader is using an invalid drawbuffer, they're most likely relying on the Optifine behavior of ignoring DRAWBUFFERS in the shadow pass.
 				// We need to fix this for them, since apparantly this is a common issue.
-				// Iris.logger.warn("Invalid framebuffer was attempted to be created! Forcing a framebuffer with DRAWBUFFERS 01 for shadow.");
+				// IRIS_LOGGER.warn("Invalid framebuffer was attempted to be created! Forcing a framebuffer with DRAWBUFFERS 01 for shadow.");
 				ownedFramebuffers.remove(framebuffer);
 				framebuffer.destroy();
 				return createColorFramebuffer(stageWritesToMain, new int[]{0, 1});

@@ -10,6 +10,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3i;
 import org.lwjgl.opengl.GL43C;
 import org.lwjgl.opengl.GL46C;
+import org.taumc.celeritas.CeleritasShaderVersionService;
 
 public final class ComputeProgram extends GlResource {
 	private final ProgramUniforms uniforms;
@@ -72,7 +73,7 @@ public final class ComputeProgram extends GlResource {
 	}
 
 	public void dispatch(float width, float height) {
-		if (!MINECRAFT_SHIM.irisAllowConcurrentUpdate()) {
+		if (!CeleritasShaderVersionService.INSTANCE.irisAllowConcurrentUpdate()) {
 			IrisRenderSystem.memoryBarrier(GL43C.GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL43C.GL_TEXTURE_FETCH_BARRIER_BIT | GL43C.GL_SHADER_STORAGE_BARRIER_BIT);
 		}
 

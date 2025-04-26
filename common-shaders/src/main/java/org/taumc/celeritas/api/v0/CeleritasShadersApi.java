@@ -1,7 +1,6 @@
 package org.taumc.celeritas.api.v0;
 
 import net.irisshaders.iris.api.v0.IrisApiConfig;
-
 import java.util.ServiceLoader;
 
 public interface CeleritasShadersApi {

@@ -2,11 +2,11 @@ package net.irisshaders.iris.targets.backed;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.util.FastColor;
+import org.embeddedt.embeddium.api.util.ColorABGR;
 
 public class NativeImageBackedSingleColorTexture extends DynamicTexture {
 	public NativeImageBackedSingleColorTexture(int red, int green, int blue, int alpha) {
-		super(create(FastColor.ABGR32.color(alpha, blue, green, red)));
+		super(create(ColorABGR.pack(red, green, blue, alpha)));
 	}
 
 	public NativeImageBackedSingleColorTexture(int rgba) {

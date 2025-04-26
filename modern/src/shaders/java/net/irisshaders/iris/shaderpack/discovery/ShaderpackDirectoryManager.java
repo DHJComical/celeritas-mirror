@@ -85,7 +85,7 @@ public class ShaderpackDirectoryManager {
 		// formatting in the file name so that they have fancy text when displayed in the shaders list.
 		// If debug mode is on, show unzipped packs above zipped ones.
 
-		boolean debug = Iris.getIrisConfig().areDebugOptionsEnabled();
+		boolean debug = IrisCommon.getIrisConfig().areDebugOptionsEnabled();
 
 		Comparator<String> baseComparator = String.CASE_INSENSITIVE_ORDER.thenComparing(Comparator.naturalOrder());
 		Comparator<Path> comparator = (a, b) -> {

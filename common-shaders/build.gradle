@@ -35,6 +35,8 @@ dependencies {
     compileOnly("org.ow2.asm:asm:9.6")
     compileOnly("org.ow2.asm:asm-tree:9.6")
     implementation("org.apache.commons:commons-compress:1.26.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("commons-codec:commons-codec:1.17.0")
 
     def glslTransformLib = "org.taumc:glsl-transformation-lib:${glsl_transformation_lib_version}:fat"
     def jcpp = "org.anarres:jcpp:1.4.14"

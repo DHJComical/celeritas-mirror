@@ -12,7 +12,7 @@ import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.texture.TextureType;
-import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Minecraft;
@@ -21,7 +21,7 @@ import net.minecraft.server.packs.resources.ResourceProvider;
 import org.jetbrains.annotations.Nullable;
 
 public class FallbackShader extends ShaderInstance {
-	private final IrisRenderingPipeline parent;
+	private final ModernIrisRenderingPipeline parent;
 	private final BlendModeOverride blendModeOverride;
 	private final GlFramebuffer writingToBeforeTranslucent;
 	private final GlFramebuffer writingToAfterTranslucent;
@@ -37,7 +37,7 @@ public class FallbackShader extends ShaderInstance {
 
 	public FallbackShader(ResourceProvider resourceFactory, String string, VertexFormat vertexFormat,
 						  GlFramebuffer writingToBeforeTranslucent, GlFramebuffer writingToAfterTranslucent,
-						  BlendModeOverride blendModeOverride, float alphaValue, IrisRenderingPipeline parent) throws IOException {
+						  BlendModeOverride blendModeOverride, float alphaValue, ModernIrisRenderingPipeline parent) throws IOException {
 		super(resourceFactory, string, vertexFormat);
 
 		this.parent = parent;
