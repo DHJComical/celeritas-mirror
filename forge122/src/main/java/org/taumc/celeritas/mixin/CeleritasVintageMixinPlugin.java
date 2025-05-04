@@ -7,6 +7,7 @@ import org.embeddedt.embeddium.impl.util.MixinClassValidator;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
+import org.taumc.celeritas.core.CeleritasLwjgl3ifyCompat;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,10 +22,13 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
     @Override
     public void onLoad(String mixinPackage) {
         LOGGER.info("Loaded Celeritas mixin plugin");
-        // Hack for now
-        var handle = SharedConfig.getRfbTransformers().stream().filter(transformer -> transformer.id().equals("lwjgl3ify:redirect")).findFirst().orElseThrow();
-        handle.exclusions().add("org.embeddedt.embeddium");
-        handle.exclusions().add("org.taumc.celeritas");
+        try {
+            Class.forName("com.gtnewhorizons.retrofuturabootstrap.SharedConfig");
+            // class exists, apply compat
+            CeleritasLwjgl3ifyCompat.apply();
+        } catch (Throwable e) {
+            LOGGER.warn("RFB class not found, hopefully we're not running with lwjgl3ify, otherwise bad things are about to happen");
+        }
     }
 
     @Override
