@@ -130,22 +130,11 @@ public final class ChunkBuildBuffers {
         NativeBuffer mergedIndexBuffer;
 
         if (pass.isSorted()) {
+            int numPrimitives = vertexCount / 4;
             // Generate the canonical index buffer
-            mergedIndexBuffer = new NativeBuffer((vertexCount / 4 * 6) * 4);
-            int bufOffset = 0;
-            for (ModelQuadFacing facing : facingsToUpload) {
-                var buffer = builder.getVertexBuffer(facing);
+            mergedIndexBuffer = new NativeBuffer((numPrimitives * 6) * 4);
 
-                if (buffer.isEmpty()) {
-                    continue;
-                }
-
-                int numPrimitives = buffer.count() / 4;
-
-                ChunkBufferSorter.generateSimpleIndexBuffer(mergedIndexBuffer, numPrimitives, bufOffset);
-
-                bufOffset += numPrimitives * 6;
-            }
+            ChunkBufferSorter.generateSimpleIndexBuffer(mergedIndexBuffer, numPrimitives);
 
             // Do the initial sort now
             ChunkBufferSorter.sort(mergedIndexBuffer, sortState, camX, camY, camZ);
