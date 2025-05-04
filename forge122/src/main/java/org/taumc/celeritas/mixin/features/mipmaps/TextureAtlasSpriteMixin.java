@@ -29,7 +29,11 @@ public class TextureAtlasSpriteMixin {
         if (this.framesTextureData.isEmpty()) {
             return;
         }
-        embeddium$processTransparentImages(this.framesTextureData.getFirst()[0], level > 0 && !iconName.contains("leaves"));
+        embeddium$processTransparentImages(this.framesTextureData.getFirst()[0], level > 0 && isBlockTexture(iconName) && !iconName.contains("leaves"));
+    }
+
+    private static boolean isBlockTexture(String iconName) {
+        return iconName.startsWith("block", iconName.indexOf(':') + 1);
     }
 
     private void embeddium$processTransparentImages(int[] nativeImage, boolean shouldRewriteColors) {

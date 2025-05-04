@@ -72,7 +72,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
     private void sodium$beforeGenerateMipLevels(SpriteContents instance, NativeImage nativeImage, ResourceLocation identifier) {
         // Only fill in transparent colors if mipmaps are on and the texture name does not contain "leaves".
         // We're injecting after the "name" field has been set, so this is safe even though we're in a constructor.
-        embeddium$processTransparentImages(nativeImage, MinecraftOptionsStorage.getMipmapLevels() > 0 && !this.name.getPath().contains("leaves"));
+        embeddium$processTransparentImages(nativeImage, MinecraftOptionsStorage.getMipmapLevels() > 0 && this.name.getPath().startsWith("block/") && !this.name.getPath().contains("leaves"));
 
         this.originalImage = nativeImage;
     }
