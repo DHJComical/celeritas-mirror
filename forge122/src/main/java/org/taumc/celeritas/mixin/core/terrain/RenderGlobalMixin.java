@@ -200,28 +200,41 @@ public abstract class RenderGlobalMixin implements RenderGlobalExtension {
         return this.renderer.getChunksDebugString();
     }
 
-    private List<Entity> getLoadedEntityList() {
+    private List<Entity>[] getLoadedEntityList() {
+        int numPasses = 2;
+        List<Entity>[] passesArray = new List[numPasses];
+        for (int i = 0; i < numPasses; i++) {
+            passesArray[i] = new ArrayList<>();
+        }
+        Consumer<Entity> addEntity = entity -> {
+            for (int i = 0; i < numPasses; i++) {
+                if (entity.shouldRenderInPass(i)) {
+                    passesArray[i].add(entity);
+                }
+            }
+        };
         // Iterate directly over chunk entity lists where possible - mods may create multipart entities that are not
         // added to the main loadedEntityList.
         if (this.world.getChunkProvider() instanceof ChunkProviderClientAccessor provider) {
             var loadedChunks = provider.celeritas$getLoadedChunks();
             List<Entity> allEntities = new ArrayList<>(this.world.loadedEntityList.size());
-            Consumer<Entity> addEntity = allEntities::add;
             for (Chunk chunk : loadedChunks.values()) {
+                if (!((ChunkAccessor)chunk).celeritas$getHasEntities()) {
+                    continue;
+                }
                 ClassInheritanceMultiMap<Entity>[] entityMaps = chunk.getEntityLists();
                 for (ClassInheritanceMultiMap<Entity> map : entityMaps) {
-                    if (map.isEmpty()) {
-                        continue;
-                    }
                     map.forEach(addEntity);
                 }
             }
-            return allEntities;
         } else {
             // Best we can do is the loaded entity list - this will miss some multipart entities
-            return this.world.loadedEntityList;
+            this.world.loadedEntityList.forEach(addEntity);
         }
+        return passesArray;
     }
+
+    private List<Entity>[] celeritas$collectedEntities;
 
     /**
      * @author embeddedt
@@ -235,17 +248,15 @@ public abstract class RenderGlobalMixin implements RenderGlobalExtension {
                                 @Local(ordinal = 1) double renderViewY,
                                 @Local(ordinal = 2) double renderViewZ) {
         int pass = net.minecraftforge.client.MinecraftForgeClient.getRenderPass();
+        if (pass == 0 || celeritas$collectedEntities == null) {
+            celeritas$collectedEntities = getLoadedEntityList();
+        }
         EntityPlayerSP player = this.mc.player;
         BlockPos.MutableBlockPos entityBlockPos = new BlockPos.MutableBlockPos();
         // Apply entity distance scaling
         Entity.setRenderDistanceWeight(MathHelper.clamp((double)this.mc.gameSettings.renderDistanceChunks / 8.0D, 1.0D, 2.5D) * 1);
 
-        for(Entity entity : getLoadedEntityList()) {
-            // Skip entities that shouldn't render in this pass
-            if(!entity.shouldRenderInPass(pass)) {
-                continue;
-            }
-
+        for(Entity entity : celeritas$collectedEntities[pass]) {
             // Do regular vanilla checks for visibility
             if(!this.renderManager.shouldRender(entity, camera, renderViewX, renderViewY, renderViewZ) && !entity.isRidingOrBeingRiddenBy(player)) {
                 continue;
