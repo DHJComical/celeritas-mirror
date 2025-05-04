@@ -2,6 +2,9 @@ package org.taumc.celeritas.impl.render.terrain;
 
 import com.google.common.collect.ImmutableListMultimap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.BlockRenderLayer;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -13,8 +16,23 @@ import java.util.Map;
 
 public class VintageRenderPassConfigurationBuilder {
 
+    private static final TerrainRenderPass.PipelineState MIPMAP_CONTROLLED_STATE = new TerrainRenderPass.PipelineState() {
+        @Override
+        public void setup() {
+            // Forcefully reset the mipmap state to the expected value for terrain. Mods sometimes manage to corrupt it.
+            boolean mipped = Minecraft.getMinecraft().gameSettings.mipmapLevels > 0;
+            Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+            ((AbstractTexture)Minecraft.getMinecraft().getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)).setBlurMipmapDirect(false, mipped);
+        }
+
+        @Override
+        public void clear() {
+
+        }
+    };
+
     private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(BlockRenderLayer chunkRenderType) {
-        return TerrainRenderPass.builder().pipelineState(TerrainRenderPass.PipelineState.DEFAULT);
+        return TerrainRenderPass.builder().pipelineState(MIPMAP_CONTROLLED_STATE);
     }
 
     public static RenderPassConfiguration<BlockRenderLayer> build(ChunkVertexType vertexType) {
