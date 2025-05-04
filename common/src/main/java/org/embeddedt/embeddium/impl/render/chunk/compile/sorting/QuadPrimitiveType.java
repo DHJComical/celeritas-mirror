@@ -1,30 +1,38 @@
-package org.embeddedt.embeddium.impl.render.chunk.compile;
+package org.embeddedt.embeddium.impl.render.chunk.compile.sorting;
 
-import it.unimi.dsi.fastutil.ints.IntArrays;
-import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 import org.embeddedt.embeddium.impl.util.sorting.MergeSort;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
+import java.nio.ByteBuffer;
 import java.util.BitSet;
 
-public class ChunkBufferSorter {
+public class QuadPrimitiveType implements ChunkPrimitiveType {
+    public static final QuadPrimitiveType INSTANCE = new QuadPrimitiveType();
+
     private static final int ELEMENTS_PER_PRIMITIVE = 6;
     private static final int VERTICES_PER_PRIMITIVE = 4;
 
     private static final int FAKE_STATIC_CAMERA_OFFSET = 1000;
 
-    public static int getIndexBufferSize(int numPrimitives) {
-        return numPrimitives * ELEMENTS_PER_PRIMITIVE * 4;
+    @Override
+    public int getIndexBufferElementsPerPrimitive() {
+        return ELEMENTS_PER_PRIMITIVE;
     }
 
-    public static void generateSimpleIndexBuffer(NativeBuffer indexBuffer, int numPrimitives) {
+    @Override
+    public int getVerticesPerPrimitive() {
+        return VERTICES_PER_PRIMITIVE;
+    }
+
+    @Override
+    public void generateSimpleIndexBuffer(ByteBuffer indexBuffer, int numPrimitives) {
         int minimumRequiredBufferSize = getIndexBufferSize(numPrimitives);
-        if(indexBuffer.getLength() < minimumRequiredBufferSize) {
-            throw new IllegalStateException("Given index buffer has length " + indexBuffer.getLength() + " but we need " + minimumRequiredBufferSize);
+        if(indexBuffer.capacity() < minimumRequiredBufferSize) {
+            throw new IllegalStateException("Given index buffer has length " + indexBuffer.capacity() + " but we need " + minimumRequiredBufferSize);
         }
-        long ptr = MemoryUtil.memAddress(indexBuffer.getDirectBuffer());
+        long ptr = MemoryUtil.memAddress(indexBuffer);
 
         for (int primitiveIndex = 0; primitiveIndex < numPrimitives; primitiveIndex++) {
             int indexOffset = primitiveIndex * ELEMENTS_PER_PRIMITIVE;
@@ -40,12 +48,12 @@ public class ChunkBufferSorter {
         }
     }
 
-    private static NativeBuffer generateIndexBuffer(NativeBuffer indexBuffer, int[] primitiveMapping) {
+    private void generateIndexBuffer(ByteBuffer indexBuffer, int[] primitiveMapping) {
         int bufferSize = getIndexBufferSize(primitiveMapping.length);
-        if(indexBuffer.getLength() != bufferSize) {
-            throw new IllegalStateException("Given index buffer has length " + indexBuffer.getLength() + " but we expected " + bufferSize);
+        if(indexBuffer.capacity() != bufferSize) {
+            throw new IllegalStateException("Given index buffer has length " + indexBuffer.capacity() + " but we expected " + bufferSize);
         }
-        long ptr = MemoryUtil.memAddress(indexBuffer.getDirectBuffer());
+        long ptr = MemoryUtil.memAddress(indexBuffer);
 
         for (int primitiveIndex = 0; primitiveIndex < primitiveMapping.length; primitiveIndex++) {
             int indexOffset = primitiveIndex * ELEMENTS_PER_PRIMITIVE;
@@ -61,8 +69,6 @@ public class ChunkBufferSorter {
             MemoryUtil.memPutInt(ptr + (indexOffset + 4) * 4, vertexOffset + 3);
             MemoryUtil.memPutInt(ptr + (indexOffset + 5) * 4, vertexOffset + 0);
         }
-
-        return indexBuffer;
     }
 
     private static void buildStaticDistanceArray(float[] centers, float[] distanceArray, float x, float y, float z,
@@ -94,13 +100,18 @@ public class ChunkBufferSorter {
         }
     }
 
-    public static NativeBuffer sort(NativeBuffer indexBuffer, @Nullable TranslucentQuadAnalyzer.SortState chunkData, float x, float y, float z) {
+    @Override
+    public void generateSortedIndexBuffer(ByteBuffer indexBuffer, int quadCount, @Nullable TranslucentQuadAnalyzer.SortState chunkData, float x, float y, float z) {
         if (chunkData == null || chunkData.level() == TranslucentQuadAnalyzer.Level.NONE || chunkData.centersLength() < 3) {
-            return indexBuffer;
+            generateSimpleIndexBuffer(indexBuffer, quadCount);
+            return;
+        }
+
+        if (quadCount != (chunkData.centersLength() / 3)) {
+            throw new IllegalStateException(String.format("Mismatched SortState (%d) vs given quad count (%d)", chunkData.centersLength() / 3, quadCount));
         }
 
         float[] centers = chunkData.centers();
-        int quadCount = chunkData.centersLength() / 3;
         int[] indicesArray = new int[quadCount];
         float[] distanceArray = new float[quadCount];
         boolean isStatic = chunkData.level() == TranslucentQuadAnalyzer.Level.STATIC;
@@ -124,6 +135,6 @@ public class ChunkBufferSorter {
 
         MergeSort.mergeSort(indicesArray, distanceArray);
 
-        return generateIndexBuffer(indexBuffer, indicesArray);
+        generateIndexBuffer(indexBuffer, indicesArray);
     }
 }

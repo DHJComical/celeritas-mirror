@@ -21,17 +21,15 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
 
     private final Map<ChunkShaderOptions, @Nullable GlProgram<ChunkShaderInterface>> programs = new Object2ObjectOpenHashMap<>();
 
-    protected final ChunkVertexType vertexType;
-    protected final GlVertexFormat vertexFormat;
+    protected final RenderPassConfiguration<?> renderPassConfiguration;
 
     protected final RenderDevice device;
 
     protected GlProgram<ChunkShaderInterface> activeProgram;
 
-    public ShaderChunkRenderer(RenderDevice device, ChunkVertexType vertexType) {
+    public ShaderChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
         this.device = device;
-        this.vertexType = vertexType;
-        this.vertexFormat = vertexType.getVertexFormat();
+        this.renderPassConfiguration = renderPassConfiguration;
     }
 
     protected @Nullable GlProgram<ChunkShaderInterface> compileProgram(ChunkShaderOptions options) {
@@ -61,7 +59,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         try {
             var builder = GlProgram.builder("sodium:chunk_shader").attachShader(vertShader).attachShader(fragShader);
             int i = 0;
-            for (var attr : this.vertexFormat.getAttributes()) {
+            for (var attr : options.vertexType().getVertexFormat().getAttributes()) {
                 builder.bindAttribute(attr.getName(), i++);
             }
             builder.bindFragmentData("fragColor", ChunkShaderBindingPoints.FRAG_COLOR);
@@ -75,7 +73,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
     protected void begin(TerrainRenderPass pass) {
         pass.startDrawing();
 
-        ChunkShaderOptions options = new ChunkShaderOptions(ChunkShaderFogComponent.FOG_SERVICE.getFogMode(), pass, this.vertexType);
+        ChunkShaderOptions options = new ChunkShaderOptions(ChunkShaderFogComponent.FOG_SERVICE.getFogMode(), pass, this.renderPassConfiguration.getVertexTypeForPass(pass));
 
         this.activeProgram = this.compileProgram(options);
 
@@ -104,7 +102,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
     }
 
     @Override
-    public ChunkVertexType getVertexType() {
-        return this.vertexType;
+    public RenderPassConfiguration<?> getRenderPassConfiguration() {
+        return this.renderPassConfiguration;
     }
 }

@@ -28,7 +28,7 @@ public interface ChunkRenderer {
     void delete(CommandList commandList);
 
     /**
-     * Get the vertex type used by this renderer.
+     * Get the render pass configuration used by this renderer.
      */
-    ChunkVertexType getVertexType();
+    RenderPassConfiguration<?> getRenderPassConfiguration();
 }

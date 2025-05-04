@@ -7,7 +7,6 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.ShaderChunkRenderer;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import net.irisshaders.iris.compat.sodium.impl.shader_overrides.IrisChunkProgramOverrides;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,7 +24,7 @@ public class MixinShaderChunkRenderer {
 	private IrisChunkProgramOverrides irisChunkProgramOverrides;
 
 	@Inject(method = "<init>", at = @At("RETURN"))
-	private void iris$onInit(RenderDevice device, ChunkVertexType vertexType, CallbackInfo ci) {
+	private void iris$onInit(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration, CallbackInfo ci) {
 		irisChunkProgramOverrides = new IrisChunkProgramOverrides();
 	}
 

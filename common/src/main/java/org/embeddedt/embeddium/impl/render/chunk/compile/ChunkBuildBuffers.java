@@ -118,7 +118,10 @@ public final class ChunkBuildBuffers {
             return null;
         }
 
-        var mergedBuffer = new NativeBuffer(vertexCount * renderPassConfiguration.getVertexTypeForPass(pass).getVertexFormat().getStride());
+        var vertexType = renderPassConfiguration.getVertexTypeForPass(pass);
+        var primitiveType = renderPassConfiguration.getPrimitiveTypeForPass(pass);
+
+        var mergedBuffer = new NativeBuffer(vertexCount * vertexType.getVertexFormat().getStride());
         var mergedBufferBuilder = mergedBuffer.getDirectBuffer();
 
         for (var buffer : vertexBuffers) {
@@ -130,14 +133,12 @@ public final class ChunkBuildBuffers {
         NativeBuffer mergedIndexBuffer;
 
         if (pass.isSorted()) {
-            int numPrimitives = vertexCount / 4;
+            int numPrimitives = vertexCount / primitiveType.getVerticesPerPrimitive();
             // Generate the canonical index buffer
-            mergedIndexBuffer = new NativeBuffer((numPrimitives * 6) * 4);
-
-            ChunkBufferSorter.generateSimpleIndexBuffer(mergedIndexBuffer, numPrimitives);
+            mergedIndexBuffer = new NativeBuffer(primitiveType.getIndexBufferSize(numPrimitives));
 
             // Do the initial sort now
-            ChunkBufferSorter.sort(mergedIndexBuffer, sortState, camX, camY, camZ);
+            primitiveType.generateSortedIndexBuffer(mergedIndexBuffer.getDirectBuffer(), numPrimitives, sortState, camX, camY, camZ);
         } else {
             mergedIndexBuffer = null;
         }

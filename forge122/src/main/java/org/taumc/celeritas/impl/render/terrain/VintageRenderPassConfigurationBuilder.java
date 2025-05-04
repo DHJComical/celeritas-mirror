@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.util.BlockRenderLayer;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
+import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.QuadPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
@@ -85,6 +86,7 @@ public class VintageRenderPassConfigurationBuilder {
         return new RenderPassConfiguration<>(vertexType,
                 renderTypeToMaterialMap,
                 vanillaRenderStageMap.asMap(),
+                type -> QuadPrimitiveType.INSTANCE,
                 solidMaterial,
                 cutoutMippedMaterial,
                 translucentMaterial);

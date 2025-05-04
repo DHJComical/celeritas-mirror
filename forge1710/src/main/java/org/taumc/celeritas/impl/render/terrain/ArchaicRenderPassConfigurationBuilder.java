@@ -3,6 +3,7 @@ package org.taumc.celeritas.impl.render.terrain;
 import com.google.common.collect.ImmutableListMultimap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
+import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.QuadPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
@@ -80,6 +81,7 @@ public class ArchaicRenderPassConfigurationBuilder {
         return new RenderPassConfiguration<>(vertexType,
                 renderTypeToMaterialMap,
                 vanillaRenderStageMap.asMap(),
+                type -> QuadPrimitiveType.INSTANCE,
                 CUTOUT_MIPPED_MATERIAL,
                 CUTOUT_MIPPED_MATERIAL,
                 TRANSLUCENT_MATERIAL);

@@ -1,8 +1,8 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.tasks;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
-import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBufferSorter;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
@@ -18,14 +18,16 @@ public class ChunkBuilderSortTask extends ChunkBuilderTask<ChunkBuildOutput> {
     private final float cameraX, cameraY, cameraZ;
     private final int frame;
     private final Map<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> translucentMeshes;
+    private final RenderPassConfiguration<?> renderPassConfiguration;
 
-    public ChunkBuilderSortTask(RenderSection render, float cameraX, float cameraY, float cameraZ, int frame, Map<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> translucentMeshes) {
+    public ChunkBuilderSortTask(RenderSection render, float cameraX, float cameraY, float cameraZ, int frame, Map<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> translucentMeshes, RenderPassConfiguration<?> renderPassConfiguration) {
         this.render = render;
         this.cameraX = cameraX;
         this.cameraY = cameraY;
         this.cameraZ = cameraZ;
         this.frame = frame;
         this.translucentMeshes = translucentMeshes;
+        this.renderPassConfiguration = renderPassConfiguration;
     }
 
     @Override
@@ -33,8 +35,9 @@ public class ChunkBuilderSortTask extends ChunkBuilderTask<ChunkBuildOutput> {
         Reference2ReferenceOpenHashMap<TerrainRenderPass, BuiltSectionMeshParts> meshes = new Reference2ReferenceOpenHashMap<>();
         for(Map.Entry<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> entry : translucentMeshes.entrySet()) {
             var sortBuffer = entry.getValue();
-            var newIndexBuffer = new NativeBuffer(ChunkBufferSorter.getIndexBufferSize(sortBuffer.centersLength() / 3));
-            ChunkBufferSorter.sort(newIndexBuffer, sortBuffer, cameraX - this.render.getOriginX(), cameraY - this.render.getOriginY(), cameraZ - this.render.getOriginZ());
+            var primitiveType = this.renderPassConfiguration.getPrimitiveTypeForPass(entry.getKey());
+            var newIndexBuffer = new NativeBuffer(primitiveType.getIndexBufferSize(sortBuffer.centersLength() / 3));
+            primitiveType.generateSortedIndexBuffer(newIndexBuffer.getDirectBuffer(), sortBuffer.centersLength() / 3, sortBuffer, cameraX - this.render.getOriginX(), cameraY - this.render.getOriginY(), cameraZ - this.render.getOriginZ());
             meshes.put(entry.getKey(), new BuiltSectionMeshParts(
                     null,
                     newIndexBuffer,

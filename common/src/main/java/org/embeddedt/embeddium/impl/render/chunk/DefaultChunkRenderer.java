@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk;
 
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeBinding;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
@@ -11,6 +13,7 @@ import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
 import org.embeddedt.embeddium.impl.gl.tessellation.TessellationBinding;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
+import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataUnsafe;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderListIterable;
@@ -27,19 +30,28 @@ import java.util.Iterator;
 public class DefaultChunkRenderer extends ShaderChunkRenderer {
     private final MultiDrawBatch batch;
 
-    private final SharedQuadIndexBuffer sharedIndexBuffer;
+    private final Reference2ReferenceMap<ChunkPrimitiveType, SharedQuadIndexBuffer> sharedIndexBuffers;
 
-    private boolean isIndexedPass;
+    private TerrainRenderPass currentRenderPass;
 
-    public DefaultChunkRenderer(RenderDevice device, ChunkVertexType vertexType) {
-        super(device, vertexType);
+    public DefaultChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
+        super(device, renderPassConfiguration);
 
         this.batch = new MultiDrawBatch((ModelQuadFacing.COUNT * RenderRegion.REGION_SIZE) + 1);
-        this.sharedIndexBuffer = new SharedQuadIndexBuffer(device.createCommandList(), SharedQuadIndexBuffer.IndexType.INTEGER);
+        this.sharedIndexBuffers = new Reference2ReferenceOpenHashMap<>();
     }
 
     protected boolean useBlockFaceCulling() {
         return true;
+    }
+
+    protected final SharedQuadIndexBuffer getSharedIndexBuffer(ChunkPrimitiveType type, CommandList commandList) {
+        var buffer = this.sharedIndexBuffers.get(type);
+        if (buffer == null) {
+            buffer = new SharedQuadIndexBuffer(commandList, type);
+            this.sharedIndexBuffers.put(type, buffer);
+        }
+        return buffer;
     }
 
     @Override
@@ -68,7 +80,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
 
             Iterator<ChunkRenderList> iterator = renderLists.iterator(renderPass.isReverseOrder());
 
-            this.isIndexedPass = renderPass.isSorted();
+            this.currentRenderPass = renderPass;
 
             while (iterator.hasNext()) {
                 ChunkRenderList renderList = iterator.next();
@@ -86,8 +98,8 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
                     continue;
                 }
 
-                if (!this.isIndexedPass) {
-                    this.sharedIndexBuffer.ensureCapacity(commandList, this.batch.getIndexBufferSize());
+                if (!renderPass.isSorted()) {
+                   getSharedIndexBuffer(renderPassConfiguration.getPrimitiveTypeForPass(renderPass), commandList).ensureCapacity(commandList, this.batch.getIndexBufferSize());
                 }
 
                 var tessellation = this.prepareTessellation(commandList, region);
@@ -95,6 +107,8 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
                 setModelMatrixUniforms(shader, region, camera);
                 executeDrawBatch(commandList, tessellation, primitiveType, this.batch);
             }
+
+            this.currentRenderPass = null;
 
             GLDebug.popGroup();
         }
@@ -249,11 +263,11 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
 
     private GlTessellation prepareTessellation(CommandList commandList, RenderRegion region) {
         var resources = region.getResources();
-        var tessellation = this.isIndexedPass ? resources.getIndexedTessellation() : resources.getTessellation();
+        var tessellation = this.currentRenderPass.isSorted() ? resources.getIndexedTessellation() : resources.getTessellation();
 
         if (tessellation == null) {
             tessellation = this.createRegionTessellation(commandList, resources);
-            if (this.isIndexedPass) {
+            if (this.currentRenderPass.isSorted()) {
                 resources.updateIndexedTessellation(commandList, tessellation);
             } else {
                 resources.updateTessellation(commandList, tessellation);
@@ -264,7 +278,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
     }
 
     private GlVertexAttributeBinding[] generateVertexAttributeBindings() {
-        var attributes = this.vertexFormat.getAttributes();
+        var attributes = this.renderPassConfiguration.getVertexTypeForPass(this.currentRenderPass).getVertexFormat().getAttributes();
         var bindings = new GlVertexAttributeBinding[attributes.size()];
         int i = 0;
         for (var attr : attributes) {
@@ -277,7 +291,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
     private GlTessellation createRegionTessellation(CommandList commandList, RenderRegion.DeviceResources resources) {
         return commandList.createTessellation(new TessellationBinding[] {
                 TessellationBinding.forVertexBuffer(resources.getVertexBuffer(), this.generateVertexAttributeBindings()),
-                TessellationBinding.forElementBuffer(this.isIndexedPass ? resources.getIndexBuffer() : this.sharedIndexBuffer.getBufferObject())
+                TessellationBinding.forElementBuffer(this.currentRenderPass.isSorted() ? resources.getIndexBuffer() : this.getSharedIndexBuffer(this.renderPassConfiguration.getPrimitiveTypeForPass(this.currentRenderPass), commandList).getBufferObject())
         });
     }
 
@@ -291,7 +305,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
     public void delete(CommandList commandList) {
         super.delete(commandList);
 
-        this.sharedIndexBuffer.delete(commandList);
+        this.sharedIndexBuffers.values().forEach(buffer -> buffer.delete(commandList));
         this.batch.delete();
     }
 }

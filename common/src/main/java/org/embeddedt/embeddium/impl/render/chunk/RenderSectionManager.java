@@ -79,8 +79,8 @@ public abstract class RenderSectionManager {
     @Nullable
     private final RenderListManager shadowRenderListManager;
 
-    public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier, BiFunction<RenderDevice, ChunkVertexType, ChunkRenderer> chunkRenderer, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
-        this.chunkRenderer = chunkRenderer.apply(RenderDevice.INSTANCE, configuration.vertexType());
+    public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier, BiFunction<RenderDevice, RenderPassConfiguration<?>, ChunkRenderer> chunkRenderer, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
+        this.chunkRenderer = chunkRenderer.apply(RenderDevice.INSTANCE, configuration);
 
         this.renderPassConfiguration = configuration;
 
@@ -507,7 +507,7 @@ public abstract class RenderSectionManager {
         Map<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> sortStates = render.getTranslucencySortStates();
         if(sortStates.isEmpty() || sortStates.values().stream().noneMatch(TranslucentQuadAnalyzer.SortState::requiresDynamicSorting))
             return null;
-        return new ChunkBuilderSortTask(render, (float)cameraPosition.x, (float)cameraPosition.y, (float)cameraPosition.z, frame, sortStates);
+        return new ChunkBuilderSortTask(render, (float)cameraPosition.x, (float)cameraPosition.y, (float)cameraPosition.z, frame, sortStates, this.renderPassConfiguration);
     }
 
     public void markGraphDirty() {
