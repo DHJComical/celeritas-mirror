@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 
 import static org.embeddedt.embeddium.impl.texture.MipmapHelper.weightedAverageColor;
 
-@Mixin(TextureUtil.class)
+@Mixin(value = TextureUtil.class, priority = 900)
 public class TextureUtilMixin {
     /**
      * @author coderbot
