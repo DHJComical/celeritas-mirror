@@ -13,12 +13,13 @@ public class SpecialBlockRenderer {
     private final ChunkVertexEncoder.Vertex[] vertices = ChunkVertexEncoder.Vertex.uninitializedQuad();
 
     public void voxelizeLightBlock(BlockPos relativeBlockPos, BlockState blockState, ChunkBuildBuffers buffers) {
-        if (buffers.getEncoder() instanceof ContextAwareChunkVertexEncoder encoder) {
+        var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(RenderType.cutout());
+
+        if (buffers.getRenderPassConfiguration().getVertexTypeForPass(material.pass).getEncoder() instanceof ContextAwareChunkVertexEncoder encoder) {
             int relX = relativeBlockPos.getX();
             int relY = relativeBlockPos.getY();
             int relZ = relativeBlockPos.getZ();
 
-            var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(RenderType.cutout());
             ChunkModelBuilder buildBuffers = buffers.get(material);
             encoder.prepareToVoxelizeLight(blockState);
             for (int i = 0; i < 4; i++) {

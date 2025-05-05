@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.render.chunk;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeBinding;
+import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.DrawCommandList;
@@ -33,6 +34,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
     private final Reference2ReferenceMap<ChunkPrimitiveType, SharedQuadIndexBuffer> sharedIndexBuffers;
 
     private TerrainRenderPass currentRenderPass;
+    private GlVertexFormat currentVertexFormat;
 
     public DefaultChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
         super(device, renderPassConfiguration);
@@ -81,6 +83,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
             Iterator<ChunkRenderList> iterator = renderLists.iterator(renderPass.isReverseOrder());
 
             this.currentRenderPass = renderPass;
+            this.currentVertexFormat = this.renderPassConfiguration.getVertexTypeForPass(this.currentRenderPass).getVertexFormat();
 
             while (iterator.hasNext()) {
                 ChunkRenderList renderList = iterator.next();
@@ -108,6 +111,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
                 executeDrawBatch(commandList, tessellation, primitiveType, this.batch);
             }
 
+            this.currentVertexFormat = null;
             this.currentRenderPass = null;
 
             GLDebug.popGroup();
@@ -262,7 +266,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
     }
 
     private GlTessellation prepareTessellation(CommandList commandList, RenderRegion region) {
-        var resources = region.getResources();
+        var resources = region.getResources(this.currentVertexFormat);
         var tessellation = this.currentRenderPass.isSorted() ? resources.getIndexedTessellation() : resources.getTessellation();
 
         if (tessellation == null) {
@@ -278,7 +282,7 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
     }
 
     private GlVertexAttributeBinding[] generateVertexAttributeBindings() {
-        var attributes = this.renderPassConfiguration.getVertexTypeForPass(this.currentRenderPass).getVertexFormat().getAttributes();
+        var attributes = this.currentVertexFormat.getAttributes();
         var bindings = new GlVertexAttributeBinding[attributes.size()];
         int i = 0;
         for (var attr : attributes) {

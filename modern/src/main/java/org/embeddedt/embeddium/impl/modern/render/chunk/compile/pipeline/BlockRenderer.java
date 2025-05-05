@@ -170,7 +170,7 @@ public class BlockRenderer {
 
         var isMaterialSolid = material == buffers.getRenderPassConfiguration().defaultSolidMaterial();
 
-        var encoder = buffers.getEncoder();
+        var encoder = buffers.getRenderPassConfiguration().getVertexTypeForPass(material.pass).getEncoder();
 
         for (Direction face : DirectionUtil.ALL_DIRECTIONS) {
             List<BakedQuad> quads = this.getGeometry(ctx, face);

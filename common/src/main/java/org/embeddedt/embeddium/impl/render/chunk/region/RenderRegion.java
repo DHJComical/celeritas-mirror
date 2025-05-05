@@ -1,21 +1,24 @@
 package org.embeddedt.embeddium.impl.render.chunk.region;
 
 import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.gl.arena.GlBufferArena;
 import org.embeddedt.embeddium.impl.gl.arena.staging.StagingBuffer;
+import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.buffer.GlBuffer;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
-import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,16 +50,14 @@ public class RenderRegion {
     private int sectionCount;
 
     private final Map<TerrainRenderPass, SectionRenderDataStorage> sectionRenderData = new Reference2ReferenceOpenHashMap<>();
-    private DeviceResources resources;
-    private final int stride;
+    private final Int2ObjectMap<DeviceResources> resourcesByVertexStride = new Int2ObjectArrayMap<>();
 
-    public RenderRegion(int x, int y, int z, StagingBuffer stagingBuffer, int stride) {
+    public RenderRegion(int x, int y, int z, StagingBuffer stagingBuffer) {
         this.x = x;
         this.y = y;
         this.z = z;
 
         this.stagingBuffer = stagingBuffer;
-        this.stride = stride;
     }
 
     public static long key(int x, int y, int z) {
@@ -106,10 +107,8 @@ public class RenderRegion {
 
         this.sectionRenderData.clear();
 
-        if (this.resources != null) {
-            this.resources.delete(commandList);
-            this.resources = null;
-        }
+        this.resourcesByVertexStride.values().forEach(resources -> resources.delete(commandList));
+        this.resourcesByVertexStride.clear();
 
         Arrays.fill(this.sections, null);
     }
@@ -165,9 +164,7 @@ public class RenderRegion {
     }
 
     public void refresh(CommandList commandList) {
-        if (this.resources != null) {
-            this.resources.deleteTessellations(commandList);
-        }
+        this.resourcesByVertexStride.values().forEach(resources -> resources.deleteTessellations(commandList));
 
         for (var storage : this.sectionRenderData.values()) {
             storage.onBufferResized();
@@ -209,27 +206,35 @@ public class RenderRegion {
         return this.sections[id];
     }
 
-    public DeviceResources getResources() {
-        return this.resources;
+    public Collection<DeviceResources> getAllResources() {
+        return this.resourcesByVertexStride.values();
     }
 
-    public DeviceResources createResources(CommandList commandList) {
-        if (this.resources == null) {
-            this.resources = new DeviceResources(commandList, this.stagingBuffer, this.stride);
+    public DeviceResources getResources(GlVertexFormat format) {
+        return this.resourcesByVertexStride.get(format.getStride());
+    }
+
+    public DeviceResources createResources(GlVertexFormat format, CommandList commandList) {
+        var resources = getResources(format);
+        if (resources == null) {
+            resources = new DeviceResources(commandList, this.stagingBuffer, format.getStride());
+
+            this.resourcesByVertexStride.put(format.getStride(), resources);
         }
 
-        return this.resources;
+        return resources;
     }
 
     public void update(CommandList commandList) {
-        if (this.resources != null) {
-            if (this.resources.shouldDelete()) {
-                this.resources.delete(commandList);
-                this.resources = null;
+        this.resourcesByVertexStride.values().removeIf(resources -> {
+            if (resources.shouldDelete()) {
+                resources.delete(commandList);
+                return true;
             } else {
-                this.resources.deleteIndexArenaIfPossible(commandList);
+                resources.deleteIndexArenaIfPossible(commandList);
+                return false;
             }
-        }
+        });
     }
 
     public static class DeviceResources {

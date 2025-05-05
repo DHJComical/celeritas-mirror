@@ -254,8 +254,8 @@ public class FluidRenderer {
         var blockPos = ctx.pos();
         var world = ctx.localSlice();
         var offset = ctx.origin();
-        var encoder = buffers.getEncoder();
         var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(ctx.renderLayer());
+        var encoder = buffers.getRenderPassConfiguration().getVertexTypeForPass(material.pass).getEncoder();
         var meshBuilder = buffers.get(material);
         Fluid fluid = fluidState.getType();
 

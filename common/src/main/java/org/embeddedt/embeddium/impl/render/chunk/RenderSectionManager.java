@@ -688,26 +688,22 @@ public abstract class RenderSectionManager {
         long indexUsed = 0, indexAllocated = 0;
 
         for (var region : this.regions.getLoadedRegions()) {
-            var resources = region.getResources();
+            for (var resources : region.getAllResources()) {
+                var buffer = resources.getGeometryArena();
 
-            if (resources == null) {
-                continue;
+                deviceUsed += buffer.getDeviceUsedMemoryL();
+                deviceAllocated += buffer.getDeviceAllocatedMemoryL();
+
+                var indexBuffer = resources.getIndexArena();
+
+                if (indexBuffer != null) {
+                    indexUsed += indexBuffer.getDeviceUsedMemoryL();
+                    indexAllocated += indexBuffer.getDeviceAllocatedMemoryL();
+                    indexCount++;
+                }
+
+                count++;
             }
-
-            var buffer = resources.getGeometryArena();
-
-            deviceUsed += buffer.getDeviceUsedMemoryL();
-            deviceAllocated += buffer.getDeviceAllocatedMemoryL();
-
-            var indexBuffer = resources.getIndexArena();
-
-            if (indexBuffer != null) {
-                indexUsed += indexBuffer.getDeviceUsedMemoryL();
-                indexAllocated += indexBuffer.getDeviceAllocatedMemoryL();
-                indexCount++;
-            }
-
-            count++;
         }
 
         list.add(String.format("Geometry Pool: %d/%d MiB (%d buffers)", MathUtil.toMib(deviceUsed), MathUtil.toMib(deviceAllocated), count));

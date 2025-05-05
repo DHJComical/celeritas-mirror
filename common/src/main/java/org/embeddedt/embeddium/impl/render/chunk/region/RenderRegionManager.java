@@ -6,6 +6,7 @@ import org.embeddedt.embeddium.impl.gl.arena.PendingUpload;
 import org.embeddedt.embeddium.impl.gl.arena.staging.FallbackStagingBuffer;
 import org.embeddedt.embeddium.impl.gl.arena.staging.MappedStagingBuffer;
 import org.embeddedt.embeddium.impl.gl.arena.staging.StagingBuffer;
+import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
@@ -64,7 +65,7 @@ public class RenderRegionManager {
     }
 
     private void uploadMeshes(CommandList commandList, RenderRegion region, Collection<ChunkBuildOutput> results) {
-        var uploads = new ArrayList<PendingSectionUpload>();
+        Map<GlVertexFormat, ArrayList<PendingSectionUpload>> uploadsByFormat = new Object2ObjectOpenHashMap<>(2);
 
         boolean needIndexBuffer = false;
 
@@ -74,6 +75,8 @@ public class RenderRegionManager {
 
             // Add uploads for any new data
             for (var entry : fastIterable(result.meshes)) {
+                var format = this.renderPassConfiguration.getVertexTypeForPass(entry.getKey()).getVertexFormat();
+                var uploads = uploadsByFormat.computeIfAbsent(format, $ -> new ArrayList<>());
                 BuiltSectionMeshParts mesh = Objects.requireNonNull(entry.getValue());
 
                 needIndexBuffer |= mesh.getIndexData() != null;
@@ -84,19 +87,24 @@ public class RenderRegionManager {
         }
 
         // If we have nothing to upload, abort!
-        if (uploads.isEmpty()) {
+        if (uploadsByFormat.isEmpty()) {
             return;
         }
 
-        var resources = region.createResources(commandList);
-        var geometryArena = resources.getGeometryArena();
+        boolean bufferChanged = false;
 
-        boolean bufferChanged = geometryArena.upload(commandList, uploads.stream()
-                .map(upload -> upload.vertexUpload));
+        for (var entry : uploadsByFormat.entrySet()) {
+            var resources = region.createResources(entry.getKey(), commandList);
+            var uploads = entry.getValue();
+            var geometryArena = resources.getGeometryArena();
 
-        if (needIndexBuffer) {
-            bufferChanged |= resources.getOrCreateIndexArena(commandList).upload(commandList, uploads.stream()
-                    .map(upload -> upload.indexUpload).filter(Objects::nonNull));
+            bufferChanged |= geometryArena.upload(commandList, uploads.stream()
+                    .map(upload -> upload.vertexUpload));
+
+            if (needIndexBuffer) {
+                bufferChanged |= resources.getOrCreateIndexArena(commandList).upload(commandList, uploads.stream()
+                        .map(upload -> upload.indexUpload).filter(Objects::nonNull));
+            }
         }
 
 
@@ -107,20 +115,24 @@ public class RenderRegionManager {
         }
 
         // Collect the upload results
-        for (PendingSectionUpload upload : uploads) {
-            var storage = region.createStorage(upload.pass);
-            storage.setMeshes(upload.section.getSectionIndex(),
-                    upload.vertexUpload.getResult(), upload.indexUpload != null ? upload.indexUpload.getResult() : null, upload.meshData.getVertexRanges());
+        for (var uploads : uploadsByFormat.values()) {
+            for (PendingSectionUpload upload : uploads) {
+                var storage = region.createStorage(upload.pass);
+                storage.setMeshes(upload.section.getSectionIndex(),
+                        upload.vertexUpload.getResult(), upload.indexUpload != null ? upload.indexUpload.getResult() : null, upload.meshData.getVertexRanges());
+            }
         }
 
         region.removeEmptyStorages();
     }
 
     private void uploadResorts(CommandList commandList, RenderRegion region, Collection<ChunkBuildOutput> results) {
-        var uploads = new ArrayList<PendingResortUpload>();
+        Map<GlVertexFormat, ArrayList<PendingResortUpload>> uploadsByFormat = new Object2ObjectOpenHashMap<>(2);
 
         for (ChunkBuildOutput result : results) {
             for (var entry : fastIterable(result.meshes)) {
+                var format = this.renderPassConfiguration.getVertexTypeForPass(entry.getKey()).getVertexFormat();
+                var uploads = uploadsByFormat.computeIfAbsent(format, $ -> new ArrayList<>());
                 var pass = entry.getKey();
                 var mesh = entry.getValue();
 
@@ -137,14 +149,19 @@ public class RenderRegionManager {
         }
 
         // If we have nothing to upload, abort!
-        if (uploads.isEmpty()) {
+        if (uploadsByFormat.isEmpty()) {
             return;
         }
 
-        var resources = region.createResources(commandList);
+        boolean bufferChanged = false;
 
-        boolean bufferChanged = resources.getOrCreateIndexArena(commandList).upload(commandList, uploads.stream()
-                .map(upload -> upload.indexUpload).filter(Objects::nonNull));
+        for (var entry : uploadsByFormat.entrySet()) {
+            var resources = region.createResources(entry.getKey(), commandList);
+            var uploads = entry.getValue();
+
+            bufferChanged |= resources.getOrCreateIndexArena(commandList).upload(commandList, uploads.stream()
+                    .map(upload -> upload.indexUpload).filter(Objects::nonNull));
+        }
 
         // If any of the buffers changed, the tessellation will need to be updated
         // Once invalidated the tessellation will be re-created on the next attempted use
@@ -153,9 +170,11 @@ public class RenderRegionManager {
         }
 
         // Collect the upload results
-        for (PendingResortUpload upload : uploads) {
-            var storage = region.createStorage(upload.pass);
-            storage.replaceIndexBuffer(upload.section.getSectionIndex(), upload.indexUpload.getResult());
+        for (var uploads : uploadsByFormat.values()) {
+            for (PendingResortUpload upload : uploads) {
+                var storage = region.createStorage(upload.pass);
+                storage.replaceIndexBuffer(upload.section.getSectionIndex(), upload.indexUpload.getResult());
+            }
         }
     }
 
@@ -199,7 +218,7 @@ public class RenderRegionManager {
         var instance = this.regions.get(key);
 
         if (instance == null) {
-            this.regions.put(key, instance = new RenderRegion(x, y, z, this.stagingBuffer, this.renderPassConfiguration.vertexType().getVertexFormat().getStride()));
+            this.regions.put(key, instance = new RenderRegion(x, y, z, this.stagingBuffer));
         }
 
         return instance;
