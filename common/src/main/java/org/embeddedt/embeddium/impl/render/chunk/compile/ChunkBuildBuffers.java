@@ -34,18 +34,11 @@ public final class ChunkBuildBuffers {
     @Getter
     private final RenderPassConfiguration<?> renderPassConfiguration;
 
-    @Getter
-    private final ChunkVertexEncoder encoder;
-    private final int stride;
-
     private ContextBundle<RenderSection> renderData;
     private int sectionIndex;
 
     public ChunkBuildBuffers(RenderPassConfiguration<?> configuration) {
         this.renderPassConfiguration = configuration;
-
-        this.encoder = configuration.vertexType().getEncoder();
-        this.stride = configuration.vertexType().getVertexFormat().getStride();
     }
 
     public void init(ContextBundle<RenderSection> renderData, int sectionIndex) {
@@ -65,7 +58,8 @@ public final class ChunkBuildBuffers {
     }
 
     private ChunkModelBuilder createBuilder(TerrainRenderPass pass) {
-        var builder = new BakedChunkModelBuilder(encoder, stride, pass);
+        var vertexType = this.renderPassConfiguration.getVertexTypeForPass(pass);
+        var builder = new BakedChunkModelBuilder(vertexType.getEncoder(), vertexType.getVertexFormat().getStride(), pass);
         Objects.requireNonNull(renderData, "Buffers have not been started");
         builder.begin(renderData, sectionIndex);
         this.builders.put(pass, builder);

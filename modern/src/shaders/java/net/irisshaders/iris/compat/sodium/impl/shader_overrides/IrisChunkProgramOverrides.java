@@ -241,7 +241,8 @@ public class IrisChunkProgramOverrides {
 			builder.attachShader(vertShader)
 				.attachShader(fragShader);
             int i = 0;
-            for (var attr : configuration.vertexType().getVertexFormat().getAttributes()) {
+            var vertexType = configuration.getVertexTypeForPass(pass.toTerrainPass(configuration));
+            for (var attr : vertexType.getVertexFormat().getAttributes()) {
                 builder.bindAttribute(attr.getName(), i++);
             }
 			return builder
@@ -249,7 +250,7 @@ public class IrisChunkProgramOverrides {
 					int handle = ((GlObject) shader).handle();
 					ShaderBindingContext contextExt = shader;
 					GLDebug.nameObject(GL43C.GL_PROGRAM, handle, "sodium-terrain-" + pass.toString().toLowerCase(Locale.ROOT));
-					return new IrisChunkShaderInterface(handle, contextExt, pipeline, new ChunkShaderOptions(ChunkFogMode.SMOOTH, pass.toTerrainPass(configuration), configuration.vertexType()),
+					return new IrisChunkShaderInterface(handle, contextExt, pipeline, new ChunkShaderOptions(ChunkFogMode.SMOOTH, pass.toTerrainPass(configuration), vertexType),
 						tessCShader != null || tessEShader != null, pass == IrisTerrainPass.SHADOW || pass == IrisTerrainPass.SHADOW_CUTOUT, blendOverride, bufferOverrides, alpha, pipeline.getCustomUniforms());
 				});
 		} finally {
