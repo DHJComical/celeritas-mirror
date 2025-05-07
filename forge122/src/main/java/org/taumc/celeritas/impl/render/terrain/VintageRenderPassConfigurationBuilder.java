@@ -12,7 +12,9 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.taumc.celeritas.CeleritasVintage;
 
+import java.util.Locale;
 import java.util.Map;
 
 public class VintageRenderPassConfigurationBuilder {
@@ -80,8 +82,17 @@ public class VintageRenderPassConfigurationBuilder {
         renderTypeToMaterialMap.put(BlockRenderLayer.CUTOUT_MIPPED, cutoutMippedMaterial);
         renderTypeToMaterialMap.put(BlockRenderLayer.TRANSLUCENT, translucentMaterial);
 
+        for (BlockRenderLayer layer : BlockRenderLayer.values()) {
+            if (!renderTypeToMaterialMap.containsKey(layer)) {
+                CeleritasVintage.logger().warn("Falling back to cutout-like behavior for custom block render layer '{}'", layer);
+                TerrainRenderPass pass = builderForRenderType(layer).name(layer.name().toLowerCase(Locale.ROOT)).fragmentDiscard(true).useReverseOrder(false).build();
+                Material material = new Material(pass, AlphaCutoffParameter.ONE_TENTH, true);
+                vanillaRenderStages.put(layer, pass);
+                renderTypeToMaterialMap.put(layer, material);
+            }
+        }
+
         var vanillaRenderStageMap = vanillaRenderStages.build();
-        var allPasses = vanillaRenderStageMap.values().stream().distinct().toList();
 
         return new RenderPassConfiguration<>(vertexType,
                 renderTypeToMaterialMap,
