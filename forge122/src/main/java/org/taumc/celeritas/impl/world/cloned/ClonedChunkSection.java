@@ -2,6 +2,7 @@ package org.taumc.celeritas.impl.world.cloned;
 
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
+import lombok.Getter;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -13,6 +14,8 @@ import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
+import org.taumc.celeritas.impl.compat.fluidlogged.FluidStateStorage;
+import org.taumc.celeritas.impl.compat.fluidlogged.FluidloggedCompat;
 
 import java.util.Map;
 
@@ -23,6 +26,8 @@ public class ClonedChunkSection {
     private final World world;
 
     private final ExtendedBlockStorage data;
+    @Getter
+    private final FluidStateStorage fluidData;
 
     private final Biome[] biomeData;
 
@@ -50,6 +55,11 @@ public class ClonedChunkSection {
         }
 
         this.data = section;
+        if (FluidloggedCompat.IS_LOADED) {
+            this.fluidData = new FluidStateStorage(chunk, y << 4);
+        } else {
+            this.fluidData = null;
+        }
         this.biomeData = new Biome[chunk.getBiomeArray().length];
 
         if (!chunk.getTileEntityMap().isEmpty()) {

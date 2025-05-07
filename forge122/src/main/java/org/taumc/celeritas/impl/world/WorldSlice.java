@@ -1,5 +1,6 @@
 package org.taumc.celeritas.impl.world;
 
+import git.jbredwards.fluidlogged_api.api.util.FluidState;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -20,10 +21,12 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraftforge.client.model.pipeline.LightUtil;
+import net.minecraftforge.fml.common.Optional;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3i;
+import org.taumc.celeritas.impl.compat.fluidlogged.FluidloggedCompat;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 import org.taumc.celeritas.impl.world.biome.BiomeColorCache;
 import org.taumc.celeritas.impl.world.cloned.CeleritasBlockAccess;
@@ -85,6 +88,9 @@ public class WorldSlice implements CeleritasBlockAccess {
 
     // Local Section->BlockState table.
     private final IBlockState[][] blockStatesArrays;
+
+    // Local Section->FluidState table.
+    private final Object[][] fluidStatesArrays;
 
     // Local section copies. Read-only.
     private ClonedChunkSection[] sections;
@@ -160,6 +166,8 @@ public class WorldSlice implements CeleritasBlockAccess {
         this.blockStatesArrays = new IBlockState[SECTION_TABLE_ARRAY_SIZE][];
         this.biomeCaches = new Biome[SECTION_TABLE_ARRAY_SIZE][16 * 16];
         this.biomeColorCache = new BiomeColorCache(this, 3);
+        if(!FluidloggedCompat.IS_LOADED) this.fluidStatesArrays = null;
+        else this.fluidStatesArrays = new Object[SECTION_TABLE_ARRAY_SIZE][];
 
         for (int x = 0; x < SECTION_LENGTH; x++) {
             for (int y = 0; y < SECTION_LENGTH; y++) {
@@ -168,6 +176,11 @@ public class WorldSlice implements CeleritasBlockAccess {
 
                     this.blockStatesArrays[i] = new IBlockState[SECTION_BLOCK_COUNT];
                     Arrays.fill(this.blockStatesArrays[i], EMPTY_BLOCK_STATE);
+
+                    if (FluidloggedCompat.IS_LOADED) {
+                        this.fluidStatesArrays[i] = new Object[SECTION_BLOCK_COUNT];
+                        Arrays.fill(this.fluidStatesArrays[i], FluidloggedCompat.getEmptyFluidState());
+                    }
                 }
             }
         }
@@ -195,6 +208,10 @@ public class WorldSlice implements CeleritasBlockAccess {
                     this.biomeCaches[idx] = section.getBiomeData();
 
                     this.unpackBlockData(this.blockStatesArrays[idx], section, context.getVolume());
+
+                    if (FluidloggedCompat.IS_LOADED) {
+                        this.unpackFluidData(this.fluidStatesArrays[idx], section, context.getVolume());
+                    }
                 }
             }
         }
@@ -209,6 +226,21 @@ public class WorldSlice implements CeleritasBlockAccess {
             this.unpackBlockDataZ(states, section);
         } else {
             this.unpackBlockDataR(states, section, box);
+        }
+    }
+
+    private void unpackFluidData(Object[] states, ClonedChunkSection section, StructureBoundingBox box) {
+        var storage = section.getFluidData();
+        if (storage.isEmpty()) {
+            Arrays.fill(states, FluidloggedCompat.getEmptyFluidState());
+            return;
+        }
+        for (int y = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++) {
+                for (int x = 0; x < 16; x++) {
+                    states[getLocalBlockIndex(x, y, z)] = storage.get(x, y, z);
+                }
+            }
         }
     }
 
@@ -500,6 +532,29 @@ public class WorldSlice implements CeleritasBlockAccess {
                 return EMPTY_BLOCK_STATE;
             }
         }
+    }
+
+    // Fluidlogged compat
+
+    @Override
+    @Optional.Method(modid = FluidloggedCompat.MODID)
+    public FluidState getFluidState(int x, int y, int z) {
+        if (!blockBoxContains(this.volume, x, y, z)) {
+            return FluidloggedCompat.getEmptyFluidState();
+        }
+
+        int relX = x - this.baseX;
+        int relY = y - this.baseY;
+        int relZ = z - this.baseZ;
+
+        return (FluidState)this.fluidStatesArrays[getLocalSectionIndex(relX >> 4, relY >> 4, relZ >> 4)]
+                [getLocalBlockIndex(relX & 15, relY & 15, relZ & 15)];
+    }
+
+    @Override
+    @Optional.Method(modid = FluidloggedCompat.MODID)
+    public World getWorld() {
+        return world;
     }
 
     // [VanillaCopy] PalettedContainer#toIndex

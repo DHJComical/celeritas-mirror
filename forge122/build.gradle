@@ -45,6 +45,17 @@ repositories {
             includeGroup "curse.maven"
         }
     }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
     maven {
         // location of the maven that hosts JEI files
         name = "Progwml6 maven"
@@ -61,6 +72,11 @@ repositories {
 archivesBaseName = "celeritas-forge-1.12.2"
 
 evaluationDependsOn(":common")
+
+configurations {
+    modCompileOnly
+    compileOnly.extendsFrom modCompileOnly
+}
 
 unimined.minecraft {
     combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
@@ -101,6 +117,11 @@ unimined.minecraft {
     runs.config('server') {
         enabled = false
     }
+
+    mods {
+        remap(configurations.modCompileOnly) {
+        }
+    }
 }
 
 dependencies {
@@ -120,6 +141,7 @@ dependencies {
     implementation("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.7") {
         exclude group: 'org.apache.logging.log4j'
     }
+
     def lwjglVersion = "3.3.3"
     implementation "org.lwjgl:lwjgl:${lwjglVersion}"
     implementation "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
@@ -130,6 +152,7 @@ dependencies {
     implementation "org.lwjgl:lwjgl-glfw:${lwjglVersion}:natives-linux"
     implementation "org.lwjgl:lwjgl-stb:${lwjglVersion}:natives-linux"
 
+    modCompileOnly("maven.modrinth:fluidlogged-api:3.0.6")
 }
 
 processResources {

@@ -29,6 +29,7 @@ import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.joml.Vector3d;
+import org.taumc.celeritas.impl.compat.fluidlogged.FluidloggedCompat;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageRenderSectionBuiltInfo;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
@@ -110,6 +111,10 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                                 var buffer = buildContext.getBufferBuilderForLayer(layer);
                                 dispatcher.renderBlock(blockState, blockPos, slice, buffer);
                             }
+                        }
+
+                        if (FluidloggedCompat.IS_LOADED) {
+                            FluidloggedCompat.renderFluidState(slice, blockPos, blockState, buildContext, dispatcher);
                         }
 
                         if (blockState.isOpaqueCube()) {
