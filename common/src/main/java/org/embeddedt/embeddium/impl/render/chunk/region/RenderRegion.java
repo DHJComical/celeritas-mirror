@@ -2,7 +2,6 @@ package org.embeddedt.embeddium.impl.render.chunk.region;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.gl.arena.GlBufferArena;
 import org.embeddedt.embeddium.impl.gl.arena.staging.StagingBuffer;
@@ -50,7 +49,7 @@ public class RenderRegion {
     private int sectionCount;
 
     private final Map<TerrainRenderPass, SectionRenderDataStorage> sectionRenderData = new Reference2ReferenceOpenHashMap<>();
-    private final Int2ObjectMap<DeviceResources> resourcesByVertexStride = new Int2ObjectArrayMap<>();
+    private final Int2ObjectArrayMap<DeviceResources> resourcesByVertexStride = new Int2ObjectArrayMap<>();
 
     public RenderRegion(int x, int y, int z, StagingBuffer stagingBuffer) {
         this.x = x;
@@ -226,15 +225,17 @@ public class RenderRegion {
     }
 
     public void update(CommandList commandList) {
-        this.resourcesByVertexStride.values().removeIf(resources -> {
+        var iter = this.resourcesByVertexStride.int2ObjectEntrySet().iterator();
+        while (iter.hasNext()) {
+            var entry = iter.next();
+            var resources = entry.getValue();
             if (resources.shouldDelete()) {
                 resources.delete(commandList);
-                return true;
+                iter.remove();
             } else {
                 resources.deleteIndexArenaIfPossible(commandList);
-                return false;
             }
-        });
+        }
     }
 
     public static class DeviceResources {
