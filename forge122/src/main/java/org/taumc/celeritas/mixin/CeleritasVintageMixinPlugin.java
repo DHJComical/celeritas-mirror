@@ -68,7 +68,6 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
                     try {
                         return Stream.of(Path.of(url.toURI()));
                     } catch (Exception e) {
-                        LOGGER.error("Exception making URI", e);
                         return Stream.empty();
                     }
                 })
