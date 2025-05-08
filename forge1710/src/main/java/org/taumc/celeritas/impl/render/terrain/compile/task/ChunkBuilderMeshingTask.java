@@ -7,6 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
@@ -16,13 +17,14 @@ import net.minecraft.util.ReportedException;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.common.util.ForgeDirection;
-import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
+import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -32,7 +34,6 @@ import org.joml.Vector3d;
 import org.taumc.celeritas.impl.extensions.TessellatorExtension;
 import org.taumc.celeritas.impl.extensions.WorldClientExtension;
 import org.taumc.celeritas.impl.render.terrain.compile.ArchaicChunkBuildContext;
-import org.taumc.celeritas.impl.render.terrain.compile.ArchaicRenderSectionBuiltInfo;
 import org.taumc.celeritas.impl.render.terrain.occlusion.ChunkOcclusionDataBuilder;
 import org.taumc.celeritas.impl.world.biome.SmoothBiomeColorCache;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
@@ -78,8 +79,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     @Override
     public ChunkBuildOutput execute(ChunkBuildContext context, CancellationToken cancellationToken) {
         ArchaicChunkBuildContext buildContext = (ArchaicChunkBuildContext)context;
-        ContextBundle<RenderSection> renderData = new ContextBundle<>(RenderSection.class);
-        initializeContextBundle(renderData);
+        MinecraftBuiltRenderSectionData<TextureAtlasSprite, TileEntity> renderData = new MinecraftBuiltRenderSectionData<>();
         ChunkOcclusionDataBuilder occluder = new ChunkOcclusionDataBuilder();
 
         ChunkBuildBuffers buffers = buildContext.buffers;
@@ -127,7 +127,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         if (block.hasTileEntity(section.getExtBlockMetadata(x & 15, y & 15, z & 15))) {
                             TileEntity tileEntity = chunk.getBlockTileEntityInChunk(x & 15, y, z & 15);
                             if (TileEntityRendererDispatcher.instance.hasSpecialRenderer(tileEntity)) {
-                                renderData.getContext(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES).add(tileEntity);
+                                renderData.globalBlockEntities.add(tileEntity);
                             }
                         }
 
@@ -164,7 +164,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes = BuiltSectionMeshParts.groupFromBuildBuffers(buffers,(float)camera.x - minX, (float)camera.y - minY, (float)camera.z - minZ);
 
         if (!meshes.isEmpty()) {
-            renderData.setContext(ArchaicRenderSectionBuiltInfo.HAS_BLOCK_GEOMETRY, true);
+            renderData.hasBlockGeometry = true;
         }
 
         encodeVisibilityData(occluder, renderData);
@@ -205,19 +205,10 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         FACINGS[GraphDirection.SOUTH] = ForgeDirection.SOUTH;
     }
 
-    private static void initializeContextBundle(ContextBundle<RenderSection> renderData) {
-        renderData.setContext(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, new ArrayList<>());
-        renderData.setContext(ArchaicRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, new ArrayList<>());
-        renderData.setContext(ArchaicRenderSectionBuiltInfo.ANIMATED_SPRITES, new ObjectOpenHashSet<>());
-    }
 
-    private static void encodeVisibilityData(ChunkOcclusionDataBuilder occluder, ContextBundle<RenderSection> renderData) {
+    private static void encodeVisibilityData(ChunkOcclusionDataBuilder occluder, BuiltRenderSectionData renderData) {
         var data = occluder.build();
-        renderData.setContext(RenderSection.VISIBILITY_DATA, VisibilityEncoding.encode((from, to) -> data.isVisibleThrough(FACINGS[from], FACINGS[to])));
-
-        renderData.mapContext(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(ArchaicRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(ArchaicRenderSectionBuiltInfo.ANIMATED_SPRITES, List::copyOf);
+        renderData.visibilityData = VisibilityEncoding.encode((from, to) -> data.isVisibleThrough(FACINGS[from], FACINGS[to]));
     }
 
 }

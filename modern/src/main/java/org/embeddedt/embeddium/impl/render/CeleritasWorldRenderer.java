@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
@@ -20,10 +21,10 @@ import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.model.quad.blender.BlendedColorProvider;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ChunkRenderMatricesBuilder;
-import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkStatus;
@@ -351,87 +352,11 @@ public class CeleritasWorldRenderer {
      * that method is not feasible.
      */
     public Iterator<BlockEntity> blockEntityIterator() {
-        List<Iterator<BlockEntity>> iterators = new ArrayList<>();
-
-        SortedRenderLists renderLists = this.renderSectionManager.getRenderLists();
-        Iterator<ChunkRenderList> renderListIterator = renderLists.iterator();
-
-        while (renderListIterator.hasNext()) {
-            var renderList = renderListIterator.next();
-
-            var renderRegion = renderList.getRegion();
-            var renderSectionIterator = renderList.sectionsWithEntitiesIterator();
-
-            if (renderSectionIterator == null) {
-                continue;
-            }
-
-            while (renderSectionIterator.hasNext()) {
-                var renderSectionId = renderSectionIterator.nextByteAsInt();
-                var renderSection = renderRegion.getSection(renderSectionId);
-
-                if (renderSection == null) {
-                    continue;
-                }
-
-                var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
-
-                if (blockEntities.isEmpty()) {
-                    continue;
-                }
-
-                iterators.add(blockEntities.iterator());
-            }
-        }
-
-        for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
-            var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
-
-            if (blockEntities.isEmpty()) {
-                continue;
-            }
-
-            iterators.add(blockEntities.iterator());
-        }
-
-        if(iterators.isEmpty()) {
-            return Collections.emptyIterator();
-        } else {
-            return Iterators.concat(iterators.iterator());
-        }
+        return MinecraftBuiltRenderSectionData.generateBlockEntityIterator(this.renderSectionManager.getRenderLists(), this.renderSectionManager.getSectionsWithGlobalEntities());
     }
 
     public void forEachVisibleBlockEntity(Consumer<BlockEntity> consumer) {
-        SortedRenderLists renderLists = this.renderSectionManager.getRenderLists();
-        Iterator<ChunkRenderList> renderListIterator = renderLists.iterator();
-
-        while (renderListIterator.hasNext()) {
-            var renderList = renderListIterator.next();
-
-            var renderRegion = renderList.getRegion();
-            var renderSectionIterator = renderList.sectionsWithEntitiesIterator();
-
-            if (renderSectionIterator == null) {
-                continue;
-            }
-
-            while (renderSectionIterator.hasNext()) {
-                var renderSectionId = renderSectionIterator.nextByteAsInt();
-                var renderSection = renderRegion.getSection(renderSectionId);
-
-                if (renderSection == null) {
-                    continue;
-                }
-
-                var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
-                blockEntities.forEach(consumer);
-            }
-        }
-
-        for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
-            var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
-            blockEntities.forEach(consumer);
-        }
+        MinecraftBuiltRenderSectionData.forEachBlockEntity(consumer, this.renderSectionManager.getRenderLists(), this.renderSectionManager.getSectionsWithGlobalEntities());
     }
 
     public int renderBlockEntities(PoseStack poseStack,
@@ -502,7 +427,13 @@ public class CeleritasWorldRenderer {
                     continue;
                 }
 
-                var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
+                var context = renderSection.getBuiltContext();
+
+                if (!(context instanceof MinecraftBuiltRenderSectionData mcData)) {
+                    continue;
+                }
+
+                List<BlockEntity> blockEntities = mcData.culledBlockEntities;
 
                 if (blockEntities.isEmpty()) {
                     continue;
@@ -546,7 +477,13 @@ public class CeleritasWorldRenderer {
         int numRendered = 0;
 
         for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
-            var blockEntities = renderSection.getContextOrDefault(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
+            var context = renderSection.getBuiltContext();
+
+            if (!(context instanceof MinecraftBuiltRenderSectionData mcData)) {
+                continue;
+            }
+
+            List<BlockEntity> blockEntities = mcData.globalBlockEntities;
 
             if (blockEntities.isEmpty()) {
                 continue;

@@ -1,11 +1,9 @@
 package org.embeddedt.embeddium.impl.render.chunk;
 
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
-import it.unimi.dsi.fastutil.longs.Long2ReferenceMaps;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
-import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
@@ -15,19 +13,18 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobResult
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobCollector;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderSortTask;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
+import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.RenderListManager;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
-import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegionManager;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
@@ -38,7 +35,6 @@ import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
-import org.joml.Vector3i;
 import org.joml.Vector3ic;
 
 import java.util.*;
@@ -274,7 +270,7 @@ public abstract class RenderSectionManager {
         }
 
         if (this.isSectionVisuallyEmpty(x, y, z)) {
-            this.updateSectionInfo(renderSection, ContextBundle.empty());
+            this.updateSectionInfo(renderSection, RenderSection.EMPTY_DATA);
         } else {
             renderSection.setPendingUpdate(ChunkUpdateType.INITIAL_BUILD);
         }
@@ -414,9 +410,9 @@ public abstract class RenderSectionManager {
     }
 
     @MustBeInvokedByOverriders
-    protected void updateSectionInfo(RenderSection render, ContextBundle<RenderSection> info) {
+    protected void updateSectionInfo(RenderSection render, @Nullable BuiltRenderSectionData info) {
         render.setInfo(info);
-        long visibilityData = info != null ? info.getContext(RenderSection.VISIBILITY_DATA) : VisibilityEncoding.NULL;
+        long visibilityData = info != null ? info.visibilityData : VisibilityEncoding.NULL;
         this.renderListManager.updateVisibilityData(render.getChunkX(), render.getChunkY(), render.getChunkZ(), visibilityData);
         if (this.shadowRenderListManager != null) {
             this.shadowRenderListManager.updateVisibilityData(render.getChunkX(), render.getChunkY(), render.getChunkZ(), visibilityData);
@@ -490,7 +486,7 @@ public abstract class RenderSectionManager {
                     section.setTranslucencySortStates(Collections.emptyMap());
                 }
             } else {
-                var result = ChunkJobResult.successfully(new ChunkBuildOutput(section, ContextBundle.empty(), Reference2ReferenceMaps.emptyMap(), frame));
+                var result = ChunkJobResult.successfully(new ChunkBuildOutput(section, RenderSection.EMPTY_DATA, Reference2ReferenceMaps.emptyMap(), frame));
                 this.buildResults.add(result);
 
                 section.setBuildCancellationToken(null);

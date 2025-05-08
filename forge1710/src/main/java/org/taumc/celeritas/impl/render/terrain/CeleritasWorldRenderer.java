@@ -16,6 +16,7 @@ import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTracker;
@@ -30,7 +31,6 @@ import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.taumc.celeritas.CeleritasArchaic;
 import org.taumc.celeritas.impl.extensions.RenderGlobalExtension;
-import org.taumc.celeritas.impl.render.terrain.compile.ArchaicRenderSectionBuiltInfo;
 import org.taumc.celeritas.mixin.core.terrain.ActiveRenderInfoAccessor;
 
 import java.util.*;
@@ -302,87 +302,11 @@ public class CeleritasWorldRenderer {
      * that method is not feasible.
      */
     public Iterator<TileEntity> blockEntityIterator() {
-        List<Iterator<TileEntity>> iterators = new ArrayList<>();
-
-        SortedRenderLists renderLists = this.renderSectionManager.getRenderLists();
-        Iterator<ChunkRenderList> renderListIterator = renderLists.iterator();
-
-        while (renderListIterator.hasNext()) {
-            var renderList = renderListIterator.next();
-
-            var renderRegion = renderList.getRegion();
-            var renderSectionIterator = renderList.sectionsWithEntitiesIterator();
-
-            if (renderSectionIterator == null) {
-                continue;
-            }
-
-            while (renderSectionIterator.hasNext()) {
-                var renderSectionId = renderSectionIterator.nextByteAsInt();
-                var renderSection = renderRegion.getSection(renderSectionId);
-
-                if (renderSection == null) {
-                    continue;
-                }
-
-                var blockEntities = renderSection.getContextOrDefault(ArchaicRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
-
-                if (blockEntities.isEmpty()) {
-                    continue;
-                }
-
-                iterators.add(blockEntities.iterator());
-            }
-        }
-
-        for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
-            var blockEntities = renderSection.getContextOrDefault(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
-
-            if (blockEntities.isEmpty()) {
-                continue;
-            }
-
-            iterators.add(blockEntities.iterator());
-        }
-
-        if(iterators.isEmpty()) {
-            return Collections.emptyIterator();
-        } else {
-            return Iterators.concat(iterators.iterator());
-        }
+        return MinecraftBuiltRenderSectionData.generateBlockEntityIterator(this.renderSectionManager.getRenderLists(), this.renderSectionManager.getSectionsWithGlobalEntities());
     }
 
     public void forEachVisibleBlockEntity(Consumer<TileEntity> consumer) {
-        SortedRenderLists renderLists = this.renderSectionManager.getRenderLists();
-        Iterator<ChunkRenderList> renderListIterator = renderLists.iterator();
-
-        while (renderListIterator.hasNext()) {
-            var renderList = renderListIterator.next();
-
-            var renderRegion = renderList.getRegion();
-            var renderSectionIterator = renderList.sectionsWithEntitiesIterator();
-
-            if (renderSectionIterator == null) {
-                continue;
-            }
-
-            while (renderSectionIterator.hasNext()) {
-                var renderSectionId = renderSectionIterator.nextByteAsInt();
-                var renderSection = renderRegion.getSection(renderSectionId);
-
-                if (renderSection == null) {
-                    continue;
-                }
-
-                var blockEntities = renderSection.getContextOrDefault(ArchaicRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
-                blockEntities.forEach(consumer);
-            }
-        }
-
-        for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
-            var blockEntities = renderSection.getContextOrDefault(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
-            blockEntities.forEach(consumer);
-        }
+        MinecraftBuiltRenderSectionData.forEachBlockEntity(consumer, this.renderSectionManager.getRenderLists(), this.renderSectionManager.getSectionsWithGlobalEntities());
     }
 
     private void renderTE(TileEntity tileEntity, int pass, float partialTicks) {
@@ -428,7 +352,13 @@ public class CeleritasWorldRenderer {
                     continue;
                 }
 
-                var blockEntities = renderSection.getContextOrDefault(ArchaicRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES);
+                var context = renderSection.getBuiltContext();
+
+                if (!(context instanceof MinecraftBuiltRenderSectionData mcData)) {
+                    continue;
+                }
+
+                List<TileEntity> blockEntities = mcData.culledBlockEntities;
 
                 if (blockEntities.isEmpty()) {
                     continue;
@@ -443,7 +373,13 @@ public class CeleritasWorldRenderer {
 
     private void renderGlobalBlockEntities(int pass, float partialTicks) {
         for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
-            var blockEntities = renderSection.getContextOrDefault(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES);
+            var context = renderSection.getBuiltContext();
+
+            if (!(context instanceof MinecraftBuiltRenderSectionData mcData)) {
+                continue;
+            }
+
+            List<TileEntity> blockEntities = mcData.globalBlockEntities;
 
             if (blockEntities.isEmpty()) {
                 continue;

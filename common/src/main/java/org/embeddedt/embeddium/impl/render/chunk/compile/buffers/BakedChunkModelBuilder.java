@@ -1,8 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.buffers;
 
-import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
-import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
+import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.builder.ChunkMeshBufferBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
@@ -13,7 +12,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
     private final ChunkMeshBufferBuilder[] vertexBuffers;
     private final boolean splitBySide;
 
-    private ContextBundle<RenderSection> renderData;
+    private BuiltRenderSectionData renderData;
 
     public BakedChunkModelBuilder(ChunkVertexEncoder encoder, int stride, TerrainRenderPass pass) {
         var vertexBuffers = new ChunkMeshBufferBuilder[ModelQuadFacing.COUNT];
@@ -33,7 +32,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
     }
 
     @Override
-    public ContextBundle<RenderSection> getSectionContextBundle() {
+    public BuiltRenderSectionData getSectionContextBundle() {
         return this.renderData;
     }
 
@@ -45,7 +44,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
         }
     }
 
-    public void begin(ContextBundle<RenderSection> renderData, int sectionIndex) {
+    public void begin(BuiltRenderSectionData renderData, int sectionIndex) {
         this.renderData = renderData;
 
         for (var vertexBuffer : this.vertexBuffers) {

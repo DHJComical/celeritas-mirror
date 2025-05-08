@@ -1,12 +1,11 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
-import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
+import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
-
-import java.util.Map;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The result of a chunk rebuild task which contains any and all data that needs to be processed or uploaded on
@@ -16,19 +15,23 @@ import java.util.Map;
 public class ChunkBuildOutput {
     public final RenderSection render;
 
-    public final ContextBundle<RenderSection> info;
+    public final @Nullable BuiltRenderSectionData info;
     public final Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes;
 
     public final int buildTime;
 
     private boolean partialUpload;
 
-    public ChunkBuildOutput(RenderSection render, ContextBundle<RenderSection> info, Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes, int buildTime) {
+    public ChunkBuildOutput(RenderSection render, @Nullable BuiltRenderSectionData info, Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes, int buildTime) {
         this.render = render;
         this.info = info;
         this.meshes = meshes;
 
         this.buildTime = buildTime;
+
+        if (this.info != null) {
+            this.info.bake();
+        }
     }
 
     public BuiltSectionMeshParts getMesh(TerrainRenderPass pass) {

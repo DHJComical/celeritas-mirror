@@ -1,8 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.sprite;
 
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
-import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
@@ -13,12 +12,10 @@ import java.util.function.Consumer;
 
 public class GenericSectionSpriteTicker<T> implements SectionTicker {
     private final ReferenceOpenHashSet<T> sprites = new ReferenceOpenHashSet<>();
-    private final ContextBundle.Key<RenderSection, List<T>> key;
 
     private final Consumer<T> markActive;
 
-    public GenericSectionSpriteTicker(ContextBundle.Key<RenderSection, List<T>> key, Consumer<T> markActive) {
-        this.key = key;
+    public GenericSectionSpriteTicker(Consumer<T> markActive) {
         this.markActive = markActive;
     }
 
@@ -32,8 +29,6 @@ public class GenericSectionSpriteTicker<T> implements SectionTicker {
         this.sprites.clear();
 
         Iterator<ChunkRenderList> it = renderLists.iterator();
-
-        var key = this.key;
 
         while (it.hasNext()) {
             ChunkRenderList renderList = it.next();
@@ -52,7 +47,14 @@ public class GenericSectionSpriteTicker<T> implements SectionTicker {
                     continue;
                 }
 
-                var sprites = section.getContextOrDefault(key);
+                var context = section.getBuiltContext();
+
+                if (!(context instanceof MinecraftBuiltRenderSectionData<?,?> mcData)) {
+                    continue;
+                }
+
+                //noinspection unchecked
+                var sprites = (List<T>)mcData.animatedSprites;
 
                 // The iterator allocation is very expensive here for large render distances.
                 //noinspection ForLoopReplaceableByForEach

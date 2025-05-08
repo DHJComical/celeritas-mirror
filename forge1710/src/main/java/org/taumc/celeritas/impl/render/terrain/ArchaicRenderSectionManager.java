@@ -6,12 +6,12 @@ import it.unimi.dsi.fastutil.objects.ReferenceSets;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.chunk.Chunk;
-import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.render.chunk.*;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
-import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
+import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.GenericSectionSpriteTicker;
@@ -20,7 +20,6 @@ import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
 import org.jetbrains.annotations.Nullable;
 import org.taumc.celeritas.impl.render.terrain.compile.ArchaicChunkBuildContext;
-import org.taumc.celeritas.impl.render.terrain.compile.ArchaicRenderSectionBuiltInfo;
 import org.taumc.celeritas.impl.render.terrain.compile.task.ChunkBuilderMeshingTask;
 import org.taumc.celeritas.impl.render.terrain.sprite.SpriteUtil;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
@@ -98,10 +97,10 @@ public class ArchaicRenderSectionManager extends RenderSectionManager {
     }
 
     @Override
-    protected void updateSectionInfo(RenderSection render, ContextBundle<RenderSection> info) {
+    protected void updateSectionInfo(RenderSection render, BuiltRenderSectionData info) {
         super.updateSectionInfo(render, info);
 
-        if (info == null || info.getContext(ArchaicRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES).isEmpty()) {
+        if (info == null || (info instanceof MinecraftBuiltRenderSectionData<?, ?> mcInfo) && mcInfo.globalBlockEntities.isEmpty()) {
             this.sectionsWithGlobalEntities.remove(render);
         } else {
             this.sectionsWithGlobalEntities.add(render);
@@ -118,9 +117,8 @@ public class ArchaicRenderSectionManager extends RenderSectionManager {
         return ReferenceSets.unmodifiable(this.sectionsWithGlobalEntities);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected @Nullable SectionTicker createSectionTicker() {
-        return new GenericSectionSpriteTicker<>((ContextBundle.Key<RenderSection, List<TextureAtlasSprite>>)(Object)ArchaicRenderSectionBuiltInfo.ANIMATED_SPRITES, SpriteUtil::markSpriteActive);
+        return new GenericSectionSpriteTicker<>(SpriteUtil::markSpriteActive);
     }
 }

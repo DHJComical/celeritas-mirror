@@ -10,12 +10,12 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import org.embeddedt.embeddium.api.ChunkMeshEvent;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.Celeritas;
-import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks.ChunkBuilderMeshingTask;
@@ -23,6 +23,8 @@ import org.embeddedt.embeddium.impl.modern.render.chunk.config.ModernRenderPassC
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
+import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
@@ -123,17 +125,16 @@ public class ModernRenderSectionManager extends RenderSectionManager {
         super.scheduleSectionForRebuild(x, y, z, important);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected @Nullable SectionTicker createSectionTicker() {
-        return new GenericSectionSpriteTicker<>((ContextBundle.Key<RenderSection, List<TextureAtlasSprite>>)(Object)ModernRenderSectionBuiltInfo.ANIMATED_SPRITES, SpriteUtil::markSpriteActive);
+        return new GenericSectionSpriteTicker<>(SpriteUtil::markSpriteActive);
     }
 
     @Override
-    protected void updateSectionInfo(RenderSection render, ContextBundle<RenderSection> info) {
+    protected void updateSectionInfo(RenderSection render, BuiltRenderSectionData info) {
         super.updateSectionInfo(render, info);
 
-        if (info == null || info.getContext(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES).isEmpty()) {
+        if (info == null || (info instanceof MinecraftBuiltRenderSectionData<?, ?> mcInfo) && mcInfo.globalBlockEntities.isEmpty()) {
             this.sectionsWithGlobalEntities.remove(render);
         } else {
             this.sectionsWithGlobalEntities.add(render);

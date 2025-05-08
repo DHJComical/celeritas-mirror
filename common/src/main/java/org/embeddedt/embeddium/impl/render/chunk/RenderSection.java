@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk;
 
 import lombok.Getter;
-import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
+import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.RenderVisualsService;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
@@ -13,25 +13,27 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.ServiceLoader;
 
 /**
  * The render state object for a chunk section. This contains all the graphics state for each render pass along with
  * data about the render in the chunk visibility graph.
  */
 public class RenderSection extends AbstractSection {
-    private static final RenderVisualsService VISUALS_SERVICE = ServiceLoader.load(RenderVisualsService.class).findFirst().orElseThrow();
-
     // Render Region State
     private final RenderRegion region;
 
     // We must use EVERYTHING here for the default visibility encoding, so that ContextBundle.empty() would correspond
     // to the data generated for an empty section.
-    public static final ContextBundle.Key<RenderSection, Long> VISIBILITY_DATA = new ContextBundle.Key<>(RenderSection.class, VisibilityEncoding.EVERYTHING);
+    public static final BuiltRenderSectionData EMPTY_DATA = new BuiltRenderSectionData();
+
+    static {
+        EMPTY_DATA.hasBlockGeometry = false;
+        EMPTY_DATA.visibilityData = VisibilityEncoding.EVERYTHING;
+    }
 
     // Rendering State
     private boolean built = false; // merge with the flags?
-    private ContextBundle<RenderSection> contextData;
+    private BuiltRenderSectionData contextData;
     private boolean hasAnythingToRender;
     @Getter
     private int visualsServiceFlags;
@@ -91,7 +93,7 @@ public class RenderSection extends AbstractSection {
         this.disposed = true;
     }
 
-    public void setInfo(@Nullable ContextBundle<RenderSection> info) {
+    public void setInfo(@Nullable BuiltRenderSectionData info) {
         if (info != null) {
             this.setRenderState(info);
         } else {
@@ -99,7 +101,7 @@ public class RenderSection extends AbstractSection {
         }
     }
 
-    private void setRenderState(@NotNull ContextBundle<RenderSection> info) {
+    private void setRenderState(@NotNull BuiltRenderSectionData info) {
         this.built = true;
         this.contextData = info;
         this.updateCachedContextDataFlags();
@@ -123,23 +125,14 @@ public class RenderSection extends AbstractSection {
         return this.region;
     }
 
-    public @Nullable ContextBundle<RenderSection> getBuiltContext() {
+    public @Nullable BuiltRenderSectionData getBuiltContext() {
         return this.contextData;
     }
 
-    public <T> T getContextOrDefault(ContextBundle.Key<RenderSection, T> key) {
-        var ctx = this.contextData;
-        if (ctx != null) {
-            return ctx.getContext(key);
-        } else {
-            return key.defaultValue();
-        }
-    }
-
     public void updateCachedContextDataFlags() {
-        this.hasAnythingToRender = this.contextData != null && this.contextData.hasAnyContext();
+        this.hasAnythingToRender = this.contextData != null && this.contextData.hasAnythingToRender();
         if (this.hasAnythingToRender) {
-            this.visualsServiceFlags = VISUALS_SERVICE.getVisualBitmaskForSection(this.contextData);
+            this.visualsServiceFlags = this.contextData.getVisualBitmaskForSection();
         } else {
             this.visualsServiceFlags = 0;
         }

@@ -24,11 +24,11 @@ import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
 import org.embeddedt.embeddium.impl.model.color.ColorProvider;
 import org.embeddedt.embeddium.impl.model.color.DefaultColorProviders;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ContextAwareChunkVertexEncoder;
-import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.modern.render.chunk.MojangVertexConsumer;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.util.DirectionUtil;
@@ -57,6 +57,7 @@ import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
 import org.embeddedt.embeddium.impl.util.ModernBlockPosUtil;
 import org.joml.Vector3fc;
 
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -211,9 +212,12 @@ public class FluidRenderer {
 
         var sprites = context.getAdditionalCapturedSprites();
 
-        for(TextureAtlasSprite sprite : sprites) {
-            if (SpriteUtil.hasAnimation(sprite)) {
-                buffers.getSectionContextBundle().getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
+        if (buffers.getSectionContextBundle() instanceof MinecraftBuiltRenderSectionData<?,?> mcData) {
+            for(TextureAtlasSprite sprite : sprites) {
+                if (SpriteUtil.hasAnimation(sprite)) {
+                    //noinspection unchecked
+                    ((Collection<TextureAtlasSprite>)mcData.animatedSprites).add(sprite);
+                }
             }
         }
 
@@ -643,8 +647,9 @@ public class FluidRenderer {
 
         TextureAtlasSprite sprite = quad.getSprite();
 
-        if (SpriteUtil.hasAnimation(sprite)) {
-            builder.getSectionContextBundle().getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
+        if (SpriteUtil.hasAnimation(sprite) && builder.getSectionContextBundle() instanceof MinecraftBuiltRenderSectionData<?,?> mcData) {
+            //noinspection unchecked
+            ((Collection<TextureAtlasSprite>)mcData.animatedSprites).add(sprite);
         }
 
         var vertexBuffer = builder.getVertexBuffer(facing);

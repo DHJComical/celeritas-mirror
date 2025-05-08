@@ -6,12 +6,14 @@ import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.util.QuadUtil;
@@ -86,7 +88,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
         int numQuads = source.limit() / (vsize * 4);
         long ptr = MemoryUtil.memAddress(source);
         var quad = ChunkVertexEncoder.Vertex.uninitializedQuad();
-        var animatedSpritesList = dest.getSectionContextBundle().getContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES);
+        var animatedSpritesList = ((MinecraftBuiltRenderSectionData<TextureAtlasSprite, TileEntity>)dest.getSectionContextBundle()).animatedSprites;
         for(int q = 0; q < numQuads; q++) {
             float uSum = 0, vSum = 0;
             for(int v = 0; v < 4; v++) {

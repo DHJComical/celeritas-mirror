@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.VisGraph;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.crash.CrashReport;
@@ -17,13 +18,13 @@ import net.minecraft.util.ReportedException;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.client.ForgeHooksClient;
-import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -31,7 +32,6 @@ import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.joml.Vector3d;
 import org.taumc.celeritas.impl.compat.fluidlogged.FluidloggedCompat;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
-import org.taumc.celeritas.impl.render.terrain.compile.VintageRenderSectionBuiltInfo;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
 
 import java.util.*;
@@ -52,8 +52,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     @Override
     public ChunkBuildOutput execute(ChunkBuildContext context, CancellationToken cancellationToken) {
         VintageChunkBuildContext buildContext = (VintageChunkBuildContext)context;
-        ContextBundle<RenderSection> renderData = new ContextBundle<>(RenderSection.class);
-        initializeContextBundle(renderData);
+        MinecraftBuiltRenderSectionData<TextureAtlasSprite, TileEntity> renderData = new MinecraftBuiltRenderSectionData<>();
         VisGraph occluder = new VisGraph();
 
         ChunkBuildBuffers buffers = buildContext.buffers;
@@ -100,7 +99,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                                 TileEntitySpecialRenderer<TileEntity> tesr = TileEntityRendererDispatcher.instance.getRenderer(tileEntity);
 
                                 if (tesr != null) {
-                                    renderData.getContext(tesr.isGlobalRenderer(tileEntity) ? VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES : VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES).add(tileEntity);
+                                    (tesr.isGlobalRenderer(tileEntity) ? renderData.globalBlockEntities : renderData.culledBlockEntities).add(tileEntity);
                                 }
                             }
                         }
@@ -136,7 +135,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes = BuiltSectionMeshParts.groupFromBuildBuffers(buffers,(float)camera.x - minX, (float)camera.y - minY, (float)camera.z - minZ);
 
         if (!meshes.isEmpty()) {
-            renderData.setContext(VintageRenderSectionBuiltInfo.HAS_BLOCK_GEOMETRY, true);
+            renderData.hasBlockGeometry = true;
         }
 
         encodeVisibilityData(occluder, renderData);
@@ -175,19 +174,9 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         FACINGS[GraphDirection.SOUTH] = EnumFacing.SOUTH;
     }
 
-    private static void initializeContextBundle(ContextBundle<RenderSection> renderData) {
-        renderData.setContext(VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, new ArrayList<>());
-        renderData.setContext(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, new ArrayList<>());
-        renderData.setContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES, new ObjectOpenHashSet<>());
-    }
-
-    private static void encodeVisibilityData(VisGraph occluder, ContextBundle<RenderSection> renderData) {
+    private static void encodeVisibilityData(VisGraph occluder, MinecraftBuiltRenderSectionData<TextureAtlasSprite, TileEntity> renderData) {
         var data = occluder.computeVisibility();
-        renderData.setContext(RenderSection.VISIBILITY_DATA, VisibilityEncoding.encode((from, to) -> data.isVisible(FACINGS[from], FACINGS[to])));
-
-        renderData.mapContext(VintageRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(VintageRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(VintageRenderSectionBuiltInfo.ANIMATED_SPRITES, List::copyOf);
+        renderData.visibilityData = VisibilityEncoding.encode((from, to) -> data.isVisible(FACINGS[from], FACINGS[to]));
     }
 
 }

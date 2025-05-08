@@ -3,10 +3,12 @@ package org.embeddedt.embeddium.impl.modern.render.chunk;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.api.util.NormI8;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.texture.TextureAtlasExtended;
@@ -14,6 +16,8 @@ import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+
+import java.util.Collection;
 
 //? if >=1.15 {
 public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
@@ -81,8 +85,9 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
             vTotal += vertex.v;
         }
         var sprite = ((TextureAtlasExtended)this.blocksAtlas).celeritas$findFromUV(uTotal / 4, vTotal / 4);
-        if (SpriteUtil.hasAnimation(sprite)) {
-            this.targetBuilder.getSectionContextBundle().getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
+        if (SpriteUtil.hasAnimation(sprite) && this.targetBuilder.getSectionContextBundle() instanceof MinecraftBuiltRenderSectionData<?,?> mcData) {
+            //noinspection unchecked
+            ((Collection<TextureAtlasSprite>)mcData.animatedSprites).add(sprite);
         }
     }
 

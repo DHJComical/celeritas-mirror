@@ -7,8 +7,6 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
-import org.embeddedt.embeddium.impl.common.datastructure.ContextBundle;
-import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.modern.render.chunk.occlusion.ModernGraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
@@ -17,7 +15,9 @@ import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRe
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.GeometryCategory;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
+import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
@@ -76,8 +76,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     @Override
     public ChunkBuildOutput execute(ChunkBuildContext jobContext, CancellationToken cancellationToken) {
         ModernChunkBuildContext buildContext = (ModernChunkBuildContext)jobContext;
-        ContextBundle<RenderSection> renderData = new ContextBundle<>(RenderSection.class);
-        initializeContextBundle(renderData);
+        MinecraftBuiltRenderSectionData<TextureAtlasSprite, BlockEntity> renderData = new MinecraftBuiltRenderSectionData<>();
         VisGraph occluder = new VisGraph();
 
         ChunkBuildBuffers buffers = buildContext.buffers;
@@ -189,7 +188,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                                 /*BlockEntityRenderer<BlockEntity> renderer = net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher.instance.getRenderer(entity);*/
 
                                 if (renderer != null) {
-                                    renderData.getContext(renderer.shouldRenderOffScreen(entity) ? ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES : ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES).add(entity);
+                                    (renderer.shouldRenderOffScreen(entity) ? renderData.globalBlockEntities : renderData.culledBlockEntities).add(entity);
                                 }
                             }
                         }
@@ -213,7 +212,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes = BuiltSectionMeshParts.groupFromBuildBuffers(buffers,(float)camera.x - minX, (float)camera.y - minY, (float)camera.z - minZ);
 
         if (!meshes.isEmpty()) {
-            renderData.setContext(ModernRenderSectionBuiltInfo.HAS_BLOCK_GEOMETRY, true);
+            renderData.hasBlockGeometry = true;
         }
 
         encodeVisibilityData(occluder, renderData);
@@ -223,41 +222,32 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         return new ChunkBuildOutput(this.render, renderData, meshes, this.buildTime);
     }
 
-    private static void initializeContextBundle(ContextBundle<RenderSection> renderData) {
-        renderData.setContext(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, new ArrayList<>());
-        renderData.setContext(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, new ArrayList<>());
-        renderData.setContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES, new ObjectOpenHashSet<>());
-    }
-
-    private static void encodeVisibilityData(VisGraph occluder, ContextBundle<RenderSection> renderData) {
+    private static void encodeVisibilityData(VisGraph occluder, BuiltRenderSectionData renderData) {
         var data = occluder.resolve();
-        renderData.setContext(RenderSection.VISIBILITY_DATA, VisibilityEncoding.encode((from, to) -> data.visibilityBetween(ModernGraphDirection.toEnum(from), ModernGraphDirection.toEnum(to))));
+        renderData.visibilityData = VisibilityEncoding.encode((from, to) -> data.visibilityBetween(ModernGraphDirection.toEnum(from), ModernGraphDirection.toEnum(to)));
     }
 
-    private static void postSectionDataBuiltEvent(ContextBundle<RenderSection> renderData) {
+    private static void postSectionDataBuiltEvent(MinecraftBuiltRenderSectionData<TextureAtlasSprite, BlockEntity> renderData) {
         ChunkDataBuiltEvent.BUS.post(new ChunkDataBuiltEvent(new SectionInfoBuilder() {
             @Override
             public void addSprite(TextureAtlasSprite sprite) {
                 if (!SpriteUtil.hasAnimation(sprite)) {
                     return;
                 }
-                renderData.getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES).add(sprite);
+                renderData.animatedSprites.add(sprite);
             }
 
             @Override
             public void addBlockEntity(BlockEntity entity, boolean cull) {
-                renderData.getContext(cull ? ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES : ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES).add(entity);
+                (cull ? renderData.culledBlockEntities : renderData.globalBlockEntities).add(entity);
             }
 
             @Override
             public void removeBlockEntitiesIf(Predicate<BlockEntity> filter) {
-                renderData.getContext(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES).removeIf(filter);
-                renderData.getContext(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES).removeIf(filter);
+                renderData.culledBlockEntities.removeIf(filter);
+                renderData.globalBlockEntities.removeIf(filter);
             }
         }));
-        renderData.mapContext(ModernRenderSectionBuiltInfo.GLOBAL_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(ModernRenderSectionBuiltInfo.CULLED_BLOCK_ENTITIES, List::copyOf);
-        renderData.mapContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES, List::copyOf);
     }
 
     private ReportedException fillCrashInfo(CrashReport report, WorldSlice slice, BlockPos pos) {
