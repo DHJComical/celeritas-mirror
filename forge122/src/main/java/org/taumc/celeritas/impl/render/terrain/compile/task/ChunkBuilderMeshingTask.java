@@ -18,6 +18,7 @@ import net.minecraft.util.ReportedException;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.client.ForgeHooksClient;
+import org.embeddedt.embeddium.impl.asm.ProxyClassGenerator;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
@@ -32,11 +33,14 @@ import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.joml.Vector3d;
 import org.taumc.celeritas.impl.compat.fluidlogged.FluidloggedCompat;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
+import org.taumc.celeritas.impl.world.WorldSlice;
+import org.taumc.celeritas.impl.world.cloned.CeleritasBlockAccess;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
 
 import java.util.*;
 
 public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> {
+    private static final ProxyClassGenerator<WorldSlice, CeleritasBlockAccess> WORLD_SLICE_LOCAL_GENERATOR = new ProxyClassGenerator<>(WorldSlice.class, "WorldSliceLocal", CeleritasBlockAccess.class);
     private final RenderSection render;
     private final int buildTime;
     private final Vector3d camera;
@@ -69,8 +73,9 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         // Initialise with minX/minY/minZ so initial getBlockState crash context is correct
         BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos(minX, minY, minZ);
 
-        var slice = buildContext.getWorldSlice();
-        slice.copyData(this.renderContext);
+        buildContext.getWorldSlice().copyData(this.renderContext);
+
+        var slice = WORLD_SLICE_LOCAL_GENERATOR.generateWrapper(buildContext.getWorldSlice());
 
         var dispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher();
 
