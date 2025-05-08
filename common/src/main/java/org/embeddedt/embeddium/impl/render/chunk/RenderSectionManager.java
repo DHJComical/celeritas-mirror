@@ -159,8 +159,9 @@ public abstract class RenderSectionManager {
 
     private void scheduleTranslucencyUpdates(int camSectionX, int camSectionY, int camSectionZ) {
         var renderListManager = this.getCurrentRenderListManager();
-        var sortRebuildList = renderListManager.getRebuildLists().get(ChunkUpdateType.SORT);
-        var importantSortRebuildList = renderListManager.getRebuildLists().get(ChunkUpdateType.IMPORTANT_SORT);
+        var rebuildLists = renderListManager.getRebuildLists().byUpdateType();
+        var sortRebuildList = rebuildLists.get(ChunkUpdateType.SORT);
+        var importantSortRebuildList = rebuildLists.get(ChunkUpdateType.IMPORTANT_SORT);
         var allowImportant = allowImportantRebuilds();
         var translucentPass = this.renderPassConfiguration.defaultTranslucentMaterial().pass;
         if (!this.hasTranslucencySortedSections()) {
@@ -322,7 +323,7 @@ public abstract class RenderSectionManager {
     }
 
     private boolean rebuildListHasUpdates() {
-        for (var queue : this.getCurrentRenderListManager().getRebuildLists().values()) {
+        for (var queue : this.getCurrentRenderListManager().getRebuildLists().byUpdateType().values()) {
             if (!queue.isEmpty()) {
                 return true;
             }
@@ -450,7 +451,7 @@ public abstract class RenderSectionManager {
     }
 
     private void submitRebuildTasks(ChunkJobCollector collector, ChunkUpdateType type) {
-        var queue = this.getCurrentRenderListManager().getRebuildLists().get(type);
+        var queue = this.getCurrentRenderListManager().getRebuildLists().byUpdateType().get(type);
 
         int frame = this.getCurrentRenderListManager().getLastUpdatedFrame();
 
@@ -712,14 +713,15 @@ public abstract class RenderSectionManager {
                 this.builder.getScheduledJobCount(), this.builder.getBusyThreadCount(), this.builder.getTotalThreadCount())
         );
 
-        var rebuildLists = this.getCurrentRenderListManager().getRebuildLists();
+        var rebuildLists = this.getCurrentRenderListManager().getRebuildLists().byUpdateType();
 
-        list.add(String.format("Chunk Queues: U=%02d (P0=%03d | P1=%03d | P2=%03d)",
+        list.add(String.format("Chunk Queues: U=%02d (P0=%03d | P1=%03d | P2=%03d)%s",
                 this.buildResults.size(),
                 rebuildLists.get(ChunkUpdateType.IMPORTANT_REBUILD).size(),
                 rebuildLists.get(ChunkUpdateType.REBUILD).size(),
-                rebuildLists.get(ChunkUpdateType.INITIAL_BUILD).size())
-        );
+                rebuildLists.get(ChunkUpdateType.INITIAL_BUILD).size(),
+                this.getCurrentRenderListManager().getRebuildLists().hasAdditionalUpdates() ? "(++)" : ""
+        ));
 
         if (this.hasTranslucencySortedSections()) {
             list.addAll(getSortingStrings());

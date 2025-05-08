@@ -30,7 +30,7 @@ public class RenderListManager {
     private SortedRenderLists renderLists;
     @Getter
     @NotNull
-    private Map<ChunkUpdateType, ArrayDeque<RenderSection>> rebuildLists;
+    private ChunkRebuildLists rebuildLists;
 
     private final OcclusionCuller occlusionCuller;
 
@@ -69,11 +69,7 @@ public class RenderListManager {
         }
         this.occlusionCuller = new OcclusionCuller(this.occlusionNodes, minSectionY, maxSectionY);
         this.renderLists = SortedRenderLists.empty();
-        this.rebuildLists = new EnumMap<>(ChunkUpdateType.class);
-
-        for (var type : ChunkUpdateType.values()) {
-            this.rebuildLists.put(type, new ArrayDeque<>());
-        }
+        this.rebuildLists = ChunkRebuildLists.EMPTY;
     }
 
     public void startGraphUpdate(Viewport viewport, int frame, float searchDistance, boolean useOcclusionCulling, boolean allowInfiniteUpdateTasks) {

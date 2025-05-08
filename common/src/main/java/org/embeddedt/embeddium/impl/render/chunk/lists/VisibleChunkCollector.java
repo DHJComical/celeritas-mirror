@@ -21,6 +21,8 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
 
     private final boolean ignoreQueueSizeLimit;
 
+    private boolean hasAdditionalUpdates;
+
     public VisibleChunkCollector(int frame, boolean ignoreQueueSizeLimit) {
         this.frame = frame;
 
@@ -69,6 +71,8 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
 
             if (this.ignoreQueueSizeLimit || queue.size() < type.getMaximumQueueSize()) {
                 queue.add(section);
+            } else {
+                this.hasAdditionalUpdates = true;
             }
         }
     }
@@ -77,7 +81,7 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
         return new SortedRenderLists(this.sortedRenderLists);
     }
 
-    public Map<ChunkUpdateType, ArrayDeque<RenderSection>> getRebuildLists() {
-        return this.sortedRebuildLists;
+    public ChunkRebuildLists getRebuildLists() {
+        return new ChunkRebuildLists(this.sortedRebuildLists, this.hasAdditionalUpdates);
     }
 }
