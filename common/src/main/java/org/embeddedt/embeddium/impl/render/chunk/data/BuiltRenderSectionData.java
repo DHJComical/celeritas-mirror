@@ -13,10 +13,6 @@ public class BuiltRenderSectionData {
     public boolean hasBlockGeometry;
     public long visibilityData;
 
-    public boolean hasAnythingToRender() {
-        return this.hasBlockGeometry;
-    }
-
     public int getVisualBitmaskForSection() {
         return this.hasBlockGeometry ? (1 << RenderVisualsService.HAS_BLOCK_GEOMETRY) : 0;
     }

@@ -132,12 +132,8 @@ public class RenderSection extends AbstractSection {
     }
 
     public void updateCachedContextDataFlags() {
-        this.hasAnythingToRender = this.contextData != null && this.contextData.hasAnythingToRender();
-        if (this.hasAnythingToRender) {
-            this.visualsServiceFlags = this.contextData.getVisualBitmaskForSection();
-        } else {
-            this.visualsServiceFlags = 0;
-        }
+        this.visualsServiceFlags = this.contextData != null ? this.contextData.getVisualBitmaskForSection() : 0;
+        this.hasAnythingToRender = this.visualsServiceFlags != 0;
     }
 
     public boolean hasAnythingToRender() {
