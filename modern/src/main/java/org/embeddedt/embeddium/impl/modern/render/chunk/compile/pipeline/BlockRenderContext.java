@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
+import org.embeddedt.embeddium.impl.asm.ProxyClassGenerator;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 //? if >=1.15
@@ -19,7 +20,6 @@ import net.minecraftforge.client.model.data.ModelData;
 //? if neoforge
 /*import net.neoforged.neoforge.client.model.data.ModelData;*/
 import org.embeddedt.embeddium.impl.render.matrix_stack.CachingPoseStack;
-import org.embeddedt.embeddium.impl.render.world.WorldSliceLocalGenerator;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -29,6 +29,8 @@ import org.joml.Vector3fc;
  */
 @Accessors(fluent = true)
 public class BlockRenderContext {
+    private static final ProxyClassGenerator<WorldSlice, EmbeddiumBlockAndTintGetter> WORLD_SLICE_LOCAL_GENERATOR = new ProxyClassGenerator<>(WorldSlice.class, "WorldSliceLocal", EmbeddiumBlockAndTintGetter.class);
+
     private final EmbeddiumBlockAndTintGetter localSlice;
 
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -78,7 +80,7 @@ public class BlockRenderContext {
     private GeometryCategory category = GeometryCategory.BLOCK;
 
     public BlockRenderContext(WorldSlice world) {
-        this.localSlice = WorldSliceLocalGenerator.generate(world);
+        this.localSlice = WORLD_SLICE_LOCAL_GENERATOR.generateWrapper(world);
     }
 
     public void update(GeometryCategory category, BlockPos pos, BlockPos origin, BlockState state,

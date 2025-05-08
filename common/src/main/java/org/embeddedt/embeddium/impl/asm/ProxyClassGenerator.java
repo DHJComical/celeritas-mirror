@@ -1,31 +1,18 @@
-package org.embeddedt.embeddium.impl.render.world;
+package org.embeddedt.embeddium.impl.asm;
 
 import com.google.common.base.Suppliers;
-import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
-import org.embeddedt.embeddium.impl.world.WorldSlice;
-import net.minecraft.world.level.BlockAndTintGetter;
 import org.objectweb.asm.*;
 import org.objectweb.asm.util.CheckClassAdapter;
-import org.spongepowered.asm.mixin.MixinEnvironment;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
-public class WorldSliceLocalGenerator {
-    private static final Class<?> WORLD_SLICE_LOCAL_CLASS;
-    private static final MethodHandle WORLD_SLICE_LOCAL_CONSTRUCTOR;
-    private static final String WORLD_SLICE_LOCAL_CLASS_NAME = "org/embeddedt/embeddium/impl/render/world/WorldSliceLocal";
-    private static final String WORLD_SLICE_LOCAL_CLASS_DESC = "L" + WORLD_SLICE_LOCAL_CLASS_NAME + ";";
-
+public class ProxyClassGenerator<DELEGATE, INTERFACE> {
     // DEFINE_CLASS is borrowed from FerriteCore under MIT as a small utility
     private static final Supplier<Definer> DEFINE_CLASS = Suppliers.memoize(() -> {
         try {
@@ -34,7 +21,7 @@ public class WorldSliceLocalGenerator {
             Method makePrivateLookup = MethodHandles.class.getMethod(
                     "privateLookupIn", Class.class, MethodHandles.Lookup.class
             );
-            Object privateLookup = makePrivateLookup.invoke(null, WorldSliceLocalGenerator.class, MethodHandles.lookup());
+            Object privateLookup = makePrivateLookup.invoke(null, ProxyClassGenerator.class, MethodHandles.lookup());
             Method defineClass = MethodHandles.Lookup.class.getMethod("defineClass", byte[].class);
             return (bytes, name) -> (Class<?>) defineClass.invoke(privateLookup, (Object) bytes);
         } catch (Exception x) {
@@ -44,7 +31,7 @@ public class WorldSliceLocalGenerator {
                         "defineClass", String.class, byte[].class, int.class, int.class
                 );
                 defineClass.setAccessible(true);
-                ClassLoader loader = WorldSliceLocalGenerator.class.getClassLoader();
+                ClassLoader loader = ProxyClassGenerator.class.getClassLoader();
                 return (bytes, name) -> (Class<?>) defineClass.invoke(loader, name, bytes, 0, bytes.length);
             } catch (NoSuchMethodException e) {
                 // Fail if neither works
@@ -53,54 +40,48 @@ public class WorldSliceLocalGenerator {
         }
     });
 
-    static {
-        WORLD_SLICE_LOCAL_CLASS = createWrapperClass();
+    private final Class<?> delegateClass;
+    private final Class<?> proxyClass;
+    private final MethodHandle proxyClassConstructor;
+    private final String proxyClassName;
+    private final String proxyClassNameDesc;
+
+    public ProxyClassGenerator(Class<DELEGATE> realClass, String proxyClassName, Class<INTERFACE> primaryInterface) {
+        this.delegateClass = realClass;
+        this.proxyClassName = "org/embeddedt/embeddium/impl/asm/" + proxyClassName;
+        this.proxyClassNameDesc = "L" + this.proxyClassName + ";";
+        this.proxyClass = createWrapperClass();
         try {
-            WORLD_SLICE_LOCAL_CONSTRUCTOR = MethodHandles.publicLookup()
-                    .findConstructor(WORLD_SLICE_LOCAL_CLASS, MethodType.methodType(void.class, WorldSlice.class))
-                    .asType(MethodType.methodType(EmbeddiumBlockAndTintGetter.class, WorldSlice.class));
+            this.proxyClassConstructor = MethodHandles.publicLookup().findConstructor(this.proxyClass, MethodType.methodType(void.class, realClass)).asType(MethodType.methodType(primaryInterface, realClass));
         } catch (NoSuchMethodException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
-    /**
-     * Generate a delegate wrapper around {@link WorldSlice}. This delegate is used
-     * to provide a unique BlockAndTintGetter for each subchunk, like vanilla does, while avoiding the huge array allocations
-     * associated with WorldSlice.
-     *
-     * The returned object is guaranteed to implement all interfaces implemented by {@link WorldSlice}.
-     * @param originalSlice the backing world slice for the delegate
-     * @return a unique BlockAndTintGetter guaranteed to be reference-unequal with any other one returned by this
-     * method, that points to the given WorldSlice
-     */
-    public static EmbeddiumBlockAndTintGetter generate(WorldSlice originalSlice) {
+    @SuppressWarnings("unchecked")
+    public INTERFACE generateWrapper(DELEGATE delegate) {
         try {
-            return (EmbeddiumBlockAndTintGetter)WORLD_SLICE_LOCAL_CONSTRUCTOR.invokeExact(originalSlice);
+            return (INTERFACE)this.proxyClassConstructor.invoke(delegate);
         } catch(Throwable e) {
-            throw new RuntimeException("Exception creating WorldSlice wrapper", e);
+            throw new RuntimeException("Exception creating wrapper", e);
         }
     }
 
     private static final boolean VERIFY = false;
 
-    private static byte[] createWrapperClassBytecode() {
-        String worldSliceDesc = Type.getDescriptor(WorldSlice.class);
+    private byte[] createWrapperClassBytecode() {
+        String worldSliceDesc = Type.getDescriptor(this.delegateClass);
         ClassWriter classWriter = new ClassWriter(0);
         ClassVisitor classVisitor = VERIFY ? new CheckClassAdapter(classWriter) : classWriter;
 
         FieldVisitor fieldVisitor;
         MethodVisitor methodVisitor;
 
-        Class<?>[] interfaces = WorldSlice.class.getInterfaces();
+        Class<?>[] interfaces = this.delegateClass.getInterfaces();
 
-        //? if >=1.16 {
-        int version = MixinEnvironment.getCompatibilityLevel().getClassVersion();
-        //?} else {
-        /*int version = Opcodes.V1_8;
-        *///?}
+        int version = Opcodes.V1_8;
 
-        classVisitor.visit(version, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, WORLD_SLICE_LOCAL_CLASS_NAME, null, "java/lang/Object",
+        classVisitor.visit(version, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, this.proxyClassName, null, "java/lang/Object",
                 Arrays.stream(interfaces).map(Type::getInternalName).toArray(String[]::new));
 
         fieldVisitor = classVisitor.visitField(Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL, "view", worldSliceDesc, null, null);
@@ -117,17 +98,17 @@ public class WorldSliceLocalGenerator {
         methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false);
         methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
         methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
-        methodVisitor.visitFieldInsn(Opcodes.PUTFIELD, WORLD_SLICE_LOCAL_CLASS_NAME, "view", worldSliceDesc);
+        methodVisitor.visitFieldInsn(Opcodes.PUTFIELD, this.proxyClassName, "view", worldSliceDesc);
         methodVisitor.visitInsn(Opcodes.RETURN);
         Label label3 = new Label();
         methodVisitor.visitLabel(label3);
-        methodVisitor.visitLocalVariable("this", WORLD_SLICE_LOCAL_CLASS_DESC, null, label0, label3, 0);
-        methodVisitor.visitLocalVariable("view", Type.getDescriptor(WorldSlice.class), null, label0, label3, 1);
+        methodVisitor.visitLocalVariable("this", this.proxyClassNameDesc, null, label0, label3, 0);
+        methodVisitor.visitLocalVariable("view", worldSliceDesc, null, label0, label3, 1);
         methodVisitor.visitMaxs(2, 2);
         methodVisitor.visitEnd();
 
         // Now generate delegates for each method on WorldSlice's interfaces
-        for(Method method : WorldSlice.class.getMethods()) {
+        for(Method method : this.delegateClass.getMethods()) {
             // Only delegate for public, non-static methods implemented by WorldSlice or an interface
             if(Modifier.isPublic(method.getModifiers()) && !Modifier.isStatic(method.getModifiers()) && !method.getDeclaringClass().isAssignableFrom(Object.class)) {
                 int maxStack = 0;
@@ -136,7 +117,7 @@ public class WorldSliceLocalGenerator {
                 methodVisitor.visitCode();
                 // push WorldSlice
                 methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-                methodVisitor.visitFieldInsn(Opcodes.GETFIELD, WORLD_SLICE_LOCAL_CLASS_NAME, "view", worldSliceDesc);
+                methodVisitor.visitFieldInsn(Opcodes.GETFIELD, this.proxyClassName, "view", worldSliceDesc);
                 maxStack++;
                 // push each argument
                 int maxLocals = 1;
@@ -161,20 +142,12 @@ public class WorldSliceLocalGenerator {
         return classWriter.toByteArray();
     }
 
-    private static Class<?> createWrapperClass() {
+    private Class<?> createWrapperClass() {
         byte[] bytes = createWrapperClassBytecode();
         try {
-            return DEFINE_CLASS.get().define(bytes, WORLD_SLICE_LOCAL_CLASS_NAME.replace('/', '.'));
+            return DEFINE_CLASS.get().define(bytes, this.proxyClassName.replace('/', '.'));
         } catch(Exception e) {
             throw new RuntimeException("Error defining WorldSlice wrapper", e);
-        }
-    }
-
-    public static void testClassGeneration() {
-        try {
-            Files.write(new File("/tmp/WorldSliceLocal.class").toPath(), createWrapperClassBytecode(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-        } catch(IOException e) {
-            e.printStackTrace();
         }
     }
 
