@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.RenderVisualsService;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
@@ -51,6 +52,7 @@ public class RenderSection extends AbstractSection {
     private TranslucentQuadAnalyzer.Level highestSortingLevel = TranslucentQuadAnalyzer.Level.NONE;
 
     @Getter
+    @Setter
     private boolean needsDynamicTranslucencySorting;
 
     // Pending Update State
@@ -140,11 +142,6 @@ public class RenderSection extends AbstractSection {
 
     public boolean hasAnythingToRender() {
         return this.hasAnythingToRender;
-    }
-
-    @Deprecated
-    public boolean containsSortableGeometry() {
-        return !translucencySortStates.isEmpty();
     }
 
     public void setTranslucencySortStates(@NotNull Map<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> sortStates) {

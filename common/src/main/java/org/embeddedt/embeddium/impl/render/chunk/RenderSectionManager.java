@@ -484,7 +484,7 @@ public abstract class RenderSectionManager {
 
                 if (!type.isSort()) {
                     // Prevent further sorts from being performed on this section
-                    section.setTranslucencySortStates(Collections.emptyMap());
+                    section.setNeedsDynamicTranslucencySorting(false);
                 }
             } else {
                 var result = ChunkJobResult.successfully(new ChunkBuildOutput(section, RenderSection.EMPTY_DATA, Reference2ReferenceMaps.emptyMap(), frame));
