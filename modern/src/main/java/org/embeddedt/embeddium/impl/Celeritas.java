@@ -82,12 +82,7 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
             return;
         }
 
-        GLRenderDevice.VANILLA_STATE_RESETTER = () -> {
-            //? if >=1.17 {
-            com.mojang.blaze3d.vertex.BufferUploader.reset();
-            //?} else
-            /*com.mojang.blaze3d.vertex.VertexBuffer.unbind();*/
-        };
+        commonClientInit();
 
         if (Boolean.getBoolean("embeddium.auditAndExit")) {
             MixinAuditUtil.auditAndExit();
@@ -136,8 +131,19 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         if (Boolean.getBoolean("embeddium.auditAndExit")) {
             MixinAuditUtil.auditAndExit();
         }
+
+        commonClientInit();
     }
     *///?}
+
+    private static void commonClientInit() {
+        GLRenderDevice.VANILLA_STATE_RESETTER = () -> {
+            //? if >=1.17 {
+            com.mojang.blaze3d.vertex.BufferUploader.reset();
+            //?} else
+            /*com.mojang.blaze3d.vertex.VertexBuffer.unbind();*/
+        };
+    }
 
     public static SodiumGameOptions options() {
         if (CONFIG == null) {
