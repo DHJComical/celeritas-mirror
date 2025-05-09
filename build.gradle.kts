@@ -16,7 +16,11 @@ println("Celeritas: ${tau.versioning.version}")
 
 evaluationDependsOnChildren()
 
-val modernStonecutter = project(":modern").extensions.getByType(StonecutterController::class.java)
+val modernStonecutter = if (findProject(":modern") != null) {
+    project(":modern").extensions.getByType(StonecutterController::class.java)
+} else {
+    null
+}
 
 val publishTask = tau.publishing.publish {
     useTauGradleVersioning()
@@ -45,41 +49,45 @@ val publishTask = tau.publishing.publish {
         }
     }
 
-    val archaic = project(":forge1710")
-    dependsOn(archaic.tasks.named("remapJar"))
-
-    modArtifact {
-        files(project.provider { archaic.tasks.named<RemapJarTask>("remapJar").get().asJar.archiveFile })
-
-        minecraftVersionRange = "1.7.10"
-        javaVersions.add(JavaVersion.VERSION_21)
-
-        environment = ModEnvironment.CLIENT_ONLY
-        modLoaders.add(ModLoader.LEXFORGE)
-    }
-
-    modernStonecutter.tree.values.flatMap { it.values }.forEach {
-        val name = it.metadata.project
-        val ourLoader = bs.ModLoader.fromName(name) ?: throw IllegalArgumentException("No modloader for ${name}")
-
-        if (ourLoader == bs.ModLoader.FABRIC) {
-            // Skip Fabric for now as the payload to Discord is too large otherwise.
-            return@forEach
-        }
+    if (findProject(":forge1710") != null) {
+        val archaic = project(":forge1710")
+        dependsOn(archaic.tasks.named("remapJar"))
 
         modArtifact {
-            files(it.project.provider { it.project.tasks.named<Copy>("packageJar").get().inputs.files.singleFile })
+            files(project.provider { archaic.tasks.named<RemapJarTask>("remapJar").get().asJar.archiveFile })
 
-            minecraftVersionRange = bs.ModLoader.getMinecraftVersion(name)
+            minecraftVersionRange = "1.7.10"
             javaVersions.add(JavaVersion.VERSION_21)
 
             environment = ModEnvironment.CLIENT_ONLY
+            modLoaders.add(ModLoader.LEXFORGE)
+        }
+    }
 
-            modLoaders.add(when(ourLoader) {
-                bs.ModLoader.FABRIC -> ModLoader.FABRIC
-                bs.ModLoader.FORGE -> ModLoader.LEXFORGE
-                bs.ModLoader.NEOFORGE -> ModLoader.NEOFORGE
-            })
+    if (modernStonecutter != null) {
+        modernStonecutter.tree.values.flatMap { it.values }.forEach {
+            val name = it.metadata.project
+            val ourLoader = bs.ModLoader.fromName(name) ?: throw IllegalArgumentException("No modloader for ${name}")
+
+            if (ourLoader == bs.ModLoader.FABRIC) {
+                // Skip Fabric for now as the payload to Discord is too large otherwise.
+                return@forEach
+            }
+
+            modArtifact {
+                files(it.project.provider { it.project.tasks.named<Copy>("packageJar").get().inputs.files.singleFile })
+
+                minecraftVersionRange = bs.ModLoader.getMinecraftVersion(name)
+                javaVersions.add(JavaVersion.VERSION_21)
+
+                environment = ModEnvironment.CLIENT_ONLY
+
+                modLoaders.add(when(ourLoader) {
+                    bs.ModLoader.FABRIC -> ModLoader.FABRIC
+                    bs.ModLoader.FORGE -> ModLoader.LEXFORGE
+                    bs.ModLoader.NEOFORGE -> ModLoader.NEOFORGE
+                })
+            }
         }
     }
 }
