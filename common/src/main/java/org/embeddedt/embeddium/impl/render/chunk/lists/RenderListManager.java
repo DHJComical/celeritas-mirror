@@ -1,27 +1,30 @@
 package org.embeddedt.embeddium.impl.render.chunk.lists;
 
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.Setter;
-import org.embeddedt.embeddium.impl.render.chunk.ChunkUpdateType;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
+import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataUnsafe;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionCuller;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionNode;
+import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class RenderListManager {
@@ -53,6 +56,8 @@ public class RenderListManager {
 
     @Nullable
     private final SectionTicker sectionTicker;
+
+    private List<String> renderListDebugStrings;
 
     public RenderListManager(int minSectionY, int maxSectionY, boolean useAsyncGraphSearch, @Nullable SectionTicker sectionTicker) {
         this.sectionTicker = sectionTicker;
@@ -109,6 +114,8 @@ public class RenderListManager {
 
             this.currentOcclusionFuture = null;
             this.lastUpdatedFrame = this.pendingLastUpdatedFrame;
+
+            this.renderListDebugStrings = null;
         }
 
         Runnable task;
@@ -235,5 +242,105 @@ public class RenderListManager {
         if (this.sectionTicker != null) {
             this.sectionTicker.tickVisibleRenders();
         }
+    }
+
+    public List<String> getRenderListDebugStrings() {
+        if (this.renderListDebugStrings == null) {
+            this.renderListDebugStrings = computeRenderListDebugStrings();
+        }
+        return this.renderListDebugStrings;
+    }
+
+    private List<String> computeRenderListDebugStrings() {
+        Object2IntOpenHashMap<TerrainRenderPass> renderPassCounts = new Object2IntOpenHashMap<>();
+        var iterator = renderLists.iterator();
+
+        int[] sectionCounts = new int[TranslucentQuadAnalyzer.Level.VALUES.length];
+
+        boolean isSorting = renderLists.getPasses().stream().anyMatch(TerrainRenderPass::isSorted);
+
+        while (iterator.hasNext()) {
+            var renderList = iterator.next();
+
+            if (renderList.getSectionsWithGeometryCount() == 0) {
+                continue;
+            }
+
+            var region = renderList.getRegion();
+
+            for (TerrainRenderPass pass : region.getPasses()) {
+                int numToAdd = 0;
+                var storage = region.getStorage(pass);
+                var iter = Objects.requireNonNull(renderList.sectionsWithGeometryIterator(false));
+
+                while (iter.hasNext()) {
+                    int sectionIndex = iter.nextByteAsInt();
+                    var pMeshData = storage.getDataPointer(sectionIndex);
+
+                    if (SectionRenderDataUnsafe.getSliceMask(pMeshData) != 0) {
+                        numToAdd++;
+                    }
+                }
+
+                if (numToAdd > 0) {
+                    renderPassCounts.addTo(pass, numToAdd);
+                }
+            }
+
+            if (isSorting) {
+                var iter = Objects.requireNonNull(renderList.sectionsWithGeometryIterator(false));
+
+                while (iter.hasNext()) {
+                    int sectionIndex = iter.nextByteAsInt();
+                    var section = region.getSection(sectionIndex);
+
+                    // Do not count sections without translucent data
+                    if(section == null || section.getTranslucencySortStates().isEmpty()) {
+                        continue;
+                    }
+
+                    sectionCounts[section.getHighestSortingLevel().ordinal()]++;
+                }
+            }
+        }
+
+        ImmutableList.Builder<String> builder = ImmutableList.builder();
+
+        StringBuilder sb = new StringBuilder("Passes: ");
+        var iter = renderPassCounts.object2IntEntrySet().fastIterator();
+
+        while (iter.hasNext()) {
+            var entry = iter.next();
+
+            sb.append(Character.toUpperCase(entry.getKey().name().charAt(0)));
+            sb.append('=');
+            sb.append(entry.getIntValue());
+
+            if (iter.hasNext()) {
+                sb.append(", ");
+            }
+        }
+
+        builder.add(sb.toString());
+
+        if (isSorting) {
+            sb = new StringBuilder();
+
+            sb.append("Sorting: ");
+            TranslucentQuadAnalyzer.Level[] values = TranslucentQuadAnalyzer.Level.VALUES;
+            for (int i = 0; i < values.length; i++) {
+                TranslucentQuadAnalyzer.Level level = values[i];
+                sb.append(level.name());
+                sb.append('=');
+                sb.append(sectionCounts[level.ordinal()]);
+                if((i + 1) < values.length) {
+                    sb.append(", ");
+                }
+            }
+
+            builder.add(sb.toString());
+        }
+
+        return builder.build();
     }
 }

@@ -703,15 +703,8 @@ public abstract class RenderSectionManager {
             }
         }
 
-        list.add(String.format("Geometry Pool: %d/%d MiB (%d buffers)", MathUtil.toMib(deviceUsed), MathUtil.toMib(deviceAllocated), count));
-        if (indexCount > 0) {
-            list.add(String.format("Index Pool: %d/%d MiB (%d buffers)", MathUtil.toMib(indexUsed), MathUtil.toMib(indexAllocated), indexCount));
-        }
+        list.add(String.format("G: %d/%d, I: %d/%d MiB (%d buffers)", MathUtil.toMib(deviceUsed), MathUtil.toMib(deviceAllocated), MathUtil.toMib(indexUsed), MathUtil.toMib(indexAllocated), count));
         list.add(String.format("Transfer Queue: %s", this.regions.getStagingBuffer().toString()));
-
-        list.add(String.format("Chunk Builder: Permits=%02d | Busy=%02d | Total=%02d",
-                this.builder.getScheduledJobCount(), this.builder.getBusyThreadCount(), this.builder.getTotalThreadCount())
-        );
 
         var rebuildLists = this.getCurrentRenderListManager().getRebuildLists().byUpdateType();
 
@@ -723,9 +716,7 @@ public abstract class RenderSectionManager {
                 this.getCurrentRenderListManager().getRebuildLists().hasAdditionalUpdates() ? "(++)" : ""
         ));
 
-        if (this.hasTranslucencySortedSections()) {
-            list.addAll(getSortingStrings());
-        }
+        list.addAll(this.renderListManager.getRenderListDebugStrings());
 
         return list;
     }
