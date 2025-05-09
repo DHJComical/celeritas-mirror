@@ -12,11 +12,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionBuiltInfo;
+import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.modern.render.chunk.MojangVertexConsumer;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 
+import java.util.Collection;
 import java.util.function.Function;
 
 public class FabricFluidRenderer {
@@ -62,10 +64,13 @@ public class FabricFluidRenderer {
 
         // Mark fluid sprites as being used in rendering
         TextureAtlasSprite[] sprites = handler.getFluidSprites(ctx.localSlice(), ctx.pos(), fluidState);
-        var spriteList = modelBuffer.getSectionContextBundle().getContext(ModernRenderSectionBuiltInfo.ANIMATED_SPRITES);
-        for(TextureAtlasSprite sprite : sprites) {
-            if (sprite != null) {
-                spriteList.add(sprite);
+        if (modelBuffer.getSectionContextBundle() instanceof MinecraftBuiltRenderSectionData<?,?> mcData) {
+            for(TextureAtlasSprite sprite : sprites) {
+                //noinspection PointlessNullCheck
+                if (sprite != null && SpriteUtil.hasAnimation(sprite)) {
+                    //noinspection unchecked
+                    ((Collection<TextureAtlasSprite>)mcData.animatedSprites).add(sprite);
+                }
             }
         }
 

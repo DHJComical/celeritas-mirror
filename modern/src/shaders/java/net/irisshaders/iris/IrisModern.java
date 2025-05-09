@@ -1,5 +1,8 @@
 package net.irisshaders.iris;
 
+//? if fabric
+/*import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;*/
+
 import com.google.common.base.Throwables;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.irisshaders.iris.compat.dh.DHCompat;
