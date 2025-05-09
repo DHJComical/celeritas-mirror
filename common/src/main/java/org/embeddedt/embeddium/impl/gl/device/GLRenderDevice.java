@@ -21,7 +21,9 @@ public class GLRenderDevice implements RenderDevice {
     private GlTessellation activeTessellation;
 
     // TODO replace this with something less ugly
-    public static Runnable VANILLA_STATE_RESETTER = () -> {};
+    public static Runnable VANILLA_STATE_RESETTER = () -> {
+        throw new IllegalStateException("The host mod should replace the VANILLA_STATE_RESETTER with an implementation specific to the platform.");
+    };
 
     @Override
     public CommandList createCommandList() {
