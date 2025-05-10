@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -253,6 +254,8 @@ public class RenderListManager {
 
     private List<String> computeRenderListDebugStrings() {
         Object2IntOpenHashMap<TerrainRenderPass> renderPassCounts = new Object2IntOpenHashMap<>();
+
+
         var iterator = renderLists.iterator();
 
         int[] sectionCounts = new int[TranslucentQuadAnalyzer.Level.VALUES.length];
@@ -307,7 +310,7 @@ public class RenderListManager {
         ImmutableList.Builder<String> builder = ImmutableList.builder();
 
         StringBuilder sb = new StringBuilder("Passes: ");
-        var iter = renderPassCounts.object2IntEntrySet().fastIterator();
+        var iter = renderPassCounts.object2IntEntrySet().stream().sorted(Comparator.comparingInt(e -> -e.getIntValue())).iterator();
 
         while (iter.hasNext()) {
             var entry = iter.next();
