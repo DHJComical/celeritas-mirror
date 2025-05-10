@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.taumc.celeritas.impl.extensions.SpriteExtension;
 
 @Mixin(TextureAtlasSprite.class)
-public class TextureAtlasSpriteMixin implements SpriteExtension {
+public abstract class TextureAtlasSpriteMixin implements SpriteExtension {
     private boolean celeritas$isActive = false;
 
     @Override

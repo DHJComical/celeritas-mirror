@@ -14,12 +14,15 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
+import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.util.QuadUtil;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.system.MemoryUtil;
+import org.taumc.celeritas.impl.extensions.SpriteExtension;
 import org.taumc.celeritas.impl.extensions.TextureMapExtension;
+import org.taumc.celeritas.impl.render.terrain.VintageRenderPassConfigurationBuilder;
 import org.taumc.celeritas.impl.world.WorldSlice;
 
 import java.nio.ByteBuffer;
@@ -34,9 +37,11 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
     private int offX, offY, offZ;
     @Getter
     private final WorldSlice worldSlice;
+    private final RenderPassConfiguration<?> renderPassConfiguration;
 
     public VintageChunkBuildContext(WorldClient world, RenderPassConfiguration renderPassConfiguration) {
         super(renderPassConfiguration);
+        this.renderPassConfiguration = renderPassConfiguration;
         this.worldSlice = new WorldSlice(world);
         this.textureAtlas = (TextureMapExtension) Minecraft.getMinecraft().getTextureMapBlocks();
     }
@@ -72,7 +77,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
             bufferBuilder.finishDrawing();
             ByteBuffer rawBuffer = bufferBuilder.getByteBuffer();
             var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(LAYERS[i]);
-            copyBlockData(rawBuffer, buffers.get(material), material);
+            copyBlockData(rawBuffer, buffers, material);
         }
     }
 
@@ -83,12 +88,26 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
         Arrays.fill(this.usedWorldRenderers, false);
     }
 
-    private void copyBlockData(ByteBuffer source, ChunkModelBuilder dest, Material material) {
+    private Material selectMaterial(Material material, TextureAtlasSprite sprite) {
+        if (sprite != null && sprite.getClass() == TextureAtlasSprite.class && !sprite.hasAnimationMetadata()) {
+            var transparencyLevel = ((SpriteExtension)sprite).celeritas$getTransparencyLevel();
+            if (transparencyLevel == SpriteTransparencyLevel.OPAQUE) {
+                // Downgrade to solid
+                return this.renderPassConfiguration.defaultSolidMaterial();
+            } else if (material == this.renderPassConfiguration.defaultTranslucentMaterial() && transparencyLevel != SpriteTransparencyLevel.TRANSLUCENT) {
+                // Downgrade to cutout
+                return this.renderPassConfiguration.defaultCutoutMippedMaterial();
+            }
+        }
+        return material;
+    }
+
+    private void copyBlockData(ByteBuffer source, ChunkBuildBuffers buffers, Material material) {
         int vsize = DefaultVertexFormats.BLOCK.getSize();
         int numQuads = source.limit() / (vsize * 4);
         long ptr = MemoryUtil.memAddress(source);
         var quad = ChunkVertexEncoder.Vertex.uninitializedQuad();
-        var animatedSpritesList = ((MinecraftBuiltRenderSectionData<TextureAtlasSprite, TileEntity>)dest.getSectionContextBundle()).animatedSprites;
+        var animatedSpritesList = ((MinecraftBuiltRenderSectionData<TextureAtlasSprite, TileEntity>)buffers.getSectionContextBundle()).animatedSprites;
         for(int q = 0; q < numQuads; q++) {
             float uSum = 0, vSum = 0;
             for(int v = 0; v < 4; v++) {
@@ -115,7 +134,8 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
                 vertex.trueNormal = trueNormal;
             }
             ModelQuadFacing facing = QuadUtil.findNormalFace(trueNormal);
-            dest.getVertexBuffer(facing).push(quad, material);
+            Material correctMaterial = selectMaterial(material, sprite);
+            buffers.get(correctMaterial).getVertexBuffer(facing).push(quad, material);
         }
     }
 }

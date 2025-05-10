@@ -3,6 +3,8 @@ package org.taumc.celeritas;
 import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.launchwrapper.Launch;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
@@ -14,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.gl.device.GLRenderDevice;
+import org.taumc.celeritas.impl.command.TogglePassCommand;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 
 import java.lang.management.ManagementFactory;
@@ -32,6 +35,10 @@ public class CeleritasVintage {
         };
         VERSION = Loader.instance().getIndexedModList().get(MODID).getVersion();
         MinecraftForge.EVENT_BUS.register(this);
+
+        if ((Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
+            ClientCommandHandler.instance.registerCommand(new TogglePassCommand());
+        }
     }
 
     @SubscribeEvent
