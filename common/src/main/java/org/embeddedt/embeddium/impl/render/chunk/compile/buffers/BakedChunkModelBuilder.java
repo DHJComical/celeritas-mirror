@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.buffers;
 
+import lombok.Getter;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -11,6 +12,8 @@ import java.util.Objects;
 public class BakedChunkModelBuilder implements ChunkModelBuilder {
     private final ChunkMeshBufferBuilder[] vertexBuffers;
     private final boolean splitBySide;
+    @Getter
+    private final ChunkVertexEncoder encoder;
 
     private BuiltRenderSectionData renderData;
 
@@ -21,6 +24,7 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
             vertexBuffers[facing] = new ChunkMeshBufferBuilder(encoder, stride, 64 * 1024, pass.isSorted() && facing == ModelQuadFacing.UNASSIGNED.ordinal());
         }
 
+        this.encoder = encoder;
         this.vertexBuffers = vertexBuffers;
         this.splitBySide = !pass.isSorted();
     }

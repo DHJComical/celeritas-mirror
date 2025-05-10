@@ -54,7 +54,7 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
 
     private final FallbackTextureMaterials fallbackMaterials = ModernWorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
 
-    private final ChunkVertexEncoder baseEncoder = XHFPModelVertexType.BASE_VERTEX_TYPE.getEncoder();
+    private final ChunkVertexEncoder baseEncoder = XHFPModelVertexType.BASE_VERTEX_TYPE.createEncoder();
 
     private static final int MID_TEX_OFFSET = XHFPModelVertexType.VERTEX_FORMAT.getAttribute("mc_midTexCoord").getPointer();
     private static final int MC_ENTITY_OFFSET = XHFPModelVertexType.VERTEX_FORMAT.getAttribute("mc_Entity").getPointer();

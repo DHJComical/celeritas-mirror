@@ -51,7 +51,7 @@ public class XHFPModelVertexType implements ChunkVertexType {
 	}
 
 	@Override
-	public ChunkVertexEncoder getEncoder() {
+	public ChunkVertexEncoder createEncoder() {
 		return new XHFPTerrainVertex();
 	}
 }

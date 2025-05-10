@@ -49,7 +49,7 @@ public class CompactChunkVertex implements ChunkVertexType {
     }
 
     @Override
-    public ChunkVertexEncoder getEncoder() {
+    public ChunkVertexEncoder createEncoder() {
         return (ptr, material, vertex, sectionIndex) -> {
             MemoryUtil.memPutShort(ptr + 0, encodePosition(vertex.x));
             MemoryUtil.memPutShort(ptr + 2, encodePosition(vertex.y));

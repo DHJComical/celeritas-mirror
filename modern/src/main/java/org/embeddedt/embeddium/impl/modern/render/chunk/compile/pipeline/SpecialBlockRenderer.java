@@ -15,7 +15,7 @@ public class SpecialBlockRenderer {
     public void voxelizeLightBlock(BlockPos relativeBlockPos, BlockState blockState, ChunkBuildBuffers buffers) {
         var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(RenderType.cutout());
 
-        if (buffers.getRenderPassConfiguration().getVertexTypeForPass(material.pass).getEncoder() instanceof ContextAwareChunkVertexEncoder encoder) {
+        if (buffers.get(material).getEncoder() instanceof ContextAwareChunkVertexEncoder encoder) {
             int relX = relativeBlockPos.getX();
             int relY = relativeBlockPos.getY();
             int relZ = relativeBlockPos.getZ();

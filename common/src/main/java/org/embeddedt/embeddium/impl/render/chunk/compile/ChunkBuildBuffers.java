@@ -59,7 +59,7 @@ public final class ChunkBuildBuffers {
 
     private ChunkModelBuilder createBuilder(TerrainRenderPass pass) {
         var vertexType = this.renderPassConfiguration.getVertexTypeForPass(pass);
-        var builder = new BakedChunkModelBuilder(vertexType.getEncoder(), vertexType.getVertexFormat().getStride(), pass);
+        var builder = new BakedChunkModelBuilder(vertexType.createEncoder(), vertexType.getVertexFormat().getStride(), pass);
         Objects.requireNonNull(renderData, "Buffers have not been started");
         builder.begin(renderData, sectionIndex);
         this.builders.put(pass, builder);

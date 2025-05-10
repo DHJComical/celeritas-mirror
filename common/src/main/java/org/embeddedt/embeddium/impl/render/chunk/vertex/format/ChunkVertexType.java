@@ -22,7 +22,10 @@ public interface ChunkVertexType {
 
     GlVertexFormat getVertexFormat();
 
-    ChunkVertexEncoder getEncoder();
+    /**
+     * {@return a newly constructed instance of a vertex encoder for the given vertex type}
+     */
+    ChunkVertexEncoder createEncoder();
 
     default List<String> getDefines() {
         return List.of();
