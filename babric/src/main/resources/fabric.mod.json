@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "celeritas",
+  "name": "Celeritas",
+  "version": "${version}",
+  "environment": "*",
+  "description": "An open-source client performance mod for Minecraft",
+  "authors": ["embeddedt"],
+  "contributors": ["JellySquid","IMS212"],
+  "entrypoints": {
+    "client": [
+      "org.taumc.celeritas.impl.Celeritas::onInitializeClient"
+    ]
+  },
+  "depends": {
+    "minecraft": "1.0.0-beta.7.3"
+  },
+  "mixins": [
+    "mixins.celeritas.json"
+  ],
+  "custom": {}
+}

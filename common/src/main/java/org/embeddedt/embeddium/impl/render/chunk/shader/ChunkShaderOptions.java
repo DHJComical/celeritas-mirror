@@ -15,6 +15,10 @@ public record ChunkShaderOptions(ChunkFogMode fog, TerrainRenderPass pass, Chunk
             constants.add("USE_FRAGMENT_DISCARD");
         }
 
+        if (this.pass.hasNoLightmap()) {
+            constants.add("CELERITAS_NO_LIGHTMAP");
+        }
+
         constants.addAll(this.vertexType.getDefines());
 
         constants.add("VERT_POS_SCALE", String.valueOf(this.vertexType.getPositionScale()));

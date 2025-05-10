@@ -38,6 +38,9 @@ if(file("forge1710").exists()) {
 if(file("forge122").exists()) {
     include("forge122")
 }
+if(file("babric").exists()) {
+    include("babric")
+}
 
 if(file("modern").exists()) {
     include("modern")

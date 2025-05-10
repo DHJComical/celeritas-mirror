@@ -20,11 +20,13 @@ out float v_FragDistance;
 uniform int u_FogShape;
 uniform vec3 u_RegionOffset;
 
+#ifndef CELERITAS_NO_LIGHTMAP
 uniform sampler2D u_LightTex; // The light map texture sampler
 
 vec4 _sample_lightmap(sampler2D lightMap, ivec2 uv) {
     return texture(lightMap, clamp(uv / 256.0, vec2(0.5 / 16.0), vec2(15.5 / 16.0)));
 }
+#endif
 
 uvec3 _get_relative_chunk_coord(uint pos) {
     // Packing scheme is defined by LocalSectionIndex
@@ -50,7 +52,11 @@ void main() {
     gl_Position = u_ProjectionMatrix * u_ModelViewMatrix * vec4(position, 1.0);
 
     // Add the light color to the vertex color, and pass the texture coordinates to the fragment shader
+#ifdef CELERITAS_NO_LIGHTMAP
+    v_Color = _vert_color;
+#else
     v_Color = _vert_color * _sample_lightmap(u_LightTex, _vert_tex_light_coord);
+#endif
     v_TexCoord = _vert_tex_diffuse_coord;
 
     v_MaterialMipBias = _material_mip_bias(_material_params);

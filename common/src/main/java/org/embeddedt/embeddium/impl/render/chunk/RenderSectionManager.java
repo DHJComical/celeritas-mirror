@@ -634,6 +634,10 @@ public abstract class RenderSectionManager {
         return this.sectionByPosition.get(PositionUtil.packSection(x, y, z));
     }
 
+    public Collection<RenderSection> getAllRenderSections() {
+        return Collections.unmodifiableCollection(this.sectionByPosition.values());
+    }
+
     private Collection<String> getSortingStrings() {
         List<String> list = new ArrayList<>();
 

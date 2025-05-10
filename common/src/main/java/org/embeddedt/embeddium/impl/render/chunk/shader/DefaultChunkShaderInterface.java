@@ -33,7 +33,9 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
 
         this.uniformTextures = new EnumMap<>(ChunkShaderTextureSlot.class);
         this.uniformTextures.put(ChunkShaderTextureSlot.BLOCK, context.bindUniform("u_BlockTex", GlUniformInt::new));
-        this.uniformTextures.put(ChunkShaderTextureSlot.LIGHT, context.bindUniform("u_LightTex", GlUniformInt::new));
+        if (!options.pass().hasNoLightmap()) {
+            this.uniformTextures.put(ChunkShaderTextureSlot.LIGHT, context.bindUniform("u_LightTex", GlUniformInt::new));
+        }
 
         this.fogShader = options.fog().getFactory().apply(context);
 
@@ -43,7 +45,9 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
     @Deprecated // the shader interface should not modify pipeline state
     public void setupState(TerrainRenderPass pass) {
         this.bindTexture(ChunkShaderTextureSlot.BLOCK);
-        this.bindTexture(ChunkShaderTextureSlot.LIGHT);
+        if (!pass.hasNoLightmap()) {
+            this.bindTexture(ChunkShaderTextureSlot.LIGHT);
+        }
 
         this.fogShader.setup();
     }

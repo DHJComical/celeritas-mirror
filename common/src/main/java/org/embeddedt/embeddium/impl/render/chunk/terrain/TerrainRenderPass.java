@@ -41,9 +41,13 @@ public class TerrainRenderPass {
      * Whether this render pass wants to opt in to translucency sorting if enabled.
      */
     private final boolean useTranslucencySorting;
+    /**
+     * Whether this render pass has no lightmap texture.
+     */
+    private final boolean hasNoLightmap;
 
     @Builder
-    public TerrainRenderPass(String name, PipelineState pipelineState, boolean useReverseOrder, boolean fragmentDiscard, boolean useTranslucencySorting) {
+    public TerrainRenderPass(String name, PipelineState pipelineState, boolean useReverseOrder, boolean fragmentDiscard, boolean useTranslucencySorting, boolean hasNoLightmap) {
         if(name == null || name.length() == 0) {
             throw new IllegalArgumentException("Name not specified for terrain pass");
         }
@@ -52,6 +56,7 @@ public class TerrainRenderPass {
         this.useReverseOrder = useReverseOrder;
         this.fragmentDiscard = fragmentDiscard;
         this.useTranslucencySorting = useTranslucencySorting;
+        this.hasNoLightmap = hasNoLightmap;
     }
 
     public boolean isReverseOrder() {
@@ -60,6 +65,10 @@ public class TerrainRenderPass {
 
     public boolean isSorted() {
         return this.useTranslucencySorting;
+    }
+
+    public boolean hasNoLightmap() {
+        return this.hasNoLightmap;
     }
 
     public void startDrawing() {
