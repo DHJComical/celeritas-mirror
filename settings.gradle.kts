@@ -53,13 +53,14 @@ if(file("modern").exists()) {
     )
     stonecutter {
         centralScript = "build.gradle"
-        create(project(":modern")) {
+        create(":modern") {
             targets.forEach {
                 val target = it
-                it.loaders.forEach {
-                    vers(target.friendlyName + "-" + it, target.semanticName)
+                it.loaders.forEach { loader ->
+                    vers(target.friendlyName + "-" + loader, target.semanticName)
                 }
             }
+            vcsVersion = "1.20.1-forge"
         }
     }
 }

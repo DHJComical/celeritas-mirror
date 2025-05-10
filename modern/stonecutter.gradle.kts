@@ -4,37 +4,9 @@ import org.embeddedt.embeddium.gradle.stonecutter.ModDependencyCollector
 plugins {
     id("dev.kikugie.stonecutter")
 }
+
+
 stonecutter active "1.20.1-forge" /* [SC] DO NOT EDIT */
-
-stonecutter registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) { 
-    group = "project"
-    ofTask("build")
-}
-
-stonecutter registerChiseled tasks.register("chiseledPublish", stonecutter.chiseled) {
-    group = "project"
-    ofTask("publish")
-}
-
-
-stonecutter registerChiseled tasks.register("chiseledPackage", stonecutter.chiseled) {
-    group = "project"
-    ofTask("packageJar")
-}
-
-stonecutter registerChiseled tasks.register("chiseledTestProductionJar", stonecutter.chiseled) {
-    group = "project"
-    ofTask("testProductionJar")
-}
-
-tasks.register("runActive") {
-    dependsOn("${stonecutter.current.project}:runClient")
-}
-
-tasks.register("packageActive") {
-    group = "project"
-    dependsOn("${stonecutter.current.project}:packageJar")
-}
 
 // constants
 

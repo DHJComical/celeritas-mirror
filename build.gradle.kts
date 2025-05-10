@@ -1,4 +1,4 @@
-import dev.kikugie.stonecutter.controller.StonecutterController
+import dev.kikugie.stonecutter.controller.StonecutterControllerExtension
 import org.taumc.gradle.publishing.api.PublishChannel
 import org.taumc.gradle.publishing.api.minecraft.ModEnvironment
 import org.taumc.gradle.publishing.api.minecraft.ModLoader
@@ -17,7 +17,7 @@ println("Celeritas: ${tau.versioning.version}")
 evaluationDependsOnChildren()
 
 val modernStonecutter = if (findProject(":modern") != null) {
-    project(":modern").extensions.getByType(StonecutterController::class.java)
+    project(":modern").extensions.getByType(StonecutterControllerExtension::class.java)
 } else {
     null
 }

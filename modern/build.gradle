@@ -150,18 +150,18 @@ sourceSets {
         compileClasspath += sourceSets.mcp.output
         if (shadersEnabled) {
             java {
-                srcDirs += "src/shaders/java"
+                srcDirs += "src/main/shaders_java"
             }
             resources {
-                srcDirs += "src/shaders/resources"
+                srcDirs += "src/main/shaders_resources"
             }
         }
         if (batchingEnabled) {
             java {
-                srcDirs += "src/batching/java"
+                srcDirs += "src/main/batching_java"
             }
             resources {
-                srcDirs += "src/batching/resources"
+                srcDirs += "src/main/batching_resources"
             }
         }
     }
@@ -225,7 +225,7 @@ unimined.minecraft {
         remap(configurations.modApi)
     }
 
-    def embeddiumAccessWidener = project(":modern").file("src/main/resources/embeddium.accesswidener")
+    def embeddiumAccessWidener = rootProject.file("modern/src/main/resources/embeddium.accesswidener")
 
     if (configuredModLoader == FABRIC) {
         fabric {

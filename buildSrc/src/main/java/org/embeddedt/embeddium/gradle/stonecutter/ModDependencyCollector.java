@@ -1,7 +1,8 @@
 package org.embeddedt.embeddium.gradle.stonecutter;
 
-import dev.kikugie.stonecutter.build.StonecutterBuild;
-import dev.kikugie.stonecutter.controller.StonecutterController;
+import dev.kikugie.stonecutter.build.StonecutterBuildExtension;
+import dev.kikugie.stonecutter.controller.StonecutterControllerExtension;
+import kotlin.Unit;
 import org.gradle.api.Project;
 
 import java.util.HashSet;
@@ -56,26 +57,27 @@ public class ModDependencyCollector {
         }
     }
 
-    public static void defineConsts(StonecutterController scController) {
+    public static void defineConsts(StonecutterControllerExtension scController) {
         scController.parameters(params -> {
             var mcVersion = params.getMetadata().getVersion();
             var depMap = dependencyMap(params.getMetadata().getProject());
             depMap.forEach((key, dep) -> {
-                params.getConsts().put(key, dep.versionConditions.stream().anyMatch(c -> scController.eval(mcVersion, c.evalCondition)));
+                params.getConstants().put(key, dep.versionConditions.stream().anyMatch(c -> scController.eval(mcVersion, c.evalCondition)));
             });
             Set<String> allKeys = new HashSet<>();
             allKeys.addAll(FORGELIKE_DEPENDENCY_MAP.keySet());
             allKeys.addAll(FABRIC_DEPENDENCY_MAP.keySet());
             for (String key : allKeys) {
                 if (!depMap.containsKey(key)) {
-                   params.getConsts().put(key, false);
+                   params.getConstants().put(key, false);
                 }
             }
+            return Unit.INSTANCE;
         });
     }
 
     public static void addModDependencies(Project project) {
-        var scBuild = project.getExtensions().getByType(StonecutterBuild.class);
+        var scBuild = project.getExtensions().getByType(StonecutterBuildExtension.class);
         var mcVersion = scBuild.getCurrent().getVersion();
         var configurationName = LOAD_IN_DEV ? "modImplementation" : "modCompileOnly";
         dependencyMap(scBuild.getCurrent().getProject()).forEach((key, dep) -> {
