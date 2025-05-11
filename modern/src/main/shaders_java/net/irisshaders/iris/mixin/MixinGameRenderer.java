@@ -42,7 +42,7 @@ public class MixinGameRenderer {
 	private boolean renderHand;
 
     //? if <1.21.2 {
-    @Inject(method = { "*()Lnet/minecraft/client/renderer/ShaderInstance;", "*()Lnet/minecraft/class_5944;" }, at = @At("RETURN"), cancellable = true, remap = false)
+    @Inject(method = { "*()Lnet/minecraft/client/renderer/ShaderInstance;" }, at = @At("RETURN"), cancellable = true)
     private static void iris$overrideShader(CallbackInfoReturnable<ShaderInstance> cir) {
         var shader = cir.getReturnValue();
         if (shader == null) {
