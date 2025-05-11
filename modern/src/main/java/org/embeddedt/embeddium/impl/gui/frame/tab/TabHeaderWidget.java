@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.gui.frame.tab;
 
-//? if >=1.20
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.loader.common.ModLogoUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;

@@ -15,8 +15,10 @@ import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.client.Minecraft;
-//? if <1.20
-/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;*/
+//? if <1.20 {
+/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
+import com.mojang.blaze3d.vertex.PoseStack;
+*///?}
 //? if >=1.20
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
