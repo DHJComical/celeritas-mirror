@@ -390,6 +390,8 @@ jar {
 }
 
 processResources {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
     def dep = versionedProperty("minecraft_dependency")
     if (dep == null) {
         dep = stonecutter.current.version
