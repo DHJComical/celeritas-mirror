@@ -5,17 +5,20 @@
 #import <sodium:include/chunk_matrices.glsl>
 #import <sodium:include/chunk_material.glsl>
 
-out vec4 v_Color;
-out vec2 v_TexCoord;
+out VS_OUT
+{
+    vec4 v_Color;
+    vec2 v_TexCoord;
 
-out float v_MaterialMipBias;
+    float v_MaterialMipBias;
 #ifdef USE_FRAGMENT_DISCARD
-out float v_MaterialAlphaCutoff;
+    float v_MaterialAlphaCutoff;
 #endif
 
 #ifdef USE_FOG
-out float v_FragDistance;
+    float v_FragDistance;
 #endif
+} vs_out;
 
 uniform int u_FogShape;
 uniform vec3 u_RegionOffset;
@@ -45,7 +48,7 @@ void main() {
     vec3 position = _vert_position + translation;
 
 #ifdef USE_FOG
-    v_FragDistance = getFragDistance(u_FogShape, position);
+    vs_out.v_FragDistance = getFragDistance(u_FogShape, position);
 #endif
 
     // Transform the vertex position into model-view-projection space
@@ -53,14 +56,14 @@ void main() {
 
     // Add the light color to the vertex color, and pass the texture coordinates to the fragment shader
 #ifdef CELERITAS_NO_LIGHTMAP
-    v_Color = _vert_color;
+    vs_out.v_Color = _vert_color;
 #else
-    v_Color = _vert_color * _sample_lightmap(u_LightTex, _vert_tex_light_coord);
+    vs_out.v_Color = _vert_color * _sample_lightmap(u_LightTex, _vert_tex_light_coord);
 #endif
-    v_TexCoord = _vert_tex_diffuse_coord;
+    vs_out.v_TexCoord = _vert_tex_diffuse_coord;
 
-    v_MaterialMipBias = _material_mip_bias(_material_params);
+    vs_out.v_MaterialMipBias = _material_mip_bias(_material_params);
 #ifdef USE_FRAGMENT_DISCARD
-    v_MaterialAlphaCutoff = _material_alpha_cutoff(_material_params);
+    vs_out.v_MaterialAlphaCutoff = _material_alpha_cutoff(_material_params);
 #endif
 }
