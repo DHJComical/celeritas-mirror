@@ -9,6 +9,7 @@ import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.buffer.GlBuffer;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
+import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -120,11 +121,11 @@ public class RenderRegion {
         return this.sectionRenderData.get(pass);
     }
 
-    public SectionRenderDataStorage createStorage(TerrainRenderPass pass) {
+    public SectionRenderDataStorage createStorage(TerrainRenderPass pass, RenderPassConfiguration<?> renderPassConfiguration) {
         var storage = this.sectionRenderData.get(pass);
 
         if (storage == null) {
-            this.sectionRenderData.put(pass, storage = new SectionRenderDataStorage());
+            this.sectionRenderData.put(pass, storage = new SectionRenderDataStorage(renderPassConfiguration.getPrimitiveTypeForPass(pass)));
         }
 
         return storage;

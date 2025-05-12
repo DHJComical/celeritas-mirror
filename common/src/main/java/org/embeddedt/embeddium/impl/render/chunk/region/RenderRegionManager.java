@@ -117,7 +117,7 @@ public class RenderRegionManager {
         // Collect the upload results
         for (var uploads : uploadsByFormat.values()) {
             for (PendingSectionUpload upload : uploads) {
-                var storage = region.createStorage(upload.pass);
+                var storage = region.createStorage(upload.pass, renderPassConfiguration);
                 storage.setMeshes(upload.section.getSectionIndex(),
                         upload.vertexUpload.getResult(), upload.indexUpload != null ? upload.indexUpload.getResult() : null, upload.meshData.getVertexRanges());
             }
@@ -172,7 +172,7 @@ public class RenderRegionManager {
         // Collect the upload results
         for (var uploads : uploadsByFormat.values()) {
             for (PendingResortUpload upload : uploads) {
-                var storage = region.createStorage(upload.pass);
+                var storage = region.createStorage(upload.pass, renderPassConfiguration);
                 storage.replaceIndexBuffer(upload.section.getSectionIndex(), upload.indexUpload.getResult());
             }
         }
