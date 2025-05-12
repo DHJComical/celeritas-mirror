@@ -2,10 +2,13 @@
 
 #import <sodium:include/fog.glsl>
 
-in VS_OUT
+// TODO: [VEN][GEO-NEO-AO] Proper switching if a geo shader is used or not?
+// in VS_OUT
+in GS_OUT
 {
-    vec4 v_Color; // The interpolated vertex color
-    vec2 v_TexCoord; // The interpolated block texture coordinates
+    vec2 edge;
+    flat vec4 v_Color[4];
+    vec2 v_TexCoord;
 
     float v_MaterialMipBias;
 #ifdef USE_FRAGMENT_DISCARD
@@ -41,15 +44,22 @@ void main() {
     }
 #endif
 
+    // TODO: [VEN][GEO-NEO-AO] Proper switching if a geo shader is used or not?
+
+    vec4 c1 = mix(fs_in.v_Color[0], fs_in.v_Color[1], fs_in.edge.x);
+    vec4 c2 = mix(fs_in.v_Color[2], fs_in.v_Color[3], fs_in.edge.x);
+
+    vec4 m_color = mix(c1, c2, fs_in.edge.y);
+
 #ifdef USE_VANILLA_COLOR_FORMAT
     // Apply per-vertex color. AO shade is applied ahead of time on the CPU.
-    diffuseColor *= fs_in.v_Color;
+    diffuseColor *= m_color;
 #else
     // Apply per-vertex color
-    diffuseColor.rgb *= fs_in.v_Color.rgb;
+    diffuseColor.rgb *= m_color.rgb;
 
     // Apply ambient occlusion "shade"
-    diffuseColor.rgb *= fs_in.v_Color.a;
+    diffuseColor.rgb *= m_color.a;
 #endif
 
 #ifdef USE_FOG

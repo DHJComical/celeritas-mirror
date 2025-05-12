@@ -52,12 +52,17 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
 
         GlShader vertShader = ShaderLoader.loadShader(ShaderType.VERTEX,
                 "sodium:" + path + ".vsh", constants);
-        
+
+        // TODO: [VEN][GEO-NEO-AO] Proper switching if a geo shader is used or not?
+        GlShader geomShader = ShaderLoader.loadShader(ShaderType.GEOM,
+                "sodium:" + path + ".gsh", constants);
+
         GlShader fragShader = ShaderLoader.loadShader(ShaderType.FRAGMENT,
                 "sodium:" + path + ".fsh", constants);
 
         try {
-            var builder = GlProgram.builder("sodium:chunk_shader").attachShader(vertShader).attachShader(fragShader);
+            // TODO: [VEN][GEO-NEO-AO] Proper switching if a geo shader is used or not?
+            var builder = GlProgram.builder("sodium:chunk_shader").attachShader(vertShader).attachShader(geomShader).attachShader(fragShader);
             int i = 0;
             for (var attr : options.vertexType().getVertexFormat().getAttributes()) {
                 builder.bindAttribute(attr.getName(), i++);
