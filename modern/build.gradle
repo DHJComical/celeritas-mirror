@@ -518,6 +518,10 @@ tasks.named("shadowJar", ShadowJar) {
     configurations = []
 }
 
+tasks.named("sourcesJar") {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 def shadowRemapJar = tasks.register("shadowRemapJar", ShadowJar) {
     archiveClassifier = "pre-downgrade"
     configurations = [project.configurations.shadow]
