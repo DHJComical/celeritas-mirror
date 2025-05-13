@@ -13,6 +13,8 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.shader.ShaderLoader;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -50,19 +52,22 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
     protected GlProgram<ChunkShaderInterface> createShader(String path, ChunkShaderOptions options) {
         ShaderConstants constants = options.constants();
 
-        GlShader vertShader = ShaderLoader.loadShader(ShaderType.VERTEX,
-                "sodium:" + path + ".vsh", constants);
+        List<GlShader> loadedShaders = new ArrayList<>();
+
+        loadedShaders.add(ShaderLoader.loadShader(ShaderType.VERTEX,
+                "sodium:" + path + ".vsh", constants));
 
         // TODO: [VEN][GEO-NEO-AO] Proper switching if a geo shader is used or not?
-        GlShader geomShader = ShaderLoader.loadShader(ShaderType.GEOM,
-                "sodium:" + path + ".gsh", constants);
+        loadedShaders.add(ShaderLoader.loadShader(ShaderType.GEOM,
+                "sodium:" + path + ".gsh", constants));
 
-        GlShader fragShader = ShaderLoader.loadShader(ShaderType.FRAGMENT,
-                "sodium:" + path + ".fsh", constants);
+        loadedShaders.add(ShaderLoader.loadShader(ShaderType.FRAGMENT,
+                "sodium:" + path + ".fsh", constants));
 
         try {
             // TODO: [VEN][GEO-NEO-AO] Proper switching if a geo shader is used or not?
-            var builder = GlProgram.builder("sodium:chunk_shader").attachShader(vertShader).attachShader(geomShader).attachShader(fragShader);
+            var builder = GlProgram.builder("sodium:chunk_shader");
+            loadedShaders.forEach(builder::attachShader);
             int i = 0;
             for (var attr : options.vertexType().getVertexFormat().getAttributes()) {
                 builder.bindAttribute(attr.getName(), i++);
@@ -70,8 +75,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
             builder.bindFragmentData("fragColor", ChunkShaderBindingPoints.FRAG_COLOR);
             return builder.link((shader) -> new DefaultChunkShaderInterface(shader, options));
         } finally {
-            vertShader.delete();
-            fragShader.delete();
+            loadedShaders.forEach(GlShader::delete);
         }
     }
 
