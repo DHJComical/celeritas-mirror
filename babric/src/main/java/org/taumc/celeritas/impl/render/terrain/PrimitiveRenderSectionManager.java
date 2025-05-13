@@ -25,7 +25,6 @@ import java.util.Collection;
 
 public class PrimitiveRenderSectionManager extends RenderSectionManager {
     private final World world;
-    private final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
 
     public PrimitiveRenderSectionManager(RenderPassConfiguration<?> configuration, World world, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
         super(configuration, () -> new PrimitiveChunkBuildContext(world, configuration), DefaultChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
@@ -82,26 +81,5 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
     @Override
     protected boolean allowImportantRebuilds() {
         return false;
-    }
-
-    @Override
-    protected void updateSectionInfo(RenderSection render, BuiltRenderSectionData info) {
-        super.updateSectionInfo(render, info);
-
-        if (info == null || (info instanceof MinecraftBuiltRenderSectionData<?, ?> mcInfo) && mcInfo.globalBlockEntities.isEmpty()) {
-            this.sectionsWithGlobalEntities.remove(render);
-        } else {
-            this.sectionsWithGlobalEntities.add(render);
-        }
-    }
-
-    @Override
-    public void destroy() {
-        super.destroy();
-        this.sectionsWithGlobalEntities.clear();
-    }
-
-    public Collection<RenderSection> getSectionsWithGlobalEntities() {
-        return ReferenceSets.unmodifiable(this.sectionsWithGlobalEntities);
     }
 }

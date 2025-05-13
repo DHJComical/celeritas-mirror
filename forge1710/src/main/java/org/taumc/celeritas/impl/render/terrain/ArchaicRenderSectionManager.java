@@ -30,7 +30,6 @@ import java.util.List;
 
 public class ArchaicRenderSectionManager extends RenderSectionManager {
     private final WorldClient world;
-    private final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
 
     public ArchaicRenderSectionManager(RenderPassConfiguration<?> configuration, WorldClient world, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
         super(configuration, () -> new ArchaicChunkBuildContext(world, configuration), DefaultChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
@@ -94,27 +93,6 @@ public class ArchaicRenderSectionManager extends RenderSectionManager {
     @Override
     protected boolean allowImportantRebuilds() {
         return false;
-    }
-
-    @Override
-    protected void updateSectionInfo(RenderSection render, BuiltRenderSectionData info) {
-        super.updateSectionInfo(render, info);
-
-        if (info == null || (info instanceof MinecraftBuiltRenderSectionData<?, ?> mcInfo) && mcInfo.globalBlockEntities.isEmpty()) {
-            this.sectionsWithGlobalEntities.remove(render);
-        } else {
-            this.sectionsWithGlobalEntities.add(render);
-        }
-    }
-
-    @Override
-    public void destroy() {
-        super.destroy();
-        this.sectionsWithGlobalEntities.clear();
-    }
-
-    public Collection<RenderSection> getSectionsWithGlobalEntities() {
-        return ReferenceSets.unmodifiable(this.sectionsWithGlobalEntities);
     }
 
     @Override

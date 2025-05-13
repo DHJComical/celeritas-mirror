@@ -15,6 +15,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderSortT
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.RenderListManager;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
@@ -74,6 +75,8 @@ public abstract class RenderSectionManager {
 
     @Nullable
     private final RenderListManager shadowRenderListManager;
+
+    protected final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
 
     public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier, BiFunction<RenderDevice, RenderPassConfiguration<?>, ChunkRenderer> chunkRenderer, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
         this.chunkRenderer = chunkRenderer.apply(RenderDevice.INSTANCE, configuration);
@@ -418,6 +421,12 @@ public abstract class RenderSectionManager {
         if (this.shadowRenderListManager != null) {
             this.shadowRenderListManager.updateVisibilityData(render.getChunkX(), render.getChunkY(), render.getChunkZ(), visibilityData);
         }
+
+        if (!(info instanceof MinecraftBuiltRenderSectionData<?, ?> data)) {
+            this.sectionsWithGlobalEntities.remove(render);
+        } else if (!data.globalBlockEntities.isEmpty()) {
+            this.sectionsWithGlobalEntities.add(render);
+        }
     }
 
     private static List<ChunkBuildOutput> filterChunkBuildResults(ArrayList<ChunkBuildOutput> outputs) {
@@ -547,6 +556,8 @@ public abstract class RenderSectionManager {
             this.regions.delete(commandList);
             this.chunkRenderer.delete(commandList);
         }
+
+        this.sectionsWithGlobalEntities.clear();
     }
 
     public int getTotalSections() {
@@ -756,5 +767,9 @@ public abstract class RenderSectionManager {
         } else {
             this.disabledRenderPasses.add(pass);
         }
+    }
+
+    public final Collection<RenderSection> getSectionsWithGlobalEntities() {
+        return ReferenceSets.unmodifiable(this.sectionsWithGlobalEntities);
     }
 }

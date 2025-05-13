@@ -47,8 +47,6 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     @Getter
     private final ClonedChunkSectionCache sectionCache;
 
-    private final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
-
     protected ModernRenderSectionManager(RenderPassConfiguration<RenderType> configuration, ClientLevel world, int renderDistance, CommandList commandList) {
         super(configuration,
                 () -> new ModernChunkBuildContext(world, configuration),
@@ -128,27 +126,6 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     @Override
     protected @Nullable SectionTicker createSectionTicker() {
         return new GenericSectionSpriteTicker<>(SpriteUtil::markSpriteActive);
-    }
-
-    @Override
-    protected void updateSectionInfo(RenderSection render, BuiltRenderSectionData info) {
-        super.updateSectionInfo(render, info);
-
-        if (info == null || (info instanceof MinecraftBuiltRenderSectionData<?, ?> mcInfo) && mcInfo.globalBlockEntities.isEmpty()) {
-            this.sectionsWithGlobalEntities.remove(render);
-        } else {
-            this.sectionsWithGlobalEntities.add(render);
-        }
-    }
-
-    @Override
-    public void destroy() {
-        super.destroy();
-        this.sectionsWithGlobalEntities.clear();
-    }
-
-    public Collection<RenderSection> getSectionsWithGlobalEntities() {
-        return ReferenceSets.unmodifiable(this.sectionsWithGlobalEntities);
     }
 
     @Override

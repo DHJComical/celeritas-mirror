@@ -38,7 +38,6 @@ import java.util.List;
 
 public class VintageRenderSectionManager extends RenderSectionManager {
     private final WorldClient world;
-    private final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
     @Getter
     private final ClonedChunkSectionCache sectionCache;
 
@@ -111,27 +110,6 @@ public class VintageRenderSectionManager extends RenderSectionManager {
     @Override
     protected boolean allowImportantRebuilds() {
         return false;
-    }
-
-    @Override
-    protected void updateSectionInfo(RenderSection render, BuiltRenderSectionData info) {
-        super.updateSectionInfo(render, info);
-
-        if (info == null || (info instanceof MinecraftBuiltRenderSectionData<?, ?> mcInfo) && mcInfo.globalBlockEntities.isEmpty()) {
-            this.sectionsWithGlobalEntities.remove(render);
-        } else {
-            this.sectionsWithGlobalEntities.add(render);
-        }
-    }
-
-    @Override
-    public void destroy() {
-        super.destroy();
-        this.sectionsWithGlobalEntities.clear();
-    }
-
-    public Collection<RenderSection> getSectionsWithGlobalEntities() {
-        return ReferenceSets.unmodifiable(this.sectionsWithGlobalEntities);
     }
 
     @Override
