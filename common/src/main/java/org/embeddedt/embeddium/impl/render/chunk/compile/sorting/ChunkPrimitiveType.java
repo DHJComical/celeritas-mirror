@@ -4,6 +4,7 @@ import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 public interface ChunkPrimitiveType {
     default int getIndexBufferSize(int numPrimitives) {
@@ -45,4 +46,8 @@ public interface ChunkPrimitiveType {
      * @param z z position of the camera
      */
     void generateSortedIndexBuffer(ByteBuffer indexBuffer, int numPrimitives, @Nullable TranslucentQuadAnalyzer.SortState chunkData, float x, float y, float z);
+
+    default List<String> getDefines() {
+        return List.of();
+    }
 }

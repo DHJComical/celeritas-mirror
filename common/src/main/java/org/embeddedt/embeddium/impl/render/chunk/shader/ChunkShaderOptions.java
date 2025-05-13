@@ -2,10 +2,9 @@ package org.embeddedt.embeddium.impl.render.chunk.shader;
 
 import org.embeddedt.embeddium.impl.gl.shader.ShaderConstants;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 
-public record ChunkShaderOptions(ChunkFogMode fog, TerrainRenderPass pass, ChunkVertexType vertexType) {
+public record ChunkShaderOptions(ChunkFogMode fog, TerrainRenderPass pass) {
 
     public ShaderConstants constants() {
         ShaderConstants.Builder constants = ShaderConstants.builder();
@@ -19,11 +18,15 @@ public record ChunkShaderOptions(ChunkFogMode fog, TerrainRenderPass pass, Chunk
             constants.add("CELERITAS_NO_LIGHTMAP");
         }
 
-        constants.addAll(this.vertexType.getDefines());
+        var vertexType = pass.vertexType();
+        var primitiveType = pass.primitiveType();
 
-        constants.add("VERT_POS_SCALE", String.valueOf(this.vertexType.getPositionScale()));
-        constants.add("VERT_POS_OFFSET", String.valueOf(this.vertexType.getPositionOffset()));
-        constants.add("VERT_TEX_SCALE", String.valueOf(this.vertexType.getTextureScale()));
+        constants.addAll(vertexType.getDefines());
+        constants.addAll(primitiveType.getDefines());
+
+        constants.add("VERT_POS_SCALE", String.valueOf(vertexType.getPositionScale()));
+        constants.add("VERT_POS_OFFSET", String.valueOf(vertexType.getPositionOffset()));
+        constants.add("VERT_TEX_SCALE", String.valueOf(vertexType.getTextureScale()));
 
         if(!ShaderModBridge.emulateLegacyColorBrightnessFormat()) {
             constants.add("USE_VANILLA_COLOR_FORMAT");

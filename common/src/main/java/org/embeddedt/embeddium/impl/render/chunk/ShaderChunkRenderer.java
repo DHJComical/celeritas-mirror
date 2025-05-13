@@ -57,19 +57,18 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         loadedShaders.add(ShaderLoader.loadShader(ShaderType.VERTEX,
                 "sodium:" + path + ".vsh", constants));
 
-        // TODO: [VEN][GEO-NEO-AO] Proper switching if a geo shader is used or not?
-        loadedShaders.add(ShaderLoader.loadShader(ShaderType.GEOM,
-                "sodium:" + path + ".gsh", constants));
+        if (options.pass().primitiveType().getDefines().contains("USE_GEOMETRY_SHADER")) {
+            loadedShaders.add(ShaderLoader.loadShader(ShaderType.GEOM,"sodium:" + path + ".gsh", constants));
+        }
 
         loadedShaders.add(ShaderLoader.loadShader(ShaderType.FRAGMENT,
                 "sodium:" + path + ".fsh", constants));
 
         try {
-            // TODO: [VEN][GEO-NEO-AO] Proper switching if a geo shader is used or not?
             var builder = GlProgram.builder("sodium:chunk_shader");
             loadedShaders.forEach(builder::attachShader);
             int i = 0;
-            for (var attr : options.vertexType().getVertexFormat().getAttributes()) {
+            for (var attr : options.pass().vertexType().getVertexFormat().getAttributes()) {
                 builder.bindAttribute(attr.getName(), i++);
             }
             builder.bindFragmentData("fragColor", ChunkShaderBindingPoints.FRAG_COLOR);
@@ -82,7 +81,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
     protected void begin(TerrainRenderPass pass) {
         pass.startDrawing();
 
-        ChunkShaderOptions options = new ChunkShaderOptions(ChunkShaderFogComponent.FOG_SERVICE.getFogMode(), pass, this.renderPassConfiguration.getVertexTypeForPass(pass));
+        ChunkShaderOptions options = new ChunkShaderOptions(ChunkShaderFogComponent.FOG_SERVICE.getFogMode(), pass);
 
         this.activeProgram = this.compileProgram(options);
 
