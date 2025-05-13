@@ -1,4 +1,4 @@
-package org.taumc.celeritas.mixin.shaders;
+package org.taumc.celeritas.mixin.shaders.statelisteners;
 
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Minecraft;
@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EntityRenderer.class)
-public class MixinEntryRenderer {
+public class MixinEntityRenderer_CameraState {
     @Inject(method = "setupCameraTransform", at = @At(value = "TAIL"))
     private void celeritas$captureCameraMatrix(float partialTicks, int startTime, CallbackInfo ci) {
         final Minecraft mc = Minecraft.getMinecraft();
