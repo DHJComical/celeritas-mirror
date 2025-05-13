@@ -4,7 +4,12 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 /**
  * A terrain render pass corresponds to a draw call to render some subset of terrain geometry. Passes are generally
@@ -46,17 +51,32 @@ public class TerrainRenderPass {
      */
     private final boolean hasNoLightmap;
 
+    private final @NotNull ChunkPrimitiveType primitiveType;
+    private final @NotNull ChunkVertexType vertexType;
+
     @Builder
-    public TerrainRenderPass(String name, PipelineState pipelineState, boolean useReverseOrder, boolean fragmentDiscard, boolean useTranslucencySorting, boolean hasNoLightmap) {
+    public TerrainRenderPass(String name,
+                             PipelineState pipelineState,
+                             boolean useReverseOrder,
+                             boolean fragmentDiscard,
+                             boolean useTranslucencySorting,
+                             boolean hasNoLightmap,
+                             @NotNull ChunkVertexType vertexType,
+                             @NotNull ChunkPrimitiveType primitiveType) {
         if(name == null || name.length() == 0) {
             throw new IllegalArgumentException("Name not specified for terrain pass");
         }
+        Objects.requireNonNull(vertexType);
+        Objects.requireNonNull(primitiveType);
+
         this.name = name;
         this.pipelineState = pipelineState;
         this.useReverseOrder = useReverseOrder;
         this.fragmentDiscard = fragmentDiscard;
         this.useTranslucencySorting = useTranslucencySorting;
         this.hasNoLightmap = hasNoLightmap;
+        this.primitiveType = primitiveType;
+        this.vertexType = vertexType;
     }
 
     public boolean isReverseOrder() {
@@ -81,6 +101,14 @@ public class TerrainRenderPass {
 
     public boolean supportsFragmentDiscard() {
         return this.fragmentDiscard;
+    }
+
+    public ChunkPrimitiveType primitiveType() {
+        return this.primitiveType;
+    }
+
+    public ChunkVertexType vertexType() {
+        return this.vertexType;
     }
 
     @Override

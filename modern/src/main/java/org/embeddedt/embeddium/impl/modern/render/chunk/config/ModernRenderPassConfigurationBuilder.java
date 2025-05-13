@@ -39,25 +39,26 @@ public class ModernRenderPassConfigurationBuilder {
         }
     }
 
-    private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(RenderType chunkRenderType) {
-        return TerrainRenderPass.builder().pipelineState(new ModernRenderTypePipelineState(chunkRenderType));
+    private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(RenderType chunkRenderType, ChunkVertexType vertexType) {
+        // TODO make primitive type configurable
+        return TerrainRenderPass.builder().pipelineState(new ModernRenderTypePipelineState(chunkRenderType)).vertexType(vertexType).primitiveType(QuadPrimitiveType.DIRECT);
     }
 
     public static RenderPassConfiguration<RenderType> build(ChunkVertexType vertexType) {
         // First, build the main passes
         TerrainRenderPass solidPass, cutoutMippedPass, translucentPass, tripwirePass;
 
-        solidPass = builderForRenderType(RenderType.solid())
+        solidPass = builderForRenderType(RenderType.solid(), vertexType)
                 .name("solid")
                 .fragmentDiscard(false)
                 .useReverseOrder(false)
                 .build();
-        cutoutMippedPass = builderForRenderType(RenderType.cutoutMipped())
+        cutoutMippedPass = builderForRenderType(RenderType.cutoutMipped(), vertexType)
                 .name("cutout_mipped")
                 .fragmentDiscard(true)
                 .useReverseOrder(false)
                 .build();
-        translucentPass = builderForRenderType(RenderType.translucent())
+        translucentPass = builderForRenderType(RenderType.translucent(), vertexType)
                 .name("translucent")
                 .fragmentDiscard(false)
                 .useReverseOrder(true)
@@ -65,7 +66,7 @@ public class ModernRenderPassConfigurationBuilder {
                 .build();
 
         //? if >=1.16 {
-        tripwirePass = builderForRenderType(RenderType.tripwire())
+        tripwirePass = builderForRenderType(RenderType.tripwire(), vertexType)
                 .name("tripwire")
                 .fragmentDiscard(true)
                 .useReverseOrder(true)
@@ -95,7 +96,7 @@ public class ModernRenderPassConfigurationBuilder {
         } else {
             TerrainRenderPass cutoutPass;
 
-            cutoutPass = builderForRenderType(RenderType.cutout())
+            cutoutPass = builderForRenderType(RenderType.cutout(), vertexType)
                     .name("cutout")
                     .fragmentDiscard(true)
                     .useReverseOrder(false)
@@ -126,10 +127,8 @@ public class ModernRenderPassConfigurationBuilder {
         var vanillaRenderStageMap = vanillaRenderStages.build();
         var allPasses = vanillaRenderStageMap.values().stream().distinct().toList();
 
-        return new RenderPassConfiguration<>(vertexType,
-                renderTypeToMaterialMap,
+        return new RenderPassConfiguration<>(renderTypeToMaterialMap,
                 vanillaRenderStageMap.asMap(),
-                pass -> QuadPrimitiveType.DIRECT,
                 solidMaterial,
                 cutoutMippedMaterial,
                 translucentMaterial);

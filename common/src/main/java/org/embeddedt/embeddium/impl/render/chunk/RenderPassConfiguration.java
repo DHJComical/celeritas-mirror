@@ -11,19 +11,19 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public record RenderPassConfiguration<R>(ChunkVertexType vertexType,
-                                      Map<R, Material> chunkRenderTypeToMaterialMap,
+public record RenderPassConfiguration<R>(Map<R, Material> chunkRenderTypeToMaterialMap,
                                       Map<R, Collection<TerrainRenderPass>> vanillaRenderStages,
-                                      Function<TerrainRenderPass, ChunkPrimitiveType> primitiveTypeGetter,
                                       Material defaultSolidMaterial,
                                       Material defaultCutoutMippedMaterial,
                                       Material defaultTranslucentMaterial) {
+    @Deprecated
     public ChunkVertexType getVertexTypeForPass(TerrainRenderPass pass) {
-        return this.vertexType;
+        return pass.vertexType();
     }
 
+    @Deprecated
     public ChunkPrimitiveType getPrimitiveTypeForPass(TerrainRenderPass pass) {
-        return this.primitiveTypeGetter.apply(pass);
+        return pass.primitiveType();
     }
 
     public Material getMaterialForRenderType(Object type) {
