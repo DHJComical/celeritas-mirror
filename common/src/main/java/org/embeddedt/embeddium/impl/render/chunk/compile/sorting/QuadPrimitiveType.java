@@ -8,17 +8,23 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 
-public class QuadPrimitiveType implements ChunkPrimitiveType {
-    public static final QuadPrimitiveType INSTANCE = new QuadPrimitiveType();
+public final class QuadPrimitiveType implements ChunkPrimitiveType {
+    public static final QuadPrimitiveType TRIANGULATED = new QuadPrimitiveType(true);
+    public static final QuadPrimitiveType DIRECT = new QuadPrimitiveType(false);
 
-    private static final int ELEMENTS_PER_PRIMITIVE = 6;
+    private final boolean triangulating;
+
     private static final int VERTICES_PER_PRIMITIVE = 4;
 
     private static final int FAKE_STATIC_CAMERA_OFFSET = 1000;
 
+    public QuadPrimitiveType(boolean triangulating) {
+        this.triangulating = triangulating;
+    }
+
     @Override
     public int getIndexBufferElementsPerPrimitive() {
-        return ELEMENTS_PER_PRIMITIVE;
+        return triangulating ? 6 : 4;
     }
 
     @Override
@@ -34,17 +40,24 @@ public class QuadPrimitiveType implements ChunkPrimitiveType {
         }
         long ptr = MemoryUtil.memAddress(indexBuffer);
 
+        int elementsPerPrimitive = this.getIndexBufferElementsPerPrimitive();
+        boolean triangulating = this.triangulating;
+
         for (int primitiveIndex = 0; primitiveIndex < numPrimitives; primitiveIndex++) {
-            int indexOffset = primitiveIndex * ELEMENTS_PER_PRIMITIVE;
+            int indexOffset = primitiveIndex * elementsPerPrimitive;
             int vertexOffset = primitiveIndex * VERTICES_PER_PRIMITIVE;
 
             MemoryUtil.memPutInt(ptr + (indexOffset + 0) * 4, vertexOffset + 0);
             MemoryUtil.memPutInt(ptr + (indexOffset + 1) * 4, vertexOffset + 1);
             MemoryUtil.memPutInt(ptr + (indexOffset + 2) * 4, vertexOffset + 2);
 
-            MemoryUtil.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 2);
-            MemoryUtil.memPutInt(ptr + (indexOffset + 4) * 4, vertexOffset + 3);
-            MemoryUtil.memPutInt(ptr + (indexOffset + 5) * 4, vertexOffset + 0);
+            if (triangulating) {
+                MemoryUtil.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 2);
+                MemoryUtil.memPutInt(ptr + (indexOffset + 4) * 4, vertexOffset + 3);
+                MemoryUtil.memPutInt(ptr + (indexOffset + 5) * 4, vertexOffset + 0);
+            } else {
+                MemoryUtil.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 3);
+            }
         }
     }
 
@@ -55,8 +68,11 @@ public class QuadPrimitiveType implements ChunkPrimitiveType {
         }
         long ptr = MemoryUtil.memAddress(indexBuffer);
 
+        int elementsPerPrimitive = this.getIndexBufferElementsPerPrimitive();
+        boolean triangulating = this.triangulating;
+
         for (int primitiveIndex = 0; primitiveIndex < primitiveMapping.length; primitiveIndex++) {
-            int indexOffset = primitiveIndex * ELEMENTS_PER_PRIMITIVE;
+            int indexOffset = primitiveIndex * elementsPerPrimitive;
 
             // Map to the desired primitive
             int vertexOffset = primitiveMapping[primitiveIndex] * VERTICES_PER_PRIMITIVE;
@@ -65,9 +81,13 @@ public class QuadPrimitiveType implements ChunkPrimitiveType {
             MemoryUtil.memPutInt(ptr + (indexOffset + 1) * 4, vertexOffset + 1);
             MemoryUtil.memPutInt(ptr + (indexOffset + 2) * 4, vertexOffset + 2);
 
-            MemoryUtil.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 2);
-            MemoryUtil.memPutInt(ptr + (indexOffset + 4) * 4, vertexOffset + 3);
-            MemoryUtil.memPutInt(ptr + (indexOffset + 5) * 4, vertexOffset + 0);
+            if (triangulating) {
+                MemoryUtil.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 2);
+                MemoryUtil.memPutInt(ptr + (indexOffset + 4) * 4, vertexOffset + 3);
+                MemoryUtil.memPutInt(ptr + (indexOffset + 5) * 4, vertexOffset + 0);
+            } else {
+                MemoryUtil.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 3);
+            }
         }
     }
 

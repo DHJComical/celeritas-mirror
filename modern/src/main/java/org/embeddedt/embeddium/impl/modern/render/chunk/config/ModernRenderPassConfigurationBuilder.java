@@ -5,7 +5,6 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
-import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.GSQuadPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.QuadPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
@@ -130,7 +129,7 @@ public class ModernRenderPassConfigurationBuilder {
         return new RenderPassConfiguration<>(vertexType,
                 renderTypeToMaterialMap,
                 vanillaRenderStageMap.asMap(),
-                pass -> GSQuadPrimitiveType.INSTANCE,
+                pass -> QuadPrimitiveType.DIRECT,
                 solidMaterial,
                 cutoutMippedMaterial,
                 translucentMaterial);
