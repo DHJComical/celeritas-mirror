@@ -9,7 +9,7 @@ in VS_OUT
 #endif
 {
 #ifdef USE_GEOMETRY_SHADER
-    vec2 edge;
+    vec2 v_QuadEdge;
     flat vec4 v_Color[4];
 #else
     vec4 v_Color;
@@ -51,10 +51,10 @@ void main() {
 #endif
 
 #ifdef USE_GEOMETRY_SHADER
-    vec4 c1 = mix(fs_in.v_Color[0], fs_in.v_Color[1], fs_in.edge.x);
-    vec4 c2 = mix(fs_in.v_Color[2], fs_in.v_Color[3], fs_in.edge.x);
+    vec4 c1 = mix(fs_in.v_Color[0], fs_in.v_Color[1], fs_in.v_QuadEdge.x);
+    vec4 c2 = mix(fs_in.v_Color[2], fs_in.v_Color[3], fs_in.v_QuadEdge.x);
 
-    vec4 m_color = mix(c1, c2, fs_in.edge.y);
+    vec4 m_color = mix(c1, c2, fs_in.v_QuadEdge.y);
 #else
     vec4 m_color = fs_in.v_Color;
 #endif

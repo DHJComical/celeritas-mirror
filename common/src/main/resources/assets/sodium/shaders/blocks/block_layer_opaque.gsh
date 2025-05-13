@@ -20,7 +20,7 @@ in VS_OUT
 
 out GS_OUT
 {
-    vec2 edge;
+    vec2 v_QuadEdge;
     flat vec4 v_Color[4];
     vec2 v_TexCoord;
 
@@ -37,7 +37,7 @@ out GS_OUT
 void setVertex(in int i, in vec2 edge) {
     gl_Position = gl_in[i].gl_Position;
 
-    gs_out.edge = edge;
+    gs_out.v_QuadEdge = edge;
 
     gs_out.v_TexCoord = gs_in[i].v_TexCoord;
 
