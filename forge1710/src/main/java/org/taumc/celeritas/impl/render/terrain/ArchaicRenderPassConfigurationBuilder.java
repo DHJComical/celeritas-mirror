@@ -14,6 +14,13 @@ import org.lwjgl.opengl.GL11;
 import java.util.Map;
 
 public class ArchaicRenderPassConfigurationBuilder {
+    /**
+     * The use of {@link QuadPrimitiveType#DIRECT} instead of {@link QuadPrimitiveType#TRIANGULATED} may have a performance impact.
+     * <p>
+     * This is part of the "Enhanced Interpolation" and should be behind a config toggle.
+     */
+    private static final QuadPrimitiveType PRIMITIVE_TYPE = QuadPrimitiveType.DIRECT;
+
     public static final TerrainRenderPass SOLID_PASS, CUTOUT_MIPPED_PASS, TRANSLUCENT_PASS;
     public static final Material SOLID_MATERIAL, CUTOUT_MIPPED_MATERIAL, TRANSLUCENT_MATERIAL;
 
@@ -38,8 +45,7 @@ public class ArchaicRenderPassConfigurationBuilder {
     }
 
     private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(int pass, boolean disableBlend) {
-        // TODO: [VEN][GEO-NEO-AO] Remove Temporary Hack for primitive type
-        return TerrainRenderPass.builder().pipelineState(new ArchaicPipelineState(pass, disableBlend)).vertexType(ChunkMeshFormats.VANILLA_LIKE).primitiveType(QuadPrimitiveType.DIRECT);
+        return TerrainRenderPass.builder().pipelineState(new ArchaicPipelineState(pass, disableBlend)).vertexType(ChunkMeshFormats.VANILLA_LIKE).primitiveType(PRIMITIVE_TYPE);
     }
 
     static {
