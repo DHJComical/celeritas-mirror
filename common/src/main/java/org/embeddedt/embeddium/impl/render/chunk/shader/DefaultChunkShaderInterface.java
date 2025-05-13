@@ -4,6 +4,8 @@ import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat3v;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformInt;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformMatrix4f;
+import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
+import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.QuadPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.joml.Matrix4fc;
 
@@ -25,6 +27,8 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
     private final ChunkShaderFogComponent fogShader;
 
     private final ChunkShaderTextureService textureService;
+
+    private GlPrimitiveType primitiveType;
 
     public DefaultChunkShaderInterface(ShaderBindingContext context, ChunkShaderOptions options) {
         this.uniformModelViewMatrix = context.bindUniform("u_ModelViewMatrix", GlUniformMatrix4f::new);
@@ -49,7 +53,20 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
             this.bindTexture(ChunkShaderTextureSlot.LIGHT);
         }
 
+        if (pass.primitiveType() == QuadPrimitiveType.DIRECT) {
+            primitiveType = GlPrimitiveType.LINES_ADJACENCY;
+        } else if (pass.primitiveType() == QuadPrimitiveType.TRIANGULATED) {
+            primitiveType = GlPrimitiveType.TRIANGLES;
+        } else {
+            throw new IllegalArgumentException("Unknown primitive type");
+        }
+
         this.fogShader.setup();
+    }
+
+    @Override
+    public GlPrimitiveType getPrimitiveType() {
+        return primitiveType;
     }
 
     @Deprecated(forRemoval = true) // should be handled properly in GFX instead.

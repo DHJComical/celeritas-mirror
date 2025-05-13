@@ -141,7 +141,7 @@ public class IrisChunkShaderInterface implements ChunkShaderInterface {
 
     @Override
     public GlPrimitiveType getPrimitiveType() {
-        return isTess ? GlPrimitiveType.PATCHES : ChunkShaderInterface.super.getPrimitiveType();
+        return isTess ? GlPrimitiveType.PATCHES : GlPrimitiveType.TRIANGLES;
     }
 
     @Override

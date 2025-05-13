@@ -64,6 +64,7 @@ public final class StandardOptions {
         public static final ResourceLocation CPU_FRAMES_AHEAD = ResourceLocationUtil.make(Celeritas.MODID, "cpu_render_ahead_limit");
         public static final ResourceLocation TRANSLUCENT_FACE_SORTING = ResourceLocationUtil.make(Celeritas.MODID, "translucent_face_sorting");
         public static final ResourceLocation USE_QUAD_NORMALS_FOR_LIGHTING = ResourceLocationUtil.make(Celeritas.MODID, "use_quad_normals_for_lighting");
+        public static final ResourceLocation USE_ENHANCED_INTERPOLATION = ResourceLocationUtil.make(Celeritas.MODID, "use_enhanced_interpolation");
         public static final ResourceLocation RENDER_PASS_OPTIMIZATION = ResourceLocationUtil.make(Celeritas.MODID, "render_pass_optimization");
         public static final ResourceLocation RENDER_PASS_CONSOLIDATION = ResourceLocationUtil.make(Celeritas.MODID, "render_pass_consolidation");
         public static final ResourceLocation USE_FASTER_CLOUDS = ResourceLocationUtil.make(Celeritas.MODID, "use_faster_clouds");

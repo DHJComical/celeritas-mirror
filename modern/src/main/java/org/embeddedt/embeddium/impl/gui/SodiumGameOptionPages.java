@@ -358,6 +358,15 @@ public class SodiumGameOptionPages {
                         .setEnabled(!ForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get())
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
+                .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
+                        .setId(StandardOptions.Option.USE_ENHANCED_INTERPOLATION)
+                        .setControl(TickBoxControl::new)
+                        .setImpact(OptionImpact.HIGH)
+                        .setBinding((opts, value) -> opts.quality.useEnhancedInterpolation = value, opts -> opts.quality.useEnhancedInterpolation)
+                        .setName(ComponentUtil.translatable("celeritas.options.use_enhanced_interpolation.name"))
+                        .setTooltip(ComponentUtil.translatable("celeritas.options.use_enhanced_interpolation.tooltip"))
+                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
+                        .build())
                 .build());
 
         return new OptionPage(ComponentUtil.translatable("sodium.options.pages.quality"), ImmutableList.copyOf(groups));

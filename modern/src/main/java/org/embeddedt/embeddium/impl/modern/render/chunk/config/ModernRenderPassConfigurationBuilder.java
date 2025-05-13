@@ -40,8 +40,7 @@ public class ModernRenderPassConfigurationBuilder {
     }
 
     private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(RenderType chunkRenderType, ChunkVertexType vertexType) {
-        // TODO make primitive type configurable
-        return TerrainRenderPass.builder().pipelineState(new ModernRenderTypePipelineState(chunkRenderType)).vertexType(vertexType).primitiveType(QuadPrimitiveType.DIRECT);
+        return TerrainRenderPass.builder().pipelineState(new ModernRenderTypePipelineState(chunkRenderType)).vertexType(vertexType).primitiveType(Celeritas.options().quality.useEnhancedInterpolation ? QuadPrimitiveType.DIRECT : QuadPrimitiveType.TRIANGULATED);
     }
 
     public static RenderPassConfiguration<RenderType> build(ChunkVertexType vertexType) {

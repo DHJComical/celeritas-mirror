@@ -80,9 +80,6 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
 
             var primitiveType = shader.getPrimitiveType();
 
-            // TODO: [VEN][GEO-NEO-AO] Remove Temorary Hack
-            primitiveType = GlPrimitiveType.LINES_ADJACENCY;
-
             Iterator<ChunkRenderList> iterator = renderLists.iterator(renderPass.isReverseOrder());
 
             this.currentRenderPass = renderPass;
