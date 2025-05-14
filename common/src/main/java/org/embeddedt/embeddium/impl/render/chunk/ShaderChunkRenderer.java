@@ -57,10 +57,6 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         loadedShaders.add(ShaderLoader.loadShader(ShaderType.VERTEX,
                 "sodium:" + path + ".vsh", constants));
 
-        if (options.pass().primitiveType().getDefines().contains("USE_GEOMETRY_SHADER")) {
-            loadedShaders.add(ShaderLoader.loadShader(ShaderType.GEOM,"sodium:" + path + ".gsh", constants));
-        }
-
         loadedShaders.add(ShaderLoader.loadShader(ShaderType.FRAGMENT,
                 "sodium:" + path + ".fsh", constants));
 

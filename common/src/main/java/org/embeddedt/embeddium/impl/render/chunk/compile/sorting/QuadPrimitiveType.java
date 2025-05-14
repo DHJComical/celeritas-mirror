@@ -7,10 +7,15 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;
-import java.util.List;
 
 public final class QuadPrimitiveType implements ChunkPrimitiveType {
+    /**
+     * Generates index buffers that decompose quads into two triangles (suitable for core profile rendering).
+     */
     public static final QuadPrimitiveType TRIANGULATED = new QuadPrimitiveType(true);
+    /**
+     * Generates index buffers suited for working with quad(-like) primitives directly.
+     */
     public static final QuadPrimitiveType DIRECT = new QuadPrimitiveType(false);
 
     private final boolean triangulating;
@@ -26,13 +31,6 @@ public final class QuadPrimitiveType implements ChunkPrimitiveType {
     @Override
     public int getIndexBufferElementsPerPrimitive() {
         return triangulating ? 6 : 4;
-    }
-
-    @Override
-    public List<String> getDefines() {
-        // TODO this technically prevents the primitive type from being used without the geometry shader
-        // This shouldn't be an issue on most modern platforms as GL_QUADS is not supported in core profile.
-        return !triangulating ? List.of("USE_GEOMETRY_SHADER") : List.of();
     }
 
     @Override

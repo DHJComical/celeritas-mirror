@@ -80,8 +80,6 @@ public class SodiumGameOptions {
 
         @SerializedName("use_quad_normals_for_shading_v2")
         public boolean useQuadNormalsForShading = true;
-
-        public boolean useEnhancedInterpolation = false;
     }
 
     public static class NotificationSettings {
