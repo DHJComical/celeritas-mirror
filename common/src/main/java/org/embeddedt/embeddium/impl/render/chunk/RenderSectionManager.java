@@ -1,11 +1,14 @@
 package org.embeddedt.embeddium.impl.render.chunk;
 
+import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.Getter;
+import org.embeddedt.embeddium.impl.common.util.TimeUtil;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.gl.profiling.TimerQueryManager;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
@@ -40,6 +43,7 @@ import org.joml.Vector3ic;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
@@ -77,6 +81,8 @@ public abstract class RenderSectionManager {
     private final RenderListManager shadowRenderListManager;
 
     protected final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
+
+    private final Object2ObjectOpenHashMap<TerrainRenderPass, TimerQueryManager> renderPassDrawTimers = new Object2ObjectOpenHashMap<>();
 
     public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier, BiFunction<RenderDevice, RenderPassConfiguration<?>, ChunkRenderer> chunkRenderer, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
         this.chunkRenderer = chunkRenderer.apply(RenderDevice.INSTANCE, configuration);
@@ -124,6 +130,8 @@ public abstract class RenderSectionManager {
         while ((task = this.asyncSubmittedTasks.poll()) != null) {
             task.run();
         }
+
+        this.renderPassDrawTimers.values().forEach(TimerQueryManager::updateTime);
     }
 
     /**
@@ -316,7 +324,13 @@ public abstract class RenderSectionManager {
         RenderDevice device = RenderDevice.INSTANCE;
         CommandList commandList = device.createCommandList();
 
+        var timer = renderPassDrawTimers.computeIfAbsent(pass, $ -> new TimerQueryManager());
+
+        timer.startProfiling();
+
         this.chunkRenderer.render(matrices, commandList, this.getCurrentRenderListManager().getRenderLists(), pass, new CameraTransform(x, y, z));
+
+        timer.finishProfiling();
 
         commandList.flush();
     }
@@ -557,6 +571,9 @@ public abstract class RenderSectionManager {
             this.chunkRenderer.delete(commandList);
         }
 
+        this.renderPassDrawTimers.values().forEach(TimerQueryManager::close);
+        this.renderPassDrawTimers.clear();
+
         this.sectionsWithGlobalEntities.clear();
     }
 
@@ -689,6 +706,16 @@ public abstract class RenderSectionManager {
         return list;
     }
 
+    private Object2LongMap<TerrainRenderPass> computeRenderPassTimingsMap() {
+        Object2LongOpenHashMap<TerrainRenderPass> map = new Object2LongOpenHashMap<>();
+        for (var entry : renderPassDrawTimers.entrySet()) {
+            map.put(entry.getKey(), entry.getValue().getLastTime());
+        }
+        return map;
+    }
+
+    protected final Supplier<Object2LongMap<TerrainRenderPass>> renderPassTimingsDebounced = Suppliers.memoizeWithExpiration(this::computeRenderPassTimingsMap, 1, TimeUnit.SECONDS);
+
     public Collection<String> getDebugStrings() {
         List<String> list = new ArrayList<>();
 
@@ -731,7 +758,28 @@ public abstract class RenderSectionManager {
                 this.getCurrentRenderListManager().getRebuildLists().hasAdditionalUpdates() ? "(++)" : ""
         ));
 
-        list.addAll(this.renderListManager.getRenderListDebugStrings());
+        var debugStats = renderListManager.getDebugStatistics();
+
+        var counts = debugStats.renderPassCounts().object2IntEntrySet().stream().sorted(Comparator.comparingInt(e -> -e.getIntValue())).iterator();
+
+        var timingMap = renderPassTimingsDebounced.get();
+
+        while (counts.hasNext()) {
+            var entry = counts.next();
+            var duration = timingMap.get(entry.getKey());
+            String time;
+            if (duration == 0) {
+                time = "?? ms";
+            } else {
+                time = TimeUtil.stringifyTime(duration, TimeUnit.NANOSECONDS);
+            }
+
+            list.add(entry.getKey().name() + " - " + entry.getIntValue() + " sections, " + time);
+        }
+
+        if (renderListManager.getRenderLists().getPasses().stream().anyMatch(TerrainRenderPass::isSorted)) {
+            list.add(debugStats.getSortingString());
+        }
 
         return list;
     }

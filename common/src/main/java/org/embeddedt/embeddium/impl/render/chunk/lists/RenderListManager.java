@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk.lists;
 
-import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -18,10 +17,7 @@ import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayDeque;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,7 +54,27 @@ public class RenderListManager {
     @Nullable
     private final SectionTicker sectionTicker;
 
-    private List<String> renderListDebugStrings;
+    public record RenderListDebugStatistics(Object2IntOpenHashMap<TerrainRenderPass> renderPassCounts, int[] sortingSectionCounts) {
+        public String getSortingString() {
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("Sorting: ");
+            TranslucentQuadAnalyzer.Level[] values = TranslucentQuadAnalyzer.Level.VALUES;
+            for (int i = 0; i < values.length; i++) {
+                TranslucentQuadAnalyzer.Level level = values[i];
+                sb.append(level.name());
+                sb.append('=');
+                sb.append(sortingSectionCounts[level.ordinal()]);
+                if((i + 1) < values.length) {
+                    sb.append(", ");
+                }
+            }
+
+            return sb.toString();
+        }
+    }
+
+    private RenderListDebugStatistics debugStatistics;
 
     public RenderListManager(int minSectionY, int maxSectionY, boolean useAsyncGraphSearch, @Nullable SectionTicker sectionTicker) {
         this.sectionTicker = sectionTicker;
@@ -116,7 +132,7 @@ public class RenderListManager {
             this.currentOcclusionFuture = null;
             this.lastUpdatedFrame = this.pendingLastUpdatedFrame;
 
-            this.renderListDebugStrings = null;
+            this.debugStatistics = null;
         }
 
         Runnable task;
@@ -245,16 +261,16 @@ public class RenderListManager {
         }
     }
 
-    public List<String> getRenderListDebugStrings() {
-        if (this.renderListDebugStrings == null) {
-            this.renderListDebugStrings = computeRenderListDebugStrings();
+
+    public RenderListDebugStatistics getDebugStatistics() {
+        if (this.debugStatistics == null) {
+            this.debugStatistics = computeDebugStatistics();
         }
-        return this.renderListDebugStrings;
+        return this.debugStatistics;
     }
 
-    private List<String> computeRenderListDebugStrings() {
+    private RenderListDebugStatistics computeDebugStatistics() {
         Object2IntOpenHashMap<TerrainRenderPass> renderPassCounts = new Object2IntOpenHashMap<>();
-
 
         var iterator = renderLists.iterator();
 
@@ -307,43 +323,6 @@ public class RenderListManager {
             }
         }
 
-        ImmutableList.Builder<String> builder = ImmutableList.builder();
-
-        StringBuilder sb = new StringBuilder("Passes: ");
-        var iter = renderPassCounts.object2IntEntrySet().stream().sorted(Comparator.comparingInt(e -> -e.getIntValue())).iterator();
-
-        while (iter.hasNext()) {
-            var entry = iter.next();
-
-            sb.append(Character.toUpperCase(entry.getKey().name().charAt(0)));
-            sb.append('=');
-            sb.append(entry.getIntValue());
-
-            if (iter.hasNext()) {
-                sb.append(", ");
-            }
-        }
-
-        builder.add(sb.toString());
-
-        if (isSorting) {
-            sb = new StringBuilder();
-
-            sb.append("Sorting: ");
-            TranslucentQuadAnalyzer.Level[] values = TranslucentQuadAnalyzer.Level.VALUES;
-            for (int i = 0; i < values.length; i++) {
-                TranslucentQuadAnalyzer.Level level = values[i];
-                sb.append(level.name());
-                sb.append('=');
-                sb.append(sectionCounts[level.ordinal()]);
-                if((i + 1) < values.length) {
-                    sb.append(", ");
-                }
-            }
-
-            builder.add(sb.toString());
-        }
-
-        return builder.build();
+        return new RenderListDebugStatistics(renderPassCounts, sectionCounts);
     }
 }
