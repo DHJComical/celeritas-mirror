@@ -16,5 +16,5 @@
   "celeritas.options.async_graph_search.name": "Async Occlusion Culling",
   "celeritas.options.async_graph_search.tooltip": "Performs occlusion/frustum culling asynchronously, up to one frame behind the current camera position. This can improve frametimes, particularly at higher render distances, but at the cost of chunks popping into view if the camera is turned too aggressively.",
   "celeritas.options.use_enhanced_interpolation.name": "Use Enhanced Interpolation",
-  "celeritas.options.use_enhanced_interpolation.tooltip": "Uses custom shader-based bilinear interpolation to render block faces rather than the GPU's default interpolation. This can noticeably improve the quality of ambient occlusion shadows, but may have compatibility and/or performance issues with some drivers."
+  "celeritas.options.use_enhanced_interpolation.tooltip": "Uses custom shader-based bilinear interpolation to render block faces rather than the GPU's default interpolation. This can noticeably improve the quality of ambient occlusion shadows, but currently has a sizeable impact on performance, and may have compatibility issues with some drivers."
 }
