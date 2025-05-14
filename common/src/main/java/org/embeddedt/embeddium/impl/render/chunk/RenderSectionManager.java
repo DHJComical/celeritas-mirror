@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk;
 
-import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.*;
@@ -36,6 +35,7 @@ import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.embeddedt.embeddium.impl.util.iterator.ByteIterator;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
+import org.embeddedt.embeddium.impl.util.suppliers.ExpiringSupplier;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
@@ -714,7 +714,7 @@ public abstract class RenderSectionManager {
         return map;
     }
 
-    protected final Supplier<Object2LongMap<TerrainRenderPass>> renderPassTimingsDebounced = Suppliers.memoizeWithExpiration(this::computeRenderPassTimingsMap, 1, TimeUnit.SECONDS);
+    protected final Supplier<Object2LongMap<TerrainRenderPass>> renderPassTimingsDebounced = new ExpiringSupplier<>(this::computeRenderPassTimingsMap, 1, TimeUnit.SECONDS);
 
     public Collection<String> getDebugStrings() {
         List<String> list = new ArrayList<>();

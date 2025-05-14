@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.executor;
 
-import com.google.common.base.Preconditions;
 import org.jetbrains.annotations.Nullable;
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -20,7 +19,9 @@ class ChunkJobQueue {
     }
 
     public void add(ChunkJob job, boolean important) {
-        Preconditions.checkArgument(this.isRunning(), "Queue is no longer running");
+        if (!this.isRunning()) {
+            throw new IllegalStateException("Queue is no longer running");
+        }
 
         if (important) {
             this.jobs.addFirst(job);

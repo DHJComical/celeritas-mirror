@@ -26,7 +26,6 @@ dependencies {
     compileOnly "org.jetbrains:annotations:24.1.0"
     compileOnly("org.projectlombok:lombok:1.18.30")
     annotationProcessor("org.projectlombok:lombok:1.18.30")
-    compileOnly("com.google.guava:guava:31.1-jre")
     compileOnly("org.ow2.asm:asm:9.6")
     compileOnly("org.ow2.asm:asm-tree:9.6")
     compileOnly("org.ow2.asm:asm-util:9.6")

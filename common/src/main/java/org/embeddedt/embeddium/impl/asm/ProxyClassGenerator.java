@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.asm;
 
-import com.google.common.base.Suppliers;
 import org.objectweb.asm.*;
 import org.objectweb.asm.util.CheckClassAdapter;
 
@@ -10,11 +9,14 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.function.Supplier;
 
 public class ProxyClassGenerator<DELEGATE, INTERFACE> {
-    // DEFINE_CLASS is borrowed from FerriteCore under MIT as a small utility
-    private static final Supplier<Definer> DEFINE_CLASS = Suppliers.memoize(() -> {
+    private static Definer DEFINER;
+
+    private static synchronized Definer getDefiner() {
+        if (DEFINER != null) {
+            return DEFINER;
+        }
         try {
             // Try to create a Java 9+ style class definer
             // These are all public methods, but just don't exist in Java 8
@@ -23,7 +25,7 @@ public class ProxyClassGenerator<DELEGATE, INTERFACE> {
             );
             Object privateLookup = makePrivateLookup.invoke(null, ProxyClassGenerator.class, MethodHandles.lookup());
             Method defineClass = MethodHandles.Lookup.class.getMethod("defineClass", byte[].class);
-            return (bytes, name) -> (Class<?>) defineClass.invoke(privateLookup, (Object) bytes);
+            DEFINER = (bytes, name) -> (Class<?>) defineClass.invoke(privateLookup, (Object) bytes);
         } catch (Exception x) {
             try {
                 // If that fails, try a Java 8 style definer
@@ -32,13 +34,14 @@ public class ProxyClassGenerator<DELEGATE, INTERFACE> {
                 );
                 defineClass.setAccessible(true);
                 ClassLoader loader = ProxyClassGenerator.class.getClassLoader();
-                return (bytes, name) -> (Class<?>) defineClass.invoke(loader, name, bytes, 0, bytes.length);
+                DEFINER = (bytes, name) -> (Class<?>) defineClass.invoke(loader, name, bytes, 0, bytes.length);
             } catch (NoSuchMethodException e) {
                 // Fail if neither works
                 throw new RuntimeException(e);
             }
         }
-    });
+        return DEFINER;
+    }
 
     private final Class<?> delegateClass;
     private final Class<?> proxyClass;
@@ -145,7 +148,7 @@ public class ProxyClassGenerator<DELEGATE, INTERFACE> {
     private Class<?> createWrapperClass() {
         byte[] bytes = createWrapperClassBytecode();
         try {
-            return DEFINE_CLASS.get().define(bytes, this.proxyClassName.replace('/', '.'));
+            return getDefiner().define(bytes, this.proxyClassName.replace('/', '.'));
         } catch(Exception e) {
             throw new RuntimeException("Error defining WorldSlice wrapper", e);
         }

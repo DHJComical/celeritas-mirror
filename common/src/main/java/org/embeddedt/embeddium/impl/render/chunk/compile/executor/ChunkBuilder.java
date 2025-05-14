@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.executor;
 
-import com.google.common.base.Preconditions;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.apache.logging.log4j.LogManager;
@@ -110,7 +109,7 @@ public class ChunkBuilder {
     public <TASK extends ChunkBuilderTask<OUTPUT>, OUTPUT> ChunkJobTyped<TASK, OUTPUT> scheduleTask(TASK task, boolean important,
                                                                                                     Consumer<ChunkJobResult<OUTPUT>> consumer)
     {
-        Preconditions.checkNotNull(task, "Task must be non-null");
+        Objects.requireNonNull(task, "Task must be non-null");
 
         if (!this.queue.isRunning()) {
             throw new IllegalStateException("Executor is stopped");

@@ -1,11 +1,11 @@
 package org.embeddedt.embeddium.impl.render.chunk.data;
 
-import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.RenderVisualsService;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
+import org.embeddedt.embeddium.impl.util.iterator.ConcatenatedIterator;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -91,7 +91,7 @@ public class MinecraftBuiltRenderSectionData<SPRITE, BLOCKENTITY> extends BuiltR
         if(iterators.isEmpty()) {
             return Collections.emptyIterator();
         } else {
-            return Iterators.concat(iterators.iterator());
+            return new ConcatenatedIterator<>(iterators.iterator());
         }
     }
 

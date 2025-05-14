@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk.region;
 
-import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.gl.arena.GlBufferArena;
@@ -38,9 +37,9 @@ public class RenderRegion {
     public static final int REGION_SIZE = REGION_WIDTH * REGION_HEIGHT * REGION_LENGTH;
 
     static {
-        Preconditions.checkArgument(MathUtil.isPowerOfTwo(REGION_WIDTH));
-        Preconditions.checkArgument(MathUtil.isPowerOfTwo(REGION_HEIGHT));
-        Preconditions.checkArgument(MathUtil.isPowerOfTwo(REGION_LENGTH));
+        if(!MathUtil.isPowerOfTwo(REGION_WIDTH) || !MathUtil.isPowerOfTwo(REGION_HEIGHT) || !MathUtil.isPowerOfTwo(REGION_LENGTH)) {
+            throw new IllegalStateException("Region width/height/length are not powers of two");
+        }
     }
 
     private final StagingBuffer stagingBuffer;

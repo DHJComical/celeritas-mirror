@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk.shader;
 
-import com.google.common.collect.ImmutableList;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
 import org.lwjgl.opengl.GL20;
 
@@ -8,9 +7,9 @@ import java.util.List;
 import java.util.function.Function;
 
 public enum ChunkFogMode {
-    NONE(ChunkShaderFogComponent.None::new, ImmutableList.of()),
-    EXP2(ChunkShaderFogComponent.Exp2::new, ImmutableList.of("USE_FOG", "USE_FOG_EXP2")),
-    SMOOTH(ChunkShaderFogComponent.Smooth::new, ImmutableList.of("USE_FOG", "USE_FOG_SMOOTH"));
+    NONE(ChunkShaderFogComponent.None::new, List.of()),
+    EXP2(ChunkShaderFogComponent.Exp2::new, List.of("USE_FOG", "USE_FOG_EXP2")),
+    SMOOTH(ChunkShaderFogComponent.Smooth::new, List.of("USE_FOG", "USE_FOG_SMOOTH"));
 
     private final Function<ShaderBindingContext, ChunkShaderFogComponent> factory;
     private final List<String> defines;
