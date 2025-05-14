@@ -29,6 +29,8 @@ public class CeleritasArchaicMixinPlugin implements IMixinConfigPlugin {
         var handle = SharedConfig.getRfbTransformers().stream().filter(transformer -> transformer.id().equals("lwjgl3ify:redirect")).findFirst().orElseThrow();
         handle.exclusions().add("org.embeddedt.embeddium");
         handle.exclusions().add("org.taumc.celeritas");
+        handle.exclusions().add("net.irisshaders.iris");
+        handle.exclusions().add("com.mitchej123");
     }
 
     @Override
