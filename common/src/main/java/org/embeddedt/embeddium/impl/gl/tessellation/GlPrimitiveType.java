@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.gl.tessellation;
 
 import org.lwjgl.opengl.GL11C;
+import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL32C;
 import org.lwjgl.opengl.GL40C;
 
@@ -23,7 +24,9 @@ public enum GlPrimitiveType {
     TRIANGLES_ADJACENCY(GL32C.GL_TRIANGLES_ADJACENCY),
     TRIANGLE_STRIP_ADJACENCY(GL32C.GL_TRIANGLE_STRIP_ADJACENCY),
 
-    PATCHES(GL40C.GL_PATCHES);
+    PATCHES(GL40C.GL_PATCHES),
+
+    QUADS(GL30C.GL_QUADS);
 
     private final int id;
 

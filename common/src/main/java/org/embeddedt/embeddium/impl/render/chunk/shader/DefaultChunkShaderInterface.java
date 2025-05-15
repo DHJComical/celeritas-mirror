@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.shader;
 
+import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat3v;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformInt;
@@ -54,7 +55,7 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
         }
 
         if (pass.primitiveType() == QuadPrimitiveType.DIRECT) {
-            primitiveType = GlPrimitiveType.LINES_ADJACENCY;
+            primitiveType = GlPrimitiveType.QUADS;
         } else if (pass.primitiveType() == QuadPrimitiveType.TRIANGULATED) {
             primitiveType = GlPrimitiveType.TRIANGLES;
         } else {
