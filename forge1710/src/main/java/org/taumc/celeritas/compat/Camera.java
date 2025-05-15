@@ -5,13 +5,14 @@ import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.MathHelper;
+import org.embeddedt.embeddium.compat.mc.ICamera;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.joml.Vector4f;
 import org.taumc.celeritas.state.MatrixRenderingState;
 
 @Getter
-public class Camera {
+public class Camera implements ICamera {
     final Vector3d pos = new Vector3d();
     final BlockPos blockPos = new BlockPos();
     float pitch;
