@@ -21,10 +21,10 @@ public abstract class MixinSystemReport {
 
 	@Inject(at = @At("RETURN"), method = "<init>")
 	private void fillSystemDetails(CallbackInfo ci) {
-		if (Iris.getCurrentPackName() == null) return; // this also gets called at startup for some reason
+		if (IrisCommon.getCurrentPackName() == null) return; // this also gets called at startup for some reason
 
 		this.setDetail("Loaded Shaderpack", () -> {
-			StringBuilder sb = new StringBuilder(Iris.getCurrentPackName() + (Iris.isFallback() ? " (fallback)" : ""));
+			StringBuilder sb = new StringBuilder(IrisCommon.getCurrentPackName() + (Iris.isFallback() ? " (fallback)" : ""));
 			IrisCommon.getCurrentPack().ifPresent(pack -> {
 				sb.append("\n\t\t");
 				sb.append(pack.getProfileInfo());

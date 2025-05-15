@@ -496,4 +496,8 @@ public class IrisCommon {
     public static NamespacedId getLastDimension() {
         return lastDimension;
     }
+
+    public static String getCurrentPackName() {
+        return currentPackName;
+    }
 }

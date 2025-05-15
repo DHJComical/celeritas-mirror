@@ -33,7 +33,6 @@ import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -555,7 +554,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 
 		// If the pack is being changed, clear pending options from the previous pack to
 		// avoid possible undefined behavior from applying one pack's options to another pack
-		if (!name.equals(Iris.getCurrentPackName())) {
+		if (!name.equals(IrisCommon.getCurrentPackName())) {
 			IrisCommon.clearShaderPackOptionQueue();
 		}
 
