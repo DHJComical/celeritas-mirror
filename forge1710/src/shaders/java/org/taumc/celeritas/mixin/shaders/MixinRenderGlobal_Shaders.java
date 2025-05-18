@@ -3,9 +3,12 @@ package org.taumc.celeritas.mixin.shaders;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.irisshaders.iris.IrisCommon;
+import net.irisshaders.iris.layer.GbufferPrograms;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.MovingObjectPosition;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -51,6 +54,16 @@ public class MixinRenderGlobal_Shaders {
             slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/WorldClient;getRainStrength(F)F")))
     private void iris$renderSky$tiltSun(float p_72714_1_, CallbackInfo ci, @Share("pipeline") LocalRef<WorldRenderingPipeline> pipeline) {
         GL11.glRotatef(pipeline.get().getSunPathRotation(), 0.0F, 0.0F, 1.0F);
+    }
+
+    @Inject(method="drawSelectionBox", at=@At(value="HEAD"))
+    private void iris$startOutline(EntityPlayer player, MovingObjectPosition pos, int p_72731_3_, float p_72731_4_, CallbackInfo ci) {
+        GbufferPrograms.beginOutline();
+    }
+
+    @Inject(method="drawSelectionBox", at=@At(value="RETURN"))
+    private void iris$endOutline(EntityPlayer player, MovingObjectPosition pos, int p_72731_3_, float p_72731_4_, CallbackInfo ci) {
+        GbufferPrograms.endOutline();
     }
 
 }
