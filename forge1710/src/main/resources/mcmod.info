@@ -9,7 +9,7 @@
     "updateUrl": "",
     "authorList": ["embeddedt"],
     "credits": "The Sodium project",
-    "logoFile": "/assets/modid/icon.png",
+    "logoFile": "icon.png",
     "screenshots": [],
     "dependencies": []
   }

@@ -141,6 +141,8 @@ processResources {
     filesMatching("mcmod.info") {
         expand "version": project.version
     }
+
+    from(rootProject.file("modern/src/main/resources/icon.png"))
 }
 sourceSets {
     main {
