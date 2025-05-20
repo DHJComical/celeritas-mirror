@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.taumc.celeritas.impl.render.terrain.CameraHelper;
 
 @Mixin(Frustum.class)
 public class FrustumMixin implements ViewportProvider {
@@ -46,6 +47,6 @@ public class FrustumMixin implements ViewportProvider {
 
     @Override
     public Viewport sodium$createViewport() {
-        return new Viewport(this.celeritas$frustum::testAab, new org.joml.Vector3d(this.x, this.y + Minecraft.getMinecraft().getRenderViewEntity().getEyeHeight(), this.z));
+        return new Viewport(this.celeritas$frustum::testAab, new org.joml.Vector3d(this.x, this.y + Minecraft.getMinecraft().getRenderViewEntity().getEyeHeight(), this.z).add(CameraHelper.getThirdPersonOffset()));
     }
 }

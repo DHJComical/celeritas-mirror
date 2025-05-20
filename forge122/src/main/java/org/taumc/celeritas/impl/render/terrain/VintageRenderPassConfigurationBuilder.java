@@ -34,25 +34,25 @@ public class VintageRenderPassConfigurationBuilder {
         }
     };
 
-    private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(BlockRenderLayer chunkRenderType) {
-        return TerrainRenderPass.builder().pipelineState(MIPMAP_CONTROLLED_STATE);
+    private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(BlockRenderLayer chunkRenderType, ChunkVertexType vertexType) {
+        return TerrainRenderPass.builder().pipelineState(MIPMAP_CONTROLLED_STATE).vertexType(vertexType).primitiveType(QuadPrimitiveType.TRIANGULATED);
     }
 
     public static RenderPassConfiguration<BlockRenderLayer> build(ChunkVertexType vertexType) {
         // First, build the main passes
         TerrainRenderPass solidPass, cutoutMippedPass, translucentPass;
 
-        solidPass = builderForRenderType(BlockRenderLayer.SOLID)
+        solidPass = builderForRenderType(BlockRenderLayer.SOLID, vertexType)
                 .name("solid")
                 .fragmentDiscard(false)
                 .useReverseOrder(false)
                 .build();
-        cutoutMippedPass = builderForRenderType(BlockRenderLayer.CUTOUT_MIPPED)
+        cutoutMippedPass = builderForRenderType(BlockRenderLayer.CUTOUT_MIPPED, vertexType)
                 .name("cutout_mipped")
                 .fragmentDiscard(true)
                 .useReverseOrder(false)
                 .build();
-        translucentPass = builderForRenderType(BlockRenderLayer.TRANSLUCENT)
+        translucentPass = builderForRenderType(BlockRenderLayer.TRANSLUCENT, vertexType)
                 .name("translucent")
                 .fragmentDiscard(false)
                 .useReverseOrder(true)
@@ -85,7 +85,7 @@ public class VintageRenderPassConfigurationBuilder {
         for (BlockRenderLayer layer : BlockRenderLayer.values()) {
             if (!renderTypeToMaterialMap.containsKey(layer)) {
                 CeleritasVintage.logger().warn("Falling back to cutout-like behavior for custom block render layer '{}'", layer);
-                TerrainRenderPass pass = builderForRenderType(layer).name(layer.name().toLowerCase(Locale.ROOT)).fragmentDiscard(true).useReverseOrder(false).build();
+                TerrainRenderPass pass = builderForRenderType(layer, vertexType).name(layer.name().toLowerCase(Locale.ROOT)).fragmentDiscard(true).useReverseOrder(false).build();
                 Material material = new Material(pass, AlphaCutoffParameter.ONE_TENTH, true);
                 vanillaRenderStages.put(layer, pass);
                 renderTypeToMaterialMap.put(layer, material);
@@ -94,10 +94,8 @@ public class VintageRenderPassConfigurationBuilder {
 
         var vanillaRenderStageMap = vanillaRenderStages.build();
 
-        return new RenderPassConfiguration<>(vertexType,
-                renderTypeToMaterialMap,
+        return new RenderPassConfiguration<>(renderTypeToMaterialMap,
                 vanillaRenderStageMap.asMap(),
-                type -> QuadPrimitiveType.INSTANCE,
                 solidMaterial,
                 cutoutMippedMaterial,
                 translucentMaterial);
