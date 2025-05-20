@@ -30,7 +30,7 @@ public class CeleritasArchaicMixinPlugin implements IMixinConfigPlugin {
         handle.exclusions().add("org.embeddedt.embeddium");
         handle.exclusions().add("org.taumc.celeritas");
         handle.exclusions().add("net.irisshaders.iris");
-        handle.exclusions().add("com.mitchej123");
+        handle.exclusions().add("com.mitchej123.glsm");
     }
 
     @Override
