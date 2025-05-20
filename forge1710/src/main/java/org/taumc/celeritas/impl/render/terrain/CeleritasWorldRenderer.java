@@ -175,9 +175,10 @@ public class CeleritasWorldRenderer {
 
         Entity viewEntity = Objects.requireNonNull(this.client.renderViewEntity, "Client must have view entity");
 
-        double x = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * ticks;
-        double y = viewEntity.lastTickPosY + (viewEntity.posY - viewEntity.lastTickPosY) * ticks + (double) viewEntity.getEyeHeight();
-        double z = viewEntity.lastTickPosZ + (viewEntity.posZ - viewEntity.lastTickPosZ) * ticks;
+        var camPosition = CameraHelper.getCurrentCameraPosition(ticks);
+        double x = camPosition.x;
+        double y = camPosition.y + (double) viewEntity.getEyeHeight();
+        double z = camPosition.z;
 
         float pitch = viewEntity.rotationPitch;
         float yaw = viewEntity.rotationYaw;

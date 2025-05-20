@@ -17,4 +17,19 @@ public interface ActiveRenderInfoAccessor {
     static FloatBuffer getModelViewMatrix() {
         throw new AssertionError();
     }
+
+    @Accessor("objectX")
+    static float getObjectX() {
+        throw new AssertionError();
+    }
+
+    @Accessor("objectY")
+    static float getObjectY() {
+        throw new AssertionError();
+    }
+
+    @Accessor("objectZ")
+    static float getObjectZ() {
+        throw new AssertionError();
+    }
 }
