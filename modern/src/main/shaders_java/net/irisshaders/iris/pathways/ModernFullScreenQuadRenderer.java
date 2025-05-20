@@ -14,12 +14,11 @@ import org.lwjgl.system.MemoryStack;
 /**
  * Renders a full-screen textured quad to the screen. Used in composite / deferred rendering.
  */
-public class FullScreenQuadRenderer {
-	public static final FullScreenQuadRenderer INSTANCE = new FullScreenQuadRenderer();
+public class ModernFullScreenQuadRenderer implements FullScreenQuadRenderer {
 
-	private final VertexBuffer quad;
+    private final VertexBuffer quad;
 
-	private FullScreenQuadRenderer() {
+	public ModernFullScreenQuadRenderer() {
         quad = BufferHelper.makeStaticBuffer(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX, consumer -> {
             try (MemoryStack stack = MemoryStack.stackPush()) {
                 long ptr = stack.nmalloc(TexturedVertex.STRIDE * 4);
@@ -32,7 +31,8 @@ public class FullScreenQuadRenderer {
         });
 	}
 
-	public void render() {
+	@Override
+    public void render() {
 		begin();
 
 		renderQuad();
@@ -40,27 +40,30 @@ public class FullScreenQuadRenderer {
 		end();
 	}
 
-	public void begin() {
+	@Override
+    public void begin() {
 		((VertexBufferHelper) quad).saveBinding();
 		RENDER_SYSTEM.disableDepthTest();
 		BufferUploader.reset();
 		quad.bind();
 	}
 
-	public void renderQuad() {
+	@Override
+    public void renderQuad() {
 		IrisRenderSystem.overridePolygonMode();
 		quad.draw();
 		IrisRenderSystem.restorePolygonMode();
 	}
 
-	public void end() {
-		// NB: No need to clear the buffer state by calling glDisableVertexAttribArray - this VAO will always
-		// have the same format, and buffer state is only associated with a given VAO, so we can keep it bound.
-		//
-		// Using quad.getFormat().clearBufferState() causes some Intel drivers to freak out:
-		// https://github.com/IrisShaders/Iris/issues/1214
+    @Override
+    public void end() {
+        // NB: No need to clear the buffer state by calling glDisableVertexAttribArray - this VAO will always
+        // have the same format, and buffer state is only associated with a given VAO, so we can keep it bound.
+        //
+        // Using quad.getFormat().clearBufferState() causes some Intel drivers to freak out:
+        // https://github.com/IrisShaders/Iris/issues/1214
 
-		RENDER_SYSTEM.enableDepthTest();
-		((VertexBufferHelper) quad).restoreBinding();
-	}
+        RENDER_SYSTEM.enableDepthTest();
+        ((VertexBufferHelper) quad).restoreBinding();
+    }
 }

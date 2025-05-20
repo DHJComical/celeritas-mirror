@@ -16,7 +16,7 @@ import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.programs.ExtendedShader;
 import net.irisshaders.iris.pipeline.programs.FallbackShader;
 import net.irisshaders.iris.pipeline.programs.ShaderInstanceInterface;
-import net.irisshaders.iris.shadows.ShadowRenderer;
+import net.irisshaders.iris.shadows.ModernShadowRenderer;
 import net.minecraft.client.Minecraft;
 //? if >=1.21.2
 /*import net.minecraft.client.renderer.CompiledShaderProgram;*/
@@ -133,7 +133,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
     public boolean iris$shouldSkipThis() {
         // Celeritas always allows unknown shaders
         if (!IrisCommon.getIrisConfig().isBlockUnknownShaders()) {
-            if (ShadowRenderer.ACTIVE) return true;
+            if (ModernShadowRenderer.ACTIVE) return true;
             if (!shouldOverrideShaders()) return false;
             if (shouldSkip == NONE) return false;
             if (shouldSkip == ALWAYS) return true;
@@ -153,7 +153,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
             if (!isKnownShader() && shouldOverrideShaders()) {
                 WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
                 if (pipeline instanceof ModernIrisRenderingPipeline) {
-                    if (ShadowRenderer.ACTIVE) {
+                    if (ModernShadowRenderer.ACTIVE) {
                         // Fallback shadow rendering is disabled by Iris rn
                         //((IrisRenderingPipeline) pipeline).bindDefaultShadow();
                     } else {

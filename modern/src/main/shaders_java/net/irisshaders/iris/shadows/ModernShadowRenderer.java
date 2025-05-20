@@ -61,91 +61,31 @@ import org.lwjgl.opengl.ARBTextureSwizzle;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
 
-public class ShadowRenderer {
-	public static boolean ACTIVE = false;
-	public static List<BlockEntity> visibleBlockEntities;
-	public static int renderDistance;
-	public static Matrix4f MODELVIEW;
-	public static Matrix4f PROJECTION;
-	public static Frustum FRUSTUM;
-	private final float halfPlaneLength;
-	private final float nearPlane, farPlane;
-	private final float voxelDistance;
-	private final float renderDistanceMultiplier;
-	private final float entityShadowDistanceMultiplier;
-	private final int resolution;
-	private final float intervalSize;
-	private final Float fov;
-	private final ShadowRenderTargets targets;
-	private final ShadowCullState packCullingState;
-	private final ShadowCompositeRenderer compositeRenderer;
+public class ModernShadowRenderer extends CommonShadowRenderer {
+    public static List<BlockEntity> visibleBlockEntities;
+    public static Frustum FRUSTUM;
+    private final ShadowCompositeRenderer compositeRenderer;
     private final ModernIrisRenderingPipeline pipeline;
-	private final boolean shouldRenderTerrain;
-	private final boolean shouldRenderTranslucent;
-	private final boolean shouldRenderEntities;
-	private final boolean shouldRenderPlayer;
-	private final boolean shouldRenderBlockEntities;
-	private final boolean shouldRenderDH;
-	private final float sunPathRotation;
-	private final RenderBuffers buffers;
+    private final RenderBuffers buffers;
 	private final RenderBuffersExt renderBuffersExt;
 	private final List<MipmapPass> mipmapPasses = new ArrayList<>();
-	private final String debugStringOverall;
-	private final boolean separateHardwareSamplers;
-	private final boolean shouldRenderLightBlockEntities;
-	private boolean packHasVoxelization;
-	private FrustumHolder terrainFrustumHolder;
-	private FrustumHolder entityFrustumHolder;
-	private String debugStringTerrain = "(unavailable)";
-	private int renderedShadowEntities = 0;
-	private int renderedShadowBlockEntities = 0;
 
-	public ShadowRenderer(ModernIrisRenderingPipeline pipeline, ProgramSource shadow, PackDirectives directives,
+    private FrustumHolder terrainFrustumHolder;
+	private FrustumHolder entityFrustumHolder;
+
+    public ModernShadowRenderer(ModernIrisRenderingPipeline pipeline, ProgramSource shadow, PackDirectives directives,
                           ShadowRenderTargets shadowRenderTargets, ShadowCompositeRenderer compositeRenderer, CustomUniforms customUniforms, boolean separateHardwareSamplers) {
+        super(shadow, directives, shadowRenderTargets, separateHardwareSamplers);
 
         this.pipeline = pipeline;
-		this.separateHardwareSamplers = separateHardwareSamplers;
 
 		final PackShadowDirectives shadowDirectives = directives.getShadowDirectives();
 
-		this.halfPlaneLength = shadowDirectives.getDistance();
-		this.nearPlane = shadowDirectives.getNearPlane();
-		this.farPlane = shadowDirectives.getFarPlane();
-
-		this.voxelDistance = shadowDirectives.getVoxelDistance();
-		this.renderDistanceMultiplier = shadowDirectives.getDistanceRenderMul();
-		this.entityShadowDistanceMultiplier = shadowDirectives.getEntityShadowDistanceMul();
-		this.resolution = shadowDirectives.getResolution();
-		this.intervalSize = shadowDirectives.getIntervalSize();
-		this.shouldRenderTerrain = shadowDirectives.shouldRenderTerrain();
-		this.shouldRenderTranslucent = shadowDirectives.shouldRenderTranslucent();
-		this.shouldRenderEntities = shadowDirectives.shouldRenderEntities();
-		this.shouldRenderPlayer = shadowDirectives.shouldRenderPlayer();
-		this.shouldRenderBlockEntities = shadowDirectives.shouldRenderBlockEntities();
-		this.shouldRenderLightBlockEntities = shadowDirectives.shouldRenderLightBlockEntities();
-		this.shouldRenderDH = shadowDirectives.isDhShadowEnabled().orElse(false);
-
 		this.compositeRenderer = compositeRenderer;
 
-		debugStringOverall = "half plane = " + halfPlaneLength + " meters @ " + resolution + "x" + resolution;
 
 		this.terrainFrustumHolder = new FrustumHolder();
 		this.entityFrustumHolder = new FrustumHolder();
-
-		this.fov = shadowDirectives.getFov();
-		this.targets = shadowRenderTargets;
-
-		if (shadow != null) {
-			// Assume that the shader pack is doing voxelization if a geometry shader is detected.
-			// Also assume voxelization if image load / store is detected.
-			this.packHasVoxelization = shadow.getGeometrySource().isPresent();
-			this.packCullingState = shadowDirectives.getCullingState();
-		} else {
-			this.packHasVoxelization = false;
-			this.packCullingState = ShadowCullState.DEFAULT;
-		}
-
-		this.sunPathRotation = directives.getSunPathRotation();
 
         int processors = Runtime.getRuntime().availableProcessors();
         int threads = processors;
@@ -737,11 +677,13 @@ public class ShadowRenderer {
 		}
 	}
 
-	private String getEntitiesDebugString() {
+    @Override
+	protected String getEntitiesDebugString() {
 		return (shouldRenderEntities || shouldRenderPlayer) ? (renderedShadowEntities + "/" + Minecraft.getInstance().level.getEntityCount()) : "disabled by pack";
 	}
 
-	private String getBlockEntitiesDebugString() {
+    @Override
+    protected String getBlockEntitiesDebugString() {
 		return (shouldRenderBlockEntities || shouldRenderLightBlockEntities) ? renderedShadowBlockEntities + "" : "disabled by pack"; // TODO: + "/" + MinecraftClient.getInstance().world.blockEntities.size();
 	}
 

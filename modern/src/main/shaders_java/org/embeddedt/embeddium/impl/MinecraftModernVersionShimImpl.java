@@ -9,7 +9,7 @@ import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.irisshaders.iris.mixin.texture.TextureAtlasAccessor;
 import net.irisshaders.iris.shaderpack.DimensionId;
 import net.irisshaders.iris.shadows.ShadowMatrices;
-import net.irisshaders.iris.shadows.ShadowRenderer;
+import net.irisshaders.iris.shadows.ModernShadowRenderer;
 import net.irisshaders.iris.texture.TextureInfoCache;
 import net.irisshaders.iris.texture.TextureTracker;
 import net.irisshaders.iris.uniforms.CameraUniforms;
@@ -644,7 +644,7 @@ public class MinecraftModernVersionShimImpl implements MinecraftVersionShimServi
 
     @Override
     public Matrix4f getShadowModelView(float sunPathRotation, float intervalSize) {
-        return new Matrix4f(ShadowRenderer.createShadowModelView(sunPathRotation, intervalSize).last().pose());
+        return new Matrix4f(ModernShadowRenderer.createShadowModelView(sunPathRotation, intervalSize).last().pose());
     }
 
     @Override

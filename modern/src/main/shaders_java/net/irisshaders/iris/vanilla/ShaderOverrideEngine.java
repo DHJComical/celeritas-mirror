@@ -8,7 +8,7 @@ import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
-import net.irisshaders.iris.shadows.ShadowRenderer;
+import net.irisshaders.iris.shadows.ModernShadowRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
 
 import javax.annotation.Nullable;
@@ -53,7 +53,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("position", () -> {
             if (isSky()) {
                 return iris$findOverride(ShaderKey.SKY_BASIC);
-            } else if (ShadowRenderer.ACTIVE) {
+            } else if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_BASIC);
             } else if (shouldOverrideShaders()) {
                 return iris$findOverride(ShaderKey.BASIC);
@@ -64,7 +64,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("position_color", () -> {
             if (isSky()) {
                 return iris$findOverride(ShaderKey.SKY_BASIC_COLOR);
-            } else if (ShadowRenderer.ACTIVE) {
+            } else if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_BASIC_COLOR);
             } else if (shouldOverrideShaders()) {
                 return iris$findOverride(ShaderKey.BASIC_COLOR);
@@ -75,7 +75,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("position_tex", () -> {
             if (isSky()) {
                 return iris$findOverride(ShaderKey.SKY_TEXTURED);
-            } else if (ShadowRenderer.ACTIVE) {
+            } else if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_TEX);
             } else if (shouldOverrideShaders()) {
                 return iris$findOverride(ShaderKey.TEXTURED);
@@ -86,7 +86,7 @@ public class ShaderOverrideEngine {
         Supplier<ShaderInstance> positionTexColor = () -> {
             if (isSky()) {
                 return iris$findOverride(ShaderKey.SKY_TEXTURED_COLOR);
-            } else if (ShadowRenderer.ACTIVE) {
+            } else if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_TEX_COLOR);
             } else if (shouldOverrideShaders()) {
                 return iris$findOverride(ShaderKey.TEXTURED_COLOR);
@@ -99,7 +99,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("particle", () -> {
             if (isPhase(WorldRenderingPhase.RAIN_SNOW)) {
                 return iris$findOverride(ShaderKey.WEATHER);
-            } else if (ShadowRenderer.ACTIVE) {
+            } else if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_PARTICLES);
             } else if (shouldOverrideShaders()) {
                 return iris$findOverride(ShaderKey.PARTICLES);
@@ -108,7 +108,7 @@ public class ShaderOverrideEngine {
             }
         });
         Supplier<ShaderInstance> cloudsShader = () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_CLOUDS);
             } else if (shouldOverrideShaders()) {
                 return iris$findOverride(ShaderKey.CLOUDS);
@@ -119,7 +119,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("rendertype_clouds", cloudsShader);
         iris$overrides.put("position_tex_color_normal", cloudsShader);
         iris$overrides.put("rendertype_solid", () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_TERRAIN_CUTOUT);
             } else if (isBlockEntities() || isEntities()) {
                 return iris$findOverride(ShaderKey.MOVING_BLOCK);
@@ -130,7 +130,7 @@ public class ShaderOverrideEngine {
             }
         });
         Supplier<ShaderInstance> cutout = () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_TERRAIN_CUTOUT);
             } else if (isBlockEntities() || isEntities()) {
                 return iris$findOverride(ShaderKey.MOVING_BLOCK);
@@ -143,7 +143,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("rendertype_cutout", cutout);
         iris$overrides.put("rendertype_cutout_mipped", cutout);
         Supplier<ShaderInstance> translucentShader = () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_TERRAIN_CUTOUT);
             } else if (isBlockEntities() || isEntities()) {
                 return iris$findOverride(ShaderKey.MOVING_BLOCK);
@@ -158,7 +158,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("rendertype_translucent_moving_block", translucentShader);
         iris$overrides.put("rendertype_tripwire", translucentShader);
         Supplier<ShaderInstance> entityCutout = () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_ENTITIES_CUTOUT);
             } else if (HandRenderer.INSTANCE.isActive()) {
                 return iris$findOverride(HandRenderer.INSTANCE.isRenderingSolid() ? ShaderKey.HAND_CUTOUT_DIFFUSE : ShaderKey.HAND_WATER_DIFFUSE);
@@ -177,7 +177,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("rendertype_entity_smooth_cutout", entityCutout);
         iris$overrides.put("rendertype_armor_cutout_no_cull", entityCutout);
         Supplier<ShaderInstance> entityTranslucent = () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_ENTITIES_CUTOUT);
             } else if (HandRenderer.INSTANCE.isActive()) {
                 return iris$findOverride(HandRenderer.INSTANCE.isRenderingSolid() ? ShaderKey.HAND_CUTOUT_DIFFUSE : ShaderKey.HAND_WATER_DIFFUSE);
@@ -195,7 +195,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("rendertype_breeze_wind", entityTranslucent);
         iris$overrides.put("rendertype_entity_no_outline", entityTranslucent);
         Supplier<ShaderInstance> energySwirlAndShadow = () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_ENTITIES_CUTOUT);
             } else if (HandRenderer.INSTANCE.isActive()) {
                 return iris$findOverride(HandRenderer.INSTANCE.isRenderingSolid() ? ShaderKey.HAND_CUTOUT : ShaderKey.HAND_TRANSLUCENT);
@@ -224,7 +224,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("rendertype_entity_glint", glint);
         iris$overrides.put("rendertype_armor_entity_glint", glint);
         Supplier<ShaderInstance> entitySolid = () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_ENTITIES_CUTOUT);
             } else if (HandRenderer.INSTANCE.isActive()) {
                 return iris$findOverride(HandRenderer.INSTANCE.isRenderingSolid() ? ShaderKey.HAND_CUTOUT_DIFFUSE : ShaderKey.HAND_WATER_DIFFUSE);
@@ -238,7 +238,7 @@ public class ShaderOverrideEngine {
         };
         iris$overrides.put("rendertype_entity_solid", entitySolid);
         Supplier<ShaderInstance> waterMask = () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_ENTITIES_CUTOUT);
             } else if (HandRenderer.INSTANCE.isActive()) {
                 return iris$findOverride(HandRenderer.INSTANCE.isRenderingSolid() ? ShaderKey.HAND_CUTOUT : ShaderKey.HAND_TRANSLUCENT);
@@ -252,7 +252,7 @@ public class ShaderOverrideEngine {
         };
         iris$overrides.put("rendertype_water_mask", waterMask);
         iris$overrides.put("rendertype_beacon_beam", () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_BEACON_BEAM);
             } else if (shouldOverrideShaders()) {
                 return iris$findOverride(ShaderKey.BEACON);
@@ -261,14 +261,14 @@ public class ShaderOverrideEngine {
             }
         });
         iris$overrides.put("rendertype_entity_alpha", () -> {
-            if (!ShadowRenderer.ACTIVE) {
+            if (!ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.ENTITIES_ALPHA);
             } else {
                 return null;
             }
         });
         iris$overrides.put("rendertype_eyes", () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_ENTITIES_CUTOUT);
             } else if (isBlockEntities()) {
                 return iris$findOverride(ShaderKey.BLOCK_ENTITY);
@@ -279,7 +279,7 @@ public class ShaderOverrideEngine {
             }
         });
         iris$overrides.put("rendertype_entity_translucent_emissive", () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 // TODO: Wrong program
                 return iris$findOverride(ShaderKey.SHADOW_ENTITIES_CUTOUT);
             } else if (isBlockEntities()) {
@@ -291,7 +291,7 @@ public class ShaderOverrideEngine {
             }
         });
         iris$overrides.put("rendertype_leash", () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_LEASH);
             } else if (shouldOverrideShaders()) {
                 return iris$findOverride(ShaderKey.LEASH);
@@ -300,7 +300,7 @@ public class ShaderOverrideEngine {
             }
         });
         iris$overrides.put("rendertype_lightning", () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_LIGHTNING);
             } else if (shouldOverrideShaders()) {
                 return iris$findOverride(ShaderKey.LIGHTNING);
@@ -309,14 +309,14 @@ public class ShaderOverrideEngine {
             }
         });
         iris$overrides.put("rendertype_crumbling", () -> {
-            if (shouldOverrideShaders() && !ShadowRenderer.ACTIVE) {
+            if (shouldOverrideShaders() && !ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.CRUMBLING);
             } else {
                 return null;
             }
         });
         Supplier<ShaderInstance> textShader = () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_TEXT);
             } else if (HandRenderer.INSTANCE.isActive()) {
                 return iris$findOverride(ShaderKey.HAND_TEXT);
@@ -332,7 +332,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("rendertype_text_see_through", textShader);
         iris$overrides.put("position_color_tex_lightmap", textShader);
         Supplier<ShaderInstance> textBgShader = () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_TEXT_BG);
             } else {
                 return iris$findOverride(ShaderKey.TEXT_BG);
@@ -341,7 +341,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("rendertype_text_background", textBgShader);
         iris$overrides.put("rendertype_text_background_see_through", textBgShader);
         Supplier<ShaderInstance> textIntensityShader = () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_TEXT_INTENSITY);
             } else if (HandRenderer.INSTANCE.isActive()) {
                 return iris$findOverride(ShaderKey.HAND_TEXT_INTENSITY);
@@ -356,7 +356,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("rendertype_text_intensity", textIntensityShader);
         iris$overrides.put("rendertype_text_intensity_see_through", textIntensityShader);
         Supplier<ShaderInstance> linesShader = () -> {
-            if (ShadowRenderer.ACTIVE) {
+            if (ModernShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_LINES);
             } else if (shouldOverrideShaders()) {
                 return iris$findOverride(ShaderKey.LINES);

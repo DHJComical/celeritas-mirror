@@ -44,7 +44,7 @@ import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL43C;
 
-public class ShadowCompositeRenderer {
+public class ShadowCompositeRenderer extends CommonShadowCompositeRenderer {
 	private final ShadowRenderTargets renderTargets;
 
 	private final ImmutableList<Pass> passes;
