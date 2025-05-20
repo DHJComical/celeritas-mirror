@@ -8,6 +8,7 @@ import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.taumc.celeritas.impl.render.terrain.CameraHelper;
 
 @Mixin(Frustrum.class)
 public class FrustumMixin implements ViewportProvider {
@@ -21,6 +22,6 @@ public class FrustumMixin implements ViewportProvider {
     @Override
     public Viewport sodium$createViewport() {
         return new Viewport(((minX, minY, minZ, maxX, maxY, maxZ) -> this.clippingHelper.isBoxInFrustum(minX, minY, minZ, maxX, maxY, maxZ)),
-                new org.joml.Vector3d(this.xPosition, this.yPosition + Minecraft.getMinecraft().renderViewEntity.getEyeHeight(), this.zPosition));
+                new org.joml.Vector3d(this.xPosition, this.yPosition + Minecraft.getMinecraft().renderViewEntity.getEyeHeight(), this.zPosition).add(CameraHelper.getThirdPersonOffset()));
     }
 }
