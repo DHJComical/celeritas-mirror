@@ -22,6 +22,6 @@ public class FrustumMixin implements ViewportProvider {
     @Override
     public Viewport sodium$createViewport() {
         return new Viewport(((minX, minY, minZ, maxX, maxY, maxZ) -> this.clippingHelper.isBoxInFrustum(minX, minY, minZ, maxX, maxY, maxZ)),
-                new org.joml.Vector3d(this.xPosition, this.yPosition + Minecraft.getMinecraft().renderViewEntity.getEyeHeight(), this.zPosition).add(CameraHelper.getThirdPersonOffset()));
+                new org.joml.Vector3d(this.xPosition, this.yPosition, this.zPosition).add(CameraHelper.getThirdPersonOffset()));
     }
 }

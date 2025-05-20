@@ -47,6 +47,6 @@ public class FrustumMixin implements ViewportProvider {
 
     @Override
     public Viewport sodium$createViewport() {
-        return new Viewport(this.celeritas$frustum::testAab, new org.joml.Vector3d(this.x, this.y + Minecraft.getMinecraft().getRenderViewEntity().getEyeHeight(), this.z).add(CameraHelper.getThirdPersonOffset()));
+        return new Viewport(this.celeritas$frustum::testAab, new org.joml.Vector3d(this.x, this.y, this.z).add(CameraHelper.getThirdPersonOffset()));
     }
 }

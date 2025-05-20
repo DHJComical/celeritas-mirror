@@ -28,7 +28,7 @@ public class FrustumCullerMixin implements ViewportProvider {
         Vector3f offset = new Vector3f();
         modelMatrix.transformPosition(offset);
         return new Viewport(((minX, minY, minZ, maxX, maxY, maxZ) -> this.frustum.intersects(minX, minY, minZ, maxX, maxY, maxZ)),
-                new org.joml.Vector3d(this.offsetX + offset.x, this.offsetY + MinecraftAccessor.celeritas$getInstance().camera.getEyeHeight() + offset.y, this.offsetZ + offset.z));
+                new org.joml.Vector3d(this.offsetX + offset.x, this.offsetY + offset.y, this.offsetZ + offset.z));
     }
 }
 
