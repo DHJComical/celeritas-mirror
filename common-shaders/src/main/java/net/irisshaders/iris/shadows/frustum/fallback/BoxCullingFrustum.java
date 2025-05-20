@@ -1,22 +1,19 @@
 package net.irisshaders.iris.shadows.frustum.fallback;
 
 import net.irisshaders.iris.shadows.frustum.BoxCuller;
-import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.world.phys.AABB;
+import net.irisshaders.iris.shadows.frustum.CommonFrustum;
+import net.irisshaders.iris.shadows.frustum.MCAABB;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
-import org.joml.Matrix4f;
 import org.joml.Vector3d;
 
-public class BoxCullingFrustum extends Frustum implements ViewportProvider, org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum {
+public class BoxCullingFrustum extends CommonFrustum implements ViewportProvider, org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum {
 	private final BoxCuller boxCuller;
 	private double x, y, z;
 	private int worldMinYDH;
 	private int worldMaxYDH;
 
 	public BoxCullingFrustum(BoxCuller boxCuller) {
-		super(new Matrix4f(), new Matrix4f());
-
 		this.boxCuller = boxCuller;
 	}
 
@@ -35,7 +32,7 @@ public class BoxCullingFrustum extends Frustum implements ViewportProvider, org.
 		return false;
 	}
 
-	public boolean isVisible(AABB box) {
+	public boolean isVisible(MCAABB box) {
 		return !boxCuller.isCulled(box);
 	}
 

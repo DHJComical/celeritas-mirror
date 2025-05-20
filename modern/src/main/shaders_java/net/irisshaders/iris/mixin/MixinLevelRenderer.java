@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.compat.dh.DHCompat;
+import net.irisshaders.iris.compat.mc.FrustumWrapper;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.layer.IsOutlineRenderStateShard;
 import net.irisshaders.iris.layer.OuterWrappedRenderType;
@@ -121,7 +122,7 @@ public class MixinLevelRenderer {
 		pipeline = Iris.getPipelineManager().preparePipeline(Iris.getCurrentDimension());
 
 		if (pipeline.shouldDisableFrustumCulling()) {
-			this.cullingFrustum = new NonCullingFrustum();
+			this.cullingFrustum = new FrustumWrapper(new NonCullingFrustum());
 		}
 
         IrisRenderSystem.backupAndDisableCullingState(pipeline.shouldDisableOcclusionCulling());

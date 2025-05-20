@@ -1,7 +1,7 @@
 package net.irisshaders.iris.shadows.frustum.advanced;
 
 import net.irisshaders.iris.shadows.frustum.BoxCuller;
-import net.minecraft.world.phys.AABB;
+import net.irisshaders.iris.shadows.frustum.MCAABB;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -22,7 +22,7 @@ public class ReversedAdvancedShadowCullingFrustum extends AdvancedShadowCullingF
 	}
 
 	@Override
-	public boolean isVisible(AABB aabb) {
+	public boolean isVisible(MCAABB aabb) {
 		if (distanceCuller != null && distanceCuller.isCulled(aabb)) {
 			return false;
 		}
@@ -31,7 +31,7 @@ public class ReversedAdvancedShadowCullingFrustum extends AdvancedShadowCullingF
 			return true;
 		}
 
-		return this.isVisible(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ) != 0;
+		return this.isVisible(aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ()) != 0;
 	}
 
 	@Override

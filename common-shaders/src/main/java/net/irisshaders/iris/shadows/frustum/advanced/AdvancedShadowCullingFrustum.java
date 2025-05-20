@@ -1,8 +1,8 @@
 package net.irisshaders.iris.shadows.frustum.advanced;
 
 import net.irisshaders.iris.shadows.frustum.BoxCuller;
-import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.world.phys.AABB;
+import net.irisshaders.iris.shadows.frustum.CommonFrustum;
+import net.irisshaders.iris.shadows.frustum.MCAABB;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.joml.*;
@@ -28,7 +28,7 @@ import org.joml.Math;
  * are not sensitive to the specific internal ordering of planes and corners, in order to avoid potential bugs at the
  * cost of slightly more computations.</p>
  */
-public class AdvancedShadowCullingFrustum extends Frustum implements ViewportProvider, org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum {
+public class AdvancedShadowCullingFrustum extends CommonFrustum implements ViewportProvider, org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum {
 	private static final int MAX_CLIPPING_PLANES = 13;
 	protected final BoxCuller boxCuller;
 	/**
@@ -71,9 +71,6 @@ public class AdvancedShadowCullingFrustum extends Frustum implements ViewportPro
 
 	public AdvancedShadowCullingFrustum(Matrix4f playerView, Matrix4f playerProjection, Vector3f shadowLightVectorFromOrigin,
 										BoxCuller boxCuller) {
-		// We're overriding all of the methods, don't pass any matrices down.
-		super(new org.joml.Matrix4f(), new org.joml.Matrix4f());
-
 		this.shadowLightVectorFromOrigin = shadowLightVectorFromOrigin;
 		BaseClippingPlanes baseClippingPlanes = new BaseClippingPlanes(playerView, playerProjection);
 
@@ -278,12 +275,12 @@ public class AdvancedShadowCullingFrustum extends Frustum implements ViewportPro
 	}
 
 	@Override
-	public boolean isVisible(AABB aabb) {
+	public boolean isVisible(MCAABB aabb) {
 		if (boxCuller != null && boxCuller.isCulled(aabb)) {
 			return false;
 		}
 
-		return this.isVisible(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ) != 0;
+		return this.isVisible(aabb.minX(), aabb.minY(), aabb.minZ(), aabb.maxX(), aabb.maxY(), aabb.maxZ()) != 0;
 	}
 
 	// For Sodium

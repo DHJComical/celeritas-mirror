@@ -15,7 +15,7 @@ import net.irisshaders.iris.shaderpack.properties.PackRenderTargetDirectives;
 import net.irisshaders.iris.shadows.ShadowRenderTargets;
 import net.irisshaders.iris.targets.RenderTarget;
 import net.irisshaders.iris.targets.RenderTargets;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 
 import java.util.Set;
 import java.util.function.IntSupplier;
@@ -178,7 +178,7 @@ public class IrisSamplers {
 		return samplers.hasSampler("normals") || samplers.hasSampler("specular");
 	}
 
-	public static void addLevelSamplers(SamplerHolder samplers, WorldRenderingPipeline pipeline, AbstractTexture whitePixel, boolean hasTexture, boolean hasLightmap, boolean hasOverlay) {
+	public static void addLevelSamplers(SamplerHolder samplers, WorldRenderingPipeline pipeline, MCAbstractTexture whitePixel, boolean hasTexture, boolean hasLightmap, boolean hasOverlay) {
 		if (hasTexture) {
 			samplers.addExternalSampler(ALBEDO_TEXTURE_UNIT, "tex", "texture", "gtexture");
 		} else {

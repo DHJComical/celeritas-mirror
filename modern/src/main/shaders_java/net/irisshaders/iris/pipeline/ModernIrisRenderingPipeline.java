@@ -92,6 +92,7 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import org.embeddedt.embeddium.compat.mc.ICamera;
 import org.embeddedt.embeddium.compat.mc.ILevelRenderer;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
@@ -240,7 +241,7 @@ public class ModernIrisRenderingPipeline extends CommonIrisRenderingPipeline imp
 				shouldBindPBR = IrisSamplers.hasPBRSamplers(customTextureSamplerInterceptor);
 			}
 
-			IrisSamplers.addLevelSamplers(customTextureSamplerInterceptor, this, whitePixel, true, true, false);
+			IrisSamplers.addLevelSamplers(customTextureSamplerInterceptor, this, (MCAbstractTexture) whitePixel, true, true, false);
 			IrisSamplers.addWorldDepthSamplers(customTextureSamplerInterceptor, renderTargets);
 			IrisSamplers.addNoiseSampler(customTextureSamplerInterceptor, customTextureManager.getNoiseTexture());
 			IrisSamplers.addCustomImages(customTextureSamplerInterceptor, customImages);
@@ -283,7 +284,7 @@ public class ModernIrisRenderingPipeline extends CommonIrisRenderingPipeline imp
 				shouldBindPBR = IrisSamplers.hasPBRSamplers(customTextureSamplerInterceptor);
 			}
 
-			IrisSamplers.addLevelSamplers(customTextureSamplerInterceptor, this, whitePixel, true, true, false);
+			IrisSamplers.addLevelSamplers(customTextureSamplerInterceptor, this, (MCAbstractTexture) whitePixel, true, true, false);
 			IrisSamplers.addNoiseSampler(customTextureSamplerInterceptor, customTextureManager.getNoiseTexture());
 			IrisSamplers.addCustomImages(customTextureSamplerInterceptor, customImages);
 
@@ -496,7 +497,7 @@ public class ModernIrisRenderingPipeline extends CommonIrisRenderingPipeline imp
 				IrisImages.addRenderTargetImages(builder, flipped, renderTargets);
 				IrisImages.addCustomImages(builder, customImages);
 
-				IrisSamplers.addLevelSamplers(customTextureSamplerInterceptor, this, whitePixel, true, true, false);
+				IrisSamplers.addLevelSamplers(customTextureSamplerInterceptor, this, (MCAbstractTexture) whitePixel, true, true, false);
 
 				IrisSamplers.addNoiseSampler(customTextureSamplerInterceptor, customTextureManager.getNoiseTexture());
 
@@ -683,7 +684,7 @@ public class ModernIrisRenderingPipeline extends CommonIrisRenderingPipeline imp
 			shouldBindPBR = IrisSamplers.hasPBRSamplers(samplerHolder);
 		}
 
-		IrisSamplers.addLevelSamplers(samplers, this, whitePixel, hasTexture, hasLightmap, hasOverlay);
+		IrisSamplers.addLevelSamplers(samplers, this, (MCAbstractTexture) whitePixel, hasTexture, hasLightmap, hasOverlay);
 		IrisSamplers.addWorldDepthSamplers(samplerHolder, this.renderTargets);
 		IrisSamplers.addNoiseSampler(samplerHolder, this.customTextureManager.getNoiseTexture());
 		IrisSamplers.addCustomImages(samplerHolder, customImages);

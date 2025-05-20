@@ -1,6 +1,8 @@
 package net.irisshaders.iris.shadows.frustum;
 
-public abstract class CommonFrustumHolder {
+
+public class CommonFrustumHolder {
+    protected CommonFrustum frustum;
     protected String distanceInfo = "(unavailable)";
     protected String cullingInfo = "(unavailable)";
 
@@ -12,8 +14,14 @@ public abstract class CommonFrustumHolder {
         return cullingInfo;
     }
 
-    protected void setInfo(String distanceInfo, String cullingInfo) {
+    public CommonFrustumHolder setInfo(CommonFrustum frustum, String distanceInfo, String cullingInfo) {
+        this.frustum = frustum;
         this.distanceInfo = distanceInfo;
         this.cullingInfo = cullingInfo;
+        return this;
+    }
+
+    public CommonFrustum getFrustum() {
+        return frustum;
     }
 }
