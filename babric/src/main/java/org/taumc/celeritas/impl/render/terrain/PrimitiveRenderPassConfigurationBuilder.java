@@ -8,6 +8,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.QuadPrimitiveTy
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.lwjgl.opengl.GL11;
 
@@ -40,7 +41,7 @@ public class PrimitiveRenderPassConfigurationBuilder {
     }
 
     private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(int pass, boolean disableBlend) {
-        return TerrainRenderPass.builder().pipelineState(new PrimitivePipelineState(pass, disableBlend)).hasNoLightmap(true);
+        return TerrainRenderPass.builder().pipelineState(new PrimitivePipelineState(pass, disableBlend)).hasNoLightmap(true).vertexType(ChunkMeshFormats.VANILLA_LIKE).primitiveType(QuadPrimitiveType.TRIANGULATED);
     }
 
     static {
@@ -78,10 +79,8 @@ public class PrimitiveRenderPassConfigurationBuilder {
         renderTypeToMaterialMap.put(0, CUTOUT_MIPPED_MATERIAL);
         renderTypeToMaterialMap.put(1, TRANSLUCENT_MATERIAL);
 
-        return new RenderPassConfiguration<>(vertexType,
-                renderTypeToMaterialMap,
+        return new RenderPassConfiguration<>(renderTypeToMaterialMap,
                 vanillaRenderStages,
-                type -> QuadPrimitiveType.INSTANCE,
                 CUTOUT_MIPPED_MATERIAL,
                 CUTOUT_MIPPED_MATERIAL,
                 TRANSLUCENT_MATERIAL);
