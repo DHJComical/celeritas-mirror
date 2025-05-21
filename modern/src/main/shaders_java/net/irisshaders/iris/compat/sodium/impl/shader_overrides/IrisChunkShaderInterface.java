@@ -31,6 +31,7 @@ import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformMatrix4f;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
+import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderTextureSlot;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.TextureUtil;
 import org.jetbrains.annotations.Nullable;
@@ -191,6 +192,11 @@ public class IrisChunkShaderInterface implements ChunkShaderInterface {
 			this.uniformRegionOffset.set(x, y, z);
 		}
 	}
+
+    @Override
+    public void setTextureSlot(ChunkShaderTextureSlot slot, int val) {
+        // Not used, we manage the texture state ourselves
+    }
 
     private SodiumTerrainPipeline getSodiumTerrainPipeline() {
         WorldRenderingPipeline worldRenderingPipeline = Iris.getPipelineManager().getPipelineNullable();

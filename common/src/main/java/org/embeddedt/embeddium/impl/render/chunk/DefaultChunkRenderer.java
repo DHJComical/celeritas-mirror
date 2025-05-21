@@ -28,7 +28,7 @@ import org.embeddedt.embeddium.impl.util.BitwiseMath;
 import org.lwjgl.system.MemoryUtil;
 import java.util.Iterator;
 
-public class DefaultChunkRenderer extends ShaderChunkRenderer {
+public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
     private final MultiDrawBatch batch;
 
     private final Reference2ReferenceMap<ChunkPrimitiveType, SharedQuadIndexBuffer> sharedIndexBuffers;
@@ -55,6 +55,8 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
         }
         return buffer;
     }
+
+    protected abstract void configureShaderInterface(ChunkShaderInterface shader);
 
     @Override
     public void render(ChunkRenderMatrices matrices,
@@ -84,6 +86,8 @@ public class DefaultChunkRenderer extends ShaderChunkRenderer {
 
             this.currentRenderPass = renderPass;
             this.currentVertexFormat = this.renderPassConfiguration.getVertexTypeForPass(this.currentRenderPass).getVertexFormat();
+
+            this.configureShaderInterface(shader);
 
             while (iterator.hasNext()) {
                 ChunkRenderList renderList = iterator.next();

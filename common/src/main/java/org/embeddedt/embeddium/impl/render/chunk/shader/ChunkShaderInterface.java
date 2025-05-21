@@ -11,4 +11,5 @@ public interface ChunkShaderInterface {
     void setProjectionMatrix(Matrix4fc matrix);
     void setModelViewMatrix(Matrix4fc matrix);
     void setRegionOffset(float x, float y, float z);
+    void setTextureSlot(ChunkShaderTextureSlot slot, int val);
 }

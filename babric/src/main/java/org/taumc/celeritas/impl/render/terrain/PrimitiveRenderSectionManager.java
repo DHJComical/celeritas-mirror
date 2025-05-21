@@ -1,18 +1,16 @@
 package org.taumc.celeritas.impl.render.terrain;
 
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ReferenceSet;
-import it.unimi.dsi.fastutil.objects.ReferenceSets;
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
+import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.*;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
-import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
-import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
+import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
+import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderTextureSlot;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
@@ -21,13 +19,11 @@ import org.taumc.celeritas.impl.render.terrain.compile.PrimitiveChunkBuildContex
 import org.taumc.celeritas.impl.render.terrain.compile.task.ChunkBuilderMeshingTask;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
 
-import java.util.Collection;
-
 public class PrimitiveRenderSectionManager extends RenderSectionManager {
     private final World world;
 
     public PrimitiveRenderSectionManager(RenderPassConfiguration<?> configuration, World world, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
-        super(configuration, () -> new PrimitiveChunkBuildContext(world, configuration), DefaultChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
+        super(configuration, () -> new PrimitiveChunkBuildContext(world, configuration), ChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
         this.world = world;
     }
 
@@ -81,5 +77,18 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
     @Override
     protected boolean allowImportantRebuilds() {
         return false;
+    }
+
+    private static class ChunkRenderer extends DefaultChunkRenderer {
+
+        public ChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
+            super(device, renderPassConfiguration);
+        }
+
+        @Override
+        protected void configureShaderInterface(ChunkShaderInterface shader) {
+            shader.setTextureSlot(ChunkShaderTextureSlot.BLOCK, 0);
+            shader.setTextureSlot(ChunkShaderTextureSlot.LIGHT, 1);
+        }
     }
 }

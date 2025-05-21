@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk.shader;
 
-import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat3v;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformInt;
@@ -12,7 +11,6 @@ import org.joml.Matrix4fc;
 
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.ServiceLoader;
 
 /**
  * A forward-rendering shader program for chunks.
@@ -26,8 +24,6 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
 
     // The fog shader component used by this program in order to setup the appropriate GL state
     private final ChunkShaderFogComponent fogShader;
-
-    private final ChunkShaderTextureService textureService;
 
     private GlPrimitiveType primitiveType;
 
@@ -43,17 +39,10 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
         }
 
         this.fogShader = options.fog().getFactory().apply(context);
-
-        this.textureService = ServiceLoader.load(ChunkShaderTextureService.class).findFirst().orElseThrow();
     }
 
     @Deprecated // the shader interface should not modify pipeline state
     public void setupState(TerrainRenderPass pass) {
-        this.bindTexture(ChunkShaderTextureSlot.BLOCK);
-        if (!pass.hasNoLightmap()) {
-            this.bindTexture(ChunkShaderTextureSlot.LIGHT);
-        }
-
         if (pass.primitiveType() == QuadPrimitiveType.DIRECT) {
             primitiveType = GlPrimitiveType.QUADS;
         } else if (pass.primitiveType() == QuadPrimitiveType.TRIANGULATED) {
@@ -70,15 +59,6 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
         return primitiveType;
     }
 
-    @Deprecated(forRemoval = true) // should be handled properly in GFX instead.
-    private void bindTexture(ChunkShaderTextureSlot slot) {
-        var uniform = this.uniformTextures.get(slot);
-
-        int uniformVal = this.textureService.bindAndGetUniformValue(slot);
-
-        uniform.setInt(uniformVal);
-    }
-
     public void setProjectionMatrix(Matrix4fc matrix) {
         this.uniformProjectionMatrix.set(matrix);
     }
@@ -89,5 +69,13 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
 
     public void setRegionOffset(float x, float y, float z) {
         this.uniformRegionOffset.set(x, y, z);
+    }
+
+    public void setTextureSlot(ChunkShaderTextureSlot slot, int val) {
+        var uniform = this.uniformTextures.get(slot);
+
+        if (uniform != null) {
+            uniform.setInt(val);
+        }
     }
 }

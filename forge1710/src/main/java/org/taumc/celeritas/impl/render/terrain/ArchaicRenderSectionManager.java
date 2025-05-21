@@ -1,19 +1,16 @@
 package org.taumc.celeritas.impl.render.terrain;
 
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ReferenceSet;
-import it.unimi.dsi.fastutil.objects.ReferenceSets;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.chunk.Chunk;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
+import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.*;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
-import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
-import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
+import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
+import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderTextureSlot;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.GenericSectionSpriteTicker;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
@@ -24,15 +21,11 @@ import org.taumc.celeritas.impl.render.terrain.compile.task.ChunkBuilderMeshingT
 import org.taumc.celeritas.impl.render.terrain.sprite.SpriteUtil;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
 public class ArchaicRenderSectionManager extends RenderSectionManager {
     private final WorldClient world;
 
     public ArchaicRenderSectionManager(RenderPassConfiguration<?> configuration, WorldClient world, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
-        super(configuration, () -> new ArchaicChunkBuildContext(world, configuration), DefaultChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
+        super(configuration, () -> new ArchaicChunkBuildContext(world, configuration), ChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
         this.world = world;
     }
 
@@ -98,5 +91,18 @@ public class ArchaicRenderSectionManager extends RenderSectionManager {
     @Override
     protected @Nullable SectionTicker createSectionTicker() {
         return new GenericSectionSpriteTicker<>(SpriteUtil::markSpriteActive);
+    }
+
+    private static class ChunkRenderer extends DefaultChunkRenderer {
+
+        public ChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
+            super(device, renderPassConfiguration);
+        }
+
+        @Override
+        protected void configureShaderInterface(ChunkShaderInterface shader) {
+            shader.setTextureSlot(ChunkShaderTextureSlot.BLOCK, 0);
+            shader.setTextureSlot(ChunkShaderTextureSlot.LIGHT, 1);
+        }
     }
 }

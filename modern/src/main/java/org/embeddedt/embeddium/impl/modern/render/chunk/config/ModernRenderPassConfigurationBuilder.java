@@ -1,7 +1,10 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.config;
 
 import com.google.common.collect.ImmutableListMultimap;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
@@ -10,6 +13,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.lwjgl.opengl.GL32C;
 
 import java.util.Map;
 
@@ -19,10 +23,28 @@ public class ModernRenderPassConfigurationBuilder {
         @Override
         public void setup() {
             this.chunkRenderType.setupRenderState();
+            //? if >=1.17 {
+            int i = GlStateManager._getActiveTexture();
+
+            RenderSystem.activeTexture(GL32C.GL_TEXTURE0 + 0);
+            RenderSystem.bindTexture(RenderSystem.getShaderTexture(0));
+            RenderSystem.activeTexture(GL32C.GL_TEXTURE0 + 2);
+            RenderSystem.bindTexture(RenderSystem.getShaderTexture(2));
+
+            GlStateManager._activeTexture(i);
+            //? }
         }
 
         @Override
         public void clear() {
+            //? if >=1.17 {
+            int i = GlStateManager._getActiveTexture();
+            RenderSystem.activeTexture(GL32C.GL_TEXTURE0 + 0);
+            RenderSystem.bindTexture(0);
+            RenderSystem.activeTexture(GL32C.GL_TEXTURE0 + 2);
+            RenderSystem.bindTexture(0);
+            GlStateManager._activeTexture(i);
+            //? }
             this.chunkRenderType.clearRenderState();
         }
 
