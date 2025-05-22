@@ -60,6 +60,10 @@ repositories {
         name = "ModMaven"
         url = uri("https://modmaven.dev")
     }
+    maven {
+        name = "Glass-Launcher"
+        url = uri("https://maven.glass-launcher.net/releases/")
+    }
     mavenCentral()
 }
 

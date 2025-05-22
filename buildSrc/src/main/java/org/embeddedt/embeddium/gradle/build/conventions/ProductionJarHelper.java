@@ -73,6 +73,7 @@ public class ProductionJarHelper {
             if (task instanceof ProcessResources processResources) {
                 props.forEach((key, val) -> processResources.getInputs().property(key, val));
                 processResources.filesMatching("mcmod.info", details -> details.expand(props));
+                processResources.filesMatching("fabric.mod.json", details -> details.expand(props));
                 if (!isModernProject) {
                     processResources.from(project.getRootProject().file("modern/src/main/resources/icon.png"));
                 }
