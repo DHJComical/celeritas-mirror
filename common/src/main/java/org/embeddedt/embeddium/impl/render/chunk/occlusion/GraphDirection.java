@@ -10,6 +10,8 @@ public class GraphDirection {
 
     public static final int COUNT   = 6;
 
+    public static final char[] LETTERS = new char[] { 'D', 'U', 'N', 'S', 'W', 'E' };
+
     private static final int[] OPPOSITE;
     private static final int[] X, Y, Z;
 

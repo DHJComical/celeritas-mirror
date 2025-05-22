@@ -27,7 +27,11 @@ public class VisibilityEncoding {
         boolean canFaceSeeFace(int fromDir, int toDir);
     }
 
-    private static int bit(int from, int to) {
+    /**
+     * {@return the bit that should be set to encode that you can see from the face on the 'from' side through to the
+     * face on the 'to' side}
+     */
+    static int bit(int from, int to) {
         return (from * 8) + to;
     }
 
@@ -65,5 +69,27 @@ public class VisibilityEncoding {
         folded |= folded >> 8; // fold top 8 bits onto bottom 8 bits
 
         return (int) (folded & GraphDirectionSet.ALL);
+    }
+
+    public static String stringify(long data) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("  ");
+        for (char c : GraphDirection.LETTERS) {
+            sb.append(c);
+        }
+        sb.append('\n');
+        for (int from = 0; from < GraphDirection.COUNT; from++) {
+            sb.append(GraphDirection.LETTERS[from]);
+            sb.append('|');
+            for (int to = 0; to < GraphDirection.COUNT; to++) {
+                if ((data & (1L << bit(from, to))) != 0) {
+                    sb.append('x');
+                } else {
+                    sb.append(' ');
+                }
+            }
+            sb.append('\n');
+        }
+        return sb.toString();
     }
 }
