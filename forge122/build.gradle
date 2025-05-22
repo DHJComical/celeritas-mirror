@@ -1,77 +1,16 @@
-import bs.ModLoader
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
-import static bs.ModLoader.FORGE
+import org.embeddedt.embeddium.gradle.build.conventions.CeleritasBuildConstants
+import org.embeddedt.embeddium.gradle.build.conventions.LWJGLHelper
+import org.embeddedt.embeddium.gradle.build.conventions.ProductionJarHelper
 
 plugins {
-    id "com.gradleup.shadow" version "8.3.0"
+    id "celeritas.platform-conventions"
+    id "celeritas.unimined-platform-conventions"
 }
 
 group = "org.embeddedt"
 version = rootProject.version
-apply plugin: 'xyz.wagyourtail.unimined'
-
-repositories {
-    maven {
-        name = "wagyourtail releases"
-        url = "https://maven.wagyourtail.xyz/releases"
-    }
-    maven {
-        name = "sponge"
-        url = "https://repo.spongepowered.org/maven"
-    }
-    maven {
-        name "GTCEu Maven"
-        url "https://maven.gtceu.com/"
-    }
-    maven {
-        url 'https://maven.cleanroommc.com'
-    }
-    maven {
-        name "GTNH Maven"
-        url "https://nexus.gtnewhorizons.com/repository/public/"
-    }
-    maven {
-        url = uri("https://files.prismlauncher.org/maven")
-        metadataSources { artifact() }
-    }
-    exclusiveContent {
-        forRepository {
-            maven {
-                url "https://cursemaven.com"
-            }
-        }
-        filter {
-            includeGroup "curse.maven"
-        }
-    }
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = "Modrinth"
-                url = "https://api.modrinth.com/maven"
-            }
-        }
-        filter {
-            includeGroup "maven.modrinth"
-        }
-    }
-    maven {
-        // location of the maven that hosts JEI files
-        name = "Progwml6 maven"
-        url = "https://dvs1.progwml6.com/files/maven/"
-    }
-    maven {
-        // location of a maven mirror for JEI files, as a fallback
-        name = "ModMaven"
-        url = "https://modmaven.dev"
-    }
-    mavenCentral()
-}
 
 archivesBaseName = "celeritas-forge-1.12.2"
-
-evaluationDependsOn(":common")
 
 configurations {
     modCompileOnly
@@ -97,20 +36,7 @@ unimined.minecraft {
     runs.config("client") {
         javaVersion = JavaVersion.VERSION_21
         mainClass = "com.gtnewhorizons.retrofuturabootstrap.Main"
-        jvmArgs += [
-                "-Dfile.encoding=UTF-8",
-                "-Djava.system.class.loader=com.gtnewhorizons.retrofuturabootstrap.RfbSystemClassLoader",
-                "-Djava.security.manager=allow", "--add-opens", "java.base/jdk.internal.loader=ALL-UNNAMED", "--add-opens",
-                "java.base/java.net=ALL-UNNAMED", "--add-opens", "java.base/java.nio=ALL-UNNAMED", "--add-opens",
-                "java.base/java.io=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens",
-                "java.base/java.lang.reflect=ALL-UNNAMED", "--add-opens", "java.base/java.text=ALL-UNNAMED", "--add-opens",
-                "java.base/java.util=ALL-UNNAMED", "--add-opens", "java.base/jdk.internal.reflect=ALL-UNNAMED", "--add-opens",
-                "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens", "jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED,java.naming",
-                "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED", "--add-opens", "java.desktop/sun.awt.image=ALL-UNNAMED",
-                "--add-opens", "java.desktop/com.sun.imageio.plugins.png=ALL-UNNAMED", "--add-opens",
-                "jdk.dynalink/jdk.dynalink.beans=ALL-UNNAMED", "--add-opens",
-                "java.sql.rowset/javax.sql.rowset.serial=ALL-UNNAMED"
-        ]
+        jvmArgs += CeleritasBuildConstants.RFB_JVM_ARGS
         systemProperty("fml.coreMods.load", "zone.rong.mixinbooter.MixinBooterPlugin,me.eigenraven.lwjgl3ify.core.Lwjgl3ifyCoremod,org.taumc.celeritas.core.CeleritasLoadingPlugin")
     }
 
@@ -127,8 +53,6 @@ unimined.minecraft {
 dependencies {
     shadow("org.joml:joml:1.10.5")
     implementation("org.joml:joml:1.10.5")
-    compileOnly("org.projectlombok:lombok:1.18.30")
-    annotationProcessor("org.projectlombok:lombok:1.18.30")
     implementation("zone.rong:mixinbooter:10.5")
     implementation("io.github.twilightflower:lwjgl3ify:1.0.1") {
         exclude group: 'mezz.jei'
@@ -142,64 +66,12 @@ dependencies {
         exclude group: 'org.apache.logging.log4j'
     }
 
-    def lwjglVersion = "3.3.3"
-    implementation "org.lwjgl:lwjgl:${lwjglVersion}"
-    implementation "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
-    implementation "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
-    implementation "org.lwjgl:lwjgl-stb:${lwjglVersion}"
-    implementation "org.lwjgl:lwjgl:${lwjglVersion}:natives-linux"
-    implementation "org.lwjgl:lwjgl-opengl:${lwjglVersion}:natives-linux"
-    implementation "org.lwjgl:lwjgl-glfw:${lwjglVersion}:natives-linux"
-    implementation "org.lwjgl:lwjgl-stb:${lwjglVersion}:natives-linux"
-
     modCompileOnly("maven.modrinth:fluidlogged-api:3.0.6")
 }
 
-processResources {
-    inputs.property "version", project.version
+LWJGLHelper.addLwjgl3(project)
 
-    filesMatching("mcmod.info") {
-        expand "version": project.version
-    }
+ProductionJarHelper.configureProcessedResources(project)
+ProductionJarHelper.setupLegacyFMLManifest(project)
+ProductionJarHelper.createShadowRemapJar(project)
 
-    from(rootProject.file("modern/src/main/resources/icon.png"))
-}
-
-jar {
-    manifest {
-        attributes([
-                "FMLCorePlugin": "org.taumc.celeritas.core.CeleritasLoadingPlugin",
-                "FMLCorePluginContainsFMLMod": "true",
-                "FMLAT": "celeritas_at.cfg",
-                "ForceLoadAsMod": "true",
-                "Lwjgl3ify-Aware": "true"
-        ])
-    }
-}
-
-tasks.named("shadowJar", ShadowJar) {
-    configurations = []
-}
-
-def shadowRemapJar = tasks.register("shadowRemapJar", ShadowJar) {
-    archiveClassifier = ""
-    configurations = [project.configurations.shadow]
-    from(tasks.named("remapJar"))
-    manifest.inheritFrom(tasks.named("jar").get().manifest)
-    relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml")
-    mergeServiceFiles()
-
-    from("COPYING", "COPYING.LESSER", "README.md")
-}
-
-
-tasks.named("remapJar") {
-    mixinRemap {
-        enableBaseMixin()
-        enableMixinExtra()
-        disableRefmap() // like fabric-loom 1.6
-    }
-    archiveClassifier = "remapped-thin"
-}
-
-assemble.dependsOn(shadowRemapJar)

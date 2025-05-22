@@ -1,5 +1,14 @@
 plugins {
-    id 'java-gradle-plugin' // so we can assign and ID to our plugin
+    `kotlin-dsl`
+    id("java-gradle-plugin") // so we can assign and ID to our plugin
+}
+
+sourceSets {
+    create("stonecutter") {
+        java {
+            compileClasspath += sourceSets.main.get().compileClasspath
+        }
+    }
 }
 
 dependencies {
@@ -14,16 +23,21 @@ dependencies {
     implementation("net.fabricmc:fabric-loader:0.15.11")
     implementation("org.apache.commons:commons-compress:1.26.0")
     implementation("xyz.wagyourtail.unimined:xyz.wagyourtail.unimined.gradle.plugin:1.3.15-SNAPSHOT")
-    implementation("dev.kikugie:stonecutter:0.7-alpha.15")
+    implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.0")
+    "stonecutterImplementation"("dev.kikugie:stonecutter:0.7-alpha.15")
 }
 
 repositories {
     mavenCentral()
-    maven { url = "https://maven.fabricmc.net/" }
-    maven { url = "https://maven.wagyourtail.xyz/releases" }
-    maven { url = "https://maven.wagyourtail.xyz/snapshots" }
-    maven { url = "https://maven.kikugie.dev/releases" }
-    maven { url = "https://maven.kikugie.dev/snapshots" }
+    maven("https://maven.fabricmc.net/")
+    maven("https://maven.wagyourtail.xyz/releases")
+    maven("https://maven.wagyourtail.xyz/snapshots")
+    maven("https://maven.kikugie.dev/releases")
+    maven("https://maven.kikugie.dev/snapshots")
+}
+
+tasks.named<Jar>("jar") {
+    from(sourceSets.getByName("stonecutter").output)
 }
 
 gradlePlugin {
