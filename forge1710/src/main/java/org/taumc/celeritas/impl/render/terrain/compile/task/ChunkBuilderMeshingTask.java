@@ -1,7 +1,6 @@
 package org.taumc.celeritas.impl.render.terrain.compile.task;
 
 import com.gtnewhorizon.gtnhlib.blockpos.BlockPos;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
@@ -16,17 +15,14 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ReportedException;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.common.util.ForgeDirection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
-import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
-import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
-import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.SectionVisibilityBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
@@ -34,14 +30,12 @@ import org.joml.Vector3d;
 import org.taumc.celeritas.impl.extensions.TessellatorExtension;
 import org.taumc.celeritas.impl.extensions.WorldClientExtension;
 import org.taumc.celeritas.impl.render.terrain.compile.ArchaicChunkBuildContext;
-import org.taumc.celeritas.impl.render.terrain.occlusion.ChunkOcclusionDataBuilder;
 import org.taumc.celeritas.impl.world.biome.SmoothBiomeColorCache;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
-import java.util.*;
 
 public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> {
     private final RenderSection render;
@@ -80,7 +74,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
     public ChunkBuildOutput execute(ChunkBuildContext context, CancellationToken cancellationToken) {
         ArchaicChunkBuildContext buildContext = (ArchaicChunkBuildContext)context;
         MinecraftBuiltRenderSectionData<TextureAtlasSprite, TileEntity> renderData = new MinecraftBuiltRenderSectionData<>();
-        ChunkOcclusionDataBuilder occluder = new ChunkOcclusionDataBuilder();
+        SectionVisibilityBuilder occluder = new SectionVisibilityBuilder();
 
         ChunkBuildBuffers buffers = buildContext.buffers;
         buffers.init(renderData, this.render.getSectionIndex());
@@ -144,7 +138,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
 
                         if (block.isOpaqueCube()) {
-                            occluder.markClosed(blockPos);
+                            occluder.markOpaque(x, y, z);
                         }
                     }
                 }
@@ -167,7 +161,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
             renderData.hasBlockGeometry = true;
         }
 
-        encodeVisibilityData(occluder, renderData);
+        renderData.visibilityData = occluder.computeVisibilityEncoding();
 
         return new ChunkBuildOutput(this.render, renderData, meshes, this.buildTime);
     }
@@ -193,22 +187,4 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
         return new ReportedException(report);
     }
-
-    private static final ForgeDirection[] FACINGS = new ForgeDirection[GraphDirection.COUNT];
-
-    static {
-        FACINGS[GraphDirection.UP] = ForgeDirection.UP;
-        FACINGS[GraphDirection.DOWN] = ForgeDirection.DOWN;
-        FACINGS[GraphDirection.WEST] = ForgeDirection.WEST;
-        FACINGS[GraphDirection.EAST] = ForgeDirection.EAST;
-        FACINGS[GraphDirection.NORTH] = ForgeDirection.NORTH;
-        FACINGS[GraphDirection.SOUTH] = ForgeDirection.SOUTH;
-    }
-
-
-    private static void encodeVisibilityData(ChunkOcclusionDataBuilder occluder, BuiltRenderSectionData renderData) {
-        var data = occluder.build();
-        renderData.visibilityData = VisibilityEncoding.encode((from, to) -> data.isVisibleThrough(FACINGS[from], FACINGS[to]));
-    }
-
 }
