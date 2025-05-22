@@ -18,6 +18,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.chunk.Chunk;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,14 +28,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.taumc.celeritas.impl.extensions.RenderGlobalExtension;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 
 import java.util.*;
 import java.util.function.Consumer;
 
 @Mixin(RenderGlobal.class)
-public abstract class RenderGlobalMixin implements RenderGlobalExtension {
+public abstract class RenderGlobalMixin implements SimpleWorldRenderer.Provider<CeleritasWorldRenderer> {
 
     @Shadow
     @Final
@@ -62,11 +62,11 @@ public abstract class RenderGlobalMixin implements RenderGlobalExtension {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void init(Minecraft minecraft, CallbackInfo ci) {
-        this.renderer = new CeleritasWorldRenderer(minecraft);
+        this.renderer = new CeleritasWorldRenderer();
     }
 
     @Override
-    public CeleritasWorldRenderer sodium$getWorldRenderer() {
+    public CeleritasWorldRenderer celeritas$getWorldRenderer() {
         return this.renderer;
     }
 
@@ -184,7 +184,7 @@ public abstract class RenderGlobalMixin implements RenderGlobalExtension {
 
     @Inject(method = "renderEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderHelper;enableStandardItemLighting()V", shift = At.Shift.AFTER, ordinal = 1), cancellable = true)
     public void sodium$renderTileEntities(Entity entity, ICamera camera, float partialTicks, CallbackInfo ci) {
-        this.renderer.renderBlockEntities(partialTicks, damagedBlocks);
+        this.renderer.renderBlockEntities(new CeleritasWorldRenderer.TileEntityRenderContext(damagedBlocks, partialTicks));
 
         this.mc.entityRenderer.disableLightmap();
         this.mc.profiler.endSection();
