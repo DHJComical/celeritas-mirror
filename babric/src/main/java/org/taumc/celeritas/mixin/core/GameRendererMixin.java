@@ -1,6 +1,6 @@
 package org.taumc.celeritas.mixin.core;
 
-import net.minecraft.client.option.GameOptions;
+import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.render.GameRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,14 +21,14 @@ public class GameRendererMixin {
     @Shadow
     private float fogBlue;
 
-    @Inject(method = "updateSkyAndFogColors", at = @At("RETURN"))
+    @Inject(method = "setupFog", at = @At("RETURN"))
     private void captureFogColor(float par1, CallbackInfo ci) {
         GLStateManagerFogService.fogColorRed = this.fogRed;
         GLStateManagerFogService.fogColorGreen = this.fogGreen;
         GLStateManagerFogService.fogColorBlue = this.fogBlue;
     }
 
-    @Redirect(method = "renderFrame", at = @At(value = "FIELD", target = "Lnet/minecraft/client/option/GameOptions;fancyGraphics:Z"))
+    @Redirect(method = "renderWorld", at = @At(value = "FIELD", target = "Lnet/minecraft/client/options/GameOptions;fancyGraphics:Z"))
     private boolean celeritas$forceNormalTranslucentTerrainRendering(GameOptions instance) {
         return false;
     }

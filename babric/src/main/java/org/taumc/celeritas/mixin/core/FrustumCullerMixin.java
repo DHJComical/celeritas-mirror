@@ -18,7 +18,7 @@ public class FrustumCullerMixin implements ViewportProvider {
     private FrustumData frustum;
 
     @Shadow
-    private double offsetX, offsetY, offsetZ;
+    private double x, y, z;
 
     @Override
     public Viewport sodium$createViewport() {
@@ -27,8 +27,8 @@ public class FrustumCullerMixin implements ViewportProvider {
         modelMatrix.invert();
         Vector3f offset = new Vector3f();
         modelMatrix.transformPosition(offset);
-        return new Viewport(((minX, minY, minZ, maxX, maxY, maxZ) -> this.frustum.intersects(minX, minY, minZ, maxX, maxY, maxZ)),
-                new org.joml.Vector3d(this.offsetX + offset.x, this.offsetY + offset.y, this.offsetZ + offset.z));
+        return new Viewport(((minX, minY, minZ, maxX, maxY, maxZ) -> this.frustum.m_9750073(minX, minY, minZ, maxX, maxY, maxZ)),
+                new org.joml.Vector3d(this.x + offset.x, this.y + offset.y, this.z + offset.z));
     }
 }
 

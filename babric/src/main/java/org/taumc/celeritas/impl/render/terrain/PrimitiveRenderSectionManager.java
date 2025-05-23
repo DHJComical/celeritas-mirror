@@ -2,7 +2,6 @@ package org.taumc.celeritas.impl.render.terrain;
 
 import net.minecraft.block.Block;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.*;
@@ -52,14 +51,14 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
         final boolean useOcclusionCulling;
         var camBlockPos = positionedViewport.getBlockCoord();
 
-        useOcclusionCulling = !spectator || !Block.BLOCKS_OPAQUE[this.world.getBlockId(camBlockPos.x(), camBlockPos.y(), camBlockPos.z())];
+        useOcclusionCulling = !spectator || !Block.IS_OPAQUE[this.world.getBlock(camBlockPos.x(), camBlockPos.y(), camBlockPos.z())];
 
         return useOcclusionCulling;
     }
 
     @Override
     protected boolean isSectionVisuallyEmpty(int x, int y, int z) {
-        Chunk chunk = this.world.getChunk(x, z);
+        var chunk = this.world.getChunkAt(x, z);
         return chunk.isEmpty();
     }
 

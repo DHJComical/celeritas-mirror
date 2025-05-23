@@ -1,12 +1,12 @@
 package org.taumc.celeritas.impl.render.terrain.compile.task;
 
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.block.BlockRenderManager;
+import net.minecraft.client.render.BlockRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
@@ -14,14 +14,12 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
-import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
-import org.lwjgl.opengl.GL11;
 import org.taumc.celeritas.impl.extensions.TessellatorExtension;
 import org.taumc.celeritas.impl.render.terrain.compile.PrimitiveBuiltRenderSectionData;
 import org.taumc.celeritas.impl.render.terrain.compile.PrimitiveChunkBuildContext;
@@ -29,8 +27,6 @@ import org.taumc.celeritas.impl.render.terrain.occlusion.ChunkOcclusionDataBuild
 import org.taumc.celeritas.impl.render.util.Direction;
 import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
 import org.taumc.celeritas.mixin.core.TessellatorAccessor;
-
-import java.util.*;
 
 public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> {
     private final RenderSection render;
@@ -66,14 +62,14 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         Vector3i blockPos = new Vector3i(minX, minY, minZ);
 
         var world = buildContext.world;
-        var chunk = world.getChunk(this.render.getChunkX(), this.render.getChunkZ());
-        var renderBlocks = new BlockRenderManager(world);
-        var tesselator = Tessellator.INSTANCE;
+        var chunk = world.getChunkAt(this.render.getChunkX(), this.render.getChunkZ());
+        var renderBlocks = new BlockRenderer(world);
+        var tesselator = BufferBuilder.INSTANCE;
         var extTesselator = (TessellatorExtension)tesselator;
 
         TessellatorAccessor.celeritas$setTriangleMode(false);
-        tesselator.setOffset(-this.render.getOriginX(), -this.render.getOriginY(), -this.render.getOriginZ());
-        Chunk.hasSkyLight = false;
+        tesselator.offset(-this.render.getOriginX(), -this.render.getOriginY(), -this.render.getOriginZ());
+        WorldChunk.hasSkyLight = false;
 
         // Beta is insane and updates the matrix inside the tessellation logic
         try {
@@ -86,16 +82,16 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                     for (int x = minX; x < maxX; x++) {
                         blockPos.set(x, y, z);
 
-                        var blockId = chunk.getBlockId(x & 15, y, z & 15);
+                        var blockId = chunk.getBlockAt(x & 15, y, z & 15);
 
                         if (blockId == 0) {
                             continue;
                         }
 
-                        Block block = Block.BLOCKS[blockId];
+                        Block block = Block.BY_ID[blockId];
 
-                        if (Block.BLOCKS_WITH_ENTITY[blockId]) {
-                            BlockEntity tileEntity = chunk.getBlockEntity(x & 15, y, z & 15);
+                        if (Block.HAS_BLOCK_ENTITY[blockId]) {
+                            BlockEntity tileEntity = chunk.getBlockEntityAt(x & 15, y, z & 15);
                             if (BlockEntityRenderDispatcher.INSTANCE.hasRenderer(tileEntity)) {
                                 renderData.globalBlockEntities.add(tileEntity);
                             }
@@ -103,19 +99,19 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
                         int pass = block.getRenderLayer();
 
-                        tesselator.startQuads();
-                        renderBlocks.render(block, x, y, z);
+                        tesselator.start();
+                        renderBlocks.tessellateBlock(block, x, y, z);
                         buildContext.copyRawBuffer(extTesselator.celeritas$getRawBuffer(), extTesselator.celeritas$getVertexCount(), buffers, buffers.getRenderPassConfiguration().getMaterialForRenderType(pass));
                         extTesselator.celeritas$reset();
 
-                        if (Block.BLOCKS_OPAQUE[blockId]) {
+                        if (Block.IS_OPAQUE[blockId]) {
                             occluder.markClosed(blockPos);
                         }
                     }
                 }
             }
         } finally {
-            tesselator.setOffset(0, 0, 0);
+            tesselator.offset(0, 0, 0);
             TessellatorAccessor.celeritas$setTriangleMode(true);
         }
 
@@ -126,7 +122,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
             renderData.hasBlockGeometry = true;
         }
 
-        renderData.hasSkyLight = Chunk.hasSkyLight;
+        renderData.hasSkyLight = WorldChunk.hasSkyLight;
 
         encodeVisibilityData(occluder, renderData);
 

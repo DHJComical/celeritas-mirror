@@ -8,7 +8,7 @@ plugins {
 }
 
 repositories {
-    maven("https://api.modrinth.com/maven")
+    maven("https://maven.fabricmc.net")
 }
 
 group = "org.embeddedt"
@@ -23,12 +23,12 @@ unimined.minecraft {
     side = EnvType.CLIENT
 
     mappings {
-        babricIntermediary()
-        biny("2f404bc")
+        calamus()
+        feather(23)
     }
 
-    babric {
-        loader("0.15.6-babric.2")
+    fabric {
+        loader("0.16.14")
     }
 
     minecraftRemapper.config {
@@ -38,6 +38,8 @@ unimined.minecraft {
     runs.config("client") {
         javaVersion = JavaVersion.VERSION_21
     }
+
+    defaultRemapJar = false
 }
 
 dependencies {

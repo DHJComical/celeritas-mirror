@@ -1,17 +1,17 @@
 package org.taumc.celeritas.mixin.core;
 
-import net.minecraft.client.render.Tessellator;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(Tessellator.class)
+@Mixin(BufferBuilder.class)
 public interface TessellatorAccessor {
-    @Accessor("TRIANGLE_MODE")
+    @Accessor("f_5537920")
     static void celeritas$setTriangleMode(boolean bl) {
         throw new AssertionError();
     }
 
-    @Accessor("TRIANGLE_MODE")
+    @Accessor("f_5537920")
     static boolean celeritas$getTriangleMode() {
         throw new AssertionError();
     }

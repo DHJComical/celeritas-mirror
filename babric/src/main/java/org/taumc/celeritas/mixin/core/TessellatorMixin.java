@@ -1,14 +1,14 @@
 package org.taumc.celeritas.mixin.core;
 
-import net.minecraft.client.render.Tessellator;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.taumc.celeritas.impl.extensions.TessellatorExtension;
 
-@Mixin(Tessellator.class)
+@Mixin(BufferBuilder.class)
 public abstract class TessellatorMixin implements TessellatorExtension {
     @Shadow
-    protected abstract void reset();
+    protected abstract void clear();
 
     @Shadow
     private int[] buffer;
@@ -17,7 +17,7 @@ public abstract class TessellatorMixin implements TessellatorExtension {
     private int vertexCount;
 
     @Shadow
-    private boolean drawing;
+    private boolean tessellating;
 
     @Override
     public int[] celeritas$getRawBuffer() {
@@ -31,8 +31,8 @@ public abstract class TessellatorMixin implements TessellatorExtension {
 
     @Override
     public void celeritas$reset() {
-        this.drawing = false;
-        this.reset();
+        this.tessellating = false;
+        this.clear();
     }
 }
 

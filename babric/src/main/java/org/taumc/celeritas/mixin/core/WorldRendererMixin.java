@@ -1,34 +1,29 @@
 package org.taumc.celeritas.mixin.core;
 
+import com.mojang.blaze3d.platform.Lighting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.Culler;
-import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.platform.Lighting;
-import net.minecraft.client.texture.TextureManager;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.client.render.texture.TextureManager;
+import net.minecraft.client.render.world.WorldRenderer;
+import net.minecraft.entity.living.LivingEntity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
-import org.lwjgl.opengl.GL11;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.taumc.celeritas.impl.extensions.RenderGlobalExtension;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 import org.taumc.celeritas.impl.render.terrain.compile.PrimitiveBuiltRenderSectionData;
 
-import java.util.Map;
-
 @Mixin(value = WorldRenderer.class, priority = 900)
 public abstract class WorldRendererMixin implements RenderGlobalExtension {
 
     @Shadow
-    private Minecraft client;
+    private Minecraft minecraft;
     private CeleritasWorldRenderer renderer;
 
     @Inject(method = "<init>", at = @At("RETURN"))
@@ -65,10 +60,10 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
 
         Lighting.turnOff();
 
-        double d3 = viewEntity.lastTickX + (viewEntity.x - viewEntity.lastTickX) * ticks;
+        double d3 = viewEntity.prevTickX + (viewEntity.x - viewEntity.prevTickX) * ticks;
         // Do not apply eye height here or weird offsets will happen
-        double d4 = viewEntity.lastTickY + (viewEntity.y - viewEntity.lastTickY) * ticks;
-        double d5 = viewEntity.lastTickZ + (viewEntity.z - viewEntity.lastTickZ) * ticks;
+        double d4 = viewEntity.prevTickY + (viewEntity.y - viewEntity.prevTickY) * ticks;
+        double d5 = viewEntity.prevTickZ + (viewEntity.z - viewEntity.prevTickZ) * ticks;
 
         try {
             this.renderer.drawChunkLayer(pass, d3, d4, d5);
@@ -89,11 +84,11 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
      * @author JellySquid
      */
     @Overwrite
-    public void cullChunks(Culler camera, float tick) {
+    public void updateFrustums(Culler camera, float tick) {
         RenderDevice.enterManagedCode();
 
         try {
-            this.renderer.setupTerrain(((ViewportProvider)camera).sodium$createViewport(), tick, this.frame++, this.client.player.noClip, false);
+            this.renderer.setupTerrain(((ViewportProvider)camera).sodium$createViewport(), tick, this.frame++, this.minecraft.player.noClip, false);
         } finally {
             RenderDevice.exitManagedCode();
         }
@@ -108,7 +103,7 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
         this.renderer.scheduleRebuildForBlockArea(minX, minY, minZ, maxX, maxY, maxZ, false);
     }
 
-    @Inject(method = "reload", at = @At("RETURN"))
+    @Inject(method = "m_6748042", at = @At("RETURN"))
     private void onReload(CallbackInfo ci) {
         RenderDevice.enterManagedCode();
 
@@ -124,7 +119,7 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
         return true;
     }
 
-    @Inject(method = "renderEntities", at = @At(value = "FIELD", target = "Lnet/minecraft/client/render/WorldRenderer;globalBlockEntities:Ljava/util/List;"))
+    @Inject(method = "renderEntities", at = @At(value = "FIELD", target = "Lnet/minecraft/client/render/world/WorldRenderer;globalBlockEntities:Ljava/util/List;", ordinal = 0))
     public void sodium$renderTileEntities(Vec3d cameraPos, Culler culler, float partialTicks, CallbackInfo ci) {
         this.renderer.renderBlockEntities(partialTicks);
     }
@@ -143,7 +138,7 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
      * @reason trigger chunk updates when sky light level changes
      */
     @Overwrite
-    public void notifyAmbientDarknessChanged() {
+    public void onAmbientDarknessChanged() {
         for (RenderSection section : this.renderer.getRenderSectionManager().getAllRenderSections()) {
             if (section.getBuiltContext() instanceof PrimitiveBuiltRenderSectionData data && data.hasSkyLight) {
                 this.renderer.scheduleRebuildForChunk(section.getChunkX(), section.getChunkY(), section.getChunkZ(), false);

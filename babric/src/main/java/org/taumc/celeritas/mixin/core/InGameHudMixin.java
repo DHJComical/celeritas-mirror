@@ -2,9 +2,9 @@ package org.taumc.celeritas.mixin.core;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import it.unimi.dsi.fastutil.Pair;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.util.ScreenScaler;
+import net.minecraft.client.gui.GameGui;
+import net.minecraft.client.render.TextRenderer;
+import net.minecraft.client.render.Window;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,15 +19,15 @@ import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mixin(InGameHud.class)
+@Mixin(GameGui.class)
 public class InGameHudMixin {
 
-    @Inject(method = "render", slice = @Slice(from = @At(value = "FIELD", target = "Lnet/minecraft/client/option/GameOptions;debugHud:Z")), at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glPopMatrix()V", ordinal = 0))
-    private void celeritas$renderDebug(float screenOpen, boolean mouseX, int mouseY, int par4, CallbackInfo ci, @Local(ordinal = 0) ScreenScaler scaler, @Local(ordinal = 0) TextRenderer font) {
+    @Inject(method = "render", slice = @Slice(from = @At(value = "FIELD", target = "Lnet/minecraft/client/options/GameOptions;debugProfilerEnabled:Z")), at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glPopMatrix()V", ordinal = 0))
+    private void celeritas$renderDebug(float screenOpen, boolean mouseX, int mouseY, int par4, CallbackInfo ci, @Local(ordinal = 0) Window scaler, @Local(ordinal = 0) TextRenderer font) {
         int currentY = 22;
         int yDiff = 10;
 
-        int screenWidth = scaler.getScaledWidth();
+        int screenWidth = scaler.getWidth();
 
         List<Pair<String, Integer>> stringsToRender = new ArrayList<>();
 

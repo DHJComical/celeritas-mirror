@@ -2,7 +2,7 @@ package org.taumc.celeritas.mixin.core;
 
 import net.minecraft.client.world.chunk.MultiplayerChunkCache;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkStatus;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,8 +17,8 @@ public class MultiplayerChunkCacheMixin {
     @Shadow
     private World world;
 
-    @Inject(method = "loadChunk", at = @At("RETURN"))
-    private void afterLoadChunkFromPacket(int x, int z, CallbackInfoReturnable<Chunk> cir) {
+    @Inject(method = "generateChunk", at = @At("RETURN"))
+    private void afterLoadChunkFromPacket(int x, int z, CallbackInfoReturnable<WorldChunk> cir) {
         ChunkTrackerHolder.get(this.world).onChunkStatusAdded(x, z, ChunkStatus.FLAG_ALL);
     }
 

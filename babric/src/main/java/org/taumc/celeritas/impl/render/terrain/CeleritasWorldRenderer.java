@@ -174,9 +174,9 @@ public class CeleritasWorldRenderer {
 
         Entity viewEntity = Objects.requireNonNull(this.client.camera, "Client must have view entity");
 
-        double x = viewEntity.lastTickX + (viewEntity.x - viewEntity.lastTickX) * ticks;
-        double y = viewEntity.lastTickY + (viewEntity.y - viewEntity.lastTickY) * ticks + (double) viewEntity.getEyeHeight();
-        double z = viewEntity.lastTickZ + (viewEntity.z - viewEntity.lastTickZ) * ticks;
+        double x = viewEntity.prevTickX + (viewEntity.x - viewEntity.prevTickX) * ticks;
+        double y = viewEntity.prevTickY + (viewEntity.y - viewEntity.prevTickY) * ticks + (double) viewEntity.getEyeHeight();
+        double z = viewEntity.prevTickZ + (viewEntity.z - viewEntity.prevTickZ) * ticks;
 
         float pitch = viewEntity.pitch;
         float yaw = viewEntity.yaw;
@@ -368,7 +368,11 @@ public class CeleritasWorldRenderer {
             return true;
         }
 
-        Box box = entity.getBoundingBox();
+        if (entity.ignoreCameraFrustum) {
+            return true;
+        }
+
+        Box box = entity.shape;
 
         if (isInfiniteExtentsBox(box)) {
             return true;
