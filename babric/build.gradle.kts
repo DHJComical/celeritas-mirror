@@ -16,10 +16,20 @@ version = rootProject.version
 
 evaluationDependsOn(":common")
 
+data class VersionData(val uniminedVersion: String)
+
+val versionDataMap = mapOf(
+        "1.0.0-beta.7.3" to VersionData("b1.7.3"),
+        "1.0.0-beta.8.1" to VersionData("b1.8.1"),
+        "1.2.5" to VersionData("1.2.5")
+)
+
+val versionData = versionDataMap.getValue(project.name)
+
 unimined.minecraft {
     combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
 
-    version = "b1.7.3"
+    version = versionData.uniminedVersion
     side = EnvType.CLIENT
 
     mappings {

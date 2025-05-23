@@ -133,6 +133,7 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
         return this.renderer.getChunksDebugString();
     }
 
+    //? if <1.0.0-beta.8.1 {
     /**
      * @author embeddedt
      * @reason trigger chunk updates when sky light level changes
@@ -145,5 +146,6 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
             }
         }
     }
+    //?}
 }
 

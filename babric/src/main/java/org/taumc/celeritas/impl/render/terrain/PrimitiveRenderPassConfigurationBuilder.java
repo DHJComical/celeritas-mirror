@@ -41,7 +41,12 @@ public class PrimitiveRenderPassConfigurationBuilder {
     }
 
     private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(int pass, boolean disableBlend) {
-        return TerrainRenderPass.builder().pipelineState(new PrimitivePipelineState(pass, disableBlend)).hasNoLightmap(true).vertexType(ChunkMeshFormats.VANILLA_LIKE).primitiveType(QuadPrimitiveType.TRIANGULATED);
+        var builder = TerrainRenderPass.builder();
+        builder.pipelineState(new PrimitivePipelineState(pass, disableBlend));
+        //? if <1.0.0-beta.8.1
+        builder.hasNoLightmap(true);
+        builder.vertexType(ChunkMeshFormats.VANILLA_LIKE).primitiveType(QuadPrimitiveType.TRIANGULATED);
+        return builder;
     }
 
     static {

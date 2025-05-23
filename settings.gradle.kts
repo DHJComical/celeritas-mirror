@@ -40,6 +40,12 @@ if(file("forge122").exists()) {
 }
 if(file("babric").exists()) {
     include("babric")
+    stonecutter {
+        create(":babric") {
+            centralScript = "build.gradle.kts"
+            versions("1.0.0-beta.7.3", "1.0.0-beta.8.1", "1.2.5")
+        }
+    }
 }
 
 if(file("modern").exists()) {
