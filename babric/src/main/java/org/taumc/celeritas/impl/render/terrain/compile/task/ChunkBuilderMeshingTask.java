@@ -91,9 +91,9 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         Block block = Block.BY_ID[blockId];
 
                         //? if <1.2.5 {
-                        boolean hasBlockEntity = Block.HAS_BLOCK_ENTITY[blockId];
-                        //?} else
-                        /*boolean hasBlockEntity = block.hasBlockEntity();*/
+                        /*boolean hasBlockEntity = Block.HAS_BLOCK_ENTITY[blockId];
+                        *///?} else
+                        boolean hasBlockEntity = block.hasBlockEntity();
 
                         if (hasBlockEntity) {
                             BlockEntity tileEntity = chunk.getBlockEntityAt(x & 15, y, z & 15);

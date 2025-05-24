@@ -44,6 +44,7 @@ if(file("babric").exists()) {
         create(":babric") {
             centralScript = "build.gradle.kts"
             versions("1.0.0-beta.7.3", "1.0.0-beta.8.1", "1.2.5")
+            vcsVersion = "1.2.5"
         }
     }
 }

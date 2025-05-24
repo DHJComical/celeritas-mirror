@@ -134,10 +134,10 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
     }
 
     //? if <1.0.0-beta.8.1 {
-    /**
+    /*/^*
      * @author embeddedt
      * @reason trigger chunk updates when sky light level changes
-     */
+     ^/
     @Overwrite
     public void onAmbientDarknessChanged() {
         for (RenderSection section : this.renderer.getRenderSectionManager().getAllRenderSections()) {
@@ -146,6 +146,6 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
             }
         }
     }
-    //?}
+    *///?}
 }
 
