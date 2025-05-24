@@ -212,11 +212,6 @@ public class Iris {
 		return stored;
 	}
 
-	public static String getCurrentPackName() {
-		return IrisCommon.currentPackName;
-	}
-
-
 	public static boolean isFallback() {
 		return IrisCommon.fallback;
 	}

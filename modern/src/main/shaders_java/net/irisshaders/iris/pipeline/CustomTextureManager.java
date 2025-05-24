@@ -39,7 +39,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
-public class CustomTextureManager {
+public class CustomTextureManager extends CommonCustomTextureManager {
 	private final EnumMap<TextureStage, Object2ObjectMap<String, TextureAccess>> customTextureIdMap = new EnumMap<>(TextureStage.class);
 	private final Object2ObjectMap<String, TextureAccess> irisCustomTextures = new Object2ObjectOpenHashMap<>();
 	private final TextureAccess noise;
@@ -188,22 +188,28 @@ public class CustomTextureManager {
 		throw new IllegalArgumentException("Don't know texture type!");
 	}
 
+
+    @Override
 	public EnumMap<TextureStage, Object2ObjectMap<String, TextureAccess>> getCustomTextureIdMap() {
 		return customTextureIdMap;
 	}
 
+    @Override
 	public Object2ObjectMap<String, TextureAccess> getCustomTextureIdMap(TextureStage stage) {
 		return customTextureIdMap.getOrDefault(stage, Object2ObjectMaps.emptyMap());
 	}
 
+    @Override
 	public Object2ObjectMap<String, TextureAccess> getIrisCustomTextures() {
 		return irisCustomTextures;
 	}
 
+    @Override
 	public TextureAccess getNoiseTexture() {
 		return noise;
 	}
 
+    @Override
 	public void destroy() {
 		ownedTextures.forEach(AbstractTexture::close);
 		ownedRawTextures.forEach(GlTexture::destroy);

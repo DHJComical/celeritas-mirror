@@ -30,7 +30,7 @@ import com.seibel.distanthorizons.coreapi.DependencyInjection.OverrideInjector;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
-import net.irisshaders.iris.shadows.ShadowRenderer;
+import net.irisshaders.iris.shadows.ModernShadowRenderer;
 import net.irisshaders.iris.shadows.ShadowRenderingState;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import org.joml.Matrix4f;
@@ -240,7 +240,7 @@ public class LodRendererEvents {
 			public void beforeSetup(DhApiEventParam<DhApiRenderParam> event) {
 				DHCompatInternal instance = getInstance();
 
-				OverrideInjector.INSTANCE.unbind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ShadowRenderer.FRUSTUM);
+				OverrideInjector.INSTANCE.unbind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ModernShadowRenderer.FRUSTUM);
 				OverrideInjector.INSTANCE.unbind(IDhApiFramebuffer.class, instance.getShadowFBWrapper());
 				OverrideInjector.INSTANCE.unbind(IDhApiFramebuffer.class, instance.getSolidFBWrapper());
 				OverrideInjector.INSTANCE.unbind(IDhApiGenericObjectShaderProgram.class, instance.getGenericShader());
@@ -252,7 +252,7 @@ public class LodRendererEvents {
 
 					if (ShadowRenderingState.areShadowsCurrentlyBeingRendered() && instance.shouldOverrideShadow) {
 						OverrideInjector.INSTANCE.bind(IDhApiFramebuffer.class, instance.getShadowFBWrapper());
-						OverrideInjector.INSTANCE.bind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ShadowRenderer.FRUSTUM);
+						OverrideInjector.INSTANCE.bind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ModernShadowRenderer.FRUSTUM);
 					} else {
 						OverrideInjector.INSTANCE.bind(IDhApiFramebuffer.class, instance.getSolidFBWrapper());
 					}
@@ -303,7 +303,7 @@ public class LodRendererEvents {
 					if (instance.shouldOverride) {
 						if (ShadowRenderingState.areShadowsCurrentlyBeingRendered()) {
 							instance.getShadowShader().fillUniformData(
-								ShadowRenderer.PROJECTION, ShadowRenderer.MODELVIEW,
+								ModernShadowRenderer.PROJECTION, ModernShadowRenderer.MODELVIEW,
 								-1000, //MC.getWrappedClientLevel().getMinHeight(),
 								partialTicks);
 						} else {
@@ -372,7 +372,7 @@ public class LodRendererEvents {
 				if (Iris.isPackInUseQuick()) {
 					DHCompatInternal instance = getInstance();
 
-					OverrideInjector.INSTANCE.unbind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ShadowRenderer.FRUSTUM);
+					OverrideInjector.INSTANCE.unbind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ModernShadowRenderer.FRUSTUM);
 					OverrideInjector.INSTANCE.unbind(IDhApiFramebuffer.class, instance.getShadowFBWrapper());
 					OverrideInjector.INSTANCE.unbind(IDhApiFramebuffer.class, instance.getSolidFBWrapper());
 

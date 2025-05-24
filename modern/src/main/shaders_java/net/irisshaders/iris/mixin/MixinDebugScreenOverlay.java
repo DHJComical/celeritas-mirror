@@ -61,7 +61,7 @@ public abstract class MixinDebugScreenOverlay {
     @ModifyExpressionValue(method = "getSystemInformation", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList([Ljava/lang/Object;)Ljava/util/ArrayList;"))
     private ArrayList<String> redirectRightTextEarly(ArrayList<String> messages) {
 		if (IrisCommon.getIrisConfig().areShadersEnabled()) {
-			messages.add("Shaderpack: " + Iris.getCurrentPackName() + (Iris.isFallback() ? " (fallback)" : ""));
+			messages.add("Shaderpack: " + IrisCommon.getCurrentPackName() + (Iris.isFallback() ? " (fallback)" : ""));
 			IrisCommon.getCurrentPack().ifPresent(pack -> {
 				messages.add(pack.getProfileInfo());
 			});

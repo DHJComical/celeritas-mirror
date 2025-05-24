@@ -1,6 +1,8 @@
 package net.irisshaders.iris;
 
 import net.irisshaders.iris.features.FeatureFlags;
+import net.irisshaders.iris.gl.IrisRenderSystem;
+import net.irisshaders.iris.pipeline.ArchaicVanillaRenderingPipeline;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shaderpack.materialmap.BlockEntry;
@@ -140,6 +142,8 @@ public class IrisArchaic implements CeleritasShaderVersionService {
 
     @Override
     public void onRenderSystemInit() {
+//        IrisRenderSystem.initRenderer();
+//        IrisSamplers.initRenderer();
 
     }
 
@@ -171,13 +175,17 @@ public class IrisArchaic implements CeleritasShaderVersionService {
 
     @Override
     public WorldRenderingPipeline createVanillaRenderingPipeline() {
-        // TODO
-        return null;
+        return new ArchaicVanillaRenderingPipeline();
     }
 
     @Override
     public void reload() {
 
+    }
+
+    public static boolean shouldActivateWireframe() {
+        // TODO: Keybinds
+        return IrisCommon.getIrisConfig().areDebugOptionsEnabled() && false; // && IrisArchaic.wireframeKeybind.isDown();
     }
 
     @Override

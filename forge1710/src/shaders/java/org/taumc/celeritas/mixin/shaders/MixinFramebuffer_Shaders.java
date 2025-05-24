@@ -1,0 +1,98 @@
+package org.taumc.celeritas.mixin.shaders;
+
+
+import lombok.Getter;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.shader.Framebuffer;
+import net.minecraftforge.client.MinecraftForgeClient;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
+import org.lwjgl.opengl.GL30;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.taumc.celeritas.interfaces.IRenderTargetExt;
+
+import java.nio.IntBuffer;
+
+
+@Mixin(Framebuffer.class)
+public abstract class MixinFramebuffer_Shaders implements IRenderTargetExt {
+    private int iris$depthBufferVersion;
+
+    private int iris$colorBufferVersion;
+
+    @Getter public boolean iris$useDepth;
+    @Getter public int iris$depthTextureId = -1;
+
+    @Shadow public boolean useDepth;
+
+
+    @Inject(method = "deleteFramebuffer()V", at = @At(value="INVOKE", target="Lnet/minecraft/client/shader/Framebuffer;unbindFramebuffer()V", shift = At.Shift.AFTER))
+    private void iris$onDestroyBuffers(CallbackInfo ci) {
+        iris$depthBufferVersion++;
+        iris$colorBufferVersion++;
+    }
+
+    @Override
+    public int iris$getDepthBufferVersion() {
+        return iris$depthBufferVersion;
+    }
+
+    @Override
+    public int iris$getColorBufferVersion() {
+        return iris$colorBufferVersion;
+    }
+
+    // Use a depth texture instead of a depth drawScreen buffer
+    @Inject(method="Lnet/minecraft/client/shader/Framebuffer;createBindFramebuffer(II)V", at=@At(value="HEAD"))
+    private void iris$useDepthTexture(int width, int height, CallbackInfo ci) {
+        if(this.useDepth) {
+            this.useDepth = false;
+            this.iris$useDepth = true;
+        }
+    }
+
+    @Inject(method="deleteFramebuffer()V", at=@At(value="FIELD", target="Lnet/minecraft/client/shader/Framebuffer;depthBuffer:I", shift = At.Shift.BEFORE, ordinal = 0))
+    private void iris$deleteDepthBuffer(CallbackInfo ci) {
+        if(this.iris$depthTextureId > -1 ) {
+            GL11.glDeleteTextures(this.iris$depthTextureId);
+            this.iris$depthTextureId = -1;
+        }
+    }
+
+    @Inject(method="createFramebuffer(II)V", at=@At(value="FIELD", target="Lnet/minecraft/client/shader/Framebuffer;useDepth:Z", shift=At.Shift.BEFORE, ordinal = 0))
+    private void iris$createDepthTextureID(int width, int height, CallbackInfo ci) {
+        if (this.iris$useDepth) {
+            this.iris$depthTextureId = GL11.glGenTextures();
+        }
+    }
+
+    @Inject(method="createFramebuffer(II)V", at=@At(value="FIELD", target="Lnet/minecraft/client/shader/Framebuffer;useDepth:Z", shift=At.Shift.BEFORE, ordinal = 1))
+    private void iris$createDepthTexture(int width, int height, CallbackInfo ci) {
+        if(this.iris$useDepth) {
+            if(this.iris$depthTextureId == -1) {
+                this.iris$depthTextureId = GL11.glGenTextures();
+            }
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, this.iris$depthTextureId);
+
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL14.GL_TEXTURE_COMPARE_MODE, 0);
+            if (MinecraftForgeClient.getStencilBits() != 0) {
+                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_DEPTH24_STENCIL8, width, height, 0, GL30.GL_DEPTH_STENCIL, GL30.GL_UNSIGNED_INT_24_8, (IntBuffer) null);
+            } else {
+                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_DEPTH_COMPONENT, width, height, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (IntBuffer) null);
+            }
+            OpenGlHelper.func_153188_a/*glFramebufferTexture2D*/(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, this.iris$depthTextureId, 0);
+            if (MinecraftForgeClient.getStencilBits() != 0) {
+                OpenGlHelper.func_153188_a/*glFramebufferTexture2D*/(GL30.GL_FRAMEBUFFER, GL30.GL_STENCIL_ATTACHMENT, GL11.GL_TEXTURE_2D, this.iris$depthTextureId, 0);
+            }
+        }
+    }
+
+}
