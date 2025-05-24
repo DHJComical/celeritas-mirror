@@ -22,7 +22,7 @@ public class MultiplayerChunkCacheMixin {
         ChunkTrackerHolder.get(this.world).onChunkStatusAdded(x, z, ChunkStatus.FLAG_ALL);
     }
 
-    @Inject(method = "unloadChunk", at = @At(value = "INVOKE", target = "Ljava/util/Map;remove(Ljava/lang/Object;)Ljava/lang/Object;"))
+    @Inject(method = "unloadChunk", at = @At("RETURN"))
     private void afterUnloadChunk(int x, int z, CallbackInfo ci) {
         ChunkTrackerHolder.get(this.world).onChunkStatusRemoved(x, z, ChunkStatus.FLAG_ALL);
     }
