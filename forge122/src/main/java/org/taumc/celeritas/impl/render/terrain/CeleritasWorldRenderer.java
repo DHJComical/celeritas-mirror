@@ -61,18 +61,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
      * Performs a render pass for the given {@link BlockRenderLayer} and draws all visible chunks for it.
      */
     public void drawChunkLayer(BlockRenderLayer renderLayer, double x, double y, double z) {
-        ChunkRenderMatrices matrices = new ChunkRenderMatrices(
-                new Matrix4f(ActiveRenderInfoAccessor.getProjectionMatrix()),
-                new Matrix4f(ActiveRenderInfoAccessor.getModelViewMatrix())
-        );
-
-        Collection<TerrainRenderPass> passes = this.renderSectionManager.getRenderPassConfiguration().vanillaRenderStages().get(renderLayer);
-
-        if (passes != null && !passes.isEmpty()) {
-            for (var pass : passes) {
-                this.renderSectionManager.renderLayer(matrices, pass, x, y, z);
-            }
-        }
+        super.drawChunkLayer(renderLayer, x, y, z);
 
         GlStateManager.resetColor();
     }
