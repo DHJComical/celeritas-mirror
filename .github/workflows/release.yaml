@@ -9,6 +9,7 @@ on:
         type: choice
         description: Release type
         options:
+          - DRY_RUN
           - DEV_BUILD
           - PRERELEASE
           - RELEASE
@@ -61,6 +62,11 @@ jobs:
             unimined-v2-${{ runner.os }}-build-snapshot-${{ hashFiles('modern/build.gradle') }}-
             unimined-v2-${{ runner.os }}-build-snapshot-
       - name: Publish artifacts
+        if: ${{ inputs.release_type != 'DRY_RUN' }}
         run: ./gradlew :taugradle_publish -Prelease_channel=${{ inputs.release_type }} --stacktrace
       - name: Publish common module
+        if: ${{ inputs.release_type != 'DRY_RUN' }}
         run: ./gradlew :common:publish -Prelease_channel=${{ inputs.release_type }}
+      - name: Build all packaged jars
+        if: ${{ inputs.release_type == 'DRY_RUN' }}
+        run: ./gradlew packageJar
