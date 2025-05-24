@@ -1,6 +1,8 @@
 import org.embeddedt.embeddium.gradle.build.conventions.LWJGLHelper
 import org.embeddedt.embeddium.gradle.build.conventions.ProductionJarHelper
 import xyz.wagyourtail.unimined.api.minecraft.EnvType
+import xyz.wagyourtail.unimined.api.minecraft.task.AbstractRemapJarTask
+import xyz.wagyourtail.unimined.api.minecraft.task.RemapJarTask
 
 plugins {
     id("celeritas.platform-conventions")
@@ -48,8 +50,6 @@ unimined.minecraft {
     runs.config("client") {
         javaVersion = JavaVersion.VERSION_21
     }
-
-    defaultRemapJar = false
 }
 
 dependencies {
@@ -58,6 +58,12 @@ dependencies {
     implementation("com.google.guava:guava:31.1-jre")
 
     implementation("org.apache.logging.log4j:log4j-api:2.0-beta9")
+}
+
+tasks.named<AbstractRemapJarTask>("remapJar") {
+    manifest {
+        attributes(mapOf("Calamus-Generation" to "1"))
+    }
 }
 
 LWJGLHelper.convertLwjgl2To3(project)
