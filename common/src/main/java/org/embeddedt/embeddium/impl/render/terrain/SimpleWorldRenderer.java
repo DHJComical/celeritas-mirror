@@ -196,14 +196,6 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
         ChunkTracker.forEachChunk(tracker.getReadyChunks(), this.renderSectionManager::onChunkAdded);
     }
 
-    // We track whether a block entity uses custom block outline rendering, so that the outline postprocessing
-    // shader will be enabled appropriately
-    private boolean blockEntityRequestedOutline;
-
-    public boolean didBlockEntityRequestOutline() {
-        return blockEntityRequestedOutline;
-    }
-
     /**
      * {@return an iterator over all visible block entities}
      * <p>
