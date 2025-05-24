@@ -26,6 +26,9 @@ public class PrimitiveRenderPassConfigurationBuilder {
             if (pass == 0) {
                 // Force alpha test to use 0.1F threshold
                 GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
+            } else {
+                // Force translucent pass to use backface culling
+                GL11.glEnable(GL11.GL_CULL_FACE);
             }
             if (disableBlend) {
                 GL11.glDisable(GL11.GL_ALPHA_TEST);
@@ -36,6 +39,10 @@ public class PrimitiveRenderPassConfigurationBuilder {
         public void clear() {
             if (disableBlend) {
                 GL11.glEnable(GL11.GL_ALPHA_TEST);
+            }
+            if (pass == 1) {
+                // Disable backface culling again
+                GL11.glDisable(GL11.GL_CULL_FACE);
             }
         }
     }

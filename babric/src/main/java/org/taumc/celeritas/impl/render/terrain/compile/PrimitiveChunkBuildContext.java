@@ -8,6 +8,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.util.QuadUtil;
+import org.taumc.celeritas.impl.render.terrain.PrimitiveRenderPassConfigurationBuilder;
 
 public class PrimitiveChunkBuildContext extends ChunkBuildContext {
     public static final int NUM_PASSES = 2;
@@ -38,6 +39,9 @@ public class PrimitiveChunkBuildContext extends ChunkBuildContext {
 
      */
 
+    private static final int[] NORMAL_WINDING = new int[] {0, 1, 2, 3};
+    private static final int[] BACKFACE_WINDING = new int[] {3, 2, 1, 0};
+
     public void copyRawBuffer(int[] rawBuffer, int vertexCount, ChunkBuildBuffers buffers, Material material) {
         if (vertexCount == 0) {
             return;
@@ -50,12 +54,21 @@ public class PrimitiveChunkBuildContext extends ChunkBuildContext {
 
         var celeritasVertices = this.vertices;
 
-        int ptr = 0;
         int numQuads = vertexCount / 4;
+        outputQuads(rawBuffer, celeritasVertices, numQuads, buffers, material, NORMAL_WINDING);
+        if (material.pass == PrimitiveRenderPassConfigurationBuilder.TRANSLUCENT_PASS) {
+            // We need to emulate backface culling as the legacy renderer relies on it. Write the same quads again
+            // in reverse winding order.
+            outputQuads(rawBuffer, celeritasVertices, numQuads, buffers, material, BACKFACE_WINDING);
+        }
+    }
+
+    private void outputQuads(int[] rawBuffer, ChunkVertexEncoder.Vertex[] celeritasVertices, int numQuads, ChunkBuildBuffers buffers, Material material, int[] winding) {
+        int ptr = 0;
         for (int quadIdx = 0; quadIdx < numQuads; quadIdx++) {
             float uSum = 0, vSum = 0;
             for (int vIdx = 0; vIdx < 4; vIdx++) {
-                var vertex = celeritasVertices[vIdx];
+                var vertex = celeritasVertices[winding[vIdx]];
                 vertex.x = Float.intBitsToFloat(rawBuffer[ptr++]);
                 vertex.y = Float.intBitsToFloat(rawBuffer[ptr++]);
                 vertex.z = Float.intBitsToFloat(rawBuffer[ptr++]);
@@ -71,10 +84,10 @@ public class PrimitiveChunkBuildContext extends ChunkBuildContext {
             }
             int trueNormal = QuadUtil.calculateNormal(celeritasVertices);
             for (int vIdx = 0; vIdx < 4; vIdx++) {
-                celeritasVertices[vIdx].trueNormal = trueNormal;
+                celeritasVertices[winding[vIdx]].trueNormal = trueNormal;
             }
             ModelQuadFacing facing = QuadUtil.findNormalFace(trueNormal);
-            Material correctMaterial = material;;
+            Material correctMaterial = material;
             buffers.get(correctMaterial).getVertexBuffer(facing).push(celeritasVertices, correctMaterial);
         }
     }
