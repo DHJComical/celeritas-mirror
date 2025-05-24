@@ -1,7 +1,7 @@
 import dev.kikugie.stonecutter.controller.StonecutterControllerExtension
 import org.taumc.gradle.publishing.api.PublishChannel
-import org.taumc.gradle.publishing.api.minecraft.ModEnvironment
-import org.taumc.gradle.publishing.api.minecraft.ModLoader
+import org.taumc.gradle.minecraft.ModEnvironment
+import org.taumc.gradle.minecraft.ModLoader
 import xyz.wagyourtail.unimined.api.minecraft.task.RemapJarTask
 
 plugins {
