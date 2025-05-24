@@ -1,8 +1,8 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.embeddedt.embeddium.gradle.build.conventions.LWJGLHelper
 import org.embeddedt.embeddium.gradle.build.conventions.ProductionJarHelper
 import xyz.wagyourtail.unimined.api.minecraft.EnvType
 import xyz.wagyourtail.unimined.api.minecraft.task.AbstractRemapJarTask
-import xyz.wagyourtail.unimined.api.minecraft.task.RemapJarTask
 
 plugins {
     id("celeritas.platform-conventions")
@@ -27,6 +27,8 @@ val versionDataMap = mapOf(
 )
 
 val versionData = versionDataMap.getValue(project.name)
+
+base.archivesName = "celeritas-fabriclike-mc${versionData.uniminedVersion.replace(Regex("^1\\."), "")}"
 
 unimined.minecraft {
     combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
@@ -54,18 +56,23 @@ unimined.minecraft {
 
 dependencies {
     implementation("org.joml:joml:1.10.5")
+    shadow("org.joml:joml:1.10.5")
     implementation("it.unimi.dsi:fastutil:8.5.15")
-    implementation("com.google.guava:guava:31.1-jre")
 
     implementation("org.apache.logging.log4j:log4j-api:2.0-beta9")
 }
 
-tasks.named<AbstractRemapJarTask>("remapJar") {
+val remapJar = tasks.named<AbstractRemapJarTask>("remapJar") {
     manifest {
         attributes(mapOf("Calamus-Generation" to "1"))
     }
 }
 
+ProductionJarHelper.createShadowRemapJar(project)
 LWJGLHelper.convertLwjgl2To3(project)
-
 ProductionJarHelper.configureProcessedResources(project)
+
+tasks.register("packageJar", Copy::class) {
+    from(tasks.named<ShadowJar>("shadowRemapJar").get().archiveFile)
+    into("${rootProject.layout.buildDirectory.get()}/libs/${project.version}")
+}
