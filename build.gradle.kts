@@ -36,7 +36,7 @@ val publishTask = tau.publishing.publish {
         testBuildPreset("Celeritas", "https://git.taumc.org/embeddedt/celeritas")
     }
 
-    if (System.getenv("CELERITAS_PUBLISHING_TEST") == null) {
+    if (System.getenv("GITEA_TOKEN") != null) {
         github("Gitea") {
             supportAllChannels()
             uploadArtifacts = false
@@ -69,10 +69,14 @@ val publishTask = tau.publishing.publish {
             val name = it.metadata.project
             val ourLoader = bs.ModLoader.fromName(name) ?: throw IllegalArgumentException("No modloader for ${name}")
 
-            if (ourLoader == bs.ModLoader.FABRIC) {
+            if (ourLoader == bs.ModLoader.FABRIC || modernStonecutter.eval(it.metadata.version, "<1.20.1")) {
                 // Skip Fabric for now as the payload to Discord is too large otherwise.
                 return@forEach
             }
+
+            evaluationDependsOn(it.project.buildTreePath)
+
+            dependsOn(it.project.tasks.named<Copy>("packageJar"))
 
             modArtifact {
                 files(it.project.provider { it.project.tasks.named<Copy>("packageJar").get().inputs.files.singleFile })

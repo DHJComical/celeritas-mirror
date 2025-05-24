@@ -55,12 +55,11 @@ jobs:
             modern/versions/**/.gradle/unimined
             forge1710/.gradle/unimined
             forge122/.gradle/unimined
-          key: unimined-v2-${{ runner.os }}-build-snapshot-${{ hashFiles('modern/build.gradle') }}-${{ hashFiles('versions.json') }}
+            babric/.gradle/unimined
+          key: unimined-v2-${{ runner.os }}-build-snapshot-${{ hashFiles('modern/build.gradle') }}-${{ hashFiles('settings.gradle.kts') }}
           restore-keys: |
             unimined-v2-${{ runner.os }}-build-snapshot-${{ hashFiles('modern/build.gradle') }}-
             unimined-v2-${{ runner.os }}-build-snapshot-
-      - name: Build modern
-        run: ./gradlew chiseledPackage -Prelease_channel=${{ inputs.release_type }}
       - name: Publish artifacts
         run: ./gradlew :taugradle_publish -Prelease_channel=${{ inputs.release_type }} --stacktrace
       - name: Publish common module
