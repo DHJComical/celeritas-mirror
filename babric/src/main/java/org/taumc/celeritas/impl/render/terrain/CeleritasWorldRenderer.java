@@ -53,6 +53,9 @@ public class CeleritasWorldRenderer {
     @Getter
     private PrimitiveRenderSectionManager renderSectionManager;
 
+    @Getter
+    private SpriteTransparencyTracker transparencyTracker;
+
     /**
      * @return The CeleritasWorldRenderer based on the current dimension
      */
@@ -102,6 +105,7 @@ public class CeleritasWorldRenderer {
 
     private void loadWorld(World world) {
         this.world = world;
+        this.transparencyTracker = new SpriteTransparencyTracker();
 
         try (CommandList commandList = RenderDevice.INSTANCE.createCommandList()) {
             this.initRenderer(commandList);
