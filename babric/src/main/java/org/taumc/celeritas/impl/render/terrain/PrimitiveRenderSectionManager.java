@@ -51,7 +51,14 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
         final boolean useOcclusionCulling;
         var camBlockPos = positionedViewport.getBlockCoord();
 
-        useOcclusionCulling = !spectator || !Block.IS_OPAQUE[this.world.getBlock(camBlockPos.x(), camBlockPos.y(), camBlockPos.z())];
+        var block = this.world.getBlock(camBlockPos.x(), camBlockPos.y(), camBlockPos.z());
+
+        //? if >=1.7 {
+        /*boolean opaque = block.isOpaqueCube();
+        *///?} else
+        boolean opaque = Block.IS_OPAQUE[block];
+
+        useOcclusionCulling = !spectator || !opaque;
 
         return useOcclusionCulling;
     }

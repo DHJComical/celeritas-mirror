@@ -67,6 +67,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         var tesselator = BufferBuilder.INSTANCE;
         var extTesselator = (TessellatorExtension)tesselator;
 
+        //? if <1.7
         TessellatorAccessor.celeritas$setTriangleMode(false);
         tesselator.offset(-this.render.getOriginX(), -this.render.getOriginY(), -this.render.getOriginZ());
         WorldChunk.hasSkyLight = false;
@@ -82,6 +83,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                     for (int x = minX; x < maxX; x++) {
                         blockPos.set(x, y, z);
 
+                        //? if <1.7 {
                         var blockId = chunk.getBlockAt(x & 15, y, z & 15);
 
                         if (blockId == 0) {
@@ -89,6 +91,13 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         }
 
                         Block block = Block.BY_ID[blockId];
+                        //?} else {
+                        /*Block block = chunk.getBlockAt(x & 15, y, z & 15);
+
+                        if (block == net.minecraft.block.Blocks.AIR) {
+                            continue;
+                        }
+                        *///?}
 
                         //? if <1.2.5 {
                         /*boolean hasBlockEntity = Block.HAS_BLOCK_ENTITY[blockId];
@@ -109,7 +118,12 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         buildContext.copyRawBuffer(extTesselator.celeritas$getRawBuffer(), extTesselator.celeritas$getVertexCount(), buffers, buffers.getRenderPassConfiguration().getMaterialForRenderType(pass));
                         extTesselator.celeritas$reset();
 
-                        if (Block.IS_OPAQUE[blockId]) {
+                        //? if <1.7 {
+                        boolean opaque = Block.IS_OPAQUE[blockId];
+                        //?} else
+                        /*boolean opaque = block.isOpaqueCube();*/
+
+                        if (opaque) {
                             occluder.markClosed(blockPos);
                         }
                     }
@@ -117,6 +131,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
             }
         } finally {
             tesselator.offset(0, 0, 0);
+            //? if <1.7
             TessellatorAccessor.celeritas$setTriangleMode(true);
         }
 

@@ -1,5 +1,6 @@
 package org.taumc.celeritas.mixin.core;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.platform.Lighting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.Culler;
@@ -66,13 +67,17 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
         double d4 = viewEntity.prevTickY + (viewEntity.y - viewEntity.prevTickY) * ticks;
         double d5 = viewEntity.prevTickZ + (viewEntity.z - viewEntity.prevTickZ) * ticks;
 
+        //? if >=1.0.0-beta.8
+        this.minecraft.gameRenderer.enableLightMap(ticks);
+
         try {
             this.renderer.drawChunkLayer(pass, d3, d4, d5);
         } finally {
             RenderDevice.exitManagedCode();
         }
 
-        //this.client.entityRenderer.disableLightmap(partialTicks);
+        //? if >=1.0.0-beta.8
+        this.minecraft.gameRenderer.disableLightMap(ticks);
 
         return 1;
     }
@@ -126,7 +131,7 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
     }
 
     @Inject(method = "renderEntities", at = @At(value = "FIELD", target = "Lnet/minecraft/client/render/world/WorldRenderer;globalBlockEntities:Ljava/util/List;", ordinal = 0))
-    public void sodium$renderTileEntities(Vec3d cameraPos, Culler culler, float partialTicks, CallbackInfo ci) {
+    public void sodium$renderTileEntities(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) float partialTicks) {
         this.renderer.renderBlockEntities(partialTicks);
     }
 

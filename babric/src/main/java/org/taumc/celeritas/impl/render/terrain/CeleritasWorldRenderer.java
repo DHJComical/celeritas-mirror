@@ -146,12 +146,15 @@ public class CeleritasWorldRenderer {
     }
 
     public static int getEffectiveRenderDistance() {
+        //? if <1.7 {
         int viewDist = MinecraftAccessor.celeritas$getInstance().options.viewDistance;
         if (viewDist > 4) {
             System.err.println("View distance cannot be zero, resetting");
             MinecraftAccessor.celeritas$getInstance().options.viewDistance = viewDist = 0;
         }
         return 16 >> viewDist;
+        //?} else
+        /*return MinecraftAccessor.celeritas$getInstance().options.viewDistance;*/
     }
 
     /**

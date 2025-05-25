@@ -56,11 +56,13 @@ public class PrimitiveChunkBuildContext extends ChunkBuildContext {
 
         int numQuads = vertexCount / 4;
         outputQuads(rawBuffer, celeritasVertices, numQuads, buffers, material, NORMAL_WINDING);
+        //? if <1.7 {
         if (material.pass == PrimitiveRenderPassConfigurationBuilder.TRANSLUCENT_PASS) {
             // We need to emulate backface culling as the legacy renderer relies on it. Write the same quads again
             // in reverse winding order.
             outputQuads(rawBuffer, celeritasVertices, numQuads, buffers, material, BACKFACE_WINDING);
         }
+        //?}
     }
 
     private void outputQuads(int[] rawBuffer, ChunkVertexEncoder.Vertex[] celeritasVertices, int numQuads, ChunkBuildBuffers buffers, Material material, int[] winding) {
