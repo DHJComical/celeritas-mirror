@@ -36,6 +36,10 @@ public class GlBufferArena {
     private final int stride;
 
     public GlBufferArena(CommandList commands, int initialCapacity, int stride, StagingBuffer stagingBuffer) {
+        if (initialCapacity <= 0) {
+            throw new IllegalArgumentException("Initial capacity must be positive");
+        }
+
         this.capacity = initialCapacity;
         this.resizeIncrement = initialCapacity / RESIZE_FACTOR;
 
@@ -258,6 +262,11 @@ public class GlBufferArena {
 
     public void delete(CommandList commands) {
         commands.deleteBuffer(this.arenaBuffer);
+        this.capacity = -1;
+    }
+
+    public boolean isDeleted() {
+        return this.capacity < 0;
     }
 
     public boolean isEmpty() {

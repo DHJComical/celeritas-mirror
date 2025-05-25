@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk.region;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.gl.arena.GlBufferArena;
 import org.embeddedt.embeddium.impl.gl.arena.staging.StagingBuffer;
@@ -16,10 +15,7 @@ import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class RenderRegion {
     public static final int REGION_WIDTH = 8;
@@ -49,7 +45,8 @@ public class RenderRegion {
     private int sectionCount;
 
     private final Map<TerrainRenderPass, SectionRenderDataStorage> sectionRenderData = new Reference2ReferenceOpenHashMap<>();
-    private final Int2ObjectArrayMap<DeviceResources> resourcesByVertexStride = new Int2ObjectArrayMap<>();
+
+    private List<DeviceResources> allDeviceResources = List.of();
 
     public RenderRegion(int x, int y, int z, StagingBuffer stagingBuffer) {
         this.x = x;
@@ -106,8 +103,8 @@ public class RenderRegion {
 
         this.sectionRenderData.clear();
 
-        this.resourcesByVertexStride.values().forEach(resources -> resources.delete(commandList));
-        this.resourcesByVertexStride.clear();
+        this.allDeviceResources.forEach(resources -> resources.delete(commandList));
+        this.allDeviceResources.clear();
 
         Arrays.fill(this.sections, null);
     }
@@ -163,7 +160,7 @@ public class RenderRegion {
     }
 
     public void refresh(CommandList commandList) {
-        this.resourcesByVertexStride.values().forEach(resources -> resources.deleteTessellations(commandList));
+        this.allDeviceResources.forEach(resources -> resources.deleteTessellations(commandList));
 
         for (var storage : this.sectionRenderData.values()) {
             storage.onBufferResized();
@@ -206,11 +203,20 @@ public class RenderRegion {
     }
 
     public Collection<DeviceResources> getAllResources() {
-        return this.resourcesByVertexStride.values();
+        return this.allDeviceResources;
     }
 
     public DeviceResources getResources(GlVertexFormat format) {
-        return this.resourcesByVertexStride.get(format.getStride());
+        var stride = format.getStride();
+        var list = this.allDeviceResources;
+        //noinspection ForLoopReplaceableByForEach
+        for (int i = 0; i < list.size(); i++) {
+            var resources = list.get(i);
+            if (resources.stride == stride) {
+                return resources;
+            }
+        }
+        return null;
     }
 
     public DeviceResources createResources(GlVertexFormat format, CommandList commandList) {
@@ -218,29 +224,39 @@ public class RenderRegion {
         if (resources == null) {
             resources = new DeviceResources(commandList, this.stagingBuffer, format.getStride());
 
-            this.resourcesByVertexStride.put(format.getStride(), resources);
+            var newList = new ArrayList<>(this.allDeviceResources);
+            newList.add(resources);
+            this.allDeviceResources = List.copyOf(newList);
         }
 
         return resources;
     }
 
     public void update(CommandList commandList) {
-        var iter = this.resourcesByVertexStride.int2ObjectEntrySet().iterator();
-        while (iter.hasNext()) {
-            var entry = iter.next();
-            var resources = entry.getValue();
+        var oldList = this.allDeviceResources;
+        boolean needListUpdate = false;
+        //noinspection ForLoopReplaceableByForEach
+        for (int i = 0; i < oldList.size(); i++) {
+            var resources = oldList.get(i);
             if (resources.shouldDelete()) {
                 resources.delete(commandList);
-                iter.remove();
+                needListUpdate = true;
             } else {
                 resources.deleteIndexArenaIfPossible(commandList);
             }
+        }
+        // Skip the list copy in the common case that nothing was deleted.
+        if (needListUpdate) {
+            var newList = new ArrayList<>(this.allDeviceResources);
+            newList.removeIf(DeviceResources::isDeleted);
+            this.allDeviceResources = List.copyOf(newList);
         }
     }
 
     public static class DeviceResources {
         private final GlBufferArena geometryArena;
         private final StagingBuffer stagingBuffer;
+        private final int stride;
         private GlBufferArena indexArena;
         private GlTessellation tessellation;
         private GlTessellation indexedTessellation;
@@ -248,6 +264,7 @@ public class RenderRegion {
         public DeviceResources(CommandList commandList, StagingBuffer stagingBuffer, int stride) {
             this.geometryArena = new GlBufferArena(commandList, REGION_SIZE * 756, stride, stagingBuffer);
             this.stagingBuffer = stagingBuffer;
+            this.stride = stride;
         }
 
         public void updateTessellation(CommandList commandList, GlTessellation tessellation) {
@@ -303,6 +320,10 @@ public class RenderRegion {
             if (this.indexArena != null) {
                 this.indexArena.delete(commandList);
             }
+        }
+
+        public boolean isDeleted() {
+            return this.geometryArena.isDeleted();
         }
 
         public GlBufferArena getGeometryArena() {
