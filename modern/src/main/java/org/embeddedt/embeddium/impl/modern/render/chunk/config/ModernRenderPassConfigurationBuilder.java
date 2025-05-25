@@ -32,7 +32,7 @@ public class ModernRenderPassConfigurationBuilder {
             RenderSystem.bindTexture(RenderSystem.getShaderTexture(2));
 
             GlStateManager._activeTexture(i);
-            //? }
+            //?}
         }
 
         @Override
@@ -44,7 +44,7 @@ public class ModernRenderPassConfigurationBuilder {
             RenderSystem.activeTexture(GL32C.GL_TEXTURE0 + 2);
             RenderSystem.bindTexture(0);
             GlStateManager._activeTexture(i);
-            //? }
+            //?}
             this.chunkRenderType.clearRenderState();
         }
 
