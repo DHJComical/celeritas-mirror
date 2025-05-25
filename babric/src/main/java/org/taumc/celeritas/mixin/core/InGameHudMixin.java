@@ -22,7 +22,10 @@ import java.util.List;
 @Mixin(GameGui.class)
 public class InGameHudMixin {
 
-    @Inject(method = "render", slice = @Slice(from = @At(value = "FIELD", target = "Lnet/minecraft/client/options/GameOptions;debugProfilerEnabled:Z")), at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glPopMatrix()V", ordinal = 0))
+    @Inject(method = "render", slice = @Slice(from = @At(value = "FIELD", target = "Lnet/minecraft/client/options/GameOptions;debug"
+            //? if <1.4
+            + "Profiler"
+            + "Enabled:Z")), at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/GL11;glPopMatrix()V", ordinal = 0))
     private void celeritas$renderDebug(float screenOpen, boolean mouseX, int mouseY, int par4, CallbackInfo ci, @Local(ordinal = 0) Window scaler, @Local(ordinal = 0) TextRenderer font) {
         int currentY = 22;
         int yDiff = 10;
