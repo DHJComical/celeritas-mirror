@@ -13,6 +13,8 @@ public class SpriteTransparencyTracker {
     private static final int DEFAULT_SPRITE_WIDTH = 16;
     private static final int NUM_SPRITES_PER_ROW = 16;
 
+    //? if <1.5 {
+
     private final SpriteTransparencyLevel[] levels = new SpriteTransparencyLevel[SPRITE_COUNT];
 
     public SpriteTransparencyTracker() {
@@ -52,4 +54,6 @@ public class SpriteTransparencyTracker {
     public SpriteTransparencyLevel getTransparencyLevel(int spriteId) {
         return levels[spriteId];
     }
+
+    //?}
 }
