@@ -16,7 +16,11 @@ public class SpriteTransparencyTracker {
     private final SpriteTransparencyLevel[] levels = new SpriteTransparencyLevel[SPRITE_COUNT];
 
     public SpriteTransparencyTracker() {
-        try(var terrainFile = MinecraftAccessor.celeritas$getInstance().texturePacks.selected.getResource("/terrain.png")) {
+        //? if >=1.3 {
+        /*var selectedPack = MinecraftAccessor.celeritas$getInstance().texturePacks.getSelected();
+        *///?} else
+        var selectedPack = MinecraftAccessor.celeritas$getInstance().texturePacks.selected;
+        try(var terrainFile = selectedPack.getResource("/terrain.png")) {
             var terrainImage = ImageIO.read(terrainFile);
             int[] contents = terrainImage.getRGB(0, 0, terrainImage.getWidth(), terrainImage.getHeight(), null, 0, terrainImage.getWidth());
             analyzeContents(contents, terrainImage.getWidth(), terrainImage.getHeight());

@@ -1,6 +1,5 @@
 package org.taumc.celeritas.mixin.core;
 
-import net.minecraft.client.world.chunk.MultiplayerChunkCache;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkStatus;
@@ -12,7 +11,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(MultiplayerChunkCache.class)
+//? if >=1.3 {
+/*@Mixin(net.minecraft.client.world.chunk.ClientChunkCache.class)
+*///?} else
+@Mixin(net.minecraft.client.world.chunk.MultiplayerChunkCache.class)
 public class MultiplayerChunkCacheMixin {
     @Shadow
     private World world;

@@ -22,11 +22,13 @@ data class VersionData(val uniminedVersion: String)
 
 val versionDataMap = mapOf(
         "1.0.0-beta.7.3" to VersionData("b1.7.3"),
-        "1.0.0-beta.8.1" to VersionData("b1.8.1"),
-        "1.2.5" to VersionData("1.2.5")
+        "1.0.0-beta.8.1" to VersionData("b1.8.1")
 )
 
-val versionData = versionDataMap.getValue(project.name)
+val isClientServerSplit = stonecutter.eval(project.name, "<1.3")
+
+val featherVersion = if(isClientServerSplit) 23 else 28
+val versionData = versionDataMap.getOrDefault(project.name, VersionData(project.name))
 
 base.archivesName = "celeritas-fabriclike-mc${versionData.uniminedVersion.replace(Regex("^1\\."), "")}"
 
@@ -34,11 +36,11 @@ unimined.minecraft {
     combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
 
     version = versionData.uniminedVersion
-    side = EnvType.CLIENT
+    side = if(isClientServerSplit) EnvType.CLIENT else EnvType.COMBINED
 
     mappings {
         calamus()
-        feather(23)
+        feather(featherVersion)
     }
 
     fabric {
@@ -51,6 +53,12 @@ unimined.minecraft {
 
     runs.config("client") {
         javaVersion = JavaVersion.VERSION_21
+    }
+
+    if (!isClientServerSplit) {
+        runs.config("server") {
+            enabled = false
+        }
     }
 }
 

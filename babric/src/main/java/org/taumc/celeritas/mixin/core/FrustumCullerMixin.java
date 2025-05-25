@@ -5,6 +5,7 @@ import net.minecraft.client.render.FrustumCuller;
 import net.minecraft.client.render.FrustumData;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
+import org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Final;
@@ -27,7 +28,11 @@ public class FrustumCullerMixin implements ViewportProvider {
         modelMatrix.invert();
         Vector3f offset = new Vector3f();
         modelMatrix.transformPosition(offset);
-        return new Viewport(((minX, minY, minZ, maxX, maxY, maxZ) -> this.frustum.m_9750073(minX, minY, minZ, maxX, maxY, maxZ)),
+        //? if >=1.3 {
+        /*Frustum cullTester = (minX, minY, minZ, maxX, maxY, maxZ) -> this.frustum.contains(minX, minY, minZ, maxX, maxY, maxZ);
+        *///?} else
+        Frustum cullTester = (minX, minY, minZ, maxX, maxY, maxZ) -> this.frustum.m_9750073(minX, minY, minZ, maxX, maxY, maxZ);
+        return new Viewport(cullTester,
                 new org.joml.Vector3d(this.x + offset.x, this.y + offset.y, this.z + offset.z));
     }
 }

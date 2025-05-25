@@ -3,8 +3,6 @@ package org.taumc.celeritas.mixin.core;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.ServerChunkCache;
 import net.minecraft.world.chunk.WorldChunk;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkStatus;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
@@ -14,12 +12,21 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ServerChunkCache.class)
+//? if >=1.3 {
+/*@Mixin(net.minecraft.server.world.chunk.ServerChunkCache.class)
+*///?} else
+@Mixin(net.minecraft.world.chunk.ServerChunkCache.class)
 public class ChunkCacheMixin {
     @Shadow
-    private World world;
+    //? if <1.3 {
+    private net.minecraft.world.World world;
+    //?} else
+    /*private net.minecraft.server.world.ServerWorld world;*/
 
-    @Inject(method = "generateChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/ServerChunkCache;loadChunk(II)Lnet/minecraft/world/chunk/WorldChunk;"))
+    @Inject(method = "generateChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/"
+            //? if >=1.3
+            /*+ "server/"*/
+            + "world/chunk/ServerChunkCache;loadChunk(II)Lnet/minecraft/world/chunk/WorldChunk;"))
     private void markLoaded(int x, int z, CallbackInfoReturnable<WorldChunk> cir, @Share("loaded") LocalBooleanRef didLoad) {
         didLoad.set(true);
     }

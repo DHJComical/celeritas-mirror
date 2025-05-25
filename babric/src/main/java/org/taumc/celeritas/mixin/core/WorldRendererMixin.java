@@ -13,6 +13,7 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.taumc.celeritas.impl.extensions.RenderGlobalExtension;
@@ -37,7 +38,7 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
     }
 
     @Inject(method = "setWorld", at = @At("RETURN"))
-    private void onWorldChanged(World world, CallbackInfo ci) {
+    private void onWorldChanged(@Coerce World world, CallbackInfo ci) {
         RenderDevice.enterManagedCode();
 
         try {
@@ -103,7 +104,12 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
         this.renderer.scheduleRebuildForBlockArea(minX, minY, minZ, maxX, maxY, maxZ, false);
     }
 
-    @Inject(method = "m_6748042", at = @At("RETURN"))
+    //? if <1.3 {
+    private static final String ON_RELOAD = "m_6748042";
+    //?} else
+    /*private static final String ON_RELOAD = "reload";*/
+
+    @Inject(method = ON_RELOAD, at = @At("RETURN"))
     private void onReload(CallbackInfo ci) {
         RenderDevice.enterManagedCode();
 
