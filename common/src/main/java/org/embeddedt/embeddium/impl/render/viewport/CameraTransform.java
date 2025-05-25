@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.render.viewport;
 
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 
-public class CameraTransform {
+public final class CameraTransform {
     // We want to reduce the precision of the deltas to avoid seams along chunk/region boundaries. This is done by
     // ensuring the camera position would be the same if we did cameraPos + 0 - 0 as if we did cameraPos + 128 - 128.
     private static final float PRECISION_MODIFIER = RenderRegion.REGION_WIDTH * 16; // 16 blocks per section
@@ -39,5 +39,21 @@ public class CameraTransform {
         float modifier = Math.copySign(PRECISION_MODIFIER, fullPrecision);
 
         return  (fullPrecision + modifier) - modifier;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        CameraTransform that = (CameraTransform) o;
+        return x == that.x && y == that.y && z == that.z;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 1;
+        hash = 31 * hash + Double.hashCode(x);
+        hash = 31 * hash + Double.hashCode(y);
+        hash = 31 * hash + Double.hashCode(z);
+        return hash;
     }
 }
