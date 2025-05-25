@@ -83,18 +83,22 @@ public class PrimitiveChunkBuildContext extends ChunkBuildContext {
                 vertex.vanillaNormal = rawBuffer[ptr++];
                 vertex.light = rawBuffer[ptr++];
             }
+            int trueNormal = QuadUtil.calculateNormal(celeritasVertices);
+            for (int vIdx = 0; vIdx < 4; vIdx++) {
+                celeritasVertices[winding[vIdx]].trueNormal = trueNormal;
+            }
+            ModelQuadFacing facing = QuadUtil.findNormalFace(trueNormal);
+            // TODO implement render pass downgrading for 1.5+
+            //? if <1.5 {
             // Pretend the atlas is 256x256 for the purposes of computing the sprite ID
             uSum /= 4;
             vSum /= 4;
             int spriteX = MathUtil.mojfloor(uSum * 256.0f);
             int spriteY = MathUtil.mojfloor(vSum * 256.0f);
             int spriteId = (spriteY / 16) * 16 + spriteX / 16;
-            int trueNormal = QuadUtil.calculateNormal(celeritasVertices);
-            for (int vIdx = 0; vIdx < 4; vIdx++) {
-                celeritasVertices[winding[vIdx]].trueNormal = trueNormal;
-            }
-            ModelQuadFacing facing = QuadUtil.findNormalFace(trueNormal);
             Material correctMaterial = selectMaterial(material, tracker.getTransparencyLevel(spriteId));
+            //?} else
+            /*Material correctMaterial = material;*/
             buffers.get(correctMaterial).getVertexBuffer(facing).push(celeritasVertices, correctMaterial);
         }
     }
