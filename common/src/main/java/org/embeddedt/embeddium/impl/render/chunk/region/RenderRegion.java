@@ -14,6 +14,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
 
@@ -46,6 +47,7 @@ public class RenderRegion {
 
     private final Map<TerrainRenderPass, SectionRenderDataStorage> sectionRenderData = new Reference2ReferenceOpenHashMap<>();
 
+    @Unmodifiable
     private List<DeviceResources> allDeviceResources = List.of();
 
     public RenderRegion(int x, int y, int z, StagingBuffer stagingBuffer) {
@@ -104,7 +106,7 @@ public class RenderRegion {
         this.sectionRenderData.clear();
 
         this.allDeviceResources.forEach(resources -> resources.delete(commandList));
-        this.allDeviceResources.clear();
+        this.allDeviceResources = List.of();
 
         Arrays.fill(this.sections, null);
     }
