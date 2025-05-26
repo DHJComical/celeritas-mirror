@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.render.BlockRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
+import net.minecraft.world.WorldRegion;
 import net.minecraft.world.chunk.WorldChunk;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
@@ -63,7 +64,8 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
         var world = buildContext.world;
         var chunk = world.getChunkAt(this.render.getChunkX(), this.render.getChunkZ());
-        var renderBlocks = new BlockRenderer(world);
+        var region = new WorldRegion(world, minX - 1, minY - 1, minZ - 1, maxX + 1, maxY + 1, maxZ + 1);
+        var renderBlocks = new BlockRenderer(region);
         var tesselator = BufferBuilder.INSTANCE;
         var extTesselator = (TessellatorExtension)tesselator;
 
