@@ -35,6 +35,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
+import org.embeddedt.embeddium.compat.mc.MCVertexFormat;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
@@ -44,7 +46,7 @@ import org.lwjgl.opengl.ARBTextureSwizzle;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.KHRDebug;
 
-public class ExtendedShader extends ShaderInstance implements ShaderInstanceInterface {
+public class ExtendedShader extends ShaderInstance implements ShaderInstanceInterface, MCShaderInstance {
 	private static final Matrix4f identity;
 	private static ExtendedShader lastApplied;
 
@@ -75,12 +77,12 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 	float[] tempFloats2 = new float[9];
 	private Program geometry, tessControl, tessEval;
 
-	public ExtendedShader(ResourceProvider resourceFactory, String string, VertexFormat vertexFormat, boolean usesTessellation,
+	public ExtendedShader(ResourceProvider resourceFactory, String string, MCVertexFormat vertexFormat, boolean usesTessellation,
 						  GlFramebuffer writingToBeforeTranslucent, GlFramebuffer writingToAfterTranslucent,
 						  BlendModeOverride blendModeOverride, AlphaTest alphaTest,
 						  Consumer<DynamicLocationalUniformHolder> uniformCreator, BiConsumer<SamplerHolder, ImageHolder> samplerCreator, boolean isIntensity,
 						  ModernIrisRenderingPipeline parent, @Nullable List<BufferBlendOverride> bufferBlendOverrides, CustomUniforms customUniforms) throws IOException {
-		super(resourceFactory, string, vertexFormat);
+		super(resourceFactory, string, (VertexFormat) vertexFormat);
 
 		GLDebug.nameObject(KHRDebug.GL_SHADER, this.getVertexProgram().getId(), string + "_vertex.vsh");
 		GLDebug.nameObject(KHRDebug.GL_SHADER, this.getFragmentProgram().getId(), string + "_fragment.fsh");

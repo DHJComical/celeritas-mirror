@@ -36,6 +36,7 @@ import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.apache.commons.io.IOUtils;
+import org.embeddedt.embeddium.compat.mc.MCVertexFormat;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 import java.io.ByteArrayInputStream;
@@ -55,7 +56,7 @@ import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTI
 public class ShaderCreator {
 	public static CompletableFuture<ExtendedShader> create(WorldRenderingPipeline pipeline, Executor syncExecutor, String name, ProgramSource source, ProgramId programId, GlFramebuffer writingToBeforeTranslucent,
                                                            GlFramebuffer writingToAfterTranslucent, AlphaTest fallbackAlpha,
-                                                           VertexFormat vertexFormat, ShaderAttributeInputs inputs, FrameUpdateNotifier updateNotifier,
+                                                           MCVertexFormat vertexFormat, ShaderAttributeInputs inputs, FrameUpdateNotifier updateNotifier,
                                                            ModernIrisRenderingPipeline parent, Supplier<ImmutableSet<Integer>> flipped, FogMode fogMode, boolean isIntensity,
                                                            boolean isFullbright, boolean isShadowPass, boolean isLines, CustomUniforms customUniforms) throws IOException {
 		AlphaTest alpha = source.getDirectives().getAlphaTestOverride().orElse(fallbackAlpha);
@@ -140,7 +141,7 @@ public class ShaderCreator {
 
 	public static FallbackShader createFallback(String name, GlFramebuffer writingToBeforeTranslucent,
 												GlFramebuffer writingToAfterTranslucent, AlphaTest alpha,
-												VertexFormat vertexFormat, BlendModeOverride blendModeOverride,
+												MCVertexFormat vertexFormat, BlendModeOverride blendModeOverride,
 												ModernIrisRenderingPipeline parent, FogMode fogMode, boolean entityLighting,
 												boolean isGlint, boolean isText, boolean intensityTex, boolean isFullbright) throws IOException {
 		ShaderAttributeInputs inputs = new ShaderAttributeInputsBuilder(vertexFormat, isFullbright, false, isGlint, isText).build();
@@ -195,7 +196,7 @@ public class ShaderCreator {
 
 		ResourceProvider shaderResourceFactory = new IrisProgramResourceFactory(shaderJsonString, vertex, null, null, null, fragment);
 
-		return new FallbackShader(shaderResourceFactory, name, vertexFormat, writingToBeforeTranslucent,
+		return new FallbackShader(shaderResourceFactory, name, (VertexFormat) vertexFormat, writingToBeforeTranslucent,
 			writingToAfterTranslucent, blendModeOverride, alpha.reference(), parent);
 	}
 

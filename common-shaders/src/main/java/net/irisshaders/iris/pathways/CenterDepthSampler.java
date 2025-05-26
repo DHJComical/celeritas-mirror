@@ -7,6 +7,7 @@ import java.util.function.IntSupplier;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 import com.google.common.collect.ImmutableSet;
 import net.irisshaders.iris.gl.IrisRenderSystem;
@@ -20,7 +21,6 @@ import net.irisshaders.iris.gl.texture.InternalTextureFormat;
 import net.irisshaders.iris.gl.texture.PixelType;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
-import net.minecraft.client.Minecraft;
 import org.apache.commons.io.IOUtils;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL21C;
@@ -89,7 +89,7 @@ public class CenterDepthSampler {
 		DepthCopyStrategy.fastest(false).copy(this.framebuffer, texture, null, altTexture, 1, 1);
 
 		//Reset viewport
-		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+        MINECRAFT_SHIM.bindMainFramebuffer();
 	}
 
 	public void setupColorTexture(int texture, InternalTextureFormat format) {

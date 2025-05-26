@@ -5,21 +5,19 @@ import java.nio.file.Path;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.irisshaders.iris.gl.state.StateUpdateNotifiers;
-import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.irisshaders.iris.targets.backed.NativeImageBackedSingleColorTexture;
 import net.irisshaders.iris.texture.TextureTracker;
 import net.irisshaders.iris.texture.pbr.loader.PBRTextureLoader;
 import net.irisshaders.iris.texture.pbr.loader.PBRTextureLoader.PBRTextureConsumer;
 import net.irisshaders.iris.texture.pbr.loader.PBRTextureLoaderRegistry;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.Dumpable;
-import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
+import org.embeddedt.embeddium.compat.mc.MCDumpable;
+import org.embeddedt.embeddium.compat.mc.MCResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 public class PBRTextureManager {
@@ -55,7 +53,7 @@ public class PBRTextureManager {
 	private PBRTextureManager() {
 	}
 
-	private static void dumpTexture(Dumpable dumpable, ResourceLocation id, Path path) {
+	private static void dumpTexture(MCDumpable dumpable, MCResourceLocation id, Path path) {
 		try {
 			dumpable.dumpContents(id, path);
 		} catch (IOException e) {
@@ -106,15 +104,15 @@ public class PBRTextureManager {
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	private PBRTextureHolder loadHolder(int id) {
-		AbstractTexture texture = (AbstractTexture) TextureTracker.INSTANCE.getTexture(id);
+		MCAbstractTexture texture = TextureTracker.INSTANCE.getTexture(id);
 		if (texture != null) {
-			Class<? extends AbstractTexture> clazz = texture.getClass();
+			Class<? extends MCAbstractTexture> clazz = texture.getClass();
 			PBRTextureLoader loader = PBRTextureLoaderRegistry.INSTANCE.getLoader(clazz);
 			if (loader != null) {
-				int previousTextureBinding = GlStateManagerAccessor.getTEXTURES()[GlStateManagerAccessor.getActiveTexture()].binding;
+				int previousTextureBinding = GL_STATE_MANAGER.getActiveBoundTexture();
 				consumer.clear();
 				try {
-					loader.load(texture, Minecraft.getInstance().getResourceManager(), consumer);
+					loader.load(texture, MINECRAFT_SHIM.getResourceManager(), consumer);
 					return consumer.toHolder();
 				} catch (Exception e) {
 					IRIS_LOGGER.debug("Failed to load PBR textures for texture " + id, e);

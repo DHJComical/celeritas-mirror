@@ -7,10 +7,11 @@ import net.irisshaders.iris.gl.blending.AlphaTests;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.shaderpack.loading.ProgramId;
 import net.irisshaders.iris.vertices.IrisVertexFormats;
+import org.embeddedt.embeddium.compat.mc.MCVertexFormat;
 
 import java.util.Locale;
 
-public enum ShaderKey {
+public enum ModernShaderKey implements ShaderKey {
 	// if you auto-format this and destroy all the manual indentation, I'll steal your kneecaps
 
 	BASIC(ProgramId.Basic, AlphaTests.OFF, DefaultVertexFormat.POSITION, FogMode.PER_VERTEX, LightingModel.LIGHTMAP),
@@ -86,7 +87,7 @@ public enum ShaderKey {
 	private final FogMode fogMode;
 	private final LightingModel lightingModel;
 
-	ShaderKey(ProgramId program, AlphaTest alphaTest, VertexFormat vertexFormat, FogMode fogMode, LightingModel lightingModel) {
+	ModernShaderKey(ProgramId program, AlphaTest alphaTest, VertexFormat vertexFormat, FogMode fogMode, LightingModel lightingModel) {
 		this.program = program;
 		this.alphaTest = alphaTest;
 		this.vertexFormat = vertexFormat;
@@ -94,46 +95,57 @@ public enum ShaderKey {
 		this.lightingModel = lightingModel;
 	}
 
+	@Override
 	public ProgramId getProgram() {
 		return program;
 	}
 
+	@Override
 	public AlphaTest getAlphaTest() {
 		return alphaTest;
 	}
 
-	public VertexFormat getVertexFormat() {
-		return vertexFormat;
+	@Override
+	public MCVertexFormat getVertexFormat() {
+		return (MCVertexFormat) vertexFormat;
 	}
 
+	@Override
 	public FogMode getFogMode() {
 		return fogMode;
 	}
 
+	@Override
 	public boolean isIntensity() {
 		return this == TEXT_INTENSITY || this == TEXT_INTENSITY_BE || this == SHADOW_TEXT_INTENSITY;
 	}
 
+	@Override
 	public String getName() {
 		return toString().toLowerCase(Locale.ROOT);
 	}
 
+	@Override
 	public boolean isShadow() {
 		return this.getProgram() == ProgramId.Shadow;
 	}
 
+	@Override
 	public boolean hasDiffuseLighting() {
 		return lightingModel == LightingModel.DIFFUSE || lightingModel == LightingModel.DIFFUSE_LM;
 	}
 
+	@Override
 	public boolean shouldIgnoreLightmap() {
 		return lightingModel == LightingModel.FULLBRIGHT || lightingModel == LightingModel.DIFFUSE;
 	}
 
+	@Override
 	public boolean isGlint() {
 		return this == GLINT;
 	}
 
+	@Override
 	public boolean isText() {
 		return this.name().contains("TEXT");
 	}

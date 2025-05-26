@@ -1,11 +1,10 @@
 package net.irisshaders.iris.texture.pbr.loader;
 
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.server.packs.resources.ResourceManager;
 import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
+import org.embeddedt.embeddium.compat.mc.MCResourceManager;
 import org.jetbrains.annotations.NotNull;
 
-public interface PBRTextureLoader<T extends AbstractTexture> {
+public interface PBRTextureLoader<T> {
 	/**
 	 * This method must not modify global GL state except the texture binding for {@code GL_TEXTURE_2D}.
 	 *
@@ -13,7 +12,7 @@ public interface PBRTextureLoader<T extends AbstractTexture> {
 	 * @param resourceManager    The resource manager.
 	 * @param pbrTextureConsumer The consumer that accepts resulting PBR textures.
 	 */
-	void load(T texture, ResourceManager resourceManager, PBRTextureConsumer pbrTextureConsumer);
+	void load(T texture, MCResourceManager resourceManager, PBRTextureConsumer pbrTextureConsumer);
 
 	interface PBRTextureConsumer {
 		void acceptNormalTexture(@NotNull MCAbstractTexture texture);

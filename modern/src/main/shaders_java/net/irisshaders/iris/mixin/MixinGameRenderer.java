@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.RenderBuffers;
 //? if <1.21.2
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -43,7 +44,7 @@ public class MixinGameRenderer {
 
     //? if <1.21.2 {
     @Inject(method = { "*()Lnet/minecraft/client/renderer/ShaderInstance;" }, at = @At("RETURN"), cancellable = true)
-    private static void iris$overrideShader(CallbackInfoReturnable<ShaderInstance> cir) {
+    private static void iris$overrideShader(CallbackInfoReturnable<MCShaderInstance> cir) {
         var shader = cir.getReturnValue();
         if (shader == null) {
             return;

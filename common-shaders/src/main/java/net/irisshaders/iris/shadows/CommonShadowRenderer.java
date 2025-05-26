@@ -12,6 +12,8 @@ import net.irisshaders.iris.shaderpack.properties.PackShadowDirectives;
 import net.irisshaders.iris.shaderpack.properties.ShadowCullState;
 import net.irisshaders.iris.shadows.frustum.CommonFrustumHolder;
 import net.irisshaders.iris.uniforms.CelestialUniforms;
+import org.embeddedt.embeddium.compat.mc.MCCamera;
+import org.embeddedt.embeddium.compat.mc.MCLevelRenderer;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.ARBTextureSwizzle;
 import org.lwjgl.opengl.GL20C;
@@ -218,12 +220,14 @@ public abstract class CommonShadowRenderer {
         }
     }
 
+    public abstract void destroy();
+
     protected abstract String getEntitiesDebugString();
     protected abstract String getBlockEntitiesDebugString();
     protected abstract void addBuffersDebugText(List<String> messages);
+    public abstract void renderShadows(MCLevelRenderer levelRendererIn, MCCamera playerCamera);
 
     protected record MipmapPass(int texture, int targetFilteringMode) {
-
-
     }
+
 }

@@ -1,32 +1,30 @@
 package net.irisshaders.iris.pipeline.programs;
 
-import net.minecraft.client.renderer.ShaderInstance;
+import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
 
 import java.io.IOException;
 import java.util.concurrent.*;
 
 /**
- * A specialized map mapping {@link ShaderKey} to {@link ShaderInstance}.
+ * A specialized map mapping {@link ShaderKey} to {@link MCShaderInstance}.
  * Avoids much of the complexity / overhead of an EnumMap while ultimately
  * fulfilling the same function.
  */
 public class ShaderMap {
-	private final ShaderInstance[] shaders;
+	private final MCShaderInstance[] shaders;
 
     @SuppressWarnings("unchecked")
     private static <E extends Throwable> void sneakyThrow(Throwable e) throws E {
         throw (E) e;
     }
 
-	public ShaderMap(ShaderFactory factory) throws IOException {
-		ShaderKey[] ids = ShaderKey.values();
-
-		this.shaders = new ShaderInstance[ids.length];
+	public ShaderMap(ShaderFactory factory, ShaderKey[] ids) throws IOException {
+		this.shaders = new MCShaderInstance[ids.length];
 
         LinkedBlockingQueue<Runnable> renderThreadTasks = new LinkedBlockingQueue<>();
         Executor syncExecutor = renderThreadTasks::add;
 
-        CompletableFuture<ShaderInstance>[] futures = new CompletableFuture[ids.length];
+        CompletableFuture<MCShaderInstance>[] futures = new CompletableFuture[ids.length];
 
         for (int i = 0; i < ids.length; i++) {
             futures[i] = factory.create(ids[i], syncExecutor);
@@ -60,10 +58,10 @@ public class ShaderMap {
 	}
 
     public interface ShaderFactory {
-        CompletableFuture<ShaderInstance> create(ShaderKey key, Executor syncExecutor) throws IOException;
+        CompletableFuture<MCShaderInstance> create(ShaderKey key, Executor syncExecutor) throws IOException;
     }
 
-	public ShaderInstance getShader(ShaderKey id) {
+	public MCShaderInstance getShader(ShaderKey id) {
 		return shaders[id.ordinal()];
 	}
 }

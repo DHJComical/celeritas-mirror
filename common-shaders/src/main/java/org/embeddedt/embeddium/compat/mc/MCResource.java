@@ -3,6 +3,6 @@ package org.embeddedt.embeddium.compat.mc;
 import java.io.IOException;
 import java.io.InputStream;
 
-public interface IResource {
+public interface MCResource {
     InputStream open() throws IOException;
 }

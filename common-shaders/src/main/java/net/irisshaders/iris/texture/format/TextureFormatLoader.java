@@ -1,8 +1,8 @@
 package net.irisshaders.iris.texture.format;
 
-import org.embeddedt.embeddium.compat.mc.IResource;
-import org.embeddedt.embeddium.compat.mc.IResourceLocation;
-import org.embeddedt.embeddium.compat.mc.IResourceProvider;
+import org.embeddedt.embeddium.compat.mc.MCResource;
+import org.embeddedt.embeddium.compat.mc.MCResourceLocation;
+import org.embeddedt.embeddium.compat.mc.MCResourceProvider;
 import org.jetbrains.annotations.Nullable;
 import org.taumc.celeritas.CeleritasShaderVersionService;
 
@@ -17,7 +17,7 @@ import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 public class TextureFormatLoader {
-	public static final IResourceLocation LOCATION = MINECRAFT_SHIM.makeResourceLocation("optifine/texture.properties");
+	public static final MCResourceLocation LOCATION = MINECRAFT_SHIM.makeResourceLocation("optifine/texture.properties");
 
 	private static TextureFormat format;
 
@@ -26,7 +26,7 @@ public class TextureFormatLoader {
 		return format;
 	}
 
-	public static void reload(IResourceProvider resourceManager) {
+	public static void reload(MCResourceProvider resourceManager) {
 		TextureFormat newFormat = loadFormat(resourceManager);
 		boolean didFormatChange = !Objects.equals(format, newFormat);
 		format = newFormat;
@@ -36,8 +36,8 @@ public class TextureFormatLoader {
 	}
 
 	@Nullable
-	private static TextureFormat loadFormat(IResourceProvider resourceManager) {
-		Optional<IResource> resource = resourceManager.getResource((IResourceLocation)(Object)LOCATION);
+	private static TextureFormat loadFormat(MCResourceProvider resourceManager) {
+		Optional<MCResource> resource = resourceManager.getResource((MCResourceLocation)(Object)LOCATION);
 		if (resource.isPresent()) {
 			try (InputStream stream = resource.get().open()) {
 				Properties properties = new Properties();

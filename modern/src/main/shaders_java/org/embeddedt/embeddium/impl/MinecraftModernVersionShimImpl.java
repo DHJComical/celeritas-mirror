@@ -6,10 +6,12 @@ import com.mojang.math.Axis;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.helpers.JomlConversions;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
+import net.irisshaders.iris.mixin.LightTextureAccessor;
 import net.irisshaders.iris.mixin.texture.TextureAtlasAccessor;
 import net.irisshaders.iris.shaderpack.DimensionId;
 import net.irisshaders.iris.shadows.ShadowMatrices;
 import net.irisshaders.iris.shadows.ModernShadowRenderer;
+import net.irisshaders.iris.targets.Blaze3dRenderTargetExt;
 import net.irisshaders.iris.texture.TextureInfoCache;
 import net.irisshaders.iris.texture.TextureTracker;
 import net.irisshaders.iris.uniforms.CameraUniforms;
@@ -18,6 +20,8 @@ import net.minecraft.Util;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
@@ -32,15 +36,15 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
-import org.embeddedt.embeddium.compat.mc.IResourceLocation;
-import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
-import org.embeddedt.embeddium.compat.mc.MCNativeImage;
-import org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService;
+import org.embeddedt.embeddium.compat.mc.*;
 import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.joml.*;
 import org.joml.Math;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
 
@@ -590,14 +594,14 @@ public class MinecraftModernVersionShimImpl implements MinecraftVersionShimServi
         return (MCNativeImage[])(Object[])new NativeImage[size];
     }
 
-    public IResourceLocation makeResourceLocation(String namespace, String path) {
+    public MCResourceLocation makeResourceLocation(String namespace, String path) {
         //? if >=1.21
         /*return (IResourceLocation)(Object) ResourceLocation.fromNamespaceAndPath(namespace, path);*/
         //? if <1.21
-        return (IResourceLocation)(Object) new ResourceLocation(namespace, path);
+        return (MCResourceLocation)(Object) new ResourceLocation(namespace, path);
     }
 
-    public IResourceLocation makeResourceLocation(String str) {
+    public MCResourceLocation makeResourceLocation(String str) {
         //? if >=1.21 {
         /*if(str.contains(":")) {
             return (IResourceLocation)(Object) ResourceLocation.parse(str);
@@ -605,7 +609,7 @@ public class MinecraftModernVersionShimImpl implements MinecraftVersionShimServi
             return (IResourceLocation)(Object) ResourceLocation.withDefaultNamespace(str);
         }
         *///?} else
-        return (IResourceLocation)(Object)new ResourceLocation(str);
+        return (MCResourceLocation)(Object)new ResourceLocation(str);
     }
 
     @Override
@@ -653,8 +657,69 @@ public class MinecraftModernVersionShimImpl implements MinecraftVersionShimServi
     }
 
     @Override
-    public void bindFramebuffer() {
+    public void bindMainFramebuffer() {
         Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+    }
+
+    @Override
+    public void unbindMainFramebuffer() {
+        Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+    }
+
+
+    @Override
+    public int getMainFramebufferWidth() {
+        return Minecraft.getInstance().getMainRenderTarget().width;
+    }
+
+    @Override
+    public int getMainFramebufferHeight() {
+        return Minecraft.getInstance().getMainRenderTarget().height;
+    }
+
+    @Override
+    public int getColorTextureId() {
+        return Minecraft.getInstance().getMainRenderTarget().getColorTextureId();
+    }
+
+    @Override
+    public int getColorBufferVersion() {
+        return ((Blaze3dRenderTargetExt) Minecraft.getInstance().getMainRenderTarget()).iris$getColorBufferVersion();
+    }
+
+    @Override
+    public int getLightTextureId() {
+        return ((LightTextureAccessor) Minecraft.getInstance().gameRenderer.lightTexture()).getLightTexture().getId();
+    }
+
+    @Override
+    public int getMissingTextureId() {
+        return MissingTextureAtlasSprite.getTexture().getId();
+    }
+
+    @Override
+    public MCNativeImage readNativeImage(InputStream textureStream) throws IOException {
+        return (MCNativeImage) (Object) NativeImage.read(textureStream);
+    }
+
+    @Override
+    public MCNativeImage readNativeImage(ByteBuffer textureData) throws IOException {
+        return (MCNativeImage) (Object) NativeImage.read(textureData);
+    }
+
+    @Override
+    public MCDynamicTexture createDynamicTexture(MCNativeImage image) {
+        return (MCDynamicTexture) new DynamicTexture((NativeImage) (Object)image);
+    }
+
+    @Override
+    public MCTextureManager getTextureManager() {
+        return (MCTextureManager) Minecraft.getInstance().getTextureManager();
+    }
+
+    @Override
+    public MCResourceManager getResourceManager() {
+        return (MCResourceManager) Minecraft.getInstance().getResourceManager();
     }
 
 }
