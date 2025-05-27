@@ -4,11 +4,16 @@ package org.embeddedt.embeddium.impl;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.math.Axis;
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.helpers.JomlConversions;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.irisshaders.iris.mixin.LightTextureAccessor;
 import net.irisshaders.iris.mixin.texture.TextureAtlasAccessor;
 import net.irisshaders.iris.shaderpack.DimensionId;
+import net.irisshaders.iris.shaderpack.ShaderPack;
+import net.irisshaders.iris.shaderpack.materialmap.BlockMaterialMapping;
+import net.irisshaders.iris.shaderpack.materialmap.ModelTextureAnalyzer;
+import net.irisshaders.iris.shaderpack.materialmap.ModernWorldRenderingSettings;
 import net.irisshaders.iris.shadows.ShadowMatrices;
 import net.irisshaders.iris.shadows.ModernShadowRenderer;
 import net.irisshaders.iris.targets.Blaze3dRenderTargetExt;
@@ -19,6 +24,7 @@ import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.Util;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
@@ -720,6 +726,23 @@ public class MinecraftModernVersionShimImpl implements MinecraftVersionShimServi
     @Override
     public MCResourceManager getResourceManager() {
         return (MCResourceManager) Minecraft.getInstance().getResourceManager();
+    }
+
+    @Override
+    public void populateBlockIds(ShaderPack pack) {
+        ModernWorldRenderingSettings.INSTANCE.setBlockStateIds(BlockMaterialMapping.createBlockStateIdMap(pack.getIdMap().getBlockProperties()));
+        ModernWorldRenderingSettings.INSTANCE.setBlockTypeIds(BlockMaterialMapping.createBlockTypeMap(pack.getIdMap().getBlockRenderTypeMap()));
+        if (IrisCommon.getIrisConfig().isEnableTextureMaterialFallback()) {
+            ModernWorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(ModelTextureAnalyzer.runAnalysisSync(ModernWorldRenderingSettings.INSTANCE.getBlockStateIds()));
+        } else {
+            ModernWorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(null);
+        }
+    }
+
+    @Override
+    public boolean isSkyTypeNormal() {
+        DimensionSpecialEffects.SkyType skyType = Minecraft.getInstance().level.effects().skyType();
+        return skyType == DimensionSpecialEffects.SkyType.NORMAL;
     }
 
 }

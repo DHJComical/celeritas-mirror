@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl;
 
 import cpw.mods.fml.common.Loader;
 import net.irisshaders.iris.IrisCommon;
+import net.irisshaders.iris.shaderpack.ShaderPack;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -562,6 +563,11 @@ public class MinecraftArchaicVersionShimImpl implements MinecraftVersionShimServ
     @Override
     public MCResourceManager getResourceManager() {
         return (MCResourceManager) Minecraft.getMinecraft().getResourceManager();
+    }
+
+    @Override
+    public void populateBlockIds(ShaderPack pack) {
+        // TODO
     }
 
     @Override

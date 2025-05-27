@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.compat.mc;
 
+import net.irisshaders.iris.shaderpack.ShaderPack;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
@@ -138,4 +139,10 @@ public interface MinecraftVersionShimService {
     MCTextureManager getTextureManager();
 
     MCResourceManager getResourceManager();
+
+    void populateBlockIds(ShaderPack pack);
+
+    default boolean isSkyTypeNormal() {
+        return true;
+    }
 }

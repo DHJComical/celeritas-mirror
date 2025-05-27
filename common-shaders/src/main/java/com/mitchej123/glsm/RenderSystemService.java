@@ -55,6 +55,8 @@ public interface RenderSystemService {
     Matrix4f getProjectionMatrix();
     void setProjectionMatrixOrth(Matrix4f projectionMatrix);
     void setProjectionMatrixOrigin(Matrix4f projectionMatrix);
+
+    default void setPositionShader() {};
     // TODO: Figure out VertexSorting type
     //  void setProjectionMatrix(Matrix4f projectionMatrix, VertexSorting vertexSorting)
 

@@ -103,13 +103,9 @@ public class ArchaicIrisRenderingPipeline extends CommonIrisRenderingPipeline im
     }
 
     @Override
-    public void beginLevelRendering() {
-
-    }
-
-    @Override
-    public void renderShadows(MCLevelRenderer worldRenderer, MCCamera camera) {
-
+    protected void renderHorizon() {
+        // TODO
+        throw new UnsupportedOperationException("renderHorizon");
     }
 
     @Override
