@@ -4,14 +4,12 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.platform.Lighting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.Culler;
-import net.minecraft.client.render.texture.TextureManager;
 import net.minecraft.client.render.world.WorldRenderer;
 import net.minecraft.entity.living.LivingEntity;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
-import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Coerce;
@@ -19,13 +17,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.taumc.celeritas.impl.extensions.RenderGlobalExtension;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
-import org.taumc.celeritas.impl.render.terrain.compile.PrimitiveBuiltRenderSectionData;
 
 @Mixin(value = WorldRenderer.class, priority = 900)
 public abstract class WorldRendererMixin implements RenderGlobalExtension {
 
     @Shadow
     private Minecraft minecraft;
+
+    @Shadow
+    private int chunkGridSizeX, chunkGridSizeY, chunkGridSizeZ;
+
     private CeleritasWorldRenderer renderer;
 
     @Inject(method = "<init>", at = @At("RETURN"))
@@ -47,6 +48,13 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
         } finally {
             RenderDevice.exitManagedCode();
         }
+    }
+
+    @Inject(method = "m_6748042", at = @At(opcode = Opcodes.PUTFIELD, value = "FIELD", target = "Lnet/minecraft/client/render/world/WorldRenderer;chunkGridSizeZ:I", shift = At.Shift.AFTER))
+    private void nullifyBuiltChunkStorage(CallbackInfo ci) {
+        this.chunkGridSizeX = 0;
+        this.chunkGridSizeY = 0;
+        this.chunkGridSizeZ = 0;
     }
 
     /**
