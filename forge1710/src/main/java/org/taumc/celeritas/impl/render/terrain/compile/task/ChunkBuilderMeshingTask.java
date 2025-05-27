@@ -13,6 +13,7 @@ import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ReportedException;
+import net.minecraft.world.ChunkCache;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.client.ForgeHooksClient;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
@@ -94,7 +95,8 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         ((WorldClientExtension)world).celeritas$getSmoothBiomeColorCache().update(new SectionPos(this.render.getChunkX(), this.render.getChunkY(), this.render.getChunkZ()));
         var chunk = world.getChunkFromChunkCoords(this.render.getChunkX(), this.render.getChunkZ());
         var section = chunk.getBlockStorageArray()[this.render.getChunkY()];
-        var renderBlocks = new RenderBlocks(world);
+        var region = new ChunkCache(world, minX - 1, minY - 1, minZ - 1, maxX + 1, maxY + 1, maxZ + 1, 1);
+        var renderBlocks = new RenderBlocks(region);
         var tesselator = Tessellator.instance;
         var extTesselator = (TessellatorExtension)tesselator;
 
