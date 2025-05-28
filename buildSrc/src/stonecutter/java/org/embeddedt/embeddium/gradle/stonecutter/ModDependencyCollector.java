@@ -30,7 +30,7 @@ public class ModDependencyCollector {
             )),
             "codechickenlib",
             new Dependency("curse.maven:codechickenlib-242818:", List.of(
-                    new DependencyCondition("=1.21.1", "6061637"),
+                    new DependencyCondition("=1.21.1", "6583751"),
                     //new DependencyCondition("=1.20.4", "5826640"),
                     new DependencyCondition("=1.20.1", "5753868"),
                     new DependencyCondition("=1.19.2", "4965330"),
