@@ -8,25 +8,18 @@ import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
-import net.irisshaders.iris.gl.image.ImageHolder;
-import net.irisshaders.iris.gl.program.ProgramSamplers;
-import net.irisshaders.iris.gl.sampler.SamplerHolder;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
 import net.irisshaders.iris.gl.state.ShaderAttributeInputsBuilder;
 import net.irisshaders.iris.pathways.HorizonRenderer;
 import net.irisshaders.iris.pipeline.programs.*;
-import net.irisshaders.iris.samplers.IrisImages;
-import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.shaderpack.loading.ProgramId;
 import net.irisshaders.iris.shaderpack.programs.ProgramSet;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
 import net.irisshaders.iris.shaderpack.properties.PackDirectives;
-import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import net.irisshaders.iris.shadows.CommonShadowRenderer;
 import net.irisshaders.iris.shadows.ShadowCompositeRenderer;
 import net.irisshaders.iris.shadows.ModernShadowRenderer;
@@ -137,16 +130,6 @@ public class ModernIrisRenderingPipeline extends CommonIrisRenderingPipeline imp
 	}
 
 	@Override
-	protected CompletableFuture<MCShaderInstance> createShadowShader(String name, Optional<ProgramSource> source, ShaderKey key, Executor syncExecutor) throws IOException {
-		if (!source.isPresent()) {
-			return CompletableFuture.completedFuture(createFallbackShadowShader(name, key));
-		}
-
-		return createShadowShader(name, syncExecutor, source.get(), key.getProgram(), key.getAlphaTest(), key.getVertexFormat(),
-			key.isIntensity(), key.shouldIgnoreLightmap(), key.isText());
-	}
-
-	@Override
 	protected MCShaderInstance createFallbackShadowShader(String name, ShaderKey key) throws IOException {
 		GlFramebuffer framebuffer = shadowRenderTargets.createShadowFramebuffer(ImmutableSet.of(), new int[]{0});
 
@@ -179,38 +162,7 @@ public class ModernIrisRenderingPipeline extends CommonIrisRenderingPipeline imp
         }, syncExecutor);
 	}
 
-	public void addGbufferOrShadowSamplers(SamplerHolder samplers, ImageHolder images, Supplier<ImmutableSet<Integer>> flipped,
-										   boolean isShadowPass, boolean hasTexture, boolean hasLightmap, boolean hasOverlay) {
-		TextureStage textureStage = TextureStage.GBUFFERS_AND_SHADOW;
-
-		ProgramSamplers.CustomTextureSamplerInterceptor samplerHolder =
-			ProgramSamplers.customTextureSamplerInterceptor(samplers,
-				customTextureManager.getCustomTextureIdMap().getOrDefault(textureStage, Object2ObjectMaps.emptyMap()));
-
-		IrisSamplers.addRenderTargetSamplers(samplerHolder, flipped, renderTargets, false, this);
-		IrisSamplers.addCustomTextures(samplerHolder, customTextureManager.getIrisCustomTextures());
-		IrisImages.addRenderTargetImages(images, flipped, renderTargets);
-		IrisImages.addCustomImages(images, customImages);
-
-		if (!shouldBindPBR) {
-			shouldBindPBR = IrisSamplers.hasPBRSamplers(samplerHolder);
-		}
-
-		IrisSamplers.addLevelSamplers(samplers, this, (MCAbstractTexture) getWhitePixel(), hasTexture, hasLightmap, hasOverlay);
-		IrisSamplers.addWorldDepthSamplers(samplerHolder, this.renderTargets);
-		IrisSamplers.addNoiseSampler(samplerHolder, this.customTextureManager.getNoiseTexture());
-		IrisSamplers.addCustomImages(samplerHolder, customImages);
-
-		if (IrisSamplers.hasShadowSamplers(samplerHolder)) {
-			IrisSamplers.addShadowSamplers(samplerHolder, shadowTargetsSupplier.get(), null, separateHardwareSamplers);
-		}
-
-		if (isShadowPass || IrisImages.hasShadowImages(images)) {
-			IrisImages.addShadowColorImages(images, shadowTargetsSupplier.get(), null);
-		}
-	}
-
-    @Override
+	@Override
 	public RenderTargetStateListener getRenderTargetStateListener() {
 		return this;
 	}

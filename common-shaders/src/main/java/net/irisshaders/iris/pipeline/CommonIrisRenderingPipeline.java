@@ -12,10 +12,12 @@ import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.buffer.ShaderStorageBufferHolder;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.image.GlImage;
+import net.irisshaders.iris.gl.image.ImageHolder;
 import net.irisshaders.iris.gl.program.ComputeProgram;
 import net.irisshaders.iris.gl.program.ProgramBuilder;
 import net.irisshaders.iris.gl.program.ProgramImages;
 import net.irisshaders.iris.gl.program.ProgramSamplers;
+import net.irisshaders.iris.gl.sampler.SamplerHolder;
 import net.irisshaders.iris.gl.sampler.SamplerLimits;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.gl.state.FogMode;
@@ -597,6 +599,37 @@ public abstract class CommonIrisRenderingPipeline implements WorldRenderingPipel
             RENDER_SYSTEM.depthMask(true);
 
             RENDER_SYSTEM.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+    }
+
+    public void addGbufferOrShadowSamplers(SamplerHolder samplers, ImageHolder images, Supplier<ImmutableSet<Integer>> flipped,
+                                           boolean isShadowPass, boolean hasTexture, boolean hasLightmap, boolean hasOverlay) {
+        TextureStage textureStage = TextureStage.GBUFFERS_AND_SHADOW;
+
+        ProgramSamplers.CustomTextureSamplerInterceptor samplerHolder =
+            ProgramSamplers.customTextureSamplerInterceptor(samplers,
+                customTextureManager.getCustomTextureIdMap().getOrDefault(textureStage, Object2ObjectMaps.emptyMap()));
+
+        IrisSamplers.addRenderTargetSamplers(samplerHolder, flipped, renderTargets, false, this);
+        IrisSamplers.addCustomTextures(samplerHolder, customTextureManager.getIrisCustomTextures());
+        IrisImages.addRenderTargetImages(images, flipped, renderTargets);
+        IrisImages.addCustomImages(images, customImages);
+
+        if (!shouldBindPBR) {
+            shouldBindPBR = IrisSamplers.hasPBRSamplers(samplerHolder);
+        }
+
+        IrisSamplers.addLevelSamplers(samplers, this, (MCAbstractTexture) getWhitePixel(), hasTexture, hasLightmap, hasOverlay);
+        IrisSamplers.addWorldDepthSamplers(samplerHolder, this.renderTargets);
+        IrisSamplers.addNoiseSampler(samplerHolder, this.customTextureManager.getNoiseTexture());
+        IrisSamplers.addCustomImages(samplerHolder, customImages);
+
+        if (IrisSamplers.hasShadowSamplers(samplerHolder)) {
+            IrisSamplers.addShadowSamplers(samplerHolder, shadowTargetsSupplier.get(), null, separateHardwareSamplers);
+        }
+
+        if (isShadowPass || IrisImages.hasShadowImages(images)) {
+            IrisImages.addShadowColorImages(images, shadowTargetsSupplier.get(), null);
         }
     }
 
@@ -1420,8 +1453,14 @@ public abstract class CommonIrisRenderingPipeline implements WorldRenderingPipel
 
     protected abstract MCShaderInstance createFallbackShader(String name, ShaderKey key) throws IOException;
 
-    protected abstract CompletableFuture<MCShaderInstance> createShadowShader(String name, Optional<ProgramSource> source, ShaderKey key, Executor syncExecutor)
-            throws IOException;
+    protected CompletableFuture<MCShaderInstance> createShadowShader(String name, Optional<ProgramSource> source, ShaderKey key, Executor syncExecutor) throws IOException {
+        if (!source.isPresent()) {
+            return CompletableFuture.completedFuture(createFallbackShadowShader(name, key));
+        }
+
+        return createShadowShader(name, syncExecutor, source.get(), key.getProgram(), key.getAlphaTest(), key.getVertexFormat(),
+            key.isIntensity(), key.shouldIgnoreLightmap(), key.isText());
+    }
 
     protected abstract MCShaderInstance createFallbackShadowShader(String name, ShaderKey key) throws IOException;
 
