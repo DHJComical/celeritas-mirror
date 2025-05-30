@@ -5,15 +5,16 @@ import dev.kikugie.stonecutter.controller.StonecutterControllerExtension;
 import kotlin.Unit;
 import org.gradle.api.Project;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ModDependencyCollector {
     record Dependency(String cursePrefix, List<DependencyCondition> versionConditions) {
     }
-    record DependencyCondition(String evalCondition, String version) {}
+    record DependencyCondition(String evalCondition, String version, String configurationName) {
+        DependencyCondition(String evalCondition, String version) {
+            this(evalCondition, version, null);
+        }
+    }
 
     private static final Map<String, Dependency> FORGELIKE_DEPENDENCY_MAP = Map.of(
             "immersiveengineering",
@@ -42,6 +43,10 @@ public class ModDependencyCollector {
                     new DependencyCondition("=1.19.2", "4341471"),
                     new DependencyCondition("=1.18.2", "4341461"),
                     new DependencyCondition("=1.16.5", "3535459")
+            )),
+            "radium",
+            new Dependency("curse.maven:radium-570017:", List.of(
+                    new DependencyCondition("=1.20.1", "5706069", "modImplementation")
             ))
     );
 
@@ -82,8 +87,10 @@ public class ModDependencyCollector {
         var configurationName = LOAD_IN_DEV ? "modImplementation" : "modCompileOnly";
         dependencyMap(scBuild.getCurrent().getProject()).forEach((key, dep) -> {
             var vers = dep.versionConditions.stream().filter(c -> scBuild.eval(mcVersion, c.evalCondition)).findFirst();
-            vers.ifPresent(dependencyCondition ->
-                    project.getDependencies().add(configurationName, dep.cursePrefix + dependencyCondition.version));
+            vers.ifPresent(dependencyCondition -> {
+                String cfg = Objects.requireNonNullElse(dependencyCondition.configurationName, configurationName);
+                project.getDependencies().add(cfg, dep.cursePrefix + dependencyCondition.version);
+            });
         });
     }
 }
