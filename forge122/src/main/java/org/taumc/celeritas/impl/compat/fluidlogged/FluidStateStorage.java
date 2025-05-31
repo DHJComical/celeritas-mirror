@@ -5,6 +5,7 @@ import git.jbredwards.fluidlogged_api.api.capability.IFluidStateContainer;
 import git.jbredwards.fluidlogged_api.api.util.FluidState;
 import net.minecraft.world.chunk.BlockStateContainer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.util.Objects;
@@ -17,7 +18,7 @@ public class FluidStateStorage {
     private final int nonEmptyCount;
 
     public FluidStateStorage(Chunk chunkIn, int yIn) {
-        IFluidStateContainer container = Objects.requireNonNull(IFluidStateCapability.get(chunkIn)).getContainer(yIn);
+        IFluidStateContainer container = Objects.requireNonNull(IFluidStateCapability.get((ICapabilityProvider)chunkIn)).getContainer(yIn);
         MutableInt counter = new MutableInt();
         container.forEach((pos, fluidState) -> {
             int y = container.deserializeY(pos);

@@ -37,7 +37,15 @@ if(file("forge1710").exists()) {
 }
 if(file("forge122").exists()) {
     include("forge122")
+    stonecutter {
+        create(":forge122") {
+            centralScript = "build.gradle.kts"
+            versions("1.12.2", "1.10.2")
+            vcsVersion = "1.12.2"
+        }
+    }
 }
+
 if(file("babric").exists()) {
     include("babric")
     stonecutter {

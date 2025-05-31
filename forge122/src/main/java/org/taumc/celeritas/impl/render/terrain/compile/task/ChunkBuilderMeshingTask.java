@@ -112,7 +112,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         for (BlockRenderLayer layer : VintageChunkBuildContext.LAYERS) {
                             if (block.canRenderInLayer(blockState, layer)) {
                                 ForgeHooksClient.setRenderLayer(layer);
-                                var buffer = buildContext.getBufferBuilderForLayer(layer);
+                                var buffer = buildContext.getBufferForLayer(layer);
                                 dispatcher.renderBlock(blockState, blockPos, slice, buffer);
                             }
                         }

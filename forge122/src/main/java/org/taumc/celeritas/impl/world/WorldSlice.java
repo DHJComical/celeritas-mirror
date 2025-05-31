@@ -157,10 +157,17 @@ public class WorldSlice implements CeleritasBlockAccess {
         return new ChunkRenderContext(origin, sections, volume);
     }
 
+    private boolean hasSkyLight() {
+        //? if >1.10.2 {
+        return this.world.provider.hasSkyLight();
+        //?} else
+        /*return true;*/
+    }
+
     public WorldSlice(World world) {
         this.world = world;
         this.worldType = world.getWorldType();
-        this.defaultSkyLightValue = this.world.provider.hasSkyLight() ? EnumSkyBlock.SKY.defaultLightValue : 0;
+        this.defaultSkyLightValue = this.hasSkyLight() ? EnumSkyBlock.SKY.defaultLightValue : 0;
 
         this.sections = new ClonedChunkSection[SECTION_TABLE_ARRAY_SIZE];
         this.blockStatesArrays = new IBlockState[SECTION_TABLE_ARRAY_SIZE][];
@@ -368,7 +375,7 @@ public class WorldSlice implements CeleritasBlockAccess {
     }
 
     private int getLightFromNeighborsFor(EnumSkyBlock type, BlockPos pos) {
-        if(!this.world.provider.hasSkyLight() && type == EnumSkyBlock.SKY) {
+        if(!this.hasSkyLight() && type == EnumSkyBlock.SKY) {
             return this.defaultSkyLightValue;
         }
 
@@ -475,7 +482,7 @@ public class WorldSlice implements CeleritasBlockAccess {
 
     public float getBrightness(EnumFacing direction, boolean shaded) {
         if (!shaded) {
-            return !world.provider.hasSkyLight() ? 0.9f : 1.0f;
+            return !hasSkyLight() ? 0.9f : 1.0f;
         }
         return LightUtil.diffuseLight(direction);
     }

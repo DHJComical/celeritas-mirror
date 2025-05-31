@@ -1,5 +1,7 @@
 package org.taumc.celeritas.impl.render.terrain.compile;
 
+//? if 1.10.2 {
+//?}
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -12,7 +14,6 @@ import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
-import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
@@ -22,7 +23,6 @@ import org.lwjgl.opengl.GL11C;
 import org.lwjgl.system.MemoryUtil;
 import org.taumc.celeritas.impl.extensions.SpriteExtension;
 import org.taumc.celeritas.impl.extensions.TextureMapExtension;
-import org.taumc.celeritas.impl.render.terrain.VintageRenderPassConfigurationBuilder;
 import org.taumc.celeritas.impl.world.WorldSlice;
 
 import java.nio.ByteBuffer;
@@ -52,7 +52,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
         this.offZ = z;
     }
 
-    public BufferBuilder getBufferBuilderForLayer(BlockRenderLayer layer) {
+    public BufferBuilder getBufferForLayer(BlockRenderLayer layer) {
         var builder = this.worldRenderers[layer.ordinal()];
         if (builder == null) {
             builder = new BufferBuilder(131072);
@@ -102,8 +102,19 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
         return material;
     }
 
+    private static final int BLOCK_VERTEX_FORMAT_SIZE;
+
+    static {
+        var format = DefaultVertexFormats.BLOCK;
+        int size = 0;
+        for (int i = 0; i < format.getElementCount(); i++) {
+            size += format.getElement(i).getSize();
+        }
+        BLOCK_VERTEX_FORMAT_SIZE = size;
+    }
+
     private void copyBlockData(ByteBuffer source, ChunkBuildBuffers buffers, Material material) {
-        int vsize = DefaultVertexFormats.BLOCK.getSize();
+        int vsize = BLOCK_VERTEX_FORMAT_SIZE;
         int numQuads = source.limit() / (vsize * 4);
         long ptr = MemoryUtil.memAddress(source);
         var quad = ChunkVertexEncoder.Vertex.uninitializedQuad();
@@ -135,7 +146,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
             }
             ModelQuadFacing facing = QuadUtil.findNormalFace(trueNormal);
             Material correctMaterial = selectMaterial(material, sprite);
-            buffers.get(correctMaterial).getVertexBuffer(facing).push(quad, material);
+            buffers.get(correctMaterial).getBufferBuilder(facing).push(quad, material);
         }
     }
 }
