@@ -1,3 +1,4 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.embeddedt.embeddium.gradle.build.conventions.LWJGLHelper
 import org.embeddedt.embeddium.gradle.build.conventions.ProductionJarHelper
 import xyz.wagyourtail.jvmdg.gradle.task.files.DowngradeFiles
@@ -22,7 +23,7 @@ val minecraftVersion = project.name
 
 val versionData = versionDataMap.getValue(project.name)
 
-val archivesBaseName = "celeritas-forge-${project.name}"
+base.archivesName = "celeritas-forge-${project.name}"
 
 val modCompileOnly by configurations.creating
 configurations.compileOnly.get().extendsFrom(modCompileOnly)
@@ -95,3 +96,8 @@ LWJGLHelper.convertLwjgl2To3(project)
 ProductionJarHelper.configureProcessedResources(project)
 ProductionJarHelper.setupLegacyFMLManifest(project)
 ProductionJarHelper.createShadowRemapJar(project)
+
+tasks.register("packageJar", Copy::class) {
+    from(tasks.named<ShadowJar>("shadowRemapJar").get().archiveFile)
+    into("${rootProject.layout.buildDirectory.get()}/libs/${project.version}")
+}
