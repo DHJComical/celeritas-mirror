@@ -3,6 +3,7 @@ import org.embeddedt.embeddium.gradle.build.conventions.LWJGLHelper
 import org.embeddedt.embeddium.gradle.build.conventions.ProductionJarHelper
 import xyz.wagyourtail.unimined.api.minecraft.EnvType
 import xyz.wagyourtail.unimined.api.minecraft.task.AbstractRemapJarTask
+import java.net.URI
 
 plugins {
     id("celeritas.platform-conventions")
@@ -18,11 +19,12 @@ version = rootProject.version
 
 evaluationDependsOn(":common")
 
-data class VersionData(val uniminedVersion: String)
+data class VersionData(val uniminedVersion: String, val metadataURL: URI? = null)
 
 val versionDataMap = mapOf(
         "1.0.0-beta.7.3" to VersionData("b1.7.3"),
-        "1.0.0-beta.8.1" to VersionData("b1.8.1")
+        "1.0.0-beta.8.1" to VersionData( "b1.8.1"),
+        "1.2-alpha.125a" to VersionData("12w05a-1442", file("12w05a.json").toURI())
 )
 
 val isClientServerSplit = stonecutter.eval(project.name, "<1.3")
@@ -37,6 +39,10 @@ unimined.minecraft {
 
     version = versionData.uniminedVersion
     side = if(isClientServerSplit) EnvType.CLIENT else EnvType.COMBINED
+
+    if (versionData.metadataURL != null) {
+        minecraftData.metadataURL = versionData.metadataURL
+    }
 
     mappings {
         calamus()
