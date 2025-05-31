@@ -1,6 +1,5 @@
 package org.taumc.celeritas.mixin.core.frustum;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.ClippingHelper;
 import net.minecraft.client.renderer.culling.Frustum;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
@@ -27,13 +26,10 @@ public class FrustumMixin implements ViewportProvider {
 
     @Inject(method = "<init>(Lnet/minecraft/client/renderer/culling/ClippingHelper;)V", at = @At("RETURN"))
     private void onFrustumInit(CallbackInfo ci) {
-        ClippingHelperImplAccessor clippingHelper = (ClippingHelperImplAccessor)this.clippingHelper;
-        var projBuffer = clippingHelper.getProjectionMatrixBuffer();
-        projBuffer.flip().limit(16);
-        Matrix4f frustumMatrix = new Matrix4f(projBuffer);
-        var modelViewBuffer = clippingHelper.getModelviewMatrixBuffer();
-        modelViewBuffer.flip().limit(16);
-        Matrix4f modelviewMatrix = new Matrix4f(modelViewBuffer);
+        Matrix4f frustumMatrix = new Matrix4f();
+        frustumMatrix.set(clippingHelper.projectionMatrix);
+        Matrix4f modelviewMatrix = new Matrix4f();
+        modelviewMatrix.set(clippingHelper.modelviewMatrix);
         this.celeritas$frustum = new FrustumIntersection(frustumMatrix.mul(modelviewMatrix));
     }
 
