@@ -27,10 +27,13 @@ public final class MultiDrawBatch {
 
         this.pElementCount = MemoryUtil.nmemAlignedAlloc(32, (long) capacity * Integer.BYTES);
         if (this.pElementCount == MemoryUtil.NULL) {
+            MemoryUtil.nmemAlignedFree(this.pElementPointer);
             throw new OutOfMemoryError("Failed to allocate element count array");
         }
         this.pBaseVertex = MemoryUtil.nmemAlignedAlloc(32, (long) capacity * Integer.BYTES);
         if (this.pBaseVertex == MemoryUtil.NULL) {
+            MemoryUtil.nmemAlignedFree(this.pElementPointer);
+            MemoryUtil.nmemAlignedFree(this.pElementCount);
             throw new OutOfMemoryError("Failed to allocate base vertex array");
         }
 
