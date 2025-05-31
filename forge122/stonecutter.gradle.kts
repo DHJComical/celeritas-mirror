@@ -4,5 +4,5 @@ plugins {
 stonecutter active "1.12.2"
 
 stonecutter.parameters {
-    replacement(eval(metadata.version, ">1.10.2"), "VertexBuffer", "BufferBuilder")
+    replacement(eval(metadata.version, ">1.10.2"), "net.minecraft.client.renderer.VertexBuffer", "net.minecraft.client.renderer.BufferBuilder")
 }

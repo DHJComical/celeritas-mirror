@@ -5,7 +5,6 @@ package org.taumc.celeritas.impl.render.terrain.compile;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.tileentity.TileEntity;
@@ -32,7 +31,7 @@ import java.util.Objects;
 public class VintageChunkBuildContext extends ChunkBuildContext {
     public static final BlockRenderLayer[] LAYERS = BlockRenderLayer.values();
     private final TextureMapExtension textureAtlas;
-    private final BufferBuilder[] worldRenderers = new BufferBuilder[LAYERS.length];
+    private final net.minecraft.client.renderer.BufferBuilder[] worldRenderers = new net.minecraft.client.renderer.BufferBuilder[LAYERS.length];
     private final boolean[] usedWorldRenderers = new boolean[LAYERS.length];
     private int offX, offY, offZ;
     @Getter
@@ -52,10 +51,10 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
         this.offZ = z;
     }
 
-    public BufferBuilder getBufferForLayer(BlockRenderLayer layer) {
+    public net.minecraft.client.renderer.BufferBuilder getBufferForLayer(BlockRenderLayer layer) {
         var builder = this.worldRenderers[layer.ordinal()];
         if (builder == null) {
-            builder = new BufferBuilder(131072);
+            builder = new net.minecraft.client.renderer.BufferBuilder(131072);
             this.worldRenderers[layer.ordinal()] = builder;
         }
         if (!this.usedWorldRenderers[layer.ordinal()]) {
@@ -146,7 +145,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
             }
             ModelQuadFacing facing = QuadUtil.findNormalFace(trueNormal);
             Material correctMaterial = selectMaterial(material, sprite);
-            buffers.get(correctMaterial).getBufferBuilder(facing).push(quad, material);
+            buffers.get(correctMaterial).getVertexBuffer(facing).push(quad, material);
         }
     }
 }
