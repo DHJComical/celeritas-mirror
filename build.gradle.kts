@@ -49,21 +49,6 @@ val publishTask = tau.publishing.publish {
         }
     }
 
-    if (findProject(":forge1710") != null) {
-        val archaic = project(":forge1710")
-        dependsOn(archaic.tasks.named("remapJar"))
-
-        modArtifact {
-            files(project.provider { archaic.tasks.named<RemapJarTask>("remapJar").get().asJar.archiveFile })
-
-            minecraftVersionRange = "1.7.10"
-            javaVersions.add(JavaVersion.VERSION_21)
-
-            environment = ModEnvironment.CLIENT_ONLY
-            modLoaders.add(ModLoader.LEXFORGE)
-        }
-    }
-
     if (modernStonecutter != null) {
         modernStonecutter.tree.values.flatMap { it.values }.forEach {
             val name = it.metadata.project
