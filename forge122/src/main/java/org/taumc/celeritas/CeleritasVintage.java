@@ -9,6 +9,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
@@ -28,14 +29,16 @@ public class CeleritasVintage {
     public static String VERSION;
 
     @Mod.EventHandler
-    public void onInit(FMLInitializationEvent event) {
-        LOGGER.info("Hello from Forge!");
+    public void onConstruct(FMLConstructionEvent event) {
         GLRenderDevice.VANILLA_STATE_RESETTER = () -> {
             OpenGlHelper.glBindBuffer(OpenGlHelper.GL_ARRAY_BUFFER, 0);
         };
         VERSION = Loader.instance().getIndexedModList().get(MODID).getVersion();
         MinecraftForge.EVENT_BUS.register(this);
+    }
 
+    @Mod.EventHandler
+    public void onInit(FMLInitializationEvent event) {
         if ((Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")) {
             ClientCommandHandler.instance.registerCommand(new TogglePassCommand());
         }
