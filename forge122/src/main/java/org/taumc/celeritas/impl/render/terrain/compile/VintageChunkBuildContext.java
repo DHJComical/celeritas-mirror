@@ -145,7 +145,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
             }
             ModelQuadFacing facing = QuadUtil.findNormalFace(trueNormal);
             Material correctMaterial = selectMaterial(material, sprite);
-            buffers.get(correctMaterial).getVertexBuffer(facing).push(quad, material);
+            buffers.get(correctMaterial).getVertexBuffer(facing).push(quad, correctMaterial);
         }
     }
 }
