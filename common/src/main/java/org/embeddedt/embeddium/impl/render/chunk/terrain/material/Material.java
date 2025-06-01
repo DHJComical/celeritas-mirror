@@ -52,4 +52,13 @@ public final class Material {
     public int hashCode() {
         return Objects.hash(pass, packed);
     }
+
+    @Override
+    public String toString() {
+        return "Material{" +
+                "pass=" + pass +
+                ", alphaCutoff=" + alphaCutoff +
+                ", mipped=" + mipped +
+                '}';
+    }
 }
