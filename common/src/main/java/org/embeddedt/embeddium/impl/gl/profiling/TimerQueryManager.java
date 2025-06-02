@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.gl.profiling;
 
+import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
 import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
 import lombok.Getter;
 import org.lwjgl.opengl.GL32C;
@@ -22,22 +23,36 @@ public class TimerQueryManager implements Closeable {
         }
 
         void delete() {
-            GL32C.glDeleteQueries(startTime);
-            GL32C.glDeleteQueries(endTime);
+            releaseQuery(startTime);
+            releaseQuery(endTime);
         }
     }
 
     private final ObjectArrayFIFOQueue<InFlightQuery> inFlightQueries = new ObjectArrayFIFOQueue<>();
     private int startQueryId = INVALID_ID;
 
+    private static final IntArrayFIFOQueue QUERY_POOL = new IntArrayFIFOQueue();
+
     @Getter
     private long lastTime;
+
+    private static int allocateQuery() {
+        if (!QUERY_POOL.isEmpty()) {
+            return QUERY_POOL.dequeueInt();
+        } else {
+            return GL32C.glGenQueries();
+        }
+    }
+
+    private static void releaseQuery(int id) {
+        QUERY_POOL.enqueue(id);
+    }
 
     public void startProfiling() {
         if (startQueryId != INVALID_ID) {
             throw new IllegalStateException("Query already started but not ended");
         }
-        int id = GL32C.glGenQueries();
+        int id = allocateQuery();
         GL33C.glQueryCounter(id, GL33C.GL_TIMESTAMP);
         startQueryId = id;
     }
@@ -46,7 +61,7 @@ public class TimerQueryManager implements Closeable {
         if (startQueryId == INVALID_ID) {
             throw new IllegalStateException("Trying to end query that hasn't started yet");
         }
-        int id = GL32C.glGenQueries();
+        int id = allocateQuery();
         GL33C.glQueryCounter(id, GL33C.GL_TIMESTAMP);
         inFlightQueries.enqueue(new InFlightQuery(startQueryId, id));
         startQueryId = -1;
@@ -67,7 +82,7 @@ public class TimerQueryManager implements Closeable {
             inFlightQueries.dequeue().delete();
         }
         if (startQueryId != -1) {
-            GL32C.glDeleteQueries(startQueryId);
+            releaseQuery(startQueryId);
             startQueryId = -1;
         }
     }
