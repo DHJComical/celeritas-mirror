@@ -9,6 +9,7 @@ import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.helpers.Tri;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
+import net.irisshaders.iris.shaderpack.ImageInformation;
 import net.irisshaders.iris.shaderpack.ShaderPack;
 import net.irisshaders.iris.shaderpack.programs.ProgramSet;
 import net.irisshaders.iris.shaderpack.properties.CloudSetting;
@@ -74,7 +75,7 @@ public abstract class CommonIrisRenderingPipeline implements WorldRenderingPipel
     protected int currentSpecularTexture;
     protected ColorSpace currentColorSpace;
 
-    public CommonIrisRenderingPipeline(ProgramSet programSet) {
+    public CommonIrisRenderingPipeline(ProgramSet programSet, int mainFBWidth, int mainFBHeight) {
         PackShadowDirectives shadowDirectives = programSet.getPackDirectives().getShadowDirectives();
 
         if (shadowDirectives.isDistanceRenderMulExplicit()) {
@@ -104,6 +105,13 @@ public abstract class CommonIrisRenderingPipeline implements WorldRenderingPipel
         };
 
         this.customImages = new HashSet<>();
+        for (ImageInformation information : programSet.getPack().getIrisCustomImages()) {
+            if (information.isRelative()) {
+                customImages.add(new GlImage.Relative(information.name(), information.samplerName(), information.format(), information.internalTextureFormat(), information.type(), information.clear(), information.relativeWidth(), information.relativeHeight(), mainFBWidth, mainFBHeight));
+            } else {
+                customImages.add(new GlImage(information.name(), information.samplerName(), information.target(), information.format(), information.internalTextureFormat(), information.type(), information.clear(), information.width(), information.height(), information.depth()));
+            }
+        }
         this.clearImages = customImages.stream().filter(GlImage::shouldClear).toArray(GlImage[]::new);
         this.pack = programSet.getPack();
         this.updateNotifier = new FrameUpdateNotifier();

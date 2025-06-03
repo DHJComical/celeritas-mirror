@@ -133,7 +133,7 @@ public class ModernIrisRenderingPipeline extends CommonIrisRenderingPipeline imp
 
 
     public ModernIrisRenderingPipeline(ProgramSet programSet) {
-        super(programSet);
+        super(programSet, Minecraft.getInstance().getMainRenderTarget().width, Minecraft.getInstance().getMainRenderTarget().height);
 		ShaderPrinter.resetPrintState();
 
         this.separateHardwareSamplers = programSet.getPack().hasFeature(FeatureFlags.SEPARATE_HARDWARE_SAMPLERS);
@@ -156,14 +156,6 @@ public class ModernIrisRenderingPipeline extends CommonIrisRenderingPipeline imp
 		} else {
 			for (int i = 0; i < Math.min(16, SamplerLimits.get().getMaxShaderStorageUnits()); i++) {
 				IrisRenderSystem.bindBufferBase(GL43C.GL_SHADER_STORAGE_BUFFER, i, 0);
-			}
-		}
-
-        for (ImageInformation information : programSet.getPack().getIrisCustomImages()) {
-			if (information.isRelative()) {
-				customImages.add(new GlImage.Relative(information.name(), information.samplerName(), information.format(), information.internalTextureFormat(), information.type(), information.clear(), information.relativeWidth(), information.relativeHeight(), main.width, main.height));
-			} else {
-				customImages.add(new GlImage(information.name(), information.samplerName(), information.target(), information.format(), information.internalTextureFormat(), information.type(), information.clear(), information.width(), information.height(), information.depth()));
 			}
 		}
 
