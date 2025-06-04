@@ -2,17 +2,19 @@ package org.embeddedt.embeddium.impl.render.chunk.lists;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import lombok.AccessLevel;
+import lombok.Getter;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkUpdateType;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import java.util.ArrayDeque;
 import java.util.EnumMap;
-import java.util.Map;
 import java.util.Queue;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionCuller;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionNode;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 
 public class VisibleChunkCollector implements OcclusionCuller.Visitor {
+    @Getter(AccessLevel.PACKAGE)
     private final ObjectArrayList<ChunkRenderList> sortedRenderLists;
     private final EnumMap<ChunkUpdateType, ArrayDeque<RenderSection>> sortedRebuildLists;
     private final Reference2ReferenceOpenHashMap<RenderRegion, ChunkRenderList> renderListsByRegion;

@@ -380,6 +380,9 @@ public abstract class RenderSectionManager {
             return;
         }
 
+        // Ensure occlusion threads are stopped at this point, as we're about to mutate render section data.
+        this.finishAllGraphUpdates();
+
         this.processChunkBuildResults(results);
 
         for (var result : results) {

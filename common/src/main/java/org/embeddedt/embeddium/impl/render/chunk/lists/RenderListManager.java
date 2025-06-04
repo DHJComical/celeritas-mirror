@@ -103,6 +103,11 @@ public class RenderListManager {
 
         Supplier<VisibleChunkCollector> occlusionTask = () -> {
             this.occlusionCuller.findVisible(visitor, viewport, searchDistance, useOcclusionCulling, frame);
+
+            if (this.sectionTicker != null) {
+                this.sectionTicker.onRenderListUpdated(visitor.getSortedRenderLists());
+            }
+
             return visitor;
         };
 
@@ -124,10 +129,6 @@ public class RenderListManager {
 
             this.renderLists = visitor.createRenderLists();
             this.rebuildLists = visitor.getRebuildLists();
-
-            if (this.sectionTicker != null) {
-                this.sectionTicker.onRenderListUpdated(this.renderLists);
-            }
 
             this.currentOcclusionFuture = null;
             this.lastUpdatedFrame = this.pendingLastUpdatedFrame;
