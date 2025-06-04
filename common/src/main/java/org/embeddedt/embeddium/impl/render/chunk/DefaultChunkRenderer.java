@@ -63,6 +63,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
                        CommandList commandList,
                        ChunkRenderListIterable renderLists,
                        TerrainRenderPass renderPass,
+                       CameraTransform occlusionCamera,
                        CameraTransform camera) {
         if (!renderLists.hasPass(renderPass)) {
             return;
@@ -99,7 +100,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
                     continue;
                 }
 
-                fillCommandBuffer(this.batch, region, storage, renderList, camera, renderPass, useBlockFaceCulling && !renderPass.isSorted());
+                fillCommandBuffer(this.batch, region, storage, renderList, occlusionCamera, renderPass, useBlockFaceCulling && !renderPass.isSorted());
 
                 if (this.batch.isEmpty()) {
                     continue;

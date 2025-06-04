@@ -316,7 +316,7 @@ public abstract class RenderSectionManager {
         this.markGraphDirty();
     }
 
-    public void renderLayer(ChunkRenderMatrices matrices, TerrainRenderPass pass, double x, double y, double z) {
+    public void renderLayer(ChunkRenderMatrices matrices, TerrainRenderPass pass, CameraTransform occlusionCamera, CameraTransform camera) {
         if (disabledRenderPasses.contains(pass)) {
             return;
         }
@@ -328,7 +328,7 @@ public abstract class RenderSectionManager {
 
         timer.startProfiling();
 
-        this.chunkRenderer.render(matrices, commandList, this.getCurrentRenderListManager().getRenderLists(), pass, new CameraTransform(x, y, z));
+        this.chunkRenderer.render(matrices, commandList, this.getCurrentRenderListManager().getRenderLists(), pass, occlusionCamera, camera);
 
         timer.finishProfiling();
 

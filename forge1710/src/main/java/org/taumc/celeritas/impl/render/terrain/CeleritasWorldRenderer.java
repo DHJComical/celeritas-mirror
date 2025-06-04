@@ -25,6 +25,7 @@ import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.*;
 import org.joml.Matrix4f;
@@ -251,9 +252,13 @@ public class CeleritasWorldRenderer {
 
         Collection<TerrainRenderPass> passes = this.renderSectionManager.getRenderPassConfiguration().vanillaRenderStages().get(vanillaPass);
 
+
         if (passes != null && !passes.isEmpty()) {
+            var occlusionCamera = this.currentViewport.getTransform();
+            var realCamera = new CameraTransform(x, y, z);
+
             for (var pass : passes) {
-                this.renderSectionManager.renderLayer(matrices, pass, x, y, z);
+                this.renderSectionManager.renderLayer(matrices, pass, occlusionCamera, realCamera);
             }
         }
 

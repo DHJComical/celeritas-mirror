@@ -18,9 +18,11 @@ public interface ChunkRenderer {
      * @param commandList The command list which OpenGL commands should be serialized to
      * @param renderLists The collection of render lists
      * @param pass        The block render pass to execute
+     * @param occlusionCamera The camera context that should be used for block face culling
      * @param camera      The camera context containing chunk offsets for the current render
      */
-    void render(ChunkRenderMatrices matrices, CommandList commandList, ChunkRenderListIterable renderLists, TerrainRenderPass pass, CameraTransform camera);
+    void render(ChunkRenderMatrices matrices, CommandList commandList, ChunkRenderListIterable renderLists,
+                TerrainRenderPass pass, CameraTransform occlusionCamera, CameraTransform camera);
 
     /**
      * Deletes this render backend and any resources attached to it.

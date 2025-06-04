@@ -13,6 +13,7 @@ import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTracker;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
+import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.*;
 import org.jetbrains.annotations.NotNull;
@@ -155,6 +156,10 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
 
     protected abstract ChunkRenderMatrices createChunkRenderMatrices();
 
+    public Viewport getLastViewport() {
+        return this.currentViewport;
+    }
+
     /**
      * Performs a render pass for the given {@link LAYER} and draws all visible chunks for it.
      */
@@ -164,8 +169,10 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
         Collection<TerrainRenderPass> passes = this.renderSectionManager.getRenderPassConfiguration().vanillaRenderStages().get(renderLayer);
 
         if (passes != null && !passes.isEmpty()) {
+            var occlusionCamera = this.getLastViewport().getTransform();
+            var realCamera = new CameraTransform(x, y, z);
             for (var pass : passes) {
-                this.renderSectionManager.renderLayer(matrices, pass, x, y, z);
+                this.renderSectionManager.renderLayer(matrices, pass, occlusionCamera, realCamera);
             }
         }
     }
