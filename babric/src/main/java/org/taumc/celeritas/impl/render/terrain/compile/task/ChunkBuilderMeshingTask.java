@@ -64,7 +64,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
         var world = buildContext.world;
         var chunk = world.getChunkAt(this.render.getChunkX(), this.render.getChunkZ());
-        var region = new WorldRegion(world, minX - 1, minY - 1, minZ - 1, maxX + 1, maxY + 1, maxZ + 1);
+        var region = new WorldRegion(world, minX - 1, minY - 1, minZ - 1, maxX + 1, maxY + 1, maxZ + 1 /*? if >=1.7.10 {*//*, 1*//*?}*/);
         var renderBlocks = new BlockRenderer(region);
         var tesselator = BufferBuilder.INSTANCE;
         var extTesselator = (TessellatorExtension)tesselator;
