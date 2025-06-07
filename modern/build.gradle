@@ -592,6 +592,11 @@ tasks.register('testProductionJar', PythonTask) {
     command = "${project.rootDir}/scripts/test_mod_in_prod.py ${launchDirectory} ${ModLoader.getMinecraftVersion(project)} ${configuredModLoader.friendlyName}  ${launchVersion}"
 }
 
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
 publishing {
     tasks.publish {
         dependsOn(tasks.build)
