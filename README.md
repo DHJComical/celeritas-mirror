@@ -6,29 +6,53 @@ Celeritas is a free and open-source performance & shaders mod for Minecraft clie
 was based on the last FOSS-licensed version of Sodium) and Oculus 1.7.
 
 I maintain this mod for personal use & experimentation and make the source code available for other projects and
-developers who may be interested. There are currently no plans to distribute binaries for modern Minecraft versions on CurseForge,
-Modrinth, or any other player-facing mod platform. There is also no guarantee of active maintenance, including bugfixes
+developers who may be interested. There is also no guarantee of active maintenance, including bugfixes
 or ports to any newer Minecraft versions. That said, the code remains
 LGPL-3.0, so other projects under a compatible license (including Embeddium) should feel free to incorporate bugfixes
 and features they find useful. That said, expect minimal support, and many possible bugs due to limited testing.
 
+**Important note:** There are currently no official Celeritas binary releases. If you download a precompiled
+Celeritas .jar file from any 3rd party source, we cannot provide any support for such files, and you do so at your own
+risk. As of writing, the only official distribution of Celeritas available is the original source code
+at https://git.taumc.org/embeddedt/celeritas, 
+
+## Project layout
+
+Celeritas uses the [Stonecutter](https://codeberg.org/stonecutter/stonecutter) toolchain to reduce the effort required
+to support individual Minecraft versions. Additionally, as much core rendering code as possible is fully abstracted
+from Minecraft within a `:common` project. The common module is published on
+[Maven](https://maven.taumc.org/#/releases/org/embeddedt/celeritas/celeritas-common), to allow downstream projects to
+consume it without rebuilding the entire project from source. However, the production mod jars are not available on Maven.
+
 ## How to build
 
-### Modern
+The fastest way to build for exactly one version target is to run `./gradlew -Ptarget_versions=<version> packageJar`.
+This command avoids configuring as many Minecraft targets as possible. The resulting jar file will be available
+in `build/libs/<celeritas version>`.
 
-Celeritas uses [Stonecutter](https://github.com/stonecutter-versioning/stonecutter) toolchain to target many versions
-of modern (post-14) Minecraft simultaneously. `./gradlew chiseledPackage` can be used to compile the mod for all of the supported targets.
+Note: the `target_versions` property accepts a standard Stonecutter predicate, so you can also use syntax like
+`./gradlew -Ptarget_versions="<1.8.9"`.
 
-To build for a specific version of modern Minecraft, use `./scripts/build.sh <mcversion>-<loader>` (e.g. `./scripts/build.sh 1.21.1-neoforge`).
-This will fail if the given version/loader combo is not supported.
+You can also explicitly target a project with regular Gradle syntax, e.g. `./gradlew :forge122:1.12.2:packageJar`
+or `./gradlew :forge1710:packageJar`, but this will configure other subprojects even if they're not used.
 
-### Vintage
+To build for every Minecraft version at once, execute `./gradlew packageJar`.
 
-Currently the only vintage version of Minecraft supported is 12.2, in a dedicated `:forge122` project.
+## How to use
 
-### Archaic
+Celeritas generally requires a "modernized" environment on older Minecraft versions, and will not run out-of-the-box
+with a default modded Minecraft instance. Newer Minecraft versions ship with the necessary dependencies and will not
+require any custom setup.
 
-Currently the only archaic version of Minecraft supported is 7.10, in a dedicated `:forge1710` project.
+For legacy (pre-1.13) versions, your game instance must provide LWJGL 3, and in some cases must also be running Java 21.
+Most of these versions do not have a ready-to-download launcher profile available that meets these requirements out of
+the box, except for Forge 1.7.10 (lwjgl3ify) and Forge 1.12.2 (lwjgl3ify or Cleanroom Loader).
+
+The Ornithe versions (pre-1.7) are especially experimental and have not yet been tested outside of a development environment
+at all.
+
+For modern (1.13+) versions, the final mod jar should run as-is in a standard instance for that version (e.g. Java 17
+or 21 are not required, unless the underlying Minecraft version itself requires them).
 
 ## License
 
