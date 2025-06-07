@@ -17,6 +17,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.taumc.celeritas.impl.extensions.RenderGlobalExtension;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
+//? if <1.0.0-beta.8
+/*import org.taumc.celeritas.impl.render.terrain.compile.PrimitiveBuiltRenderSectionData;*/
 
 @Mixin(value = WorldRenderer.class, priority = 900)
 public abstract class WorldRendererMixin implements RenderGlobalExtension {
@@ -159,7 +161,7 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
      ^/
     @Overwrite
     public void onAmbientDarknessChanged() {
-        for (RenderSection section : this.renderer.getRenderSectionManager().getAllRenderSections()) {
+        for (var section : this.renderer.getRenderSectionManager().getAllRenderSections()) {
             if (section.getBuiltContext() instanceof PrimitiveBuiltRenderSectionData data && data.hasSkyLight) {
                 this.renderer.scheduleRebuildForChunk(section.getChunkX(), section.getChunkY(), section.getChunkZ(), false);
             }
