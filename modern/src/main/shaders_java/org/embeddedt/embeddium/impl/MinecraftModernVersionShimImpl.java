@@ -42,7 +42,13 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
-import org.embeddedt.embeddium.compat.mc.*;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
+import org.embeddedt.embeddium.compat.mc.MCDynamicTexture;
+import org.embeddedt.embeddium.compat.mc.MCNativeImage;
+import org.embeddedt.embeddium.compat.mc.MCResourceLocation;
+import org.embeddedt.embeddium.compat.mc.MCResourceManager;
+import org.embeddedt.embeddium.compat.mc.MCTextureManager;
+import org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService;
 import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.joml.*;
@@ -602,7 +608,7 @@ public class MinecraftModernVersionShimImpl implements MinecraftVersionShimServi
 
     public MCResourceLocation makeResourceLocation(String namespace, String path) {
         //? if >=1.21
-        /*return (IResourceLocation)(Object) ResourceLocation.fromNamespaceAndPath(namespace, path);*/
+        /*return (MCResourceLocation)(Object) ResourceLocation.fromNamespaceAndPath(namespace, path);*/
         //? if <1.21
         return (MCResourceLocation)(Object) new ResourceLocation(namespace, path);
     }
@@ -610,9 +616,9 @@ public class MinecraftModernVersionShimImpl implements MinecraftVersionShimServi
     public MCResourceLocation makeResourceLocation(String str) {
         //? if >=1.21 {
         /*if(str.contains(":")) {
-            return (IResourceLocation)(Object) ResourceLocation.parse(str);
+            return (MCResourceLocation)(Object) ResourceLocation.parse(str);
         } else {
-            return (IResourceLocation)(Object) ResourceLocation.withDefaultNamespace(str);
+            return (MCResourceLocation)(Object) ResourceLocation.withDefaultNamespace(str);
         }
         *///?} else
         return (MCResourceLocation)(Object)new ResourceLocation(str);

@@ -47,7 +47,7 @@ public class PBRAtlasTexture extends AbstractTexture implements PBRDumpable {
 	public PBRAtlasTexture(TextureAtlas atlasTexture, PBRType type) {
 		this.atlasTexture = atlasTexture;
 		this.type = type;
-		id = (MCResourceLocation)ResourceLocationUtil.make(atlasTexture.location().getNamespace(), atlasTexture.location().getPath().replace(".png", "") + type.getSuffix() + ".png");
+		id = (MCResourceLocation)(Object)ResourceLocationUtil.make(atlasTexture.location().getNamespace(), atlasTexture.location().getPath().replace(".png", "") + type.getSuffix() + ".png");
 	}
 
 	public static void syncAnimation(SpriteContents.Ticker source, SpriteContents.Ticker target) {

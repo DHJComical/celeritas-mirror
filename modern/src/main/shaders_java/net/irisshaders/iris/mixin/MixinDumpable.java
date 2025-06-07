@@ -17,6 +17,6 @@ public interface MixinDumpable extends MCDumpable {
 
     @Override
     default void dumpContents(MCResourceLocation resourceLocation, Path path) throws IOException {
-        this.dumpContents((ResourceLocation) resourceLocation, path);
+        this.dumpContents((ResourceLocation) (Object)resourceLocation, path);
     }
 }
