@@ -68,5 +68,6 @@ jobs:
         if: ${{ inputs.release_type != 'DRY_RUN' }}
         run: ./gradlew :common:publish -Prelease_channel=${{ inputs.release_type }}
       - name: Build all packaged jars
-        if: ${{ inputs.release_type == 'DRY_RUN' }}
         run: ./gradlew packageJar
+      - name: Show checksums
+        run: find build/libs -name \*.jar | sort | xargs sha256sum
