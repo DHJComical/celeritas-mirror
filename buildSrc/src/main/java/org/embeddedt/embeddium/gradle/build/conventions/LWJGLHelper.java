@@ -17,7 +17,7 @@ public class LWJGLHelper {
 
     public static void convertLwjgl2To3(Project project) {
         project.getConfigurations().getByName("minecraftLibraries").getDependencies().removeIf(dep -> Objects.equals(dep.getGroup(), "org.lwjgl.lwjgl"));
-        project.getDependencies().add("minecraftLibraries", "org.mcphackers:legacy-lwjgl3:1.0");
+        project.getDependencies().add("minecraftLibraries", "org.taumc:legacy-lwjgl3:1.1-tau");
         addLwjgl3(project, "minecraftLibraries");
     }
 

@@ -67,6 +67,13 @@ repositories {
         name = "Glass-Launcher"
         url = uri("https://maven.glass-launcher.net/releases/")
     }
+    maven {
+        name = "taumc releases"
+        url = uri("https://maven.taumc.org/releases")
+        content {
+            includeGroupAndSubgroups("org.taumc")
+        }
+    }
     mavenCentral()
 }
 
