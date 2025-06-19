@@ -24,7 +24,7 @@ dependencies {
     implementation("org.apache.commons:commons-compress:1.26.0")
     implementation("xyz.wagyourtail.unimined:xyz.wagyourtail.unimined.gradle.plugin:1.3.15-SNAPSHOT")
     implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.0")
-    "stonecutterImplementation"("dev.kikugie:stonecutter:0.7-alpha.15")
+    "stonecutterImplementation"("dev.kikugie:stonecutter:0.7-beta.2")
 }
 
 repositories {

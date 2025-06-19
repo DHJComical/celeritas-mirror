@@ -64,8 +64,8 @@ public class ModDependencyCollector {
 
     public static void defineConsts(StonecutterControllerExtension scController) {
         scController.parameters(params -> {
-            var mcVersion = params.getMetadata().getVersion();
-            var depMap = dependencyMap(params.getMetadata().getProject());
+            var mcVersion = params.getCurrent().getVersion();
+            var depMap = dependencyMap(params.getCurrent().getProject());
             depMap.forEach((key, dep) -> {
                 params.getConstants().put(key, dep.versionConditions.stream().anyMatch(c -> scController.eval(mcVersion, c.evalCondition)));
             });
