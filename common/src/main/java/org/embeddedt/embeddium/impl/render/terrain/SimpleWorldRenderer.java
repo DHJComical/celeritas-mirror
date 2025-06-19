@@ -55,7 +55,7 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
         }
     }
 
-    private void loadWorld(WORLD world) {
+    protected void loadWorld(WORLD world) {
         this.world = world;
 
         try (CommandList commandList = RenderDevice.INSTANCE.createCommandList()) {
@@ -63,7 +63,7 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
         }
     }
 
-    private void unloadWorld() {
+    protected void unloadWorld() {
         if (this.renderSectionManager != null) {
             this.renderSectionManager.destroy();
             this.renderSectionManager = null;

@@ -33,7 +33,7 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void init(CallbackInfo ci) {
-        this.renderer = new CeleritasWorldRenderer(MinecraftAccessor.celeritas$getInstance());
+        this.renderer = new CeleritasWorldRenderer();
     }
 
     @Override
