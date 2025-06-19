@@ -89,7 +89,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
 
         for (TileEntity tileEntity : list) {
             if(!tileEntity.shouldRenderInPass(pass))
-                return;
+                continue;
 
             try {
                 TileEntityRendererDispatcher.instance.render(tileEntity, partialTicks, -1);
