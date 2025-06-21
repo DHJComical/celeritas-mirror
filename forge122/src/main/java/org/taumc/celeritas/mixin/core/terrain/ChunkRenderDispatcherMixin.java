@@ -2,10 +2,7 @@ package org.taumc.celeritas.mixin.core.terrain;
 
 import com.google.common.collect.Queues;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -24,5 +21,14 @@ public class ChunkRenderDispatcherMixin {
         // Do not allow any resources to be allocated
         this.countRenderBuilders = 0;
         return Queues.newArrayBlockingQueue(1);
+    }
+
+    /**
+     * @author embeddedt
+     * @reason mods expect there to be render builders
+     */
+    @Overwrite
+    public boolean hasNoFreeRenderBuilders() {
+        return false;
     }
 }
