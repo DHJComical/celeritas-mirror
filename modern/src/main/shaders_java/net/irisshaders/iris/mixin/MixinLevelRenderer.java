@@ -55,7 +55,8 @@ public class MixinLevelRenderer {
         } else if (renderType == RenderType.tripwire()) {
             return WorldRenderingPhase.TRIPWIRE;
         } else {
-            throw new IllegalStateException("Illegal render type!");
+            // Best guess
+            return WorldRenderingPhase.TERRAIN_CUTOUT_MIPPED;
         }
     }
 
