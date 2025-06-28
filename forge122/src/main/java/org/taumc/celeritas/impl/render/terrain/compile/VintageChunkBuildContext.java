@@ -74,6 +74,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
             }
             var bufferBuilder = Objects.requireNonNull(renderers[i]);
             bufferBuilder.finishDrawing();
+            used[i] = false;
             ByteBuffer rawBuffer = bufferBuilder.getByteBuffer();
             var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(LAYERS[i]);
             copyBlockData(rawBuffer, buffers, material);
@@ -84,7 +85,12 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
     public void cleanup() {
         super.cleanup();
         this.worldSlice.reset();
-        Arrays.fill(this.usedWorldRenderers, false);
+        for (int i = 0; i < LAYERS.length; i++) {
+            if (this.usedWorldRenderers[i]) {
+                this.worldRenderers[i].finishDrawing();
+                this.usedWorldRenderers[i] = false;
+            }
+        }
     }
 
     private Material selectMaterial(Material material, TextureAtlasSprite sprite) {
