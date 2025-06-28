@@ -527,8 +527,7 @@ public abstract class RenderSectionManager {
     protected abstract @Nullable ChunkBuilderTask<ChunkBuildOutput> createRebuildTask(RenderSection render, int frame);
 
     public ChunkBuilderSortTask createSortTask(RenderSection render, int frame) {
-        Map<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> sortStates = render.getTranslucencySortStates();
-        if(sortStates.isEmpty() || sortStates.values().stream().noneMatch(TranslucentQuadAnalyzer.SortState::requiresDynamicSorting))
+        if(!render.isNeedsDynamicTranslucencySorting())
             return null;
         return new ChunkBuilderSortTask(render, (float)cameraPosition.x, (float)cameraPosition.y, (float)cameraPosition.z, frame, sortStates, this.renderPassConfiguration);
     }
