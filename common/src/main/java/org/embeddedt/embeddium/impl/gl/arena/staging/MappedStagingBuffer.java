@@ -24,7 +24,7 @@ public class MappedStagingBuffer implements StagingBuffer {
     private final FallbackStagingBuffer fallbackStagingBuffer;
 
     private final MappedBuffer mappedBuffer;
-    private final PriorityQueue<CopyCommand> pendingCopies = new ObjectArrayFIFOQueue<>();
+    private final List<CopyCommand> pendingCopies = new ArrayList<>();
     private final PriorityQueue<FencedMemoryRegion> fencedRegions = new ObjectArrayFIFOQueue<>();
 
     private int start = 0;
@@ -81,7 +81,7 @@ public class MappedStagingBuffer implements StagingBuffer {
 
     private void addTransfer(ByteBuffer data, GlBuffer dst, long readOffset, long writeOffset) {
         this.mappedBuffer.map.write(data, (int) readOffset);
-        this.pendingCopies.enqueue(new CopyCommand(dst, readOffset, writeOffset, data.remaining()));
+        this.pendingCopies.add(new CopyCommand(dst, readOffset, writeOffset, data.remaining()));
     }
 
     @Override
@@ -110,12 +110,14 @@ public class MappedStagingBuffer implements StagingBuffer {
         this.start = this.pos;
     }
 
-    private static List<CopyCommand> consolidateCopies(PriorityQueue<CopyCommand> queue) {
+    private static List<CopyCommand> consolidateCopies(List<CopyCommand> queue) {
         List<CopyCommand> merged = new ArrayList<>();
         CopyCommand last = null;
 
-        while (!queue.isEmpty()) {
-            CopyCommand command = queue.dequeue();
+        int numCommands = queue.size();
+        //noinspection ForLoopReplaceableByForEach
+        for (int i = 0; i < numCommands; i++) {
+            CopyCommand command = queue.get(i);
 
             if (last != null) {
                 if (last.buffer == command.buffer &&
@@ -128,6 +130,8 @@ public class MappedStagingBuffer implements StagingBuffer {
 
             merged.add(last = new CopyCommand(command));
         }
+
+        queue.clear();
 
         return merged;
     }
