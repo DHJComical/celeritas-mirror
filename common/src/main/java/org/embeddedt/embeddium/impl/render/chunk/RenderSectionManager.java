@@ -529,7 +529,7 @@ public abstract class RenderSectionManager {
     public ChunkBuilderSortTask createSortTask(RenderSection render, int frame) {
         if(!render.isNeedsDynamicTranslucencySorting())
             return null;
-        return new ChunkBuilderSortTask(render, (float)cameraPosition.x, (float)cameraPosition.y, (float)cameraPosition.z, frame, sortStates, this.renderPassConfiguration);
+        return new ChunkBuilderSortTask(render, (float)cameraPosition.x, (float)cameraPosition.y, (float)cameraPosition.z, frame, render.getTranslucencySortStates(), this.renderPassConfiguration);
     }
 
     public void markGraphDirty() {
