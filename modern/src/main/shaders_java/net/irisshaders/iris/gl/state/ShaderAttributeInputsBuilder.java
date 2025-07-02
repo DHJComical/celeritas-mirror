@@ -1,7 +1,7 @@
 package net.irisshaders.iris.gl.state;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import org.embeddedt.embeddium.compat.mc.MCVertexFormat;
 
 public class ShaderAttributeInputsBuilder {
     private boolean color;
@@ -13,7 +13,7 @@ public class ShaderAttributeInputsBuilder {
     private boolean glint;
     private boolean text;
 
-    public ShaderAttributeInputsBuilder(VertexFormat format, boolean isFullbright, boolean isLines, boolean glint, boolean text) {
+    public ShaderAttributeInputsBuilder(MCVertexFormat format, boolean isFullbright, boolean isLines, boolean glint, boolean text) {
         if (format == DefaultVertexFormat.POSITION_COLOR_NORMAL && !isLines) {
             newLines = true;
         }

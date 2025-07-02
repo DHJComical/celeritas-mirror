@@ -16,14 +16,12 @@ import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shadows.frustum.fallback.NonCullingFrustum;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.IrisTimeUniforms;
-import net.irisshaders.iris.uniforms.SystemTimeUniforms;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
-import org.embeddedt.embeddium.compat.mc.ICamera;
+import org.embeddedt.embeddium.compat.mc.MCCamera;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL43C;
@@ -175,7 +173,7 @@ public class MixinLevelRenderer {
 	// Do this before sky rendering so it's ready before the sky render starts.
 	@Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=sky"))
 	private void iris$renderTerrainShadows(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) Camera camera) {
-		pipeline.renderShadows((LevelRendererAccessor) this, (ICamera) camera);
+		pipeline.renderShadows((LevelRendererAccessor) this, (MCCamera) camera);
 	}
 
 	@ModifyVariable(method = "renderSky", at = @At(value = "HEAD"), index = 5, argsOnly = true)

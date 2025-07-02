@@ -6,4 +6,5 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(NativeImage.class)
 public abstract class MixinNativeImage implements MCNativeImage {
+    // Interface injection
 }

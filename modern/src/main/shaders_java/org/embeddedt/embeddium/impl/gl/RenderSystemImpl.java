@@ -6,6 +6,7 @@ import com.mitchej123.glsm.RenderSystemService;
 import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
+import net.minecraft.client.renderer.GameRenderer;
 import org.embeddedt.embeddium.compat.BooleanStateExtended;
 import org.joml.Matrix4f;
 
@@ -158,5 +159,10 @@ public class RenderSystemImpl implements RenderSystemService {
     @Override
     public void setProjectionMatrixOrigin(Matrix4f projectionMatrix) {
         RenderSystem.setProjectionMatrix(projectionMatrix/*? if >=1.20 {*/, com.mojang.blaze3d.vertex.VertexSorting.DISTANCE_TO_ORIGIN/*?}*/);
+    }
+
+    @Override
+    public void setPositionShader() {
+        RenderSystem.setShader(GameRenderer::getPositionShader);
     }
 }

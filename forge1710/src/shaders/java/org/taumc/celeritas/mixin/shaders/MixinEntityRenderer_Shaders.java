@@ -20,7 +20,7 @@ import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.EntityLivingBase;
-import org.embeddedt.embeddium.compat.mc.ILevelRenderer;
+import org.embeddedt.embeddium.compat.mc.MCLevelRenderer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL43C;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,7 +35,7 @@ import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 import org.taumc.celeritas.compat.Camera;
 
 @Mixin(EntityRenderer.class)
-public class MixinEntityRenderer_Shaders implements ILevelRenderer {
+public class MixinEntityRenderer_Shaders implements MCLevelRenderer {
     @Shadow public Minecraft mc;
 
     @Unique

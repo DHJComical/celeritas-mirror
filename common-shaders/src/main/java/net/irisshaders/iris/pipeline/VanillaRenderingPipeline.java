@@ -18,8 +18,8 @@ import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import net.irisshaders.iris.targets.RenderTargetStateListener;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 
-import org.embeddedt.embeddium.compat.mc.ICamera;
-import org.embeddedt.embeddium.compat.mc.ILevelRenderer;
+import org.embeddedt.embeddium.compat.mc.MCCamera;
+import org.embeddedt.embeddium.compat.mc.MCLevelRenderer;
 
 public abstract class VanillaRenderingPipeline implements WorldRenderingPipeline {
 	public VanillaRenderingPipeline() {
@@ -35,12 +35,12 @@ public abstract class VanillaRenderingPipeline implements WorldRenderingPipeline
 	@Override
 	public void beginLevelRendering() {
 		// Use the default Minecraft framebuffer and ensure that no programs are in use
-        MINECRAFT_SHIM.bindFramebuffer();
+        MINECRAFT_SHIM.bindMainFramebuffer();
 		GL_STATE_MANAGER.glUseProgram(0);
 	}
 
 	@Override
-	public void renderShadows(ILevelRenderer worldRenderer, ICamera camera) {
+	public void renderShadows(MCLevelRenderer worldRenderer, MCCamera camera) {
 		// stub: nothing to do here
 	}
 

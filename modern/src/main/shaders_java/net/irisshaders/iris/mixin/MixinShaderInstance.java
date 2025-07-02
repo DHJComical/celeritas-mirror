@@ -25,6 +25,7 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.GsonHelper;
+import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.lwjgl.opengl.KHRDebug;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 @Mixin(ShaderInstance.class)
 //? if >=1.21.2
 /*@Mixin(CompiledShaderProgram.class)*/
-public abstract class MixinShaderInstance implements ShaderInstanceInterface {
+public abstract class MixinShaderInstance implements ShaderInstanceInterface, MCShaderInstance {
     @Unique
     private static final ImmutableSet<String> ATTRIBUTE_LIST = ImmutableSet.of("Position", "Color", "Normal", "UV0", "UV1", "UV2");
 

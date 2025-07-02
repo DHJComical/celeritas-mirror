@@ -4,30 +4,59 @@ import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.features.FeatureFlags;
+import net.irisshaders.iris.gl.blending.AlphaTest;
+import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.helpers.OptionalBoolean;
 import net.irisshaders.iris.helpers.Tri;
+import net.irisshaders.iris.pipeline.programs.ShaderKey;
+import net.irisshaders.iris.pipeline.programs.ShaderMap;
+import net.irisshaders.iris.shaderpack.loading.ProgramId;
 import net.irisshaders.iris.shaderpack.programs.ProgramSet;
+import net.irisshaders.iris.shaderpack.programs.ProgramSource;
 import net.irisshaders.iris.shaderpack.properties.CloudSetting;
+import net.irisshaders.iris.shaderpack.properties.PackDirectives;
 import net.irisshaders.iris.shaderpack.properties.ParticleRenderingSettings;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
+import net.irisshaders.iris.shadows.CommonShadowRenderer;
 import net.irisshaders.iris.shadows.ShadowCompositeRenderer;
 import net.irisshaders.iris.shadows.ShadowRenderTargets;
 import net.irisshaders.iris.shadows.ArchaicShadowRenderer;
 import net.irisshaders.iris.targets.ClearPassCreator;
 import net.irisshaders.iris.targets.RenderTargetStateListener;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
-import org.embeddedt.embeddium.compat.mc.ICamera;
-import org.embeddedt.embeddium.compat.mc.ILevelRenderer;
+import net.irisshaders.iris.uniforms.custom.CustomUniforms;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.shader.Framebuffer;
+import org.embeddedt.embeddium.compat.mc.MCCamera;
+import org.embeddedt.embeddium.compat.mc.MCLevelRenderer;
+import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
+import org.embeddedt.embeddium.compat.mc.MCVertexFormat;
 import org.jetbrains.annotations.Nullable;
+import org.taumc.celeritas.interfaces.IRenderTargetExt;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
-public class ArchaicIrisRenderingPipeline extends CommonIrisRenderingPipeline implements IrisRenderingPipeline, WorldRenderingPipeline, /*ShaderRenderingPipeline,*/ RenderTargetStateListener {
+public class ArchaicIrisRenderingPipeline extends CommonIrisRenderingPipeline implements IrisRenderingPipeline, WorldRenderingPipeline, ShaderRenderingPipeline, RenderTargetStateListener {
     @Nullable private final ArchaicShadowRenderer shadowRenderer;
     private final ShadowCompositeRenderer shadowCompositeRenderer;
 
+
+    @Override
+    protected void updateMCFBInfo() {
+        final Framebuffer main = Minecraft.getMinecraft().getFramebuffer();
+
+        this.mainFBHeight = main.framebufferHeight;
+        this.mainFBWidth = main.framebufferWidth;
+        this.mainFBDepthTextureId = ((IRenderTargetExt)main).getIris$depthTextureId();
+        this.mainFBDepthBufferVersion = ((IRenderTargetExt)main).iris$getDepthBufferVersion();
+
+    }
 
     public ArchaicIrisRenderingPipeline(ProgramSet programSet) {
         super(programSet);
@@ -36,7 +65,7 @@ public class ArchaicIrisRenderingPipeline extends CommonIrisRenderingPipeline im
             shadowRenderTargets = new ShadowRenderTargets(this, shadowMapResolution, shadowDirectives);
         }
 
-        if (shadowRenderTargets != null) {
+        if (hasShadowRenderTargets()) {
 //            ShaderInstance shader = shaderMap.getShader(ShaderKey.SHADOW_TERRAIN_CUTOUT);
             boolean shadowUsesImages = false;
 
@@ -69,13 +98,14 @@ public class ArchaicIrisRenderingPipeline extends CommonIrisRenderingPipeline im
     }
 
     @Override
-    public void beginLevelRendering() {
-
+    protected boolean checkShadowUsesImages() {
+        return false;
     }
 
     @Override
-    public void renderShadows(ILevelRenderer worldRenderer, ICamera camera) {
-
+    protected void renderHorizon() {
+        // TODO
+        throw new UnsupportedOperationException("renderHorizon");
     }
 
     @Override
@@ -130,6 +160,35 @@ public class ArchaicIrisRenderingPipeline extends CommonIrisRenderingPipeline im
     }
 
     @Override
+    protected CompletableFuture<MCShaderInstance> createShader(String name, Executor syncExecutor, ProgramSource source, ProgramId programId,
+            AlphaTest fallbackAlpha, MCVertexFormat vertexFormat, FogMode fogMode, boolean isIntensity, boolean isFullbright, boolean isGlint, boolean isText)
+            throws IOException {
+        return null;
+    }
+
+    @Override
+    protected MCShaderInstance createFallbackShader(String name, ShaderKey key) throws IOException {
+        return null;
+    }
+
+    @Override
+    protected CompletableFuture<MCShaderInstance> createShadowShader(String name, Optional<ProgramSource> source, ShaderKey key, Executor syncExecutor)
+            throws IOException {
+        return null;
+    }
+
+    @Override
+    protected MCShaderInstance createFallbackShadowShader(String name, ShaderKey key) throws IOException {
+        return null;
+    }
+
+    @Override
+    protected CompletableFuture<MCShaderInstance> createShadowShader(String name, Executor syncExecutor, ProgramSource source, ProgramId programId,
+            AlphaTest fallbackAlpha, MCVertexFormat vertexFormat, boolean isIntensity, boolean isFullbright, boolean isText) throws IOException {
+        return null;
+    }
+
+    @Override
     public void onSetShaderTexture(int id) {
 
     }
@@ -160,13 +219,40 @@ public class ArchaicIrisRenderingPipeline extends CommonIrisRenderingPipeline im
     }
 
     @Override
+    protected void destroyHorizonRenderer() {
+        throw new UnsupportedOperationException("destroyHorizonRenderer");
+    }
+
+    @Override
+    protected @Nullable CommonShadowRenderer createShadowRenderer(CommonIrisRenderingPipeline commonIrisRenderingPipeline, ProgramSource programSource,
+            PackDirectives packDirectives, ShadowRenderTargets shadowRenderTargets, ShadowCompositeRenderer shadowCompositeRenderer,
+            CustomUniforms customUniforms, boolean b) {
+        return null;
+    }
+
+    @Override
+    protected ShaderKey[] getShaderKeyValues() {
+        return new ShaderKey[0];
+    }
+
+    @Override
     public SodiumTerrainPipeline getSodiumTerrainPipeline() {
+        return null;
+    }
+
+    @Override
+    public ShaderMap getShaderMap() {
         return null;
     }
 
     @Override
     public FrameUpdateNotifier getFrameUpdateNotifier() {
         return null;
+    }
+
+    @Override
+    public boolean shouldOverrideShaders() {
+        return false;
     }
 
     @Override

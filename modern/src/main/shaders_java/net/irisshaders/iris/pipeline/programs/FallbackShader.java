@@ -18,9 +18,10 @@ import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
 import org.jetbrains.annotations.Nullable;
 
-public class FallbackShader extends ShaderInstance {
+public class FallbackShader extends ShaderInstance implements MCShaderInstance {
 	private final ModernIrisRenderingPipeline parent;
 	private final BlendModeOverride blendModeOverride;
 	private final GlFramebuffer writingToBeforeTranslucent;

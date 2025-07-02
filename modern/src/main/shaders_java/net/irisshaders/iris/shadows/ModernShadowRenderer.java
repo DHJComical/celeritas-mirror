@@ -16,7 +16,7 @@ import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.mixin.LevelRendererAccessor;
-import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.CommonIrisRenderingPipeline;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
 import net.irisshaders.iris.shaderpack.properties.PackDirectives;
 import net.irisshaders.iris.shaderpack.properties.PackShadowDirectives;
@@ -45,8 +45,8 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import org.embeddedt.embeddium.compat.mc.ICamera;
-import org.embeddedt.embeddium.compat.mc.ILevelRenderer;
+import org.embeddedt.embeddium.compat.mc.MCCamera;
+import org.embeddedt.embeddium.compat.mc.MCLevelRenderer;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
@@ -60,11 +60,11 @@ public class ModernShadowRenderer extends CommonShadowRenderer {
     public static List<BlockEntity> visibleBlockEntities;
     public static Frustum FRUSTUM;
     private final ShadowCompositeRenderer compositeRenderer;
-    private final ModernIrisRenderingPipeline pipeline;
+    private final CommonIrisRenderingPipeline pipeline;
     private final RenderBuffers buffers;
 	private final RenderBuffersExt renderBuffersExt;
 
-    public ModernShadowRenderer(ModernIrisRenderingPipeline pipeline, ProgramSource shadow, PackDirectives directives,
+    public ModernShadowRenderer(CommonIrisRenderingPipeline pipeline, ProgramSource shadow, PackDirectives directives,
                           ShadowRenderTargets shadowRenderTargets, ShadowCompositeRenderer compositeRenderer, CustomUniforms customUniforms, boolean separateHardwareSamplers) {
         super(shadow, directives, shadowRenderTargets, separateHardwareSamplers);
 
@@ -210,7 +210,7 @@ public class ModernShadowRenderer extends CommonShadowRenderer {
 		RENDER_SYSTEM.glViewport(0, 0, resolution, resolution);
 	}
 
-	public void renderShadows(ILevelRenderer levelRendererIn, ICamera playerCamera) {
+	public void renderShadows(MCLevelRenderer levelRendererIn, MCCamera playerCamera) {
 		if (IrisVideoSettings.getOverriddenShadowDistance(IrisVideoSettings.shadowDistance) == 0) {
 			return;
 		}

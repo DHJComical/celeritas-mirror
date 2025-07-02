@@ -1,10 +1,14 @@
 package org.embeddedt.embeddium.compat.mc;
 
+import net.irisshaders.iris.shaderpack.ShaderPack;
 import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
 import org.joml.Vector4f;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ServiceLoader;
 
 /**
@@ -97,10 +101,13 @@ public interface MinecraftVersionShimService {
     Vector2i getTextureSize();
 
     MCNativeImage createNativeImage(int width, int height, boolean useCalloc);
+    MCNativeImage readNativeImage(InputStream textureStream) throws IOException;
+    MCNativeImage readNativeImage(ByteBuffer textureData) throws IOException;
     MCNativeImage[] createNativeImageArray(int size);
 
-    IResourceLocation makeResourceLocation(String namespace, String path);
-    IResourceLocation makeResourceLocation(String str);
+
+    MCResourceLocation makeResourceLocation(String namespace, String path);
+    MCResourceLocation makeResourceLocation(String str);
 
     String getOsString();
 
@@ -115,5 +122,27 @@ public interface MinecraftVersionShimService {
     Matrix4f getShadowModelView(float sunPathRotation, float intervalSize);
     Matrix4f getShadowProjection(float shadowDistance, float nearPlane, float farPlane);
 
-    void bindFramebuffer();
+    void bindMainFramebuffer();
+    void unbindMainFramebuffer();
+    int getMainFramebufferWidth();
+    int getMainFramebufferHeight();
+
+
+    int getColorTextureId();
+    int getColorBufferVersion();
+    int getLightTextureId();
+    int getMissingTextureId();
+
+
+    MCDynamicTexture createDynamicTexture(MCNativeImage image);
+
+    MCTextureManager getTextureManager();
+
+    MCResourceManager getResourceManager();
+
+    void populateBlockIds(ShaderPack pack);
+
+    default boolean isSkyTypeNormal() {
+        return true;
+    }
 }

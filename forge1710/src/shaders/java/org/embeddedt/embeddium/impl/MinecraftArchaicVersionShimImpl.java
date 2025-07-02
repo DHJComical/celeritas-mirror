@@ -2,10 +2,14 @@ package org.embeddedt.embeddium.impl;
 
 import cpw.mods.fml.common.Loader;
 import net.irisshaders.iris.IrisCommon;
+import net.irisshaders.iris.shaderpack.ShaderPack;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -17,15 +21,25 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.WorldProviderEnd;
 import net.minecraft.world.WorldProviderHell;
-import org.embeddedt.embeddium.compat.mc.IResourceLocation;
+import org.embeddedt.embeddium.compat.mc.MCDynamicTexture;
 import org.embeddedt.embeddium.compat.mc.MCNativeImage;
+import org.embeddedt.embeddium.compat.mc.MCResourceLocation;
+import org.embeddedt.embeddium.compat.mc.MCResourceManager;
+import org.embeddedt.embeddium.compat.mc.MCTextureManager;
 import org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService;
+import org.embeddedt.embeddium.compat.mc.NativeImage;
 import org.embeddedt.embeddium.compat.mc.PlatformUtilService;
-import org.joml.*;
 import org.joml.Math;
+import org.joml.Matrix4f;
+import org.joml.Vector2i;
+import org.joml.Vector3d;
+import org.joml.Vector4f;
 import org.lwjgl.system.Platform;
+import org.taumc.celeritas.interfaces.IRenderTargetExt;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
 public class MinecraftArchaicVersionShimImpl implements MinecraftVersionShimService, PlatformUtilService {
@@ -433,13 +447,13 @@ public class MinecraftArchaicVersionShimImpl implements MinecraftVersionShimServ
     }
 
     @Override
-    public IResourceLocation makeResourceLocation(String namespace, String path) {
-        return (IResourceLocation)(Object) new ResourceLocation(namespace, path);
+    public MCResourceLocation makeResourceLocation(String namespace, String path) {
+        return (MCResourceLocation)(Object) new ResourceLocation(namespace, path);
     }
 
     @Override
-    public IResourceLocation makeResourceLocation(String str) {
-        return (IResourceLocation)(Object)new ResourceLocation(str);
+    public MCResourceLocation makeResourceLocation(String str) {
+        return (MCResourceLocation)(Object)new ResourceLocation(str);
     }
 
     @Override
@@ -483,8 +497,77 @@ public class MinecraftArchaicVersionShimImpl implements MinecraftVersionShimServ
     }
 
     @Override
-    public void bindFramebuffer() {
+    public void bindMainFramebuffer() {
         Minecraft.getMinecraft().getFramebuffer().bindFramebuffer(true);
+    }
+
+    @Override
+    public void unbindMainFramebuffer() {
+        Minecraft.getMinecraft().getFramebuffer().bindFramebuffer(false);
+    }
+
+    @Override
+    public int getMainFramebufferWidth() {
+        return Minecraft.getMinecraft().getFramebuffer().framebufferWidth;
+    }
+
+    @Override
+    public int getMainFramebufferHeight() {
+        return Minecraft.getMinecraft().getFramebuffer().framebufferHeight;
+    }
+
+    @Override
+    public int getColorTextureId() {
+        final Framebuffer main = Minecraft.getMinecraft().getFramebuffer();
+        return main.framebufferTexture;
+    }
+
+    @Override
+    public int getColorBufferVersion() {
+        final Framebuffer main = Minecraft.getMinecraft().getFramebuffer();
+        return ((IRenderTargetExt)main).iris$getColorBufferVersion();
+    }
+
+    @Override
+    public int getLightTextureId() {
+        // TODO
+        throw new UnsupportedOperationException("getLightTextureId is not implemented in MinecraftArchaicVersionShimImpl");
+//        return 0;
+    }
+
+    @Override
+    public int getMissingTextureId() {
+        return TextureUtil.missingTexture.getGlTextureId();
+    }
+
+    @Override
+    public MCNativeImage readNativeImage(InputStream textureStream) throws IOException {
+        return (MCNativeImage) NativeImage.read(textureStream);
+    }
+
+    @Override
+    public MCNativeImage readNativeImage(ByteBuffer textureData) throws IOException {
+        return (MCNativeImage) NativeImage.read(textureData);
+    }
+
+    @Override
+    public MCDynamicTexture createDynamicTexture(MCNativeImage image) {
+        return (MCDynamicTexture) new DynamicTexture((NativeImage) image);
+    }
+
+    @Override
+    public MCTextureManager getTextureManager() {
+        return (MCTextureManager) Minecraft.getMinecraft().getTextureManager();
+    }
+
+    @Override
+    public MCResourceManager getResourceManager() {
+        return (MCResourceManager) Minecraft.getMinecraft().getResourceManager();
+    }
+
+    @Override
+    public void populateBlockIds(ShaderPack pack) {
+        // TODO
     }
 
     @Override

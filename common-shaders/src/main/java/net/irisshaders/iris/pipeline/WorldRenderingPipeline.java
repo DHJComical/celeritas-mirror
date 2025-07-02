@@ -10,8 +10,8 @@ import net.irisshaders.iris.shaderpack.properties.ParticleRenderingSettings;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import net.irisshaders.iris.targets.RenderTargetStateListener;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
-import org.embeddedt.embeddium.compat.mc.ICamera;
-import org.embeddedt.embeddium.compat.mc.ILevelRenderer;
+import org.embeddedt.embeddium.compat.mc.MCCamera;
+import org.embeddedt.embeddium.compat.mc.MCLevelRenderer;
 
 import java.util.List;
 import java.util.OptionalInt;
@@ -19,7 +19,7 @@ import java.util.OptionalInt;
 public interface WorldRenderingPipeline {
 	void beginLevelRendering();
 
-	void renderShadows(ILevelRenderer worldRenderer, ICamera camera);
+	void renderShadows(MCLevelRenderer worldRenderer, MCCamera camera);
 
 	void addDebugText(List<String> messages);
 

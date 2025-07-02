@@ -4,6 +4,8 @@ import net.irisshaders.iris.shaderpack.programs.ProgramSource;
 import net.irisshaders.iris.shaderpack.properties.PackDirectives;
 import net.irisshaders.iris.shadows.frustum.ArchaicFrustumHolder;
 import net.minecraft.client.Minecraft;
+import org.embeddedt.embeddium.compat.mc.MCCamera;
+import org.embeddedt.embeddium.compat.mc.MCLevelRenderer;
 
 import java.util.List;
 
@@ -22,6 +24,11 @@ public class ArchaicShadowRenderer extends CommonShadowRenderer {
     }
 
     @Override
+    public void destroy() {
+
+    }
+
+    @Override
     protected String getEntitiesDebugString() {
         return (shouldRenderEntities || shouldRenderPlayer) ? (renderedShadowEntities + "/" + Minecraft.getMinecraft().theWorld.loadedEntityList.size()) : "disabled by pack";
     }
@@ -33,6 +40,11 @@ public class ArchaicShadowRenderer extends CommonShadowRenderer {
 
     @Override
     protected void addBuffersDebugText(List<String> messages) {
+
+    }
+
+    @Override
+    public void renderShadows(MCLevelRenderer levelRendererIn, MCCamera playerCamera) {
 
     }
 }

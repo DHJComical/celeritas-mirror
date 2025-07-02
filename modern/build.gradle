@@ -45,6 +45,16 @@ project.ext["loom.platform"] = configuredModLoader.friendlyName
 project.ext["cur_mc_ver"] = ModLoader.getMinecraftVersion(project)
 
 repositories {
+    // Fix issue with lwjgl-freetype not being found on macOS / ForgeGradle issue
+    //
+    // Could not resolve all files for configuration ':_compileJava_1'.
+    // Could not find lwjgl-freetype-3.3.3-natives-macos-patch.jar (org.lwjgl:lwjgl-freetype:3.3.3).
+    maven {
+        url "https://libraries.minecraft.net"
+        content {
+            includeModule("org.lwjgl", "lwjgl-freetype")
+        }
+    }
     mavenCentral()
     // for Mod Menu
     maven {

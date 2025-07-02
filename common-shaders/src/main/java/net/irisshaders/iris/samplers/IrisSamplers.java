@@ -23,6 +23,7 @@ import java.util.function.Supplier;
 
 public class IrisSamplers {
 	public static final int ALBEDO_TEXTURE_UNIT = 0;
+    // TODO(1.7.10): light map is 1 in 1.7.10, and there is no overlay
 	public static final int OVERLAY_TEXTURE_UNIT = 1;
 	public static final int LIGHTMAP_TEXTURE_UNIT = 2;
 
