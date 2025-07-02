@@ -6,13 +6,13 @@ import org.embeddedt.embeddium.api.util.NormI8;
 import java.util.Arrays;
 
 public enum ModelQuadFacing {
-    POS_X(1, 0, 0),
-    POS_Y(0, 1, 0),
-    POS_Z(0, 0, 1),
-    NEG_X(-1, 0, 0),
-    NEG_Y(0, -1, 0),
-    NEG_Z(0, 0, -1),
-    UNASSIGNED(0, 0, 0);
+    POS_X(1, 0, 0, Axis.X),
+    POS_Y(0, 1, 0, Axis.Y),
+    POS_Z(0, 0, 1, Axis.Z),
+    NEG_X(-1, 0, 0, Axis.X),
+    NEG_Y(0, -1, 0, Axis.Y),
+    NEG_Z(0, 0, -1, Axis.Z),
+    UNASSIGNED(0, 0, 0, null);
 
     public static final ModelQuadFacing[] VALUES = ModelQuadFacing.values();
     public static final ModelQuadFacing[] DIRECTIONS = Arrays.stream(VALUES).filter(facing -> facing != UNASSIGNED).toArray(ModelQuadFacing[]::new);
@@ -28,10 +28,14 @@ public enum ModelQuadFacing {
     @Getter
     private final int stepX, stepY, stepZ;
 
-    ModelQuadFacing(int stepX, int stepY, int stepZ) {
+    @Getter
+    private final Axis axis;
+
+    ModelQuadFacing(int stepX, int stepY, int stepZ, Axis axis) {
         this.stepX = stepX;
         this.stepY = stepY;
         this.stepZ = stepZ;
+        this.axis = axis;
         this.packedNormal = NormI8.pack(stepX, stepY, stepZ);
     }
 
@@ -46,4 +50,10 @@ public enum ModelQuadFacing {
             default -> UNASSIGNED;
         };
     }
+
+    public enum Axis {
+        X,
+        Y,
+        Z
+    };
 }
