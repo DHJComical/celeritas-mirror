@@ -21,7 +21,7 @@ public class ShaderAttributeInputsBuilder {
         this.text = text;
         this.glint = glint;
 
-        format.getElementAttributeNames().forEach(name -> {
+        format.celeritas$getElementAttributeNames().forEach(name -> {
             if ("Color".equals(name)) {
                 color = true;
             }

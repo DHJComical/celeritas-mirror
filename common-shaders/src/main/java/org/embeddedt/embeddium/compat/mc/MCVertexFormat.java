@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.compat.mc;
 
-import com.google.common.collect.ImmutableList;
+import java.util.Collection;
 
 public interface MCVertexFormat {
-    ImmutableList<String> getElementAttributeNames();
+    Collection<String> celeritas$getElementAttributeNames();
 }
