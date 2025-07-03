@@ -3,12 +3,11 @@ package net.irisshaders.iris.compat.sodium.mixin.clouds;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.vertex.VertexBuffer;
-import net.minecraft.client.renderer.ShaderInstance;
 import org.embeddedt.embeddium.impl.render.immediate.CloudRenderer;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
-import net.irisshaders.iris.pipeline.programs.ModernShaderKey;
+import net.irisshaders.iris.pipeline.programs.ShaderKey;
 import org.embeddedt.embeddium.impl.render.immediate.CloudShader;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,9 +29,9 @@ public abstract class MixinCloudRenderer {
 		WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
 
 		if (pipeline instanceof ShaderRenderingPipeline) {
-			var irisShader = ((ShaderRenderingPipeline) pipeline).getShaderMap().getShader(ModernShaderKey.CLOUDS_SODIUM);
+			var irisShader = ((ShaderRenderingPipeline) pipeline).getShaderMap().getShader(ShaderKey.CLOUDS_SODIUM);
 
-			this.vertexBuffer.drawWithShader(modelViewMatrix, projectionMatrix, (ShaderInstance) irisShader);
+			this.vertexBuffer.drawWithShader(modelViewMatrix, projectionMatrix, irisShader);
 		} else {
 			original.call(instance, modelViewMatrix, projectionMatrix, r, g, b, a);
 		}

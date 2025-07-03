@@ -2,7 +2,7 @@ package net.irisshaders.iris.gui.element;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import net.irisshaders.iris.IrisCommon;
+import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gui.FileDialogUtil;
 import net.irisshaders.iris.gui.GuiUtil;
 import net.irisshaders.iris.gui.NavigationController;
@@ -36,8 +36,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 public class ShaderPackOptionList extends IrisContainerObjectSelectionList<ShaderPackOptionList.BaseEntry> {
 	private final List<AbstractElementWidget<?>> elementWidgets = new ArrayList<>();
@@ -250,7 +248,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 
 		private boolean resetButtonClicked(IrisElementRow.TextButtonElement button) {
 			if (Screen.hasShiftDown()) {
-				IrisCommon.resetShaderPackOptionsOnNextReload();
+				Iris.resetShaderPackOptionsOnNextReload();
 				this.screen.applyChanges();
 				GuiUtil.playButtonClickSound();
 
@@ -264,7 +262,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 			GuiUtil.playButtonClickSound();
 
 			// Invalid state to be in
-			if (!IrisCommon.getCurrentPack().isPresent()) {
+			if (!Iris.getCurrentPack().isPresent()) {
 				return false;
 			}
 
@@ -281,11 +279,11 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 
 			FileDialogUtil.fileSelectDialog(
 					FileDialogUtil.DialogType.OPEN, "Import Shader Settings from File",
-					IrisCommon.getShaderpacksDirectory().resolve(IrisCommon.getCurrentPackName() + ".txt"),
+					Iris.getShaderpacksDirectory().resolve(Iris.getCurrentPackName() + ".txt"),
 					"Shader Pack Settings (.txt)", "*.txt")
 				.whenComplete((path, err) -> {
 					if (err != null) {
-						IRIS_LOGGER.error("Error selecting shader settings from file", err);
+						Iris.logger.error("Error selecting shader settings from file", err);
 
 						return;
 					}
@@ -302,7 +300,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 			GuiUtil.playButtonClickSound();
 
 			// Invalid state to be in
-			if (!IrisCommon.getCurrentPack().isPresent()) {
+			if (!Iris.getCurrentPack().isPresent()) {
 				return false;
 			}
 
@@ -317,11 +315,11 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 
 			FileDialogUtil.fileSelectDialog(
 					FileDialogUtil.DialogType.SAVE, "Export Shader Settings to File",
-					IrisCommon.getShaderpacksDirectory().resolve(IrisCommon.getCurrentPackName() + ".txt"),
+					Iris.getShaderpacksDirectory().resolve(Iris.getCurrentPackName() + ".txt"),
 					"Shader Pack Settings (.txt)", "*.txt")
 				.whenComplete((path, err) -> {
 					if (err != null) {
-						IRIS_LOGGER.error("Error selecting file to export shader settings", err);
+						Iris.logger.error("Error selecting file to export shader settings", err);
 
 						return;
 					}
@@ -331,7 +329,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 
 						// Dirty way of getting the currently applied settings as a Properties, directly
 						// opens and copies out of the saved settings file if it is present
-						Path sourceTxtPath = IrisCommon.getShaderpacksDirectory().resolve(IrisCommon.getCurrentPackName() + ".txt");
+						Path sourceTxtPath = Iris.getShaderpacksDirectory().resolve(Iris.getCurrentPackName() + ".txt");
 						if (Files.exists(sourceTxtPath)) {
 							try (InputStream in = Files.newInputStream(sourceTxtPath)) {
 								toSave.load(in);
@@ -343,7 +341,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 						try (OutputStream out = Files.newOutputStream(p)) {
 							toSave.store(out, null);
 						} catch (IOException e) {
-							IRIS_LOGGER.error("Error saving properties to \"" + p + "\"", e);
+							Iris.logger.error("Error saving properties to \"" + p + "\"", e);
 						}
 					});
 				});

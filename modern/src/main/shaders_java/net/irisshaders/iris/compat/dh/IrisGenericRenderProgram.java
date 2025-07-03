@@ -1,14 +1,8 @@
 package net.irisshaders.iris.compat.dh;
 
-import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
-
 import com.google.common.primitives.Ints;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiGenericObjectShaderProgram;
 import com.seibel.distanthorizons.api.interfaces.render.IDhApiRenderableBoxGroup;
 import com.seibel.distanthorizons.api.methods.events.sharedParameterObjects.DhApiRenderParam;
@@ -29,7 +23,7 @@ import net.irisshaders.iris.gl.shader.GlShader;
 import net.irisshaders.iris.gl.shader.ShaderType;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.texture.TextureType;
-import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
 import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
@@ -46,6 +40,11 @@ import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL32C;
 import org.lwjgl.opengl.GL43C;
 import org.lwjgl.system.MemoryStack;
+
+import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgram {
 	// Uniforms
@@ -73,7 +72,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 	private final int uSkyLight;
 
 	// This will bind  AbstractVertexAttribute
-	private IrisGenericRenderProgram(String name, boolean isShadowPass, boolean translucent, BlendModeOverride override, BufferBlendOverride[] bufferBlendOverrides, String vertex, String tessControl, String tessEval, String geometry, String fragment, CustomUniforms customUniforms, ModernIrisRenderingPipeline pipeline) {
+	private IrisGenericRenderProgram(String name, boolean isShadowPass, boolean translucent, BlendModeOverride override, BufferBlendOverride[] bufferBlendOverrides, String vertex, String tessControl, String tessEval, String geometry, String fragment, CustomUniforms customUniforms, IrisRenderingPipeline pipeline) {
 		id = GL43C.glCreateProgram();
 
 		GL32.glBindAttribLocation(this.id, 0, "vPosition");
@@ -135,8 +134,8 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 		samplers = samplerBuilder.build();
 		images = builder.build();
 
-        this.va = GL_STATE_MANAGER.glGenVertexArrays();
-		GL_STATE_MANAGER.glBindVertexArray(va);
+		this.va = GlStateManager._glGenVertexArrays();
+		GlStateManager._glBindVertexArray(va);
 		GL32.glVertexAttribPointer(0, 3, GL32.GL_FLOAT, false, 0, 0);
 		GL32.glEnableVertexAttribArray(0);
 
@@ -155,7 +154,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 		this.uSkyLight = this.tryGetUniformLocation2("uSkyLight");
 	}
 
-	public static IrisGenericRenderProgram createProgram(String name, boolean isShadowPass, boolean translucent, ProgramSource source, CustomUniforms uniforms, ModernIrisRenderingPipeline pipeline) {
+	public static IrisGenericRenderProgram createProgram(String name, boolean isShadowPass, boolean translucent, ProgramSource source, CustomUniforms uniforms, IrisRenderingPipeline pipeline) {
 		Map<PatchShaderType, String> transformed = TransformPatcherBridge.patchDHGeneric(
 			name,
 			source.getVertexSource().orElseThrow(RuntimeException::new),
@@ -209,7 +208,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 			matrix.get(buffer);
 			buffer.rewind();
 
-			RENDER_SYSTEM.glUniformMatrix4(index, false, buffer);
+			RenderSystem.glUniformMatrix4(index, false, buffer);
 		}
 	}
 
@@ -221,13 +220,13 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 			matrix.get(buffer);
 			buffer.rewind();
 
-			RENDER_SYSTEM.glUniformMatrix3(index, false, buffer);
+			RenderSystem.glUniformMatrix3(index, false, buffer);
 		}
 	}
 
 	// Override ShaderProgram.bind()
 	public void bind(DhApiRenderParam renderParam) {
-		GL_STATE_MANAGER.glBindVertexArray(va);
+		GlStateManager._glBindVertexArray(va);
 		GL32C.glUseProgram(id);
 		if (blend != null) blend.apply();
 
@@ -241,7 +240,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 		setUniform(projectionInverseUniform, toJOML(renderParam.dhModelViewMatrix).invert());
 		setUniform(normalMatrix3fUniform, toJOML(renderParam.dhModelViewMatrix).invert().transpose3x3(new Matrix3f()));
 		Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
-		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, RENDER_SYSTEM.getShaderTexture(2));
+		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, RenderSystem.getShaderTexture(2));
 		this.setUniform(this.instancedShaderProjectionModelViewMatrixUniform, toJOML(renderParam.dhProjectionMatrix).mul(toJOML(renderParam.dhModelViewMatrix)));
 
 		samplers.update();
@@ -253,7 +252,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 	}
 
 	public void unbind() {
-		GL_STATE_MANAGER.glBindVertexArray(0);
+		GlStateManager._glBindVertexArray(0);
 		GL43C.glUseProgram(0);
 		ProgramUniforms.clearActiveUniforms();
 		ProgramSamplers.clearActiveSamplers();
@@ -268,7 +267,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 
 	@Override
 	public boolean overrideThisFrame() {
-		return Iris.getPipelineManager().getPipelineNullable() instanceof ModernIrisRenderingPipeline;
+		return Iris.getPipelineManager().getPipelineNullable() instanceof IrisRenderingPipeline;
 	}
 
 	@Override
@@ -282,8 +281,8 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 
 	public void fillIndirectUniformData(DhApiRenderParam dhApiRenderParam, DhApiRenderableBoxGroupShading dhApiRenderableBoxGroupShading, IDhApiRenderableBoxGroup boxGroup, DhApiVec3d camPos) {
 		bind(dhApiRenderParam);
-		RENDER_SYSTEM.enableDepthTest();
-		RENDER_SYSTEM.depthFunc(GL30C.GL_LEQUAL);
+		RenderSystem.enableDepthTest();
+		RenderSystem.depthFunc(GL30C.GL_LEQUAL);
 		this.setUniform(this.instancedShaderOffsetChunkUniform,
 			new DhApiVec3i(
 				getChunkPosFromDouble(boxGroup.getOriginBlockPos().x),

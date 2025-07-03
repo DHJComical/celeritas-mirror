@@ -1,8 +1,6 @@
 package net.irisshaders.iris.compat.dh;
 
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
-import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
-
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.enums.rendering.EDhApiFogDrawMode;
 import com.seibel.distanthorizons.api.enums.rendering.EDhApiRenderPass;
@@ -28,14 +26,14 @@ import com.seibel.distanthorizons.api.methods.events.sharedParameterObjects.DhAp
 import com.seibel.distanthorizons.api.objects.math.DhApiVec3f;
 import com.seibel.distanthorizons.coreapi.DependencyInjection.OverrideInjector;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
-import net.irisshaders.iris.shadows.ModernShadowRenderer;
+import net.irisshaders.iris.shadows.ShadowRenderer;
 import net.irisshaders.iris.shadows.ShadowRenderingState;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.lwjgl.opengl.GL43C;
+import org.lwjgl.opengl.GL46C;
 
 public class LodRendererEvents {
 	private static boolean eventHandlersBound = false;
@@ -50,14 +48,14 @@ public class LodRendererEvents {
 	public static void setupEventHandlers() {
 		if (!eventHandlersBound) {
 			eventHandlersBound = true;
-			IRIS_LOGGER.info("Queuing DH event binding...");
+			Iris.logger.info("Queuing DH event binding...");
 
 			DhApiAfterDhInitEvent beforeCleanupEvent = new DhApiAfterDhInitEvent() {
 				@Override
 				public void afterDistantHorizonsInit(DhApiEventParam<Void> event) {
-					IRIS_LOGGER.info("DH Ready, binding Iris event handlers...");
+					Iris.logger.info("DH Ready, binding Iris event handlers...");
 
-					IrisCommon.loadShaderpackWhenPossible();
+					Iris.loadShaderpackWhenPossible();
 
 					setupSetDeferredBeforeRenderingEvent();
 					setupReconnectDepthTextureEvent();
@@ -71,7 +69,7 @@ public class LodRendererEvents {
 					setupBeforeRenderPassEvent();
 					setupBeforeApplyShaderEvent();
 					DHCompatInternal.dhEnabled = DhApi.Delayed.configs.graphics().renderingEnabled().getValue();
-					IRIS_LOGGER.info("DH Iris events bound.");
+					Iris.logger.info("DH Iris events bound.");
 				}
 			};
 			DhApi.events.bind(DhApiAfterDhInitEvent.class, beforeCleanupEvent);
@@ -240,7 +238,7 @@ public class LodRendererEvents {
 			public void beforeSetup(DhApiEventParam<DhApiRenderParam> event) {
 				DHCompatInternal instance = getInstance();
 
-				OverrideInjector.INSTANCE.unbind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ModernShadowRenderer.FRUSTUM);
+				OverrideInjector.INSTANCE.unbind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ShadowRenderer.FRUSTUM);
 				OverrideInjector.INSTANCE.unbind(IDhApiFramebuffer.class, instance.getShadowFBWrapper());
 				OverrideInjector.INSTANCE.unbind(IDhApiFramebuffer.class, instance.getSolidFBWrapper());
 				OverrideInjector.INSTANCE.unbind(IDhApiGenericObjectShaderProgram.class, instance.getGenericShader());
@@ -252,7 +250,7 @@ public class LodRendererEvents {
 
 					if (ShadowRenderingState.areShadowsCurrentlyBeingRendered() && instance.shouldOverrideShadow) {
 						OverrideInjector.INSTANCE.bind(IDhApiFramebuffer.class, instance.getShadowFBWrapper());
-						OverrideInjector.INSTANCE.bind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ModernShadowRenderer.FRUSTUM);
+						OverrideInjector.INSTANCE.bind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ShadowRenderer.FRUSTUM);
 					} else {
 						OverrideInjector.INSTANCE.bind(IDhApiFramebuffer.class, instance.getSolidFBWrapper());
 					}
@@ -275,7 +273,7 @@ public class LodRendererEvents {
 					DhApi.Delayed.configs.graphics().fog().drawMode().setValue(EDhApiFogDrawMode.FOG_DISABLED);
 
 					if (event.value.renderPass == EDhApiRenderPass.OPAQUE_AND_TRANSPARENT) {
-						IRIS_LOGGER.error("Unexpected; somehow the Opaque + Translucent pass ran with shaders on.");
+						Iris.logger.error("Unexpected; somehow the Opaque + Translucent pass ran with shaders on.");
 					}
 				} else {
 					DhApi.Delayed.configs.graphics().ambientOcclusion().enabled().clearValue();
@@ -303,7 +301,7 @@ public class LodRendererEvents {
 					if (instance.shouldOverride) {
 						if (ShadowRenderingState.areShadowsCurrentlyBeingRendered()) {
 							instance.getShadowShader().fillUniformData(
-								ModernShadowRenderer.PROJECTION, ModernShadowRenderer.MODELVIEW,
+								ShadowRenderer.PROJECTION, ShadowRenderer.MODELVIEW,
 								-1000, //MC.getWrappedClientLevel().getMinHeight(),
 								partialTicks);
 						} else {
@@ -311,7 +309,7 @@ public class LodRendererEvents {
 							//float nearClip = DhApi.Delayed.renderProxy.getNearClipPlaneDistanceInBlocks(partialTicks);
 							//float farClip = (float) ((double) (DHCompatInternal.getDhBlockRenderDistance() + 512) * Math.sqrt(2.0));
 
-							//IRIS_LOGGER.info("event near clip: "+event.value.nearClipPlane+" event far clip: "+event.value.farClipPlane+
+							//Iris.logger.info("event near clip: "+event.value.nearClipPlane+" event far clip: "+event.value.farClipPlane+
 							//	" \niris near clip: "+nearClip+" iris far clip: "+farClip);
 
 							instance.getSolidShader().fillUniformData(
@@ -343,8 +341,8 @@ public class LodRendererEvents {
 						Matrix4fc projection = CapturedRenderingState.INSTANCE.getGbufferProjection();
 						//float nearClip = DhApi.Delayed.renderProxy.getNearClipPlaneDistanceInBlocks(partialTicks);
 						//float farClip = (float) ((double) (DHCompatInternal.getDhBlockRenderDistance() + 512) * Math.sqrt(2.0));
-                        GL_STATE_MANAGER.disableCullFace();
-						//IRIS_LOGGER.info("event near clip: "+event.value.nearClipPlane+" event far clip: "+event.value.farClipPlane+
+                        GlStateManager._disableCull();
+						//Iris.logger.info("event near clip: "+event.value.nearClipPlane+" event far clip: "+event.value.farClipPlane+
 						//	" \niris near clip: "+nearClip+" iris far clip: "+farClip);
 
 						instance.getTranslucentShader().fillUniformData(
@@ -372,7 +370,7 @@ public class LodRendererEvents {
 				if (Iris.isPackInUseQuick()) {
 					DHCompatInternal instance = getInstance();
 
-					OverrideInjector.INSTANCE.unbind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ModernShadowRenderer.FRUSTUM);
+					OverrideInjector.INSTANCE.unbind(IDhApiShadowCullingFrustum.class, (IDhApiOverrideable) ShadowRenderer.FRUSTUM);
 					OverrideInjector.INSTANCE.unbind(IDhApiFramebuffer.class, instance.getShadowFBWrapper());
 					OverrideInjector.INSTANCE.unbind(IDhApiFramebuffer.class, instance.getSolidFBWrapper());
 

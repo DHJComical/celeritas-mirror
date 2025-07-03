@@ -1,44 +1,40 @@
 package net.irisshaders.iris.compat.sodium.impl.shader_overrides;
 
-import java.util.List;
-
-import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
-
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.gl.IrisRenderSystem;
-import net.irisshaders.iris.gl.blending.BlendModeOverride;
-import net.irisshaders.iris.gl.blending.BufferBlendOverride;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
-import net.irisshaders.iris.gl.program.ProgramImages;
-import net.irisshaders.iris.gl.program.ProgramSamplers;
-import net.irisshaders.iris.gl.program.ProgramUniforms;
-import net.irisshaders.iris.gl.texture.TextureType;
-import net.irisshaders.iris.pipeline.SodiumTerrainPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
-import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.shadows.ShadowRenderingState;
-import net.irisshaders.iris.uniforms.CapturedRenderingState;
-import net.irisshaders.iris.uniforms.custom.CustomUniforms;
-import net.irisshaders.iris.vertices.ImmediateState;
 import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.gl.buffer.GlMutableBuffer;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
-import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformBlock;
-import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat3v;
-import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformMatrix3f;
-import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformMatrix4f;
+import org.embeddedt.embeddium.impl.gl.shader.uniform.*;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderTextureSlot;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.TextureUtil;
+import net.irisshaders.iris.gl.IrisRenderSystem;
+import net.irisshaders.iris.gl.blending.BlendModeOverride;
+import net.irisshaders.iris.gl.blending.BufferBlendOverride;
+import net.irisshaders.iris.gl.program.ProgramImages;
+import net.irisshaders.iris.gl.program.ProgramSamplers;
+import net.irisshaders.iris.gl.program.ProgramUniforms;
+import net.irisshaders.iris.gl.texture.TextureType;
+import net.irisshaders.iris.pipeline.SodiumTerrainPipeline;
+import net.irisshaders.iris.samplers.IrisSamplers;
+import net.irisshaders.iris.uniforms.CapturedRenderingState;
+import net.irisshaders.iris.uniforms.custom.CustomUniforms;
+import net.irisshaders.iris.vertices.ImmediateState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.lwjgl.opengl.GL32C;
+
+import java.util.List;
 
 public class IrisChunkShaderInterface implements ChunkShaderInterface {
 	@Nullable
@@ -101,15 +97,14 @@ public class IrisChunkShaderInterface implements ChunkShaderInterface {
         if (ShadowRenderingState.areShadowsCurrentlyBeingRendered()) {
             // No back face culling during the shadow pass
             // TODO: Hopefully this won't be necessary in the future...
-            RENDER_SYSTEM.disableCullFace();
+            RenderSystem.disableCull();
         }
 
 		// See IrisSamplers#addLevelSamplers
 		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.ALBEDO_TEXTURE_UNIT, TextureUtil.getBlockTextureId());
 		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, TextureUtil.getLightTextureId());
 		// This is what is expected by the rest of rendering state, failure to do this will cause blurry textures on particles.
-		GL_STATE_MANAGER.glActiveTexture(GL32C.GL_TEXTURE0 + IrisSamplers.LIGHTMAP_TEXTURE_UNIT);
-		GL_STATE_MANAGER.glActiveTexture(GL32C.GL_TEXTURE0 + IrisSamplers.LIGHTMAP_TEXTURE_UNIT);
+		GlStateManager._activeTexture(GL32C.GL_TEXTURE0 + IrisSamplers.LIGHTMAP_TEXTURE_UNIT);
 		CapturedRenderingState.INSTANCE.setCurrentAlphaTest(alpha);
 
 		if (blendModeOverride != null) {

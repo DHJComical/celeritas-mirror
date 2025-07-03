@@ -1,7 +1,6 @@
 package net.irisshaders.iris.mixin.entity_render_context;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import net.irisshaders.iris.shaderpack.materialmap.ModernWorldRenderingSettings;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
@@ -31,12 +30,12 @@ public abstract class MixinItemRenderer {
 		if (WorldRenderingSettings.INSTANCE.getItemIds() == null) return;
 
 		if (pItemRenderer0.getItem() instanceof BlockItem blockItem && !(pItemRenderer0.getItem() instanceof SolidBucketItem)) {
-			if (ModernWorldRenderingSettings.INSTANCE.getBlockStateIds() == null) return;
+			if (WorldRenderingSettings.INSTANCE.getBlockStateIds() == null) return;
 
 			previousBeValue = CapturedRenderingState.INSTANCE.getCurrentRenderedBlockEntity();
 			CapturedRenderingState.INSTANCE.setCurrentBlockEntity(1);
 
-			CapturedRenderingState.INSTANCE.setCurrentRenderedItem(ModernWorldRenderingSettings.INSTANCE.getBlockStateIds().getOrDefault(blockItem.getBlock().defaultBlockState(), 0));
+			CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getBlockStateIds().getOrDefault(blockItem.getBlock().defaultBlockState(), 0));
 		} else {
             //? if >=1.19.3 {
 			ResourceLocation location = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(pItemRenderer0.getItem());

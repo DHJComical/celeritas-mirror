@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
-
 public class ModelTextureAnalyzer {
     /**
      * Whether or not to use multithreading for texture analysis. Disabled by default as this appears to dramatically
@@ -186,7 +184,7 @@ public class ModelTextureAnalyzer {
         Stopwatch watch = Stopwatch.createStarted();
         var result = runAnalysis(blockStateIds).join();
         watch.stop();
-        IRIS_LOGGER.info("Analyzed texture materials in {}", watch);
+        Iris.logger.info("Analyzed texture materials in {}", watch);
         return result;
     }
 
@@ -307,7 +305,7 @@ public class ModelTextureAnalyzer {
             try {
                 this.tasks.forEach(this::voteOnStates);
             } catch(Throwable e) {
-                IRIS_LOGGER.error("Exception encountered during texture analysis", e);
+                Iris.logger.error("Exception encountered during texture analysis", e);
             } finally {
                 this.completableFuture.complete(null);
             }

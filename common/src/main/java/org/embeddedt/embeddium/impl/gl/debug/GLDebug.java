@@ -89,10 +89,10 @@ public final class GLDebug {
 				printDetail(stream, "Message", GLDebugMessageCallback.getMessage(length, message));
 				printTrace(stream);
 			});
-			GL43C.glDebugMessageControl(GL43C.GL_DONT_CARE, GL43C.GL_DONT_CARE, GL43C.GL_DEBUG_SEVERITY_HIGH, (int[]) null, true);
-			GL43C.glDebugMessageControl(GL43C.GL_DONT_CARE, GL43C.GL_DONT_CARE, GL43C.GL_DEBUG_SEVERITY_MEDIUM, (int[]) null, false);
-			GL43C.glDebugMessageControl(GL43C.GL_DONT_CARE, GL43C.GL_DONT_CARE, GL43C.GL_DEBUG_SEVERITY_LOW, (int[]) null, false);
-			GL43C.glDebugMessageControl(GL43C.GL_DONT_CARE, GL43C.GL_DONT_CARE, GL43C.GL_DEBUG_SEVERITY_NOTIFICATION, (int[]) null, false);
+			GL43C.glDebugMessageControl(4352, 4352, GL43C.GL_DEBUG_SEVERITY_HIGH, (int[]) null, true);
+			GL43C.glDebugMessageControl(4352, 4352, GL43C.GL_DEBUG_SEVERITY_MEDIUM, (int[]) null, false);
+			GL43C.glDebugMessageControl(4352, 4352, GL43C.GL_DEBUG_SEVERITY_LOW, (int[]) null, false);
+			GL43C.glDebugMessageControl(4352, 4352, GL43C.GL_DEBUG_SEVERITY_NOTIFICATION, (int[]) null, false);
 			GL43C.glDebugMessageCallback(proc, 0L);
 			if ((GL43C.glGetInteger(33310) & 2) == 0) {
 				LOGGER.warn("[GL] Warning: A non-debug context may not produce any debug output.");
@@ -111,10 +111,10 @@ public final class GLDebug {
 				printDetail(stream, "Message", GLDebugMessageCallback.getMessage(length, message));
 				printTrace(stream);
 			});
-			KHRDebug.glDebugMessageControl(GL43C.GL_DONT_CARE, GL43C.GL_DONT_CARE, GL43C.GL_DEBUG_SEVERITY_HIGH, (int[]) null, true);
-			KHRDebug.glDebugMessageControl(GL43C.GL_DONT_CARE, GL43C.GL_DONT_CARE, GL43C.GL_DEBUG_SEVERITY_MEDIUM, (int[]) null, false);
-			KHRDebug.glDebugMessageControl(GL43C.GL_DONT_CARE, GL43C.GL_DONT_CARE, GL43C.GL_DEBUG_SEVERITY_LOW, (int[]) null, false);
-			KHRDebug.glDebugMessageControl(GL43C.GL_DONT_CARE, GL43C.GL_DONT_CARE, GL43C.GL_DEBUG_SEVERITY_NOTIFICATION, (int[]) null, false);
+			KHRDebug.glDebugMessageControl(4352, 4352, GL43C.GL_DEBUG_SEVERITY_HIGH, (int[]) null, true);
+			KHRDebug.glDebugMessageControl(4352, 4352, GL43C.GL_DEBUG_SEVERITY_MEDIUM, (int[]) null, false);
+			KHRDebug.glDebugMessageControl(4352, 4352, GL43C.GL_DEBUG_SEVERITY_LOW, (int[]) null, false);
+			KHRDebug.glDebugMessageControl(4352, 4352, GL43C.GL_DEBUG_SEVERITY_NOTIFICATION, (int[]) null, false);
 			KHRDebug.glDebugMessageCallback(proc, 0L);
 			if (caps.OpenGL30 && (GL43C.glGetInteger(33310) & 2) == 0) {
 				LOGGER.warn("[GL] Warning: A non-debug context may not produce any debug output.");
@@ -133,10 +133,10 @@ public final class GLDebug {
 				printDetail(stream, "Message", GLDebugMessageARBCallback.getMessage(length, message));
 				printTrace(stream);
 			});
-			ARBDebugOutput.glDebugMessageControlARB(GL43C.GL_DONT_CARE, GL43C.GL_DONT_CARE, GL43C.GL_DEBUG_SEVERITY_HIGH, (int[]) null, true);
-			ARBDebugOutput.glDebugMessageControlARB(GL43C.GL_DONT_CARE, GL43C.GL_DONT_CARE, GL43C.GL_DEBUG_SEVERITY_MEDIUM, (int[]) null, false);
-			ARBDebugOutput.glDebugMessageControlARB(GL43C.GL_DONT_CARE, GL43C.GL_DONT_CARE, GL43C.GL_DEBUG_SEVERITY_LOW, (int[]) null, false);
-			ARBDebugOutput.glDebugMessageControlARB(GL43C.GL_DONT_CARE, GL43C.GL_DONT_CARE, GL43C.GL_DEBUG_SEVERITY_NOTIFICATION, (int[]) null, false);
+			ARBDebugOutput.glDebugMessageControlARB(4352, 4352, GL43C.GL_DEBUG_SEVERITY_HIGH, (int[]) null, true);
+			ARBDebugOutput.glDebugMessageControlARB(4352, 4352, GL43C.GL_DEBUG_SEVERITY_MEDIUM, (int[]) null, false);
+			ARBDebugOutput.glDebugMessageControlARB(4352, 4352, GL43C.GL_DEBUG_SEVERITY_LOW, (int[]) null, false);
+			ARBDebugOutput.glDebugMessageControlARB(4352, 4352, GL43C.GL_DEBUG_SEVERITY_NOTIFICATION, (int[]) null, false);
 			ARBDebugOutput.glDebugMessageCallbackARB(proc, 0L);
 			return 1;
 		} else if (caps.GL_AMD_debug_output) {
@@ -196,93 +196,107 @@ public final class GLDebug {
 		stream.append(message).append("\n");
 	}
 
-    private static String getDebugSource(int source) {
-        return switch (source) {
-            case GL43C.GL_DEBUG_SOURCE_API -> "API";
-            case GL43C.GL_DEBUG_SOURCE_WINDOW_SYSTEM -> "WINDOW SYSTEM";
-            case GL43C.GL_DEBUG_SOURCE_SHADER_COMPILER -> "SHADER COMPILER";
-            case GL43C.GL_DEBUG_SOURCE_THIRD_PARTY -> "THIRD PARTY";
-            case GL43C.GL_DEBUG_SOURCE_APPLICATION -> "APPLICATION";
-            case GL43C.GL_DEBUG_SOURCE_OTHER -> "OTHER";
-            default -> APIUtil.apiUnknownToken(source);
-        };
-    }
+	private static String getDebugSource(int source) {
+		switch (source) {
+			case 33350 -> {
+				return "API";
+			}
+			case 33351 -> {
+				return "WINDOW SYSTEM";
+			}
+			case 33352 -> {
+				return "SHADER COMPILER";
+			}
+			case 33353 -> {
+				return "THIRD PARTY";
+			}
+			case 33354 -> {
+				return "APPLICATION";
+			}
+			case 33355 -> {
+				return "OTHER";
+			}
+			default -> {
+				return APIUtil.apiUnknownToken(source);
+			}
+		}
+	}
 
 	private static String getDebugType(int type) {
 		return switch (type) {
-            case GL43C.GL_DEBUG_TYPE_ERROR -> "ERROR";
-            case GL43C.GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR -> "DEPRECATED BEHAVIOR";
-            case GL43C.GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR -> "UNDEFINED BEHAVIOR";
-            case GL43C.GL_DEBUG_TYPE_PORTABILITY -> "PORTABILITY";
-            case GL43C.GL_DEBUG_TYPE_PERFORMANCE -> "PERFORMANCE";
-            case GL43C.GL_DEBUG_TYPE_OTHER -> "OTHER";
-            case GL43C.GL_DEBUG_TYPE_MARKER -> "MARKER";
+			case 33356 -> "ERROR";
+			case 33357 -> "DEPRECATED BEHAVIOR";
+			case 33358 -> "UNDEFINED BEHAVIOR";
+			case 33359 -> "PORTABILITY";
+			case 33360 -> "PERFORMANCE";
+			case 33361 -> "OTHER";
+			case 33384 -> "MARKER";
 			default -> APIUtil.apiUnknownToken(type);
 		};
 	}
 
 	private static String getDebugSeverity(int severity) {
 		return switch (severity) {
-            case GL43C.GL_DEBUG_SEVERITY_NOTIFICATION -> "NOTIFICATION";
-            case GL43C.GL_DEBUG_SEVERITY_HIGH -> "HIGH";
-            case GL43C.GL_DEBUG_SEVERITY_MEDIUM -> "MEDIUM";
-            case GL43C.GL_DEBUG_SEVERITY_LOW -> "LOW";
+			case 33387 -> "NOTIFICATION";
+			case 37190 -> "HIGH";
+			case 37191 -> "MEDIUM";
+			case 37192 -> "LOW";
 			default -> APIUtil.apiUnknownToken(severity);
 		};
 	}
 
 	private static String getSourceARB(int source) {
 		return switch (source) {
-            case ARBDebugOutput.GL_DEBUG_SOURCE_API_ARB -> "API";
-            case ARBDebugOutput.GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB -> "WINDOW SYSTEM";
-            case ARBDebugOutput.GL_DEBUG_SOURCE_SHADER_COMPILER_ARB -> "SHADER COMPILER";
-            case ARBDebugOutput.GL_DEBUG_SOURCE_THIRD_PARTY_ARB -> "THIRD PARTY";
-            case ARBDebugOutput.GL_DEBUG_SOURCE_APPLICATION_ARB -> "APPLICATION";
-            case ARBDebugOutput.GL_DEBUG_SOURCE_OTHER_ARB -> "OTHER";
+			case 33350 -> "API";
+			case 33351 -> "WINDOW SYSTEM";
+			case 33352 -> "SHADER COMPILER";
+			case 33353 -> "THIRD PARTY";
+			case 33354 -> "APPLICATION";
+			case 33355 -> "OTHER";
 			default -> APIUtil.apiUnknownToken(source);
 		};
 	}
 
 	private static String getTypeARB(int type) {
 		return switch (type) {
-            case ARBDebugOutput.GL_DEBUG_TYPE_ERROR_ARB -> "ERROR";
-            case ARBDebugOutput.GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB -> "DEPRECATED BEHAVIOR";
-            case ARBDebugOutput.GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB -> "UNDEFINED BEHAVIOR";
-            case ARBDebugOutput.GL_DEBUG_TYPE_PORTABILITY_ARB -> "PORTABILITY";
-            case ARBDebugOutput.GL_DEBUG_TYPE_PERFORMANCE_ARB -> "PERFORMANCE";
-            case ARBDebugOutput.GL_DEBUG_TYPE_OTHER_ARB -> "OTHER";
+			case 33356 -> "ERROR";
+			case 33357 -> "DEPRECATED BEHAVIOR";
+			case 33358 -> "UNDEFINED BEHAVIOR";
+			case 33359 -> "PORTABILITY";
+			case 33360 -> "PERFORMANCE";
+			case 33361 -> "OTHER";
 			default -> APIUtil.apiUnknownToken(type);
 		};
 	}
 
 	private static String getSeverityARB(int severity) {
 		return switch (severity) {
-            case ARBDebugOutput.GL_DEBUG_SEVERITY_HIGH_ARB -> "HIGH";
-            case ARBDebugOutput.GL_DEBUG_SEVERITY_MEDIUM_ARB -> "MEDIUM";
-            case ARBDebugOutput.GL_DEBUG_SEVERITY_LOW_ARB -> "LOW";
+			case 37190 -> "HIGH";
+			case 37191 -> "MEDIUM";
+			case 37192 -> "LOW";
 			default -> APIUtil.apiUnknownToken(severity);
 		};
 	}
 
 	private static String getCategoryAMD(int category) {
 		return switch (category) {
-            case AMDDebugOutput.GL_DEBUG_CATEGORY_API_ERROR_AMD -> "API ERROR";
-            case AMDDebugOutput.GL_DEBUG_CATEGORY_WINDOW_SYSTEM_AMD -> "WINDOW SYSTEM";
-            case AMDDebugOutput.GL_DEBUG_CATEGORY_DEPRECATION_AMD -> "DEPRECATION";
-            case AMDDebugOutput.GL_DEBUG_CATEGORY_UNDEFINED_BEHAVIOR_AMD -> "UNDEFINED BEHAVIOR";
-            case AMDDebugOutput.GL_DEBUG_CATEGORY_PERFORMANCE_AMD -> "PERFORMANCE";
-            case AMDDebugOutput.GL_DEBUG_CATEGORY_SHADER_COMPILER_AMD -> "SHADER COMPILER";
-            case AMDDebugOutput.GL_DEBUG_CATEGORY_APPLICATION_AMD -> "APPLICATION";
-            case AMDDebugOutput.GL_DEBUG_CATEGORY_OTHER_AMD -> "OTHER";
+			case 37193 -> "API ERROR";
+			case 37194 -> "WINDOW SYSTEM";
+			case 37195 -> "DEPRECATION";
+			case 37196 -> "UNDEFINED BEHAVIOR";
+			case 37197 -> "PERFORMANCE";
+			case 37198 -> "SHADER COMPILER";
+			case 37199 -> "APPLICATION";
+			case 37200 -> "OTHER";
 			default -> APIUtil.apiUnknownToken(category);
 		};
 	}
 
 	private static String getSeverityAMD(int severity) {
 		return switch (severity) {
-            case AMDDebugOutput.GL_DEBUG_SEVERITY_HIGH_AMD -> "HIGH";
-            case AMDDebugOutput.GL_DEBUG_SEVERITY_MEDIUM_AMD -> "MEDIUM";
-            case AMDDebugOutput.GL_DEBUG_SEVERITY_LOW_AMD -> "LOW";
+			case 37190 -> "HIGH";
+			case 37191 -> "MEDIUM";
+			case 37192 -> "LOW";
 			default -> APIUtil.apiUnknownToken(severity);
 		};
 	}
@@ -307,28 +321,18 @@ public final class GLDebug {
 		debugState.popGroup();
 	}
 
-    public static void debugMessage(int id, String name) {
-        debugState.debugMessage(id, name);
-    }
-
-    public static String getObjectLabel(int glProgram, int program) {
-        return debugState.getObjectLabel(glProgram, program);
-    }
-
 	private interface DebugState {
 		void nameObject(int id, int object, String name);
-		void pushGroup(int id, String name);
-		void popGroup();
-        void debugMessage(int id, String name);
 
-        String getObjectLabel(int glProgram, int program);
+		void pushGroup(int id, String name);
+
+		void popGroup();
 	}
 
 	private static class KHRDebugState implements DebugState {
+        // Let's see how bad this goes
         private static final boolean ENABLE_DEBUG_GROUPS = true;
-        private int depth = 0;
-        private final int maxDepth = GL43C.glGetInteger(KHRDebug.GL_MAX_DEBUG_GROUP_STACK_DEPTH);
-        private final int maxNameLength = GL43C.glGetInteger(KHRDebug.GL_MAX_LABEL_LENGTH);
+		private int stackSize;
 
 		@Override
 		public void nameObject(int id, int object, String name) {
@@ -337,39 +341,23 @@ public final class GLDebug {
 
 		@Override
 		public void pushGroup(int id, String name) {
-            if (!ENABLE_DEBUG_GROUPS) return;
-
-            if (depth < maxDepth) {
-                depth++;
-                KHRDebug.glPushDebugGroup(KHRDebug.GL_DEBUG_SOURCE_APPLICATION, id, name);
-            } else {
-                // Warn about stack overflow
+            if (!ENABLE_DEBUG_GROUPS) {
+                return;
             }
+			KHRDebug.glPushDebugGroup(KHRDebug.GL_DEBUG_SOURCE_APPLICATION, id, name);
+			stackSize += 1;
 		}
 
 		@Override
 		public void popGroup() {
-            if (!ENABLE_DEBUG_GROUPS) return;
-            if (depth != 0) {
-                KHRDebug.glPopDebugGroup();
-                depth--;
-            } else {
-                // Warn about stack underflow
+            if (!ENABLE_DEBUG_GROUPS) {
+                return;
             }
+			if (stackSize != 0) {
+				KHRDebug.glPopDebugGroup();
+				stackSize -= 1;
+			}
 		}
-
-        @Override
-        public void debugMessage(int id, String message) {
-            KHRDebug.glDebugMessageInsert(KHRDebug.GL_DEBUG_SOURCE_APPLICATION, KHRDebug.GL_DEBUG_TYPE_MARKER, id, KHRDebug.GL_DEBUG_SEVERITY_NOTIFICATION, message);
-        }
-
-        @Override
-        public String getObjectLabel(int glProgram, int program) {
-            if(program == 0)
-                return "";
-
-            return KHRDebug.glGetObjectLabel(glProgram, program, maxNameLength);
-        }
 	}
 
 	private static class UnsupportedDebugState implements DebugState {
@@ -384,14 +372,5 @@ public final class GLDebug {
 		@Override
 		public void popGroup() {
 		}
-
-        @Override
-        public void debugMessage(int id, String name) {
-        }
-
-        @Override
-        public String getObjectLabel(int glProgram, int program) {
-            return "";
-        }
-    }
+	}
 }

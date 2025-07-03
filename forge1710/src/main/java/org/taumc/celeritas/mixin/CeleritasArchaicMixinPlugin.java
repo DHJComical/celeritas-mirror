@@ -29,8 +29,6 @@ public class CeleritasArchaicMixinPlugin implements IMixinConfigPlugin {
         var handle = SharedConfig.getRfbTransformers().stream().filter(transformer -> transformer.id().equals("lwjgl3ify:redirect")).findFirst().orElseThrow();
         handle.exclusions().add("org.embeddedt.embeddium");
         handle.exclusions().add("org.taumc.celeritas");
-        handle.exclusions().add("net.irisshaders.iris");
-        handle.exclusions().add("com.mitchej123.glsm");
     }
 
     @Override
@@ -93,7 +91,7 @@ public class CeleritasArchaicMixinPlugin implements IMixinConfigPlugin {
                 LOGGER.error("Error reading path", e);
             }
         }
-        LOGGER.info("Found {} mixin classes", possibleMixinClasses);
+        LOGGER.info("Found {} mixin classes", possibleMixinClasses.size());
         for (var fs : fileSystemsToClose) {
             try {
                 fs.close();

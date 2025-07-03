@@ -1,7 +1,6 @@
 package net.irisshaders.iris.gui.element.widget;
 
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.gui.GuiUtil;
 import net.irisshaders.iris.gui.NavigationController;
 import net.irisshaders.iris.gui.element.ShaderPackOptionList;
@@ -29,7 +28,7 @@ public final class OptionMenuConstructor {
 
 	static {
 		registerScreen(OptionMenuMainElementScreen.class, screen ->
-			new ElementWidgetScreenData(Component.literal(IrisCommon.getCurrentPackName()).append(Iris.isFallback() ? " (fallback)" : "").withStyle(ChatFormatting.BOLD), false));
+			new ElementWidgetScreenData(Component.literal(Iris.getCurrentPackName()).append(Iris.isFallback() ? " (fallback)" : "").withStyle(ChatFormatting.BOLD), false));
 
 		registerScreen(OptionMenuSubElementScreen.class, screen ->
 			new ElementWidgetScreenData(GuiUtil.translateOrDefault(Component.literal(screen.screenId), "screen." + screen.screenId), true));

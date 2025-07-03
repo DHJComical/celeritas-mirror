@@ -12,7 +12,6 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.renderer.ShaderInstance;
-import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -64,7 +63,7 @@ public class MixinParticleEngine implements PhasedParticleEngine {
 
 	@Redirect(method = InjectionPoints.PARTICLE_ENGINE_RENDER, at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShader(Ljava/util/function/Supplier;)V"))
 	private void iris$changeParticleShader(Supplier<ShaderInstance> pSupplier0) {
-		RenderSystem.setShader(phase == ParticleRenderingPhase.TRANSLUCENT ? () -> (ShaderInstance) ShaderAccess.getParticleTranslucentShader() : pSupplier0);
+		RenderSystem.setShader(phase == ParticleRenderingPhase.TRANSLUCENT ? ShaderAccess::getParticleTranslucentShader : pSupplier0);
 	}
 
 	@ModifyExpressionValue(method = InjectionPoints.PARTICLE_ENGINE_RENDER, at = @At(value = "INVOKE", target = /*? if <1.21 {*/ "Ljava/lang/Iterable;iterator()Ljava/util/Iterator;" /*?} else {*/ /*"Ljava/util/Queue;iterator()Ljava/util/Iterator;" *//*?}*/))

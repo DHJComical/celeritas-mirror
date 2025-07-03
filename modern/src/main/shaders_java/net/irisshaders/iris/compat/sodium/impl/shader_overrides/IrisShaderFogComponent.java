@@ -1,7 +1,6 @@
 package net.irisshaders.iris.compat.sodium.impl.shader_overrides;
 
-import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
-
+import com.mojang.blaze3d.systems.RenderSystem;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat4v;
@@ -19,15 +18,15 @@ public class IrisShaderFogComponent {
 
 	public void setup() {
 		if (this.uFogColor != null) {
-			this.uFogColor.set(RENDER_SYSTEM.getShaderFogColor());
+			this.uFogColor.set(RenderSystem.getShaderFogColor());
 		}
 
 		if (this.uFogStart != null) {
-			this.uFogStart.setFloat(RENDER_SYSTEM.getShaderFogStart());
+			this.uFogStart.setFloat(RenderSystem.getShaderFogStart());
 		}
 
 		if (this.uFogEnd != null) {
-			this.uFogEnd.setFloat(RENDER_SYSTEM.getShaderFogEnd());
+			this.uFogEnd.setFloat(RenderSystem.getShaderFogEnd());
 		}
 	}
 }

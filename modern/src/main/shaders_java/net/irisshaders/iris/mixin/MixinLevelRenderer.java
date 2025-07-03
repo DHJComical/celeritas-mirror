@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.compat.dh.DHCompat;
-import net.irisshaders.iris.compat.mc.FrustumWrapper;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.layer.IsOutlineRenderStateShard;
 import net.irisshaders.iris.layer.OuterWrappedRenderType;
@@ -16,12 +15,14 @@ import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shadows.frustum.fallback.NonCullingFrustum;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.IrisTimeUniforms;
+import net.irisshaders.iris.uniforms.SystemTimeUniforms;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.culling.Frustum;
-import org.embeddedt.embeddium.compat.mc.MCCamera;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL43C;
@@ -39,24 +40,6 @@ public class MixinLevelRenderer {
 	private static final String RENDER_SKY = "Lnet/minecraft/client/renderer/LevelRenderer;renderSky(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V";
 	private static final String RENDER_CLOUDS = "Lnet/minecraft/client/renderer/LevelRenderer;renderClouds(Lcom/mojang/blaze3d/vertex/PoseStack;Lorg/joml/Matrix4f;FDDD)V";
 	private static final String RENDER_WEATHER = "Lnet/minecraft/client/renderer/LevelRenderer;renderSnowAndRain(Lnet/minecraft/client/renderer/LightTexture;FDDD)V";
-
-
-    private static WorldRenderingPhase fromTerrainRenderType(RenderType renderType) {
-        if (renderType == RenderType.solid()) {
-            return WorldRenderingPhase.TERRAIN_SOLID;
-        } else if (renderType == RenderType.cutout()) {
-            return WorldRenderingPhase.TERRAIN_CUTOUT;
-        } else if (renderType == RenderType.cutoutMipped()) {
-            return WorldRenderingPhase.TERRAIN_CUTOUT_MIPPED;
-        } else if (renderType == RenderType.translucent()) {
-            return WorldRenderingPhase.TERRAIN_TRANSLUCENT;
-        } else if (renderType == RenderType.tripwire()) {
-            return WorldRenderingPhase.TRIPWIRE;
-        } else {
-            // Best guess
-            return WorldRenderingPhase.TERRAIN_CUTOUT_MIPPED;
-        }
-    }
 
 	@Shadow
 	@Final
@@ -121,7 +104,7 @@ public class MixinLevelRenderer {
 		pipeline = Iris.getPipelineManager().preparePipeline(Iris.getCurrentDimension());
 
 		if (pipeline.shouldDisableFrustumCulling()) {
-			this.cullingFrustum = new FrustumWrapper(new NonCullingFrustum());
+			this.cullingFrustum = new NonCullingFrustum();
 		}
 
         IrisRenderSystem.backupAndDisableCullingState(pipeline.shouldDisableOcclusionCulling());
@@ -173,7 +156,7 @@ public class MixinLevelRenderer {
 	// Do this before sky rendering so it's ready before the sky render starts.
 	@Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=sky"))
 	private void iris$renderTerrainShadows(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) Camera camera) {
-		pipeline.renderShadows((LevelRendererAccessor) this, (MCCamera) camera);
+		pipeline.renderShadows((LevelRendererAccessor) this, camera);
 	}
 
 	@ModifyVariable(method = "renderSky", at = @At(value = "HEAD"), index = 5, argsOnly = true)
@@ -255,7 +238,7 @@ public class MixinLevelRenderer {
 
 	@Inject(method = RENDER_CHUNK_LAYER, at = @At("HEAD"))
 	private void iris$beginTerrainLayer(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) RenderType renderType) {
-		pipeline.setPhase(fromTerrainRenderType(renderType));
+		pipeline.setPhase(WorldRenderingPhase.fromTerrainRenderType(renderType));
 	}
 
 	@Inject(method = RENDER_CHUNK_LAYER, at = @At("RETURN"))

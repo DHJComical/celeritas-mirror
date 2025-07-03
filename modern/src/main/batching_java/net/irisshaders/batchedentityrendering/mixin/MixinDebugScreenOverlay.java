@@ -25,7 +25,7 @@ public abstract class MixinDebugScreenOverlay {
 		DrawCallTrackingRenderBuffers drawTracker = (DrawCallTrackingRenderBuffers) Minecraft.getInstance().renderBuffers();
 
 		// blank line separator
-		if (true) { // TODO IrisCommon.getIrisConfig().areDebugOptionsEnabled()) {
+		if (true) { // TODO Iris.getIrisConfig().areDebugOptionsEnabled()) {
 			messages.add("");
 			messages.add("[Entity Batching] " + BatchingDebugMessageHelper.getDebugMessage(drawTracker));
 		}

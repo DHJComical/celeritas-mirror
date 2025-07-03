@@ -2,8 +2,8 @@ package net.irisshaders.iris.pathways;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.irisshaders.iris.IrisConstants;
 import net.irisshaders.iris.versionutils.ModelTranslucencyHelper;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 import net.irisshaders.batchedentityrendering.impl.FullyBufferedMultiBufferSource;
@@ -15,6 +15,8 @@ import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,10 +24,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.GameType;
+import org.joml.Matrix4f;
+
+import java.util.function.BooleanSupplier;
 
 public class HandRenderer {
 	public static final HandRenderer INSTANCE = new HandRenderer();
-    private final FullyBufferedMultiBufferSource bufferSource = new FullyBufferedMultiBufferSource();
+	public static final float DEPTH = 0.125F;
+	private final FullyBufferedMultiBufferSource bufferSource = new FullyBufferedMultiBufferSource();
 	private boolean ACTIVE;
 	private boolean renderingSolid;
 
@@ -33,7 +39,7 @@ public class HandRenderer {
 		final PoseStack.Pose pose = poseStack.last();
 
 		// We need to scale the matrix by 0.125 so the hand doesn't clip through blocks.
-		Matrix4f scaleMatrix = new Matrix4f().scale(1F, 1F, IrisConstants.DEPTH);
+		Matrix4f scaleMatrix = new Matrix4f().scale(1F, 1F, DEPTH);
 		scaleMatrix.mul(gameRenderer.getProjectionMatrix(((GameRendererAccessor) gameRenderer).invokeGetFov(camera, tickDelta, false)));
 		gameRenderer.resetProjectionMatrix(scaleMatrix);
 

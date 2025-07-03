@@ -2,7 +2,6 @@ package net.irisshaders.iris.mixin;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
 import org.spongepowered.asm.mixin.Mixin;
@@ -60,9 +59,9 @@ public abstract class MixinDebugScreenOverlay {
 
     @ModifyExpressionValue(method = "getSystemInformation", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList([Ljava/lang/Object;)Ljava/util/ArrayList;"))
     private ArrayList<String> redirectRightTextEarly(ArrayList<String> messages) {
-		if (IrisCommon.getIrisConfig().areShadersEnabled()) {
-			messages.add("Shaderpack: " + IrisCommon.getCurrentPackName() + (Iris.isFallback() ? " (fallback)" : ""));
-			IrisCommon.getCurrentPack().ifPresent(pack -> {
+		if (Iris.getIrisConfig().areShadersEnabled()) {
+			messages.add("Shaderpack: " + Iris.getCurrentPackName() + (Iris.isFallback() ? " (fallback)" : ""));
+			Iris.getCurrentPack().ifPresent(pack -> {
 				messages.add(pack.getProfileInfo());
 			});
 			messages.add("Color space: " + IrisVideoSettings.colorSpace.name());

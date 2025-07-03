@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gui.element.widget;
 
-import net.irisshaders.iris.IrisCommon;
+import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gui.GuiUtil;
 import net.irisshaders.iris.gui.NavigationController;
 import net.irisshaders.iris.gui.screen.ShaderPackScreen;
@@ -75,7 +75,7 @@ public class ProfileElementWidget extends BaseOptionElementWidget<OptionMenuProf
 			return false;
 		}
 
-		IrisCommon.queueShaderPackOptionsFromProfile(this.next);
+		Iris.queueShaderPackOptionsFromProfile(this.next);
 
 		return true;
 	}
@@ -86,7 +86,7 @@ public class ProfileElementWidget extends BaseOptionElementWidget<OptionMenuProf
 			return false;
 		}
 
-		IrisCommon.queueShaderPackOptionsFromProfile(this.previous);
+		Iris.queueShaderPackOptionsFromProfile(this.previous);
 
 		return true;
 	}

@@ -2,7 +2,7 @@ package net.irisshaders.iris.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.irisshaders.iris.IrisCommon;
+import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -41,7 +41,7 @@ public class MixinTheEndPortalRenderer {
 
 	@Inject(method = "render", at = @At("HEAD"), cancellable = true)
 	public void iris$onRender(TheEndPortalBlockEntity entity, float tickDelta, PoseStack poseStack, MultiBufferSource multiBufferSource, int light, int overlay, CallbackInfo ci) {
-		if (!IrisCommon.getCurrentPack().isPresent()) {
+		if (!Iris.getCurrentPack().isPresent()) {
 			return;
 		}
 

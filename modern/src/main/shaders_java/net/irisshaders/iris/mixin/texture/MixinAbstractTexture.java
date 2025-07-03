@@ -2,7 +2,6 @@ package net.irisshaders.iris.mixin.texture;
 
 import net.irisshaders.iris.texture.TextureTracker;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,13 +10,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractTexture.class)
-public abstract class MixinAbstractTexture implements MCAbstractTexture {
+public class MixinAbstractTexture {
 	@Shadow
 	protected int id;
 
 	// Inject after the newly-generated texture ID has been stored into the id field
 	@Inject(method = "getId()I", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/TextureUtil;generateTextureId()I", shift = Shift.BY, by = 2))
 	private void iris$afterGenerateId(CallbackInfoReturnable<Integer> cir) {
-		TextureTracker.INSTANCE.trackTexture(id, this);
+		TextureTracker.INSTANCE.trackTexture(id, (AbstractTexture) (Object) this);
 	}
 }

@@ -9,19 +9,17 @@ import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.frame.AbstractFrame;
 import org.embeddedt.embeddium.impl.gui.frame.OptionPageFrame;
 import org.embeddedt.embeddium.impl.gui.frame.ScrollableFrame;
+import org.embeddedt.embeddium.impl.util.PlatformUtil;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTIL;
-
-
 public record Tab<T extends AbstractFrame>(OptionIdentifier<Void> id, Component title, Supplier<Boolean> onSelectFunction, Function<Dim2i, T> frameFunction) {
 
     static Component idComponent(String namespace) {
-        return ComponentUtil.literal(PLATFORM_UTIL.getModName(namespace))
+        return ComponentUtil.literal(PlatformUtil.getModName(namespace))
                 //? if <1.16 {
                 /*.withStyle(s -> s.setBold(true))
                 *///?} else

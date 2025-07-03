@@ -1,7 +1,7 @@
 package net.irisshaders.iris.texture.util;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import org.embeddedt.embeddium.api.util.ColorABGR;
+import net.minecraft.util.FastColor;
 
 public class ImageManipulationUtil {
 	public static NativeImage scaleNearestNeighbor(NativeImage image, int newWidth, int newHeight) {
@@ -95,11 +95,11 @@ public class ImageManipulationUtil {
 	}
 
 	private static int blendColor(int c0, int c1, int c2, int c3, float w0, float w1, float w2, float w3) {
-		return ColorABGR.pack(
-			blendChannel(ColorABGR.unpackRed(c0), ColorABGR.unpackRed(c1), ColorABGR.unpackRed(c2), ColorABGR.unpackRed(c3), w0, w1, w2, w3),
-			blendChannel(ColorABGR.unpackGreen(c0), ColorABGR.unpackGreen(c1), ColorABGR.unpackGreen(c2), ColorABGR.unpackGreen(c3), w0, w1, w2, w3),
-			blendChannel(ColorABGR.unpackBlue(c0), ColorABGR.unpackBlue(c1), ColorABGR.unpackBlue(c2), ColorABGR.unpackBlue(c3), w0, w1, w2, w3),
-			blendChannel(ColorABGR.unpackAlpha(c0), ColorABGR.unpackAlpha(c1), ColorABGR.unpackAlpha(c2), ColorABGR.unpackAlpha(c3), w0, w1, w2, w3)
+		return FastColor.ABGR32.color(
+			blendChannel(FastColor.ABGR32.alpha(c0), FastColor.ABGR32.alpha(c1), FastColor.ABGR32.alpha(c2), FastColor.ABGR32.alpha(c3), w0, w1, w2, w3),
+			blendChannel(FastColor.ABGR32.blue(c0), FastColor.ABGR32.blue(c1), FastColor.ABGR32.blue(c2), FastColor.ABGR32.blue(c3), w0, w1, w2, w3),
+			blendChannel(FastColor.ABGR32.green(c0), FastColor.ABGR32.green(c1), FastColor.ABGR32.green(c2), FastColor.ABGR32.green(c3), w0, w1, w2, w3),
+			blendChannel(FastColor.ABGR32.red(c0), FastColor.ABGR32.red(c1), FastColor.ABGR32.red(c2), FastColor.ABGR32.red(c3), w0, w1, w2, w3)
 		);
 	}
 
@@ -108,11 +108,11 @@ public class ImageManipulationUtil {
 	}
 
 	private static int blendColor(int c0, int c1, float w0, float w1) {
-		return ColorABGR.pack(
-			blendChannel(ColorABGR.unpackRed(c0), ColorABGR.unpackRed(c1), w0, w1),
-			blendChannel(ColorABGR.unpackGreen(c0), ColorABGR.unpackGreen(c1), w0, w1),
-			blendChannel(ColorABGR.unpackBlue(c0), ColorABGR.unpackBlue(c1), w0, w1),
-			blendChannel(ColorABGR.unpackAlpha(c0), ColorABGR.unpackAlpha(c1), w0, w1)
+		return FastColor.ABGR32.color(
+			blendChannel(FastColor.ABGR32.alpha(c0), FastColor.ABGR32.alpha(c1), w0, w1),
+			blendChannel(FastColor.ABGR32.blue(c0), FastColor.ABGR32.blue(c1), w0, w1),
+			blendChannel(FastColor.ABGR32.green(c0), FastColor.ABGR32.green(c1), w0, w1),
+			blendChannel(FastColor.ABGR32.red(c0), FastColor.ABGR32.red(c1), w0, w1)
 		);
 	}
 

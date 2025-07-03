@@ -1,6 +1,6 @@
 package net.irisshaders.iris.mixin;
 
-import net.irisshaders.iris.IrisCommon;
+import net.irisshaders.iris.Iris;
 import net.minecraft.client.Options;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,6 +20,6 @@ public class MixinOptions_Entrypoint {
 		}
 
 		iris$initialized = true;
-		IrisCommon.onEarlyInitialize();
+		Iris.onEarlyInitialize();
 	}
 }

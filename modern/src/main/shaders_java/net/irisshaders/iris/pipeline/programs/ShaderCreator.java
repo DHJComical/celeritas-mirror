@@ -10,8 +10,7 @@ import net.irisshaders.iris.gl.blending.BufferBlendOverride;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
-import net.irisshaders.iris.gl.state.ShaderAttributeInputsBuilder;
-import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.fallback.ShaderSynthesizer;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
@@ -25,6 +24,8 @@ import net.irisshaders.iris.uniforms.VanillaUniforms;
 import net.irisshaders.iris.uniforms.builtin.BuiltinReplacementUniforms;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PathPackResources;
@@ -36,8 +37,7 @@ import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.apache.commons.io.IOUtils;
-import org.embeddedt.embeddium.compat.mc.MCVertexFormat;
-import org.embeddedt.embeddium.impl.util.ComponentUtil;
+import org.embeddedt.embeddium.impl.util.PlatformUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -45,19 +45,18 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
-import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTIL;
-
 public class ShaderCreator {
 	public static CompletableFuture<ExtendedShader> create(WorldRenderingPipeline pipeline, Executor syncExecutor, String name, ProgramSource source, ProgramId programId, GlFramebuffer writingToBeforeTranslucent,
                                                            GlFramebuffer writingToAfterTranslucent, AlphaTest fallbackAlpha,
-                                                           MCVertexFormat vertexFormat, ShaderAttributeInputs inputs, FrameUpdateNotifier updateNotifier,
-                                                           ModernIrisRenderingPipeline parent, Supplier<ImmutableSet<Integer>> flipped, FogMode fogMode, boolean isIntensity,
+                                                           VertexFormat vertexFormat, ShaderAttributeInputs inputs, FrameUpdateNotifier updateNotifier,
+                                                           IrisRenderingPipeline parent, Supplier<ImmutableSet<Integer>> flipped, FogMode fogMode, boolean isIntensity,
                                                            boolean isFullbright, boolean isShadowPass, boolean isLines, CustomUniforms customUniforms) throws IOException {
 		AlphaTest alpha = source.getDirectives().getAlphaTestOverride().orElse(fallbackAlpha);
 		BlendModeOverride blendModeOverride = source.getDirectives().getBlendModeOverride().orElse(programId.getBlendModeOverride());
@@ -141,10 +140,10 @@ public class ShaderCreator {
 
 	public static FallbackShader createFallback(String name, GlFramebuffer writingToBeforeTranslucent,
 												GlFramebuffer writingToAfterTranslucent, AlphaTest alpha,
-												MCVertexFormat vertexFormat, BlendModeOverride blendModeOverride,
-												ModernIrisRenderingPipeline parent, FogMode fogMode, boolean entityLighting,
+												VertexFormat vertexFormat, BlendModeOverride blendModeOverride,
+												IrisRenderingPipeline parent, FogMode fogMode, boolean entityLighting,
 												boolean isGlint, boolean isText, boolean intensityTex, boolean isFullbright) throws IOException {
-		ShaderAttributeInputs inputs = new ShaderAttributeInputsBuilder(vertexFormat, isFullbright, false, isGlint, isText).build();
+		ShaderAttributeInputs inputs = new ShaderAttributeInputs(vertexFormat, isFullbright, false, isGlint, isText);
 
 		// TODO: Is this check sound in newer versions?
 		boolean isLeash = vertexFormat == DefaultVertexFormat.POSITION_COLOR_LIGHTMAP;
@@ -196,7 +195,7 @@ public class ShaderCreator {
 
 		ResourceProvider shaderResourceFactory = new IrisProgramResourceFactory(shaderJsonString, vertex, null, null, null, fragment);
 
-		return new FallbackShader(shaderResourceFactory, name, (VertexFormat) vertexFormat, writingToBeforeTranslucent,
+		return new FallbackShader(shaderResourceFactory, name, vertexFormat, writingToBeforeTranslucent,
 			writingToAfterTranslucent, blendModeOverride, alpha.reference(), parent);
 	}
 
@@ -239,9 +238,9 @@ public class ShaderCreator {
 
         private static PackResources fabricateResourcePack() {
             //? if >=1.20.6 {
-            /*return new PathPackResources(new PackLocationInfo("<iris shaderpack shaders>", ComponentUtil.literal("iris"), PackSource.BUILT_IN, Optional.of(new KnownPack("iris", "shader", "1.0"))), PLATFORM_UTIL.getConfigDir());
+            /*return new PathPackResources(new PackLocationInfo("<iris shaderpack shaders>", Component.literal("iris"), PackSource.BUILT_IN, Optional.of(new KnownPack("iris", "shader", "1.0"))), PlatformUtil.getConfigDir());
             *///?} else
-            return new PathPackResources("<iris shaderpack shaders>", PLATFORM_UTIL.getConfigDir(), true);
+            return new PathPackResources("<iris shaderpack shaders>", PlatformUtil.getConfigDir(), true);
         }
 
 		private StringResource(ResourceLocation id, String content) {

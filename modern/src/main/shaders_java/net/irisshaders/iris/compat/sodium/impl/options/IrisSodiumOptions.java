@@ -2,7 +2,6 @@ package net.irisshaders.iris.compat.sodium.impl.options;
 
 import com.google.common.collect.ImmutableList;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.config.IrisConfig;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
@@ -20,13 +19,11 @@ import org.embeddedt.embeddium.impl.gui.SodiumGameOptionPages;
 import java.io.IOException;
 import java.util.Set;
 
-import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
-
 public class IrisSodiumOptions {
     private static final OptionStorage<IrisConfig> irisOpts = new OptionStorage<IrisConfig>() {
         @Override
         public IrisConfig getData() {
-            return IrisCommon.getIrisConfig();
+            return Iris.getIrisConfig();
         }
 
         @Override
@@ -38,7 +35,7 @@ public class IrisSodiumOptions {
                     Iris.reload();
                 }
             } catch (IOException e) {
-                IRIS_LOGGER.error("Error saving config", e);
+                Iris.logger.error("Error saving config", e);
             }
         }
     };
@@ -81,7 +78,7 @@ public class IrisSodiumOptions {
 			.setBinding((options, value) -> {
 					IrisVideoSettings.shadowDistance = value;
 					try {
-						IrisCommon.getIrisConfig().save();
+						Iris.getIrisConfig().save();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -101,7 +98,7 @@ public class IrisSodiumOptions {
 			.setBinding((options, value) -> {
 					IrisVideoSettings.colorSpace = value;
 					try {
-						IrisCommon.getIrisConfig().save();
+						Iris.getIrisConfig().save();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}

@@ -45,16 +45,6 @@ project.ext["loom.platform"] = configuredModLoader.friendlyName
 project.ext["cur_mc_ver"] = ModLoader.getMinecraftVersion(project)
 
 repositories {
-    // Fix issue with lwjgl-freetype not being found on macOS / ForgeGradle issue
-    //
-    // Could not resolve all files for configuration ':_compileJava_1'.
-    // Could not find lwjgl-freetype-3.3.3-natives-macos-patch.jar (org.lwjgl:lwjgl-freetype:3.3.3).
-    maven {
-        url "https://libraries.minecraft.net"
-        content {
-            includeModule("org.lwjgl", "lwjgl-freetype")
-        }
-    }
     mavenCentral()
     // for Mod Menu
     maven {
@@ -195,11 +185,9 @@ if (shadersEnabled) {
 }
 
 evaluationDependsOn(":common")
-evaluationDependsOn(":common-shaders")
 
 unimined.minecraft {
     combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
-    combineWith(project(":common-shaders"), project(":common-shaders").sourceSets.getByName("main"))
 
     version ModLoader.getMinecraftVersion(project)
 
@@ -293,9 +281,6 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.30")
 
     shadow(project(":common")) {
-        transitive = false
-    }
-    shadow(project(":common-shaders")) {
         transitive = false
     }
 

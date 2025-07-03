@@ -1,7 +1,6 @@
 package net.irisshaders.iris.mixin;
 
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.shaderpack.LanguageMap;
 import net.irisshaders.iris.shaderpack.ShaderPack;
 import net.minecraft.client.resources.language.ClientLanguage;
@@ -85,7 +84,7 @@ public class MixinClientLanguage {
 
 	@Unique
 	private String iris$lookupOverriddenEntry(String key) {
-		ShaderPack pack = IrisCommon.getCurrentPack().orElse(null);
+		ShaderPack pack = Iris.getCurrentPack().orElse(null);
 
 		if (pack == null) {
 			// If no shaderpack is loaded, do not try to process language overrides.

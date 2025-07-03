@@ -4,7 +4,6 @@ import net.irisshaders.iris.texture.format.TextureFormatLoader;
 import net.irisshaders.iris.texture.pbr.PBRTextureManager;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.server.packs.resources.ResourceManager;
-import org.embeddedt.embeddium.compat.mc.MCResourceProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,7 +17,7 @@ import java.util.concurrent.Executor;
 public class MixinTextureManager {
 	@Inject(method = { "method_18167", "m_244739_", "lambda$reload$5" }, at = @At("TAIL"))
 	private void iris$onTailReloadLambda(ResourceManager resourceManager, Executor applyExecutor, CompletableFuture<?> future, Void void1, CallbackInfo ci) {
-		TextureFormatLoader.reload((MCResourceProvider) resourceManager);
+		TextureFormatLoader.reload(resourceManager);
 		PBRTextureManager.INSTANCE.clear();
 	}
 

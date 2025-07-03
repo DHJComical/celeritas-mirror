@@ -4,20 +4,20 @@ import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.minecraft.client.renderer.GameRenderer;
-import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
+import net.minecraft.client.renderer.ShaderInstance;
 
 public class ShaderAccess {
-	public static MCShaderInstance getParticleTranslucentShader() {
+	public static ShaderInstance getParticleTranslucentShader() {
 		WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
 
 		if (pipeline instanceof ShaderRenderingPipeline) {
-            MCShaderInstance override = ((ShaderRenderingPipeline) pipeline).getShaderMap().getShader(ModernShaderKey.PARTICLES_TRANS);
+			ShaderInstance override = ((ShaderRenderingPipeline) pipeline).getShaderMap().getShader(ShaderKey.PARTICLES_TRANS);
 
 			if (override != null) {
 				return override;
 			}
 		}
 
-		return (MCShaderInstance) GameRenderer.getParticleShader();
+		return GameRenderer.getParticleShader();
 	}
 }

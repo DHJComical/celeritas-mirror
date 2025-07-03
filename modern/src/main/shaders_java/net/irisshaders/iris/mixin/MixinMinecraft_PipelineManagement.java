@@ -2,16 +2,14 @@ package net.irisshaders.iris.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.IrisCommon;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 @Mixin(Minecraft.class)
 public class MixinMinecraft_PipelineManagement {
@@ -25,7 +23,7 @@ public class MixinMinecraft_PipelineManagement {
             /*"clearClientLevel"*/
             , at = @At("HEAD"))
 	public void iris$trackLastDimensionOnLeave(CallbackInfo ci) {
-		IrisCommon.lastDimension = Iris.getCurrentDimension();
+		Iris.lastDimension = Iris.getCurrentDimension();
 	}
 
 	/**
@@ -34,7 +32,7 @@ public class MixinMinecraft_PipelineManagement {
 	 */
 	@Inject(method = "setLevel", at = @At("HEAD"))
 	private void iris$trackLastDimensionOnLevelChange(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) ClientLevel level) {
-        IrisCommon.lastDimension = Iris.getCurrentDimension();
+		Iris.lastDimension = Iris.getCurrentDimension();
 	}
 
 	/**
@@ -53,8 +51,8 @@ public class MixinMinecraft_PipelineManagement {
 	 */
 	@Inject(method = "updateLevelInEngines", at = @At("HEAD"))
 	private void iris$resetPipeline(@Nullable ClientLevel level, CallbackInfo ci) {
-		if (Iris.getCurrentDimension() != IrisCommon.lastDimension) {
-			IRIS_LOGGER.info("Reloading pipeline on dimension change: " + IrisCommon.lastDimension + " => " + Iris.getCurrentDimension());
+		if (Iris.getCurrentDimension() != Iris.lastDimension) {
+			Iris.logger.info("Reloading pipeline on dimension change: " + Iris.lastDimension + " => " + Iris.getCurrentDimension());
 			// Destroy pipelines when changing dimensions.
 			Iris.getPipelineManager().destroyPipeline();
 

@@ -3,7 +3,7 @@ package net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import net.irisshaders.iris.shaderpack.materialmap.FallbackTextureMaterials;
-import net.irisshaders.iris.shaderpack.materialmap.ModernWorldRenderingSettings;
+import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -47,12 +47,12 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
     private boolean ignoreMidBlock;
     private byte lightValue;
 
-    private final Object2IntMap<BlockState> blockStateIds = Objects.requireNonNullElse(ModernWorldRenderingSettings.INSTANCE.getBlockStateIds(), Object2IntMaps.emptyMap());
+    private final Object2IntMap<BlockState> blockStateIds = Objects.requireNonNullElse(WorldRenderingSettings.INSTANCE.getBlockStateIds(), Object2IntMaps.emptyMap());
 
     @SuppressWarnings("deprecation")
     private final TextureAtlas blocksAtlas = (TextureAtlas)Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS);
 
-    private final FallbackTextureMaterials fallbackMaterials = ModernWorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
+    private final FallbackTextureMaterials fallbackMaterials = WorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
 
     private final ChunkVertexEncoder baseEncoder = XHFPModelVertexType.BASE_VERTEX_TYPE.createEncoder();
 

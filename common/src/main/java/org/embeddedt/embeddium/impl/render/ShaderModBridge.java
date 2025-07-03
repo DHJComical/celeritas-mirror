@@ -15,8 +15,8 @@ public class ShaderModBridge {
             Class<?> irisApiClass = Class.forName("net.irisshaders.iris.api.v0.IrisApi");
             Method instanceGetter = irisApiClass.getDeclaredMethod("getInstance");
             Object irisApiInstance = instanceGetter.invoke(null);
-            shadersEnabled = MethodHandles.lookup().unreflect(irisApiClass.getMethod("isShaderPackInUse")).bindTo(irisApiInstance);
-            shaderOpenScreen =  MethodHandles.lookup().unreflect(irisApiClass.getMethod("openMainIrisScreenObj", Object.class)).bindTo(irisApiInstance);
+            shadersEnabled = MethodHandles.lookup().unreflect(irisApiClass.getDeclaredMethod("isShaderPackInUse")).bindTo(irisApiInstance);
+            shaderOpenScreen =  MethodHandles.lookup().unreflect(irisApiClass.getDeclaredMethod("openMainIrisScreenObj", Object.class)).bindTo(irisApiInstance);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (Throwable ignored) {

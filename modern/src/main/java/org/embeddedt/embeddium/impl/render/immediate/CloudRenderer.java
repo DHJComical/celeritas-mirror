@@ -19,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.api.render.clouds.ModifyCloudRenderingEvent;
 import org.embeddedt.embeddium.api.vertex.format.common.LineVertex;
@@ -27,13 +28,12 @@ import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
 import java.io.InputStream;
-
-import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 public class CloudRenderer {
     private static final ResourceLocation CLOUDS_TEXTURE_ID = ResourceLocationUtil.make("textures/environment/clouds.png");

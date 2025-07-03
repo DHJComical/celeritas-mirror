@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gui.element.widget;
 
-import net.irisshaders.iris.IrisCommon;
+import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gui.GuiUtil;
 import net.irisshaders.iris.gui.NavigationController;
 import net.irisshaders.iris.gui.screen.ShaderPackScreen;
@@ -82,7 +82,7 @@ public class BooleanElementWidget extends BaseOptionElementWidget<OptionMenuBool
 	}
 
 	private void queue() {
-		IrisCommon.getShaderPackOptionQueue().put(this.option.getName(), this.getValue());
+		Iris.getShaderPackOptionQueue().put(this.option.getName(), this.getValue());
 	}
 
 	@Override
