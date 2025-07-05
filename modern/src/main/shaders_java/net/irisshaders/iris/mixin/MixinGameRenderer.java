@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.RenderBuffers;
 //? if <1.21.2
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -34,6 +35,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
 	@Shadow
@@ -41,7 +44,7 @@ public class MixinGameRenderer {
 
     //? if <1.21.2 {
     @Inject(method = { "*()Lnet/minecraft/client/renderer/ShaderInstance;" }, at = @At("RETURN"), cancellable = true)
-    private static void iris$overrideShader(CallbackInfoReturnable<ShaderInstance> cir) {
+    private static void iris$overrideShader(CallbackInfoReturnable<MCShaderInstance> cir) {
         var shader = cir.getReturnValue();
         if (shader == null) {
             return;
@@ -75,10 +78,10 @@ public class MixinGameRenderer {
 
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void iris$logSystem(Minecraft arg, ItemInHandRenderer arg2, ResourceManager arg3, RenderBuffers arg4, CallbackInfo ci) {
-		Iris.logger.info("Hardware information:");
-		Iris.logger.info("CPU: " + GlUtil.getCpuInfo());
-		Iris.logger.info("GPU: " + GlUtil.getRenderer() + " (Supports OpenGL " + GlUtil.getOpenGLVersion() + ")");
-		Iris.logger.info("OS: " + System.getProperty("os.name") + " (" + System.getProperty("os.version") + ")");
+		IRIS_LOGGER.info("Hardware information:");
+		IRIS_LOGGER.info("CPU: " + GlUtil.getCpuInfo());
+		IRIS_LOGGER.info("GPU: " + GlUtil.getRenderer() + " (Supports OpenGL " + GlUtil.getOpenGLVersion() + ")");
+		IRIS_LOGGER.info("OS: " + System.getProperty("os.name") + " (" + System.getProperty("os.version") + ")");
 	}
 
 	@WrapWithCondition(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/player/LocalPlayer;I)V"))

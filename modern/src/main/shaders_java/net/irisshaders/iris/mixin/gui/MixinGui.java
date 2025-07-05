@@ -1,5 +1,7 @@
 package net.irisshaders.iris.mixin.gui;
 
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gui.screen.HudHideable;
@@ -35,7 +37,7 @@ public class MixinGui {
 
 		if (pipeline != null && !pipeline.shouldRenderVignette()) {
 			// we need to set up the GUI render state ourselves if we cancel the vignette
-			RenderSystem.enableDepthTest();
+			RENDER_SYSTEM.enableDepthTest();
 			RenderSystem.defaultBlendFunc();
 
 			ci.cancel();

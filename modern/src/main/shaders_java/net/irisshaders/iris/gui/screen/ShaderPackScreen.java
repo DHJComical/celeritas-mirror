@@ -2,6 +2,8 @@ package net.irisshaders.iris.gui.screen;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
+import net.irisshaders.iris.IrisConstants;
 import net.irisshaders.iris.api.v0.IrisApi;
 import net.irisshaders.iris.gui.GuiUtil;
 import net.irisshaders.iris.gui.NavigationController;
@@ -23,7 +25,6 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -41,7 +42,10 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+import static org.embeddedt.embeddium.compat.mc.PlatformUtilService.PLATFORM_UTIL;
+
 
 public class ShaderPackScreen extends Screen implements HudHideable {
 	/**
@@ -79,9 +83,9 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 
 		this.parent = parent;
 
-		String irisName = Iris.MODNAME + " " + Iris.getVersion();
+		String irisName = IrisConstants.MODNAME + " " + Iris.getVersion();
 
-		if (PlatformUtil.isDevelopmentEnvironment()) {
+		if (PLATFORM_UTIL.isDevelopmentEnvironment()) {
 			this.developmentComponent = Component.literal("Development Environment").withStyle(ChatFormatting.GOLD);
 		}
 
@@ -182,8 +186,8 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 
 		this.shaderPackList = new ShaderPackSelectionList(this, this.minecraft, this.width, this.height, 32, bottomOfList, 0, this.width);
 
-		if (Iris.getCurrentPack().isPresent() && this.navigation != null) {
-			ShaderPack currentPack = Iris.getCurrentPack().get();
+		if (IrisCommon.getCurrentPack().isPresent() && this.navigation != null) {
+			ShaderPack currentPack = IrisCommon.getCurrentPack().get();
 
 			this.shaderOptionList = new ShaderPackOptionList(this, this.navigation, currentPack, this.minecraft, this.width, this.height, 32, bottomOfList, 0, this.width);
 			this.navigation.setActiveOptionList(this.shaderOptionList);
@@ -289,8 +293,8 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 	}
 
 	public void refreshForChangedPack() {
-		if (Iris.getCurrentPack().isPresent()) {
-			ShaderPack currentPack = Iris.getCurrentPack().get();
+		if (IrisCommon.getCurrentPack().isPresent()) {
+			ShaderPack currentPack = IrisCommon.getCurrentPack().get();
 
 			this.navigation = new NavigationController(currentPack.getMenuContainer());
 
@@ -381,7 +385,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 	}
 
 	public void onPackListFilesDrop(List<Path> paths) {
-		List<Path> packs = paths.stream().filter(Iris::isValidShaderpack).toList();
+		List<Path> packs = paths.stream().filter(IrisCommon::isValidShaderpack).toList();
 
 		for (Path pack : packs) {
 			String fileName = pack.getFileName().toString();
@@ -399,7 +403,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 
 				return;
 			} catch (IOException e) {
-				Iris.logger.warn("Error copying dragged shader pack", e);
+				IRIS_LOGGER.warn("Error copying dragged shader pack", e);
 
 				this.notificationDialog = Component.translatable(
 					"options.iris.shaderPackSelection.copyError",
@@ -486,7 +490,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 			Properties properties = new Properties();
 			properties.load(in);
 
-			Iris.queueShaderPackOptionsFromProperties(properties);
+			IrisCommon.queueShaderPackOptionsFromProperties(properties);
 
 			this.notificationDialog = Component.translatable(
 				"options.iris.shaderPackOptions.importedSettings",
@@ -500,7 +504,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 		} catch (Exception e) {
 			// If the file could not be properly parsed or loaded,
 			// log the error and display a message to the user
-			Iris.logger.error("Error importing shader settings file \"" + settingFile.toString() + "\"", e);
+			IRIS_LOGGER.error("Error importing shader settings file \"" + settingFile.toString() + "\"", e);
 
 			this.notificationDialog = Component.translatable(
 				"options.iris.shaderPackOptions.failedImport",
@@ -521,7 +525,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 		try {
 			shaderPackList.close();
 		} catch (IOException e) {
-			Iris.logger.error("Failed to safely close shaderpack selection!", e);
+			IRIS_LOGGER.error("Failed to safely close shaderpack selection!", e);
 		}
 
 		this.minecraft.setScreen(parent);
@@ -535,7 +539,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 	public void applyChanges() {
 		ShaderPackSelectionList.BaseEntry base = this.shaderPackList.getSelected();
 		boolean enabled = this.shaderPackList.getTopButtonRow().shadersEnabled;
-		boolean previousShadersEnabled = Iris.getIrisConfig().areShadersEnabled();
+		boolean previousShadersEnabled = IrisCommon.getIrisConfig().areShadersEnabled();
 
 		if (enabled != previousShadersEnabled) {
 			IrisApi.getInstance().getConfig().setShadersEnabledAndApply(enabled);
@@ -551,15 +555,15 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 
 		// If the pack is being changed, clear pending options from the previous pack to
 		// avoid possible undefined behavior from applying one pack's options to another pack
-		if (!name.equals(Iris.getCurrentPackName())) {
-			Iris.clearShaderPackOptionQueue();
+		if (!name.equals(IrisCommon.getCurrentPackName())) {
+			IrisCommon.clearShaderPackOptionQueue();
 		}
 
-		String previousPackName = Iris.getIrisConfig().getShaderPackName().orElse(null);
+		String previousPackName = IrisCommon.getIrisConfig().getShaderPackName().orElse(null);
 
 		// Only reload if the pack would be different from before, or shaders were toggled, or options were changed, or if we're about to reset options.
-		if (!name.equals(previousPackName) || !Iris.getShaderPackOptionQueue().isEmpty() || Iris.shouldResetShaderPackOptionsOnNextReload()) {
-			Iris.getIrisConfig().setShaderPackName(name);
+		if (!name.equals(previousPackName) || !IrisCommon.getShaderPackOptionQueue().isEmpty() || IrisCommon.shouldResetShaderPackOptionsOnNextReload()) {
+			IrisCommon.getIrisConfig().setShaderPackName(name);
 			IrisApi.getInstance().getConfig().setShadersEnabledAndApply(enabled);
 		}
 
@@ -567,7 +571,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 	}
 
 	private void discardChanges() {
-		Iris.clearShaderPackOptionQueue();
+		IrisCommon.clearShaderPackOptionQueue();
 	}
 
 	private void openShaderPackFolder() {

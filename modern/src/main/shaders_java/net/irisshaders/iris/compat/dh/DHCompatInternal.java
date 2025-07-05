@@ -1,6 +1,10 @@
 package net.irisshaders.iris.compat.dh;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import java.io.IOException;
+
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiFramebuffer;
 import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiGenericObjectShaderProgram;
@@ -11,7 +15,7 @@ import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.texture.DepthBufferFormat;
 import net.irisshaders.iris.gl.texture.DepthCopyStrategy;
-import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
 import net.irisshaders.iris.shaderpack.properties.CloudSetting;
 import net.irisshaders.iris.targets.Blaze3dRenderTargetExt;
@@ -20,13 +24,11 @@ import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.opengl.GL20C;
 
-import java.io.IOException;
-
 public class DHCompatInternal {
 	public static final DHCompatInternal SHADERLESS = new DHCompatInternal(null, false);
 	static boolean dhEnabled;
 	private static int guiScale = -1;
-	private final IrisRenderingPipeline pipeline;
+	private final ModernIrisRenderingPipeline pipeline;
 	public boolean shouldOverrideShadow;
 	public boolean shouldOverride;
 	private GlFramebuffer dhGenericFramebuffer;
@@ -45,7 +47,7 @@ public class DHCompatInternal {
 	private boolean incompatible = false;
 	private int cachedVersion;
 
-	public DHCompatInternal(IrisRenderingPipeline pipeline, boolean dhShadowEnabled) {
+	public DHCompatInternal(ModernIrisRenderingPipeline pipeline, boolean dhShadowEnabled) {
 		this.pipeline = pipeline;
 
 		if (pipeline == null || !DhApi.Delayed.configs.graphics().renderingEnabled().getValue()) {
@@ -53,7 +55,7 @@ public class DHCompatInternal {
 		}
 
 		if (pipeline.getDHTerrainShader().isEmpty() && pipeline.getDHWaterShader().isEmpty()) {
-			Iris.logger.warn("No DH shader found in this pack.");
+			IRIS_LOGGER.warn("No DH shader found in this pack.");
 			incompatible = true;
 			return;
 		}
@@ -140,7 +142,7 @@ public class DHCompatInternal {
 		if (DhApi.Delayed.configs == null) return dhEnabled;
 
 		if ((dhEnabled != DhApi.Delayed.configs.graphics().renderingEnabled().getValue() || guiScale != Minecraft.getInstance().options.guiScale().get())
-			&& Iris.getPipelineManager().getPipelineNullable() instanceof IrisRenderingPipeline) {
+			&& Iris.getPipelineManager().getPipelineNullable() instanceof ModernIrisRenderingPipeline) {
 			guiScale = Minecraft.getInstance().options.guiScale().get();
 			dhEnabled = DhApi.Delayed.configs.graphics().renderingEnabled().getValue();
 			try {
@@ -259,7 +261,7 @@ public class DHCompatInternal {
 	public void copyTranslucents(int width, int height) {
 		if (translucentDepthDirty) {
 			translucentDepthDirty = false;
-			RenderSystem.bindTexture(depthTexNoTranslucent.getTextureId());
+            RENDER_SYSTEM.bindTexture(depthTexNoTranslucent.getTextureId());
 			dhTerrainFramebuffer.bindAsReadBuffer();
 			IrisRenderSystem.copyTexImage2D(GL20C.GL_TEXTURE_2D, 0, DepthBufferFormat.DEPTH32F.getGlInternalFormat(), 0, 0, width, height, 0);
 		} else {

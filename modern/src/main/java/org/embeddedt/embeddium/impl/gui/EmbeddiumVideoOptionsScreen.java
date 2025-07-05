@@ -2,7 +2,6 @@ package org.embeddedt.embeddium.impl.gui;
 
 import com.google.common.collect.Multimap;
 //? if >=1.15
-import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
 import org.embeddedt.embeddium.api.OptionGUIConstructionEvent;
 import org.embeddedt.embeddium.impl.gui.console.Console;
@@ -36,7 +35,6 @@ import org.embeddedt.embeddium.impl.gui.frame.components.SearchTextFieldModel;
 import org.embeddedt.embeddium.impl.gui.frame.tab.Tab;
 import org.embeddedt.embeddium.impl.gui.frame.tab.TabFrame;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;

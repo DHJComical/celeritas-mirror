@@ -7,6 +7,7 @@ import net.irisshaders.iris.texture.mipmap.CustomMipmapGenerator;
 import net.minecraft.client.renderer.texture.MipmapGenerator;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.SpriteTicker;
+import org.embeddedt.embeddium.compat.mc.MCNativeImage;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -14,6 +15,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 @Mixin(SpriteContents.class)
 public class MixinSpriteContents implements SpriteContentsExtension {
@@ -27,9 +30,9 @@ public class MixinSpriteContents implements SpriteContentsExtension {
 			CustomMipmapGenerator generator = provider.getMipmapGenerator();
 			if (generator != null) {
 				try {
-					return generator.generateMipLevels(nativeImages, mipLevel);
+                    return (NativeImage[])(Object)generator.generateMipLevels((MCNativeImage[])(Object)nativeImages, mipLevel);
 				} catch (Exception e) {
-					Iris.logger.error("ERROR MIPMAPPING", e);
+					IRIS_LOGGER.error("ERROR MIPMAPPING", e);
 				}
 			}
 		}

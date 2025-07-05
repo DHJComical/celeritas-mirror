@@ -1,6 +1,7 @@
 package net.irisshaders.iris.mixin;
 
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.minecraft.SystemReport;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,11 +21,11 @@ public abstract class MixinSystemReport {
 
 	@Inject(at = @At("RETURN"), method = "<init>")
 	private void fillSystemDetails(CallbackInfo ci) {
-		if (Iris.getCurrentPackName() == null) return; // this also gets called at startup for some reason
+		if (IrisCommon.getCurrentPackName() == null) return; // this also gets called at startup for some reason
 
 		this.setDetail("Loaded Shaderpack", () -> {
-			StringBuilder sb = new StringBuilder(Iris.getCurrentPackName() + (Iris.isFallback() ? " (fallback)" : ""));
-			Iris.getCurrentPack().ifPresent(pack -> {
+			StringBuilder sb = new StringBuilder(IrisCommon.getCurrentPackName() + (Iris.isFallback() ? " (fallback)" : ""));
+			IrisCommon.getCurrentPack().ifPresent(pack -> {
 				sb.append("\n\t\t");
 				sb.append(pack.getProfileInfo());
 			});

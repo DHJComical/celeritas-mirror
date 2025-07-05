@@ -1,10 +1,7 @@
 package org.embeddedt.embeddium.impl.gui.frame.tab;
 
-//? if >=1.20
-import net.minecraft.client.renderer.RenderType;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.loader.common.ModLogoUtil;
-import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.client.Minecraft;
 //$ guigfx

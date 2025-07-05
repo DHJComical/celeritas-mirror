@@ -32,6 +32,7 @@ plugins {
 rootProject.name = "celeritas"
 
 include("common")
+include("common-shaders")
 
 val includedVersionsProp = if(extra.has("target_versions")) extra["target_versions"].toString().split(",") else null
 val includedSubprojectsProp = if(extra.has("target_subprojects")) extra["target_subprojects"].toString().split(",") else null

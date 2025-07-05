@@ -1,6 +1,7 @@
 package net.irisshaders.iris.gui.element;
 
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.gui.GuiUtil;
 import net.irisshaders.iris.gui.screen.ShaderPackScreen;
 import net.minecraft.ChatFormatting;
@@ -25,6 +26,8 @@ import java.nio.file.WatchService;
 import java.util.List;
 import java.util.function.Function;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackSelectionList.BaseEntry> {
 	private static final Component PACK_LIST_LABEL = Component.translatable("pack.iris.list.label").withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY);
 
@@ -45,16 +48,16 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
 		WatchService watcher1;
 
 		this.screen = screen;
-		this.topButtonRow = new TopButtonRowEntry(this, Iris.getIrisConfig().areShadersEnabled());
+		this.topButtonRow = new TopButtonRowEntry(this, IrisCommon.getIrisConfig().areShadersEnabled());
 		try {
 			watcher1 = FileSystems.getDefault().newWatchService();
-			key1 = Iris.getShaderpacksDirectory().register(watcher1,
+			key1 = IrisCommon.getShaderpacksDirectory().register(watcher1,
 				StandardWatchEventKinds.ENTRY_CREATE,
 				StandardWatchEventKinds.ENTRY_MODIFY,
 				StandardWatchEventKinds.ENTRY_DELETE);
 			keyValid = true;
 		} catch (IOException e) {
-			Iris.logger.error("Couldn't register file watcher!", e);
+			IRIS_LOGGER.error("Couldn't register file watcher!", e);
 			watcher1 = null;
 			key1 = null;
 			keyValid = false;
@@ -118,7 +121,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
 		try {
 			names = Iris.getShaderpacksDirectoryManager().enumerate();
 		} catch (Throwable e) {
-			Iris.logger.error("Error reading files while constructing selection UI", e);
+			IRIS_LOGGER.error("Error reading files while constructing selection UI", e);
 
 			// Not translating this since it's going to be seen very rarely,
 			// We're just trying to get more information on a seemingly untraceable bug:
@@ -158,7 +161,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
 	public void addPackEntry(int index, String name) {
 		ShaderPackEntry entry = new ShaderPackEntry(index, this, name);
 
-		Iris.getIrisConfig().getShaderPackName().ifPresent(currentPackName -> {
+		IrisCommon.getIrisConfig().getShaderPackName().ifPresent(currentPackName -> {
 			if (name.equals(currentPackName)) {
 				setSelected(entry);
 				setFocused(entry);

@@ -24,12 +24,19 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.Mth;
+import org.embeddedt.embeddium.compat.mc.MCAbstractTexture;
+import org.embeddedt.embeddium.compat.mc.MCResource;
+import org.embeddedt.embeddium.compat.mc.MCResourceLocation;
+import org.embeddedt.embeddium.compat.mc.MCResourceManager;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
+
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 	public static final ChannelMipmapGenerator LINEAR_MIPMAP_GENERATOR = new ChannelMipmapGenerator(
@@ -40,7 +47,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 	);
 
 	@Override
-	public void load(TextureAtlas atlas, ResourceManager resourceManager, PBRTextureConsumer pbrTextureConsumer) {
+	public void load(TextureAtlas atlas, MCResourceManager resourceManager, PBRTextureConsumer pbrTextureConsumer) {
 		TextureAtlasAccessor atlasAccessor = (TextureAtlasAccessor) atlas;
 		int atlasWidth = atlasAccessor.callGetWidth();
 		int atlasHeight = atlasAccessor.callGetHeight();
@@ -71,32 +78,32 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 
 		if (normalAtlas != null) {
 			if (normalAtlas.tryUpload(atlasWidth, atlasHeight, mipLevel)) {
-				pbrTextureConsumer.acceptNormalTexture(normalAtlas);
+				pbrTextureConsumer.acceptNormalTexture((MCAbstractTexture) normalAtlas);
 			}
 		}
 		if (specularAtlas != null) {
 			if (specularAtlas.tryUpload(atlasWidth, atlasHeight, mipLevel)) {
-				pbrTextureConsumer.acceptSpecularTexture(specularAtlas);
+				pbrTextureConsumer.acceptSpecularTexture((MCAbstractTexture)specularAtlas);
 			}
 		}
 	}
 
 	@Nullable
-	protected PBRTextureAtlasSprite createPBRSprite(TextureAtlasSprite sprite, ResourceManager resourceManager, TextureAtlas atlas, int atlasWidth, int atlasHeight, int mipLevel, PBRType pbrType) {
-		ResourceLocation spriteName = sprite.contents().name();
-		ResourceLocation pbrImageLocation = getPBRImageLocation(spriteName, pbrType);
+	protected PBRTextureAtlasSprite createPBRSprite(TextureAtlasSprite sprite, MCResourceManager resourceManager, TextureAtlas atlas, int atlasWidth, int atlasHeight, int mipLevel, PBRType pbrType) {
+		MCResourceLocation spriteName = (MCResourceLocation)(Object)sprite.contents().name();
+        MCResourceLocation pbrImageLocation = getPBRImageLocation(spriteName, pbrType);
 
-		Optional<Resource> optionalResource = resourceManager.getResource(pbrImageLocation);
+		Optional<MCResource> optionalResource = resourceManager.getResource(pbrImageLocation);
 		if (optionalResource.isEmpty()) {
 			return null;
 		}
-		Resource resource = optionalResource.get();
+		Resource resource = (Resource) optionalResource.get();
 
 		ResourceMetadata animationMetadata;
 		try {
 			animationMetadata = resource.metadata();
 		} catch (Exception e) {
-			Iris.logger.error("Unable to parse metadata from {}", pbrImageLocation, e);
+			IRIS_LOGGER.error("Unable to parse metadata from {}", pbrImageLocation, e);
 			return null;
 		}
 
@@ -104,7 +111,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		try (InputStream stream = resource.open()) {
 			nativeImage = NativeImage.read(stream);
 		} catch (IOException e) {
-			Iris.logger.error("Using missing texture, unable to load {}", pbrImageLocation, e);
+			IRIS_LOGGER.error("Using missing texture, unable to load {}", pbrImageLocation, e);
 			return null;
 		}
 
@@ -115,7 +122,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		int frameWidth = frameSize.width();
 		int frameHeight = frameSize.height();
 		if (!Mth.isMultipleOf(imageWidth, frameWidth) || !Mth.isMultipleOf(imageHeight, frameHeight)) {
-			Iris.logger.error("Image {} size {},{} is not multiple of frame size {},{}", pbrImageLocation, imageWidth, imageHeight, frameWidth, frameHeight);
+			IRIS_LOGGER.error("Image {} size {},{} is not multiple of frame size {},{}", pbrImageLocation, imageWidth, imageHeight, frameWidth, frameHeight);
 			nativeImage.close();
 			return null;
 		}
@@ -153,7 +160,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 					}
 				}
 			} catch (Exception e) {
-				Iris.logger.error("Something bad happened trying to load PBR texture " + spriteName.getPath() + pbrType.getSuffix() + "!", e);
+				IRIS_LOGGER.error("Something bad happened trying to load PBR texture " + spriteName.getPath() + pbrType.getSuffix() + "!", e);
 				throw e;
 			}
 		}
@@ -164,13 +171,13 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		return new PBRTextureAtlasSprite(pbrSpriteName, pbrSpriteContents, atlasWidth, atlasHeight, sprite.getX(), sprite.getY(), sprite);
 	}
 
-	protected ResourceLocation getPBRImageLocation(ResourceLocation spriteName, PBRType pbrType) {
+	protected MCResourceLocation getPBRImageLocation(MCResourceLocation spriteName, PBRType pbrType) {
 		String path = pbrType.appendSuffix(spriteName.getPath());
 		// Temporary fix for CIT Resewn. CIT Resewn has sprites that are not in the textures/ folder, so a custom check must be used here to avoid that assumption.
 		if (path.startsWith("optifine/cit/")) {
-			return ResourceLocationUtil.make(spriteName.getNamespace(), path + ".png");
+			return (MCResourceLocation)(Object) ResourceLocationUtil.make(spriteName.getNamespace(), path + ".png");
 		}
-		return ResourceLocationUtil.make(spriteName.getNamespace(), "textures/" + path + ".png");
+		return (MCResourceLocation)(Object) ResourceLocationUtil.make(spriteName.getNamespace(), "textures/" + path + ".png");
 	}
 
 	protected static class PBRSpriteContents extends SpriteContents implements CustomMipmapGenerator.Provider {

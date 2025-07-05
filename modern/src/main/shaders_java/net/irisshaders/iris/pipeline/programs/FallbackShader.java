@@ -1,27 +1,28 @@
 package net.irisshaders.iris.pipeline.programs;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.shaders.ProgramManager;
+import java.io.IOException;
+import java.util.List;
+
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+
 import com.mojang.blaze3d.shaders.Uniform;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.texture.TextureType;
-import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.util.List;
-
-public class FallbackShader extends ShaderInstance {
-	private final IrisRenderingPipeline parent;
+public class FallbackShader extends ShaderInstance implements MCShaderInstance {
+	private final ModernIrisRenderingPipeline parent;
 	private final BlendModeOverride blendModeOverride;
 	private final GlFramebuffer writingToBeforeTranslucent;
 	private final GlFramebuffer writingToAfterTranslucent;
@@ -37,7 +38,7 @@ public class FallbackShader extends ShaderInstance {
 
 	public FallbackShader(ResourceProvider resourceFactory, String string, VertexFormat vertexFormat,
 						  GlFramebuffer writingToBeforeTranslucent, GlFramebuffer writingToAfterTranslucent,
-						  BlendModeOverride blendModeOverride, float alphaValue, IrisRenderingPipeline parent) throws IOException {
+						  BlendModeOverride blendModeOverride, float alphaValue, ModernIrisRenderingPipeline parent) throws IOException {
 		super(resourceFactory, string, vertexFormat);
 
 		this.parent = parent;
@@ -48,9 +49,9 @@ public class FallbackShader extends ShaderInstance {
 		this.FOG_DENSITY = this.getUniform("FogDensity");
 		this.FOG_IS_EXP2 = this.getUniform("FogIsExp2");
 
-		this.gtexture = GlStateManager._glGetUniformLocation(getId(), "gtexture");
-		this.overlay = GlStateManager._glGetUniformLocation(getId(), "overlay");
-		this.lightmap = GlStateManager._glGetUniformLocation(getId(), "lightmap");
+		this.gtexture = GL_STATE_MANAGER.glGetUniformLocation(getId(), "gtexture");
+		this.overlay = GL_STATE_MANAGER.glGetUniformLocation(getId(), "overlay");
+		this.lightmap = GL_STATE_MANAGER.glGetUniformLocation(getId(), "lightmap");
 
 
 		Uniform ALPHA_TEST_VALUE = this.getUniform("AlphaTestValue");
@@ -85,20 +86,20 @@ public class FallbackShader extends ShaderInstance {
 			}
 		}
 
-		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.ALBEDO_TEXTURE_UNIT, RenderSystem.getShaderTexture(0));
-		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.OVERLAY_TEXTURE_UNIT, RenderSystem.getShaderTexture(1));
-		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, RenderSystem.getShaderTexture(2));
+		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.ALBEDO_TEXTURE_UNIT, RENDER_SYSTEM.getShaderTexture(0));
+		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.OVERLAY_TEXTURE_UNIT, RENDER_SYSTEM.getShaderTexture(1));
+		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, RENDER_SYSTEM.getShaderTexture(2));
 
-		ProgramManager.glUseProgram(this.getId());
+		GL_STATE_MANAGER.glUseProgram(this.getId());
 
 		List<Uniform> uniformList = super.uniforms;
 		for (Uniform uniform : uniformList) {
 			uploadIfNotNull(uniform);
 		}
 
-		GlStateManager._glUniform1i(gtexture, 0);
-		GlStateManager._glUniform1i(overlay, 1);
-		GlStateManager._glUniform1i(lightmap, 2);
+		GL_STATE_MANAGER.glUniform1i(gtexture, 0);
+		GL_STATE_MANAGER.glUniform1i(overlay, 1);
+		GL_STATE_MANAGER.glUniform1i(lightmap, 2);
 
 		if (this.blendModeOverride != null) {
 			this.blendModeOverride.apply();

@@ -1,6 +1,7 @@
 package net.irisshaders.iris.shaderpack.discovery;
 
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.IrisCommon;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,7 +40,7 @@ public class ShaderpackDirectoryManager {
 	}
 
 	public void copyPackIntoDirectory(String name, Path source) throws IOException {
-		Path target = Iris.getShaderpacksDirectory().resolve(name);
+		Path target = IrisCommon.getShaderpacksDirectory().resolve(name);
 
 		// Copy the pack file into the shaderpacks folder.
 		Files.copy(source, target);
@@ -84,7 +85,7 @@ public class ShaderpackDirectoryManager {
 		// formatting in the file name so that they have fancy text when displayed in the shaders list.
 		// If debug mode is on, show unzipped packs above zipped ones.
 
-		boolean debug = Iris.getIrisConfig().areDebugOptionsEnabled();
+		boolean debug = IrisCommon.getIrisConfig().areDebugOptionsEnabled();
 
 		Comparator<String> baseComparator = String.CASE_INSENSITIVE_ORDER.thenComparing(Comparator.naturalOrder());
 		Comparator<Path> comparator = (a, b) -> {

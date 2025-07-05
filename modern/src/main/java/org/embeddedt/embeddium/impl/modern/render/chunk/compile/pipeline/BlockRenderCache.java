@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
 import lombok.Getter;
+import net.irisshaders.iris.shaderpack.materialmap.ModernWorldRenderingSettings;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -50,7 +51,7 @@ public class BlockRenderCache {
 
         var colorRegistry = new ColorProviderRegistry(client.getBlockColors());
 
-        this.blockRenderer = new BlockRenderer(colorRegistry, lightPipelineProvider, WorldRenderingSettings.INSTANCE.getBlockTypeIds());
+        this.blockRenderer = new BlockRenderer(colorRegistry, lightPipelineProvider, ModernWorldRenderingSettings.INSTANCE.getBlockTypeIds());
         this.fluidRenderer = new FluidRenderer(colorRegistry, lightPipelineProvider);
         this.lightPipelineProvider = lightPipelineProvider;
         this.specialBlockRenderer = new SpecialBlockRenderer();

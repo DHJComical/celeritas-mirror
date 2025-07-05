@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.embeddedt.embeddium.compat.mc.MCResourceLocation;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,10 +31,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
+
 public class PBRAtlasTexture extends AbstractTexture implements PBRDumpable {
 	protected final TextureAtlas atlasTexture;
 	protected final PBRType type;
-	protected final ResourceLocation id;
+	protected final MCResourceLocation id;
 	protected final Map<ResourceLocation, PBRTextureAtlasSprite> texturesByName = new HashMap<>();
 	protected final List<TextureAtlasSprite.Ticker> animatedTextures = new ArrayList<>();
 	protected int width;
@@ -43,7 +47,7 @@ public class PBRAtlasTexture extends AbstractTexture implements PBRDumpable {
 	public PBRAtlasTexture(TextureAtlas atlasTexture, PBRType type) {
 		this.atlasTexture = atlasTexture;
 		this.type = type;
-		id = ResourceLocationUtil.make(atlasTexture.location().getNamespace(), atlasTexture.location().getPath().replace(".png", "") + type.getSuffix() + ".png");
+		id = (MCResourceLocation)(Object)ResourceLocationUtil.make(atlasTexture.location().getNamespace(), atlasTexture.location().getPath().replace(".png", "") + type.getSuffix() + ".png");
 	}
 
 	public static void syncAnimation(SpriteContents.Ticker source, SpriteContents.Ticker target) {
@@ -88,7 +92,7 @@ public class PBRAtlasTexture extends AbstractTexture implements PBRDumpable {
 				writer.write(String.format(Locale.ROOT, "%s\tx=%d\ty=%d\tw=%d\th=%d%n", entry.getKey(), sprite.getX(), sprite.getY(), sprite.contents().width(), sprite.contents().height()));
 			}
 		} catch (IOException e) {
-			Iris.logger.warn("Failed to write file {}", path, e);
+			IRIS_LOGGER.warn("Failed to write file {}", path, e);
 		}
 	}
 
@@ -96,7 +100,7 @@ public class PBRAtlasTexture extends AbstractTexture implements PBRDumpable {
 		return type;
 	}
 
-	public ResourceLocation getAtlasId() {
+	public MCResourceLocation getAtlasId() {
 		return id;
 	}
 
@@ -205,14 +209,14 @@ public class PBRAtlasTexture extends AbstractTexture implements PBRDumpable {
 	}
 
 	@Override
-	public void dumpContents(ResourceLocation id, Path path) {
+	public void dumpContents(MCResourceLocation id, Path path) {
 		String fileName = id.toDebugFileName();
 		TextureUtil.writeAsPNG(path, fileName, getId(), mipLevel, width, height);
 		dumpSpriteNames(path, fileName, texturesByName);
 	}
 
 	@Override
-	public ResourceLocation getDefaultDumpLocation() {
+	public MCResourceLocation getDefaultDumpLocation() {
 		return id;
 	}
 }

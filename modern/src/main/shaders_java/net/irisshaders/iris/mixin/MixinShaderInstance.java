@@ -6,18 +6,17 @@ import com.llamalad7.mixinextras.sugar.Local;
 //? if <1.21.2
 import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.shaders.Uniform;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.gl.IrisRenderSystem;
+import net.irisshaders.iris.IrisCommon;
 import net.irisshaders.iris.gl.blending.DepthColorStorage;
-import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.programs.ExtendedShader;
 import net.irisshaders.iris.pipeline.programs.FallbackShader;
 import net.irisshaders.iris.pipeline.programs.ShaderInstanceInterface;
-import net.irisshaders.iris.shadows.ShadowRenderer;
+import net.irisshaders.iris.shadows.ModernShadowRenderer;
 import net.minecraft.client.Minecraft;
 //? if >=1.21.2
 /*import net.minecraft.client.renderer.CompiledShaderProgram;*/
@@ -26,11 +25,8 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.GsonHelper;
+import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
-import org.lwjgl.opengl.ARBTextureSwizzle;
-import org.lwjgl.opengl.GL20C;
-import org.lwjgl.opengl.GL30C;
-import net.minecraft.util.GsonHelper;
 import org.lwjgl.opengl.KHRDebug;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -41,20 +37,20 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.io.Reader;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.Map;
-import java.util.Objects;
+
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 //? if <1.21.2
 @Mixin(ShaderInstance.class)
 //? if >=1.21.2
 /*@Mixin(CompiledShaderProgram.class)*/
-public abstract class MixinShaderInstance implements ShaderInstanceInterface {
+public abstract class MixinShaderInstance implements ShaderInstanceInterface, MCShaderInstance {
     @Unique
     private static final ImmutableSet<String> ATTRIBUTE_LIST = ImmutableSet.of("Position", "Color", "Normal", "UV0", "UV1", "UV2");
 
@@ -127,7 +123,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         shouldSkip = shouldSkipList.computeIfAbsent(getClass(), x -> {
             try {
                 MethodHandle iris$skipDraw = MethodHandles.lookup().findVirtual(x, "iris$skipDraw", MethodType.methodType(boolean.class));
-                Iris.logger.warn("Class " + x.getName() + " has opted out of being rendered with shaders.");
+                IRIS_LOGGER.warn("Class " + x.getName() + " has opted out of being rendered with shaders.");
                 return iris$skipDraw;
             } catch (NoSuchMethodException | IllegalAccessException e) {
                 return NONE;
@@ -137,8 +133,8 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
 
     public boolean iris$shouldSkipThis() {
         // Celeritas always allows unknown shaders
-        if (!Iris.getIrisConfig().isBlockUnknownShaders()) {
-            if (ShadowRenderer.ACTIVE) return true;
+        if (!IrisCommon.getIrisConfig().isBlockUnknownShaders()) {
+            if (ModernShadowRenderer.ACTIVE) return true;
             if (!shouldOverrideShaders()) return false;
             if (shouldSkip == NONE) return false;
             if (shouldSkip == ALWAYS) return true;
@@ -157,12 +153,12 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         if (!iris$shouldSkipThis()) {
             if (!isKnownShader() && shouldOverrideShaders()) {
                 WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
-                if (pipeline instanceof IrisRenderingPipeline) {
-                    if (ShadowRenderer.ACTIVE) {
+                if (pipeline instanceof ModernIrisRenderingPipeline) {
+                    if (ModernShadowRenderer.ACTIVE) {
                         // Fallback shadow rendering is disabled by Iris rn
                         //((IrisRenderingPipeline) pipeline).bindDefaultShadow();
                     } else {
-                        ((IrisRenderingPipeline) pipeline).bindDefault();
+                        ((ModernIrisRenderingPipeline) pipeline).bindDefault();
                     }
                 }
             }
@@ -182,7 +178,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         if (!iris$shouldSkipThis()) {
             if (!isKnownShader() && shouldOverrideShaders()) {
                 WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
-                if (pipeline instanceof IrisRenderingPipeline) {
+                if (pipeline instanceof ModernIrisRenderingPipeline) {
                     Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
                 }
             }

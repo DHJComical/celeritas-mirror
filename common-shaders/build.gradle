@@ -1,0 +1,90 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = "org.embeddedt.celeritas"
+version = rootProject.version
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url = "https://maven.taumc.org/releases"
+    }
+}
+
+dependencies {
+    implementation(project(":common"))
+
+    def lwjglVersion = "3.3.1"
+    compileOnly "org.lwjgl:lwjgl:${lwjglVersion}"
+    compileOnly "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
+    compileOnly "org.joml:joml:1.10.5"
+    compileOnly "it.unimi.dsi:fastutil:8.5.9"
+    compileOnly "org.apache.logging.log4j:log4j-api:2.0-beta9"
+    compileOnly "org.jetbrains:annotations:24.1.0"
+    compileOnly("org.projectlombok:lombok:1.18.30")
+    annotationProcessor("org.projectlombok:lombok:1.18.30")
+    compileOnly("com.google.guava:guava:31.1-jre")
+    compileOnly("org.ow2.asm:asm:9.6")
+    compileOnly("org.ow2.asm:asm-tree:9.6")
+    implementation("org.apache.commons:commons-compress:1.26.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("commons-codec:commons-codec:1.17.0")
+
+    def glslTransformLib = "org.taumc:glsl-transformation-lib:${glsl_transformation_lib_version}:fat"
+    def jcpp = "org.anarres:jcpp:1.4.14"
+    def shaderDeps = [glslTransformLib, jcpp]
+    shaderDeps.forEach {
+        implementation(it)
+        // TODO: Shadow
+//        shadow(it) {
+//            transitive = false
+//        }
+    }
+
+}
+
+// TODO: Make this depend also on :common
+evaluationDependsOn(":common")
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId 'celeritas-common-shaders'
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name = "taumcRepository"
+            url = uri("https://maven.taumc.org/releases")
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_SECRET")
+            }
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+}
+
+tasks.withType(Jar).configureEach {
+    from(rootProject.file("COPYING"))
+    from(rootProject.file("COPYING.LESSER"))
+}
+
+jar {
+    manifest {
+        attributes([
+                "Lwjgl3ify-Aware": "true"
+        ])
+    }
+}

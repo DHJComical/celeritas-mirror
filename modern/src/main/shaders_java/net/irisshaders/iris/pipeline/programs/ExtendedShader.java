@@ -1,12 +1,18 @@
 package net.irisshaders.iris.pipeline.programs;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
+import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
+import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
+
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.Program;
-import com.mojang.blaze3d.shaders.ProgramManager;
 import com.mojang.blaze3d.shaders.Uniform;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
@@ -20,7 +26,7 @@ import net.irisshaders.iris.gl.program.ProgramUniforms;
 import net.irisshaders.iris.gl.sampler.SamplerHolder;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.gl.uniform.DynamicLocationalUniformHolder;
-import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
@@ -29,6 +35,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
+import org.embeddedt.embeddium.compat.mc.MCVertexFormat;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
@@ -38,12 +46,7 @@ import org.lwjgl.opengl.ARBTextureSwizzle;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.KHRDebug;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
-public class ExtendedShader extends ShaderInstance implements ShaderInstanceInterface {
+public class ExtendedShader extends ShaderInstance implements ShaderInstanceInterface, MCShaderInstance {
 	private static final Matrix4f identity;
 	private static ExtendedShader lastApplied;
 
@@ -59,7 +62,7 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 	private final Uniform projectionInverse;
 	private final Uniform normalMatrix;
 	private final CustomUniforms customUniforms;
-	private final IrisRenderingPipeline parent;
+	private final ModernIrisRenderingPipeline parent;
 	private final ProgramUniforms uniforms;
 	private final ProgramSamplers samplers;
 	private final ProgramImages images;
@@ -74,12 +77,12 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 	float[] tempFloats2 = new float[9];
 	private Program geometry, tessControl, tessEval;
 
-	public ExtendedShader(ResourceProvider resourceFactory, String string, VertexFormat vertexFormat, boolean usesTessellation,
+	public ExtendedShader(ResourceProvider resourceFactory, String string, MCVertexFormat vertexFormat, boolean usesTessellation,
 						  GlFramebuffer writingToBeforeTranslucent, GlFramebuffer writingToAfterTranslucent,
 						  BlendModeOverride blendModeOverride, AlphaTest alphaTest,
 						  Consumer<DynamicLocationalUniformHolder> uniformCreator, BiConsumer<SamplerHolder, ImageHolder> samplerCreator, boolean isIntensity,
-						  IrisRenderingPipeline parent, @Nullable List<BufferBlendOverride> bufferBlendOverrides, CustomUniforms customUniforms) throws IOException {
-		super(resourceFactory, string, vertexFormat);
+						  ModernIrisRenderingPipeline parent, @Nullable List<BufferBlendOverride> bufferBlendOverrides, CustomUniforms customUniforms) throws IOException {
+		super(resourceFactory, string, (VertexFormat) vertexFormat);
 
 		GLDebug.nameObject(KHRDebug.GL_SHADER, this.getVertexProgram().getId(), string + "_vertex.vsh");
 		GLDebug.nameObject(KHRDebug.GL_SHADER, this.getFragmentProgram().getId(), string + "_fragment.fsh");
@@ -138,17 +141,17 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 
 		if (lastApplied != this) {
 			lastApplied = this;
-			ProgramManager.glUseProgram(this.getId());
+			GL_STATE_MANAGER.glUseProgram(this.getId());
 		}
 
 		if (intensitySwizzle) {
-			IrisRenderSystem.texParameteriv(RenderSystem.getShaderTexture(0), TextureType.TEXTURE_2D.getGlType(), ARBTextureSwizzle.GL_TEXTURE_SWIZZLE_RGBA,
+			IrisRenderSystem.texParameteriv(RENDER_SYSTEM.getShaderTexture(0), TextureType.TEXTURE_2D.getGlType(), ARBTextureSwizzle.GL_TEXTURE_SWIZZLE_RGBA,
 				new int[]{GL30C.GL_RED, GL30C.GL_RED, GL30C.GL_RED, GL30C.GL_RED});
 		}
 
-		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.ALBEDO_TEXTURE_UNIT, RenderSystem.getShaderTexture(0));
-		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.OVERLAY_TEXTURE_UNIT, RenderSystem.getShaderTexture(1));
-		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, RenderSystem.getShaderTexture(2));
+		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.ALBEDO_TEXTURE_UNIT, RENDER_SYSTEM.getShaderTexture(0));
+		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.OVERLAY_TEXTURE_UNIT, RENDER_SYSTEM.getShaderTexture(1));
+		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, RENDER_SYSTEM.getShaderTexture(2));
 
 		ImmediateState.usingTessellation = usesTessellation;
 
@@ -244,7 +247,7 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 				});
 				GLDebug.nameObject(KHRDebug.GL_SHADER, this.geometry.getId(), name.getPath() + "_geometry.gsh");
 			} catch (IOException e) {
-				Iris.logger.error("Failed to create shader program", e);
+				IRIS_LOGGER.error("Failed to create shader program", e);
 			}
 		});
 		factory.getResource(ResourceLocationUtil.make(name.getNamespace(), name.getPath() + "_tessControl.tcs")).ifPresent(tessControl -> {
@@ -258,7 +261,7 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 				});
 				GLDebug.nameObject(KHRDebug.GL_SHADER, this.tessControl.getId(), name.getPath() + "_tessControl.tcs");
 			} catch (IOException e) {
-				Iris.logger.error("Failed to create shader program", e);
+				IRIS_LOGGER.error("Failed to create shader program", e);
 			}
 		});
 		factory.getResource(ResourceLocationUtil.make(name.getNamespace(), name.getPath() + "_tessEval.tes")).ifPresent(tessEval -> {
@@ -272,7 +275,7 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 				});
 				GLDebug.nameObject(KHRDebug.GL_SHADER, this.tessEval.getId(), name.getPath() + "_tessEval.tes");
 			} catch (IOException e) {
-				Iris.logger.error("Failed to create shader program", e);
+				IRIS_LOGGER.error("Failed to create shader program", e);
 			}
 		});
 	}
