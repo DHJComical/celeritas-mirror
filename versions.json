@@ -1,0 +1,64 @@
+{
+  "vcsVersion": "1.20.1-forge",
+  "versions": [
+    {
+      "friendlyName": "1.20.1",
+      "loaders": ["forge", "fabric"]
+    },
+    {
+      "friendlyName": "1.20.4",
+      "loaders": ["neoforge"],
+      "includeInChiseled": false
+    },
+    {
+      "friendlyName": "1.20.6",
+      "loaders": ["fabric"],
+      "includeInChiseled": false
+    },
+    {
+      "friendlyName": "1.21.1",
+      "loaders": ["fabric", "neoforge"]
+    },
+    {
+      "friendlyName": "1.21.2",
+      "loaders": ["fabric"],
+      "includeInChiseled": false
+    },
+    {
+      "friendlyName": "25w08a",
+      "semanticName": "1.21.5-alpha.25.8.a",
+      "loaders": ["fabric"],
+      "includeInChiseled": false
+    },
+    {
+      "friendlyName": "1.19.2",
+      "loaders": ["forge", "fabric"],
+      "includeInChiseled": false
+    },
+    {
+      "friendlyName": "1.18.2",
+      "loaders": ["forge", "fabric"],
+      "includeInChiseled": false
+    },
+    {
+      "friendlyName": "1.16.5",
+      "loaders": ["forge", "fabric"],
+      "includeInChiseled": false
+    },
+    {
+      "friendlyName": "1.17.1",
+      "loaders": ["fabric"],
+      "includeInChiseled": false
+    },
+    {
+      "friendlyName": "1.15.2",
+      "loaders": ["forge", "fabric"],
+      "includeInChiseled": false
+    },
+    {
+      "friendlyName": "1.16.1",
+      "loaders": ["fabric"],
+      "includeInChiseled": false
+    }
+  ]
+}

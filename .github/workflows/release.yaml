@@ -1,0 +1,73 @@
+# Used when a commit is pushed to the repository
+# This makes use of caching for faster builds and uploads the resulting artifacts
+name: build-snapshot
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        type: choice
+        description: Release type
+        options:
+          - DRY_RUN
+          - DEV_BUILD
+          - PRERELEASE
+          - RELEASE
+
+env:
+  DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+  MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+  MAVEN_SECRET: ${{ secrets.MAVEN_SECRET }}
+  GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Verify that release channel is available
+        run: echo "Releasing for ${{ inputs.release_type }}" && test -n "${{ inputs.release_type }}"
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: |
+            8
+            17
+            21
+      - name: Initialize caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: release-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('settings.gradle') }}
+          restore-keys: |
+            release-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-
+      - name: Initialize Unimined caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            modern/versions/**/.gradle/unimined
+            forge1710/.gradle/unimined
+            forge122/.gradle/unimined
+            babric/.gradle/unimined
+          key: unimined-v2-${{ runner.os }}-build-snapshot-${{ hashFiles('modern/build.gradle') }}-${{ hashFiles('settings.gradle.kts') }}
+          restore-keys: |
+            unimined-v2-${{ runner.os }}-build-snapshot-${{ hashFiles('modern/build.gradle') }}-
+            unimined-v2-${{ runner.os }}-build-snapshot-
+      - name: Publish artifacts
+        if: ${{ inputs.release_type != 'DRY_RUN' }}
+        run: ./gradlew :taugradle_publish -Prelease_channel=${{ inputs.release_type }} --stacktrace
+      - name: Publish common module
+        if: ${{ inputs.release_type != 'DRY_RUN' }}
+        run: ./gradlew :common:publish -Prelease_channel=${{ inputs.release_type }}
+      - name: Build all packaged jars
+        run: ./gradlew packageJar
+      - name: Show checksums
+        run: find build/libs -name \*.jar | sort | xargs sha256sum

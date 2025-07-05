@@ -1,0 +1,124 @@
+accessWidener v1 named
+
+accessible class net/minecraft/client/model/geom/ModelPart$Vertex
+accessible class net/minecraft/client/model/geom/ModelPart$Polygon
+accessible class net/minecraft/client/renderer/texture/SpriteContents$InterpolationData
+accessible class net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
+accessible class net/minecraft/client/renderer/texture/SpriteContents$FrameInfo
+accessible class net/minecraft/client/renderer/texture/SpriteContents$Ticker
+accessible class net/minecraft/world/level/chunk/PalettedContainer$Data
+accessible class net/minecraft/world/level/chunk/PalettedContainer$Configuration
+accessible class net/minecraft/client/renderer/FogRenderer$FogData
+accessible class net/minecraft/client/renderer/FogRenderer$MobEffectFogFunction
+accessible class net/minecraft/client/renderer/texture/Stitcher$Holder
+accessible class net/minecraft/world/level/biome/Biome$ClimateSettings
+
+accessible method com/mojang/blaze3d/vertex/PoseStack$Pose <init> (Lorg/joml/Matrix4f;Lorg/joml/Matrix3f;)V
+accessible class net/minecraft/client/gui/font/FontSet$GlyphInfoFilter
+
+accessible field net/minecraft/world/level/GrassColor pixels [I
+accessible field net/minecraft/world/level/FoliageColor pixels [I
+accessible method net/minecraft/client/renderer/FogRenderer getPriorityFogFunction (Lnet/minecraft/world/entity/Entity;F)Lnet/minecraft/client/renderer/FogRenderer$MobEffectFogFunction;
+
+# legacy
+accessible field com/mojang/blaze3d/vertex/VertexFormat offsets Lit/unimi/dsi/fastutil/ints/IntList;
+
+accessible method net/minecraft/client/renderer/SectionBufferBuilderPool <init> (Ljava/util/List;)V
+accessible field com/mojang/blaze3d/vertex/PoseStack$Pose trustedNormals Z
+accessible method net/minecraft/client/renderer/entity/EntityRenderer getBoundingBoxForCulling (Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/phys/AABB;
+
+# 1.19-
+accessible class net/minecraft/client/renderer/texture/TextureAtlasSprite$AnimatedTexture
+accessible class net/minecraft/client/renderer/texture/TextureAtlasSprite$FrameInfo
+accessible class net/minecraft/client/renderer/texture/TextureAtlasSprite$InterpolationData
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite$FrameInfo time I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite$FrameInfo index I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite$AnimatedTexture frames Ljava/util/List;
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite$AnimatedTexture frame I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite$AnimatedTexture subFrame I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite width I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite height I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite$AnimatedTexture frameRowSize I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite mainImage [Lcom/mojang/blaze3d/platform/NativeImage;
+accessible field com/mojang/blaze3d/platform/NativeImage pixels J
+accessible method net/minecraft/client/renderer/texture/TextureAtlasSprite upload (II[Lcom/mojang/blaze3d/platform/NativeImage;)V
+
+accessible method com/mojang/blaze3d/vertex/PoseStack$Pose <init> (Lcom/mojang/math/Matrix4f;Lcom/mojang/math/Matrix3f;)V
+
+accessible field net/minecraft/client/CycleOption setter Lnet/minecraft/client/CycleOption$OptionSetter;
+accessible field net/minecraft/client/CycleOption getter Ljava/util/function/Function;
+accessible field net/minecraft/world/level/biome/Biome$ClimateSettings temperature F
+accessible field net/minecraft/world/level/biome/Biome$ClimateSettings downfall F
+
+accessible field com/mojang/blaze3d/platform/GlStateManager FOG Lcom/mojang/blaze3d/platform/GlStateManager$FogState;
+accessible field net/minecraft/client/renderer/FogRenderer fogRed F
+accessible field net/minecraft/client/renderer/FogRenderer fogGreen F
+accessible field net/minecraft/client/renderer/FogRenderer fogBlue F
+accessible class com/mojang/blaze3d/platform/GlStateManager$FogState
+accessible class com/mojang/blaze3d/platform/GlStateManager$BooleanState
+accessible method net/minecraft/client/renderer/texture/TextureAtlasSprite$InterpolationData uploadInterpolatedFrame ()V
+accessible field net/minecraft/client/renderer/LightTexture lightTextureLocation Lnet/minecraft/resources/ResourceLocation;
+accessible field com/mojang/blaze3d/platform/GlStateManager$BooleanState enabled Z
+accessible field net/minecraft/client/model/geom/ModelPart$Cube polygons [Lnet/minecraft/client/model/geom/ModelPart$Polygon;
+accessible method net/minecraft/client/renderer/block/model/BlockModel getElements ()Ljava/util/List;
+
+accessible class net/minecraft/client/multiplayer/ClientLevel$MarkerParticleStatus
+accessible field net/minecraft/client/multiplayer/ClientLevel$MarkerParticleStatus block Lnet/minecraft/world/level/block/Block;
+accessible field net/minecraft/client/multiplayer/ClientLevel$MarkerParticleStatus particle Lnet/minecraft/core/particles/ParticleOptions;
+
+# Shaders
+
+accessible  class   com/mojang/blaze3d/platform/GlStateManager$BlendState
+accessible  class   com/mojang/blaze3d/platform/GlStateManager$BooleanState
+accessible  class   com/mojang/blaze3d/platform/GlStateManager$TextureState
+accessible  class   com/mojang/blaze3d/platform/GlStateManager$ColorMask
+accessible  class   com/mojang/blaze3d/platform/GlStateManager$DepthState
+accessible  class   net/minecraft/client/renderer/RenderStateShard$DepthTestStateShard
+accessible  class   net/minecraft/client/renderer/RenderStateShard$TransparencyStateShard
+accessible  class   net/minecraft/client/renderer/RenderType$CompositeRenderType
+accessible  class   net/minecraft/client/renderer/RenderType$CompositeState
+accessible  class   net/minecraft/client/renderer/FogRenderer$FogData
+accessible  class   net/minecraft/client/renderer/texture/Stitcher$Holder
+accessible  class   net/minecraft/world/level/biome/Biome$ClimateSettings
+accessible  class   net/minecraft/client/Options$FieldAccess
+accessible class net/minecraft/client/renderer/texture/SpriteContents$AnimatedTexture
+accessible class net/minecraft/client/renderer/texture/SpriteContents$FrameInfo
+accessible class net/minecraft/client/renderer/texture/SpriteContents$Ticker
+accessible  class   net/minecraft/client/OptionInstance$ValueSet
+extendable  class   net/minecraft/client/OptionInstance
+accessible  class   net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk$RebuildTask
+extendable  class   net/minecraft/core/RegistryAccess$RegistryEntry
+accessible  class   net/minecraft/client/renderer/chunk/ChunkRenderDispatcher$RenderChunk$RebuildTask$CompileResults
+accessible method net/minecraft/client/renderer/RenderType create (Ljava/lang/String;Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;IZZLnet/minecraft/client/renderer/RenderType$CompositeState;)Lnet/minecraft/client/renderer/RenderType$CompositeRenderType;
+accessible field com/mojang/blaze3d/platform/NativeImage pixels J
+mutable field net/minecraft/client/renderer/ShaderInstance PROJECTION_MATRIX Lcom/mojang/blaze3d/shaders/Uniform;
+mutable field net/minecraft/client/renderer/ShaderInstance MODEL_VIEW_MATRIX Lcom/mojang/blaze3d/shaders/Uniform;
+mutable field net/minecraft/client/renderer/ShaderInstance TEXTURE_MATRIX Lcom/mojang/blaze3d/shaders/Uniform;
+mutable field net/minecraft/client/renderer/ShaderInstance CHUNK_OFFSET Lcom/mojang/blaze3d/shaders/Uniform;
+mutable field net/minecraft/client/renderer/ShaderInstance COLOR_MODULATOR Lcom/mojang/blaze3d/shaders/Uniform;
+accessible field net/minecraft/client/renderer/ShaderInstance uniforms Ljava/util/List;
+mutable field net/minecraft/client/renderer/LevelRenderer renderBuffers Lnet/minecraft/client/renderer/RenderBuffers;
+accessible class net/minecraft/client/gui/components/AbstractSelectionList$Entry
+accessible field com/mojang/blaze3d/platform/GlStateManager$BooleanState enabled Z
+accessible method com/mojang/blaze3d/shaders/Program getId ()I
+
+# 1.14
+
+accessible class net/minecraft/client/renderer/BiomeColors$ColorResolver
+accessible field net/minecraft/client/renderer/BiomeColors GRASS_COLOR_RESOLVER Lnet/minecraft/client/renderer/BiomeColors$ColorResolver;
+accessible field net/minecraft/client/renderer/BiomeColors FOLIAGE_COLOR_RESOLVER Lnet/minecraft/client/renderer/BiomeColors$ColorResolver;
+accessible field net/minecraft/client/renderer/BiomeColors WATER_COLOR_RESOLVER Lnet/minecraft/client/renderer/BiomeColors$ColorResolver;
+accessible field net/minecraft/client/renderer/BiomeColors WATER_FOG_COLOR_RESOLVER Lnet/minecraft/client/renderer/BiomeColors$ColorResolver;
+
+accessible method com/mojang/blaze3d/vertex/VertexBuffer bindVertexArray ()V
+
+# 1.16
+
+accessible field net/minecraft/client/renderer/texture/TextureAtlas$Preparations width I
+accessible field net/minecraft/client/renderer/texture/TextureAtlas$Preparations height I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite x I
+accessible field net/minecraft/client/renderer/texture/TextureAtlasSprite y I
+
+# 1.17
+
+accessible class net/minecraft/world/level/chunk/EmptyLevelChunk$EmptyChunkBiomeContainer

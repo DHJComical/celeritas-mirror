@@ -1,0 +1,18 @@
+{
+  "embeddium.conflicting_mod": "Celeritas detected the presence of mods that are known to cause rendering issues/crashes. It is recommended to uninstall them. See the list below.",
+  "embeddium.conflicting_mod_list": "[{2}]",
+  "embeddium.search_bar_empty": "Search options...",
+  "embeddium.options.added_by_mod_string": "Added by mod: %s",
+  "embeddium.options.fullscreen.resolution.tooltip": "Controls the resolution of the game in fullscreen mode.",
+  "embeddium.options.use_quad_normals_for_lighting.name": "Use Accurate Quad Shading",
+  "embeddium.options.use_quad_normals_for_lighting.tooltip": "When enabled, Celeritas will apply shading to non-vanilla block faces based on the true direction they are facing, not their axis-aligned direction. This can improve lighting quality when the Forge experimental light pipeline is disabled (which is recommended for best performance).\n\nIt has no effect if the experimental light pipeline is enabled.",
+  "embeddium.options.use_render_pass_optimization.name": "Use Render Pass Optimization",
+  "embeddium.options.use_render_pass_optimization.tooltip": "When enabled, Celeritas will detect block model faces that are marked as transparent (or translucent) when the texture is actually opaque (or transparent) and automatically use a more optimal render pass for them.\n\nThis optimization has no effect when a shader pack is active.",
+  "embeddium.options.use_render_pass_consolidation.name": "Use Render Pass Consolidation",
+  "embeddium.options.use_render_pass_consolidation.tooltip": "Combines some vanilla render passes into a single pass. This can very significantly reduce the total number of draw calls needed to render the world, with no visual impact. However, the total amount of rendered geometry will be the same.",
+  "embeddium.options.inactivity_fps_limit.tooltip": "Controls how the game limits framerate when inactive. Minimized only limits the framerate if the game is minimized. AFK also limits the framerate if the player is inactive for long enough.",
+  "embeddium.options.use_faster_clouds.name": "Use Faster Clouds",
+  "embeddium.options.use_faster_clouds.tooltip": "When enabled, Celeritas replaces vanilla cloud rendering with a less glitchy and potentially faster implementation. Disable this if mods' cloud customizations aren't visible.",
+  "celeritas.options.async_graph_search.name": "Async Occlusion Culling",
+  "celeritas.options.async_graph_search.tooltip": "Performs occlusion/frustum culling asynchronously, up to one frame behind the current camera position. This can improve frametimes, particularly at higher render distances, but at the cost of chunks popping into view if the camera is turned too aggressively."
+}

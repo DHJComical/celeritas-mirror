@@ -1,0 +1,167 @@
+
+plugins {
+}
+
+group = "org.embeddedt"
+version = rootProject.version
+apply plugin: 'xyz.wagyourtail.unimined'
+
+repositories {
+    maven {
+        name = "wagyourtail releases"
+        url = "https://maven.wagyourtail.xyz/releases"
+    }
+    maven {
+        name = "sponge"
+        url = "https://repo.spongepowered.org/maven"
+    }
+    maven {
+        name "GTNH Maven"
+        url "https://nexus.gtnewhorizons.com/repository/public/"
+    }
+    exclusiveContent {
+        forRepository {
+            ivy {
+                name = 'CoreTweaks releases'
+                url = 'https://github.com/makamys/CoreTweaks/releases/download/'
+                patternLayout {
+                    artifact '[revision]/[module]-1.7.10-[revision]+nomixin(-[classifier])(.[ext])'
+                }
+                metadataSources {
+                    artifact()
+                }
+            }
+        }
+        filter {
+            includeGroup('CoreTweaks')
+        }
+    }
+    exclusiveContent {
+        forRepository {
+            ivy {
+                name = 'NotFine releases'
+                url = 'https://github.com/jss2a98aj/NotFine/releases/download/'
+                patternLayout {
+                    artifact '[revision]/[module]-[revision](-[classifier])(.[ext])'
+                }
+                metadataSources {
+                    artifact()
+                }
+            }
+        }
+        filter {
+            includeGroup('NotFine')
+        }
+    }
+    repositories {
+        maven {
+            name "Modrinth"
+            url "https://api.modrinth.com/maven"
+        }
+    }
+    mavenCentral()
+}
+
+archivesBaseName = "celeritas-forge-mc7.10"
+
+evaluationDependsOn(":common")
+
+unimined.minecraft {
+    combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
+
+    version "1.7.10"
+
+    mappings {
+        searge()
+        mcp("stable", "12-1.7.10")
+    }
+
+    minecraftForge {
+        loader "10.13.4.1614-1.7.10"
+        mixinConfig "mixins.celeritas.json"
+        accessTransformer(file("src/main/resources/META-INF/celeritas_at.cfg"))
+    }
+
+    runs.config("client") {
+        javaVersion = JavaVersion.VERSION_21
+        mainClass = "com.gtnewhorizons.retrofuturabootstrap.Main"
+        jvmArgs += [
+                "-Dfile.encoding=UTF-8",
+                "-Djava.system.class.loader=com.gtnewhorizons.retrofuturabootstrap.RfbSystemClassLoader",
+                "-Djava.security.manager=allow", "--add-opens", "java.base/jdk.internal.loader=ALL-UNNAMED", "--add-opens",
+                "java.base/java.net=ALL-UNNAMED", "--add-opens", "java.base/java.nio=ALL-UNNAMED", "--add-opens",
+                "java.base/java.io=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens",
+                "java.base/java.lang.reflect=ALL-UNNAMED", "--add-opens", "java.base/java.text=ALL-UNNAMED", "--add-opens",
+                "java.base/java.util=ALL-UNNAMED", "--add-opens", "java.base/jdk.internal.reflect=ALL-UNNAMED", "--add-opens",
+                "java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens", "jdk.naming.dns/com.sun.jndi.dns=ALL-UNNAMED,java.naming",
+                "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED", "--add-opens", "java.desktop/sun.awt.image=ALL-UNNAMED",
+                "--add-opens", "java.desktop/com.sun.imageio.plugins.png=ALL-UNNAMED", "--add-opens",
+                "jdk.dynalink/jdk.dynalink.beans=ALL-UNNAMED", "--add-opens",
+                "java.sql.rowset/javax.sql.rowset.serial=ALL-UNNAMED"
+        ]
+        systemProperty("fml.coreMods.load", "org.taumc.celeritas.core.CeleritasLoadingPlugin")
+    }
+
+    runs.config('server') {
+        enabled = false
+    }
+}
+
+dependencies {
+    implementation("org.joml:joml:1.10.5")
+    compileOnly("org.projectlombok:lombok:1.18.30")
+    annotationProcessor("org.projectlombok:lombok:1.18.30")
+    implementation("com.github.GTNewHorizons:lwjgl3ify:2.1.5")
+    implementation("com.github.GTNewHorizons:lwjgl3ify:2.1.5:forgePatches")
+    def lwjglVersion = "3.3.3"
+    implementation "org.lwjgl:lwjgl:${lwjglVersion}"
+    implementation "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
+    implementation "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
+    implementation "org.lwjgl:lwjgl-stb:${lwjglVersion}"
+    implementation "org.lwjgl:lwjgl:${lwjglVersion}:natives-linux"
+    implementation "org.lwjgl:lwjgl-opengl:${lwjglVersion}:natives-linux"
+    implementation "org.lwjgl:lwjgl-glfw:${lwjglVersion}:natives-linux"
+    implementation "org.lwjgl:lwjgl-stb:${lwjglVersion}:natives-linux"
+
+    implementation("io.github.legacymoddingmc:unimixins:0.1.19:dev")
+    implementation("com.github.GTNewHorizons:GTNHLib:0.6.8:dev")
+    modImplementation("CoreTweaks:CoreTweaks:0.3.3.2")
+    modImplementation("NotFine:NotFine:0.2.5")
+    modImplementation("maven.modrinth:archaicfix:0.7.4")
+    modImplementation("maven.modrinth:etfuturum:2.6.2")
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("mcmod.info") {
+        expand "version": project.version
+    }
+
+    from(rootProject.file("modern/src/main/resources/icon.png"))
+}
+
+jar {
+    manifest {
+        attributes([
+                "FMLCorePlugin": "org.taumc.celeritas.core.CeleritasLoadingPlugin",
+                "FMLCorePluginContainsFMLMod": "true",
+                "FMLAT": "celeritas_at.cfg",
+                "ForceLoadAsMod": "true",
+                "Lwjgl3ify-Aware": "true"
+        ])
+    }
+}
+
+tasks.named("remapJar") {
+    mixinRemap {
+        enableBaseMixin()
+        enableMixinExtra()
+        disableRefmap() // like fabric-loom 1.6
+    }
+}
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}

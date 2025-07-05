@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.irisshaders.iris.mixin",
+  "plugin": "org.embeddedt.embeddium.impl.mixin.SodiumMixinPlugin",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1,
+    "maxShiftBy": 2
+  }
+}

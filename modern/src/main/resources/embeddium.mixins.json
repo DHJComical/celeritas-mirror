@@ -1,0 +1,15 @@
+{
+  "package" : "org.embeddedt.embeddium.impl.mixin",
+  "required" : true,
+  "minVersion": "0.8",
+  "compatibilityLevel" : "${mixinCompatLevel}",
+  "plugin" : "org.embeddedt.embeddium.impl.mixin.SodiumMixinPlugin",
+  "injectors" : {
+    "defaultRequire" : 1
+  },
+  "overwrites" : {
+    "conformVisibility" : true
+  },
+  "client" : [
+  ]
+}

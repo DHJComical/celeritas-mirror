@@ -1,0 +1,55 @@
+plugins {
+    `kotlin-dsl`
+    id("java-gradle-plugin") // so we can assign and ID to our plugin
+}
+
+sourceSets {
+    create("stonecutter") {
+        java {
+            compileClasspath += sourceSets.main.get().compileClasspath
+        }
+    }
+}
+
+dependencies {
+    compileOnly("net.fabricmc:mapping-io:0.3.0")
+    implementation("com.google.guava:guava:33.1.0-jre")
+    implementation("org.ow2.asm:asm:9.6")
+    implementation("org.ow2.asm:asm-tree:9.6")
+    implementation("org.ow2.asm:asm-commons:9.6")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("org.eclipse.jgit:org.eclipse.jgit:6.10.0.202406032230-r")
+    implementation("club.minnced:discord-webhooks:0.8.4")
+    implementation("net.fabricmc:fabric-loader:0.15.11")
+    implementation("org.apache.commons:commons-compress:1.26.0")
+    implementation("xyz.wagyourtail.unimined:xyz.wagyourtail.unimined.gradle.plugin:1.3.15-SNAPSHOT")
+    implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.0")
+    "stonecutterImplementation"("dev.kikugie:stonecutter:0.7-beta.2")
+}
+
+repositories {
+    mavenCentral()
+    maven("https://maven.fabricmc.net/")
+    maven("https://maven.wagyourtail.xyz/releases")
+    maven("https://maven.wagyourtail.xyz/snapshots")
+    maven("https://maven.kikugie.dev/releases")
+    maven("https://maven.kikugie.dev/snapshots")
+}
+
+tasks.named<Jar>("jar") {
+    from(sourceSets.getByName("stonecutter").output)
+}
+
+gradlePlugin {
+    plugins {
+        register("embeddium-fabric-remapper") {
+            id = "embeddium-fabric-remapper"
+            implementationClass = "org.embeddedt.embeddium.gradle.fabric.remapper.RemapperPlugin"
+        }
+        // here we register our plugin with an ID
+        register("embeddium-fabric-module-finder") {
+            id = "embeddium-fabric-module-finder"
+            implementationClass = "org.embeddedt.embeddium.gradle.fabric.remapper.ModuleFinderPlugin"
+        }
+    }
+}

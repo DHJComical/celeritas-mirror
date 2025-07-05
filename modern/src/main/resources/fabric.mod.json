@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "$mod_id",
+  "name": "$mod_display_name",
+  "version": "$mod_version",
+  "environment": "*",
+  "description": "$mod_description",
+  "icon": "icon.png",
+  "contact": {
+    "homepage": "$homepage_url",
+    "sources": "$sources_url",
+    "issues": "$issue_tracker_url"
+  },
+  "authors": ["${String.join('\u0022,\u0022',authors)}"],
+  "contributors": [
+    "${String.join('\u0022,\u0022',contributors)}"
+  ],
+  "entrypoints": {
+    "client": [
+      "org.embeddedt.embeddium.impl.Celeritas::onInitializeClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=$fabricloader",
+    "minecraft": "$minecraft"
+  },
+  "accessWidener": "${mod_id}.accesswidener",
+  "license": "$license",
+  "mixins": [
+  ],
+  "custom": {}
+}

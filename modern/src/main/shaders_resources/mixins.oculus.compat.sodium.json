@@ -1,0 +1,19 @@
+{
+  "minVersion": "0.8",
+  "package": "net.irisshaders.iris.compat.sodium.mixin",
+  "plugin": "net.irisshaders.iris.compat.sodium.mixin.IrisSodiumCompatMixinPlugin",
+  "required": true,
+  "compatibilityLevel": "JAVA_8",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "conformVisibility": true
+  },
+  "client": [
+    "clouds.MixinCloudRenderer",
+    "shader_overrides.MixinShaderChunkRenderer",
+    "vertex_format.MixinVertexSerializerCache",
+    "vertex_format.entity.MixinModelVertex"
+  ]
+}
