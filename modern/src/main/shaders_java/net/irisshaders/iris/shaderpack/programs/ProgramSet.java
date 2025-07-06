@@ -12,12 +12,9 @@ import net.irisshaders.iris.shaderpack.parsing.DispatchingDirectiveHolder;
 import net.irisshaders.iris.shaderpack.properties.PackDirectives;
 import net.irisshaders.iris.shaderpack.properties.PackRenderTargetDirectives;
 import net.irisshaders.iris.shaderpack.properties.ShaderProperties;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 public class ProgramSet implements ProgramSetInterface {
@@ -180,30 +177,27 @@ public class ProgramSet implements ProgramSetInterface {
 												   Function<AbsolutePackPath, String> sourceProvider, String program,
 												   ProgramSet programSet, ShaderProperties properties,
 												   BlendModeOverride defaultBlendModeOverride, boolean readTesselation) {
-		AbsolutePackPath vertexPath = directory.resolve(program + ".vsh");
-		String vertexSource = sourceProvider.apply(vertexPath);
+        Map<ShaderType, String> sources = new EnumMap<>(ShaderType.class);
 
-		AbsolutePackPath geometryPath = directory.resolve(program + ".gsh");
-		String geometrySource = sourceProvider.apply(geometryPath);
+        for (var shaderType : ShaderType.values()) {
+            if (shaderType == ShaderType.COMPUTE) {
+                continue;
+            }
+            if (!readTesselation && (shaderType == ShaderType.TESS_CTRL || shaderType == ShaderType.TESS_EVALUATE)) {
+                continue;
+            }
 
-		String tessControlSource = null;
-		String tessEvalSource = null;
+            AbsolutePackPath vertexPath = directory.resolve(program + "." + shaderType.fileExtension);
+            String source = sourceProvider.apply(vertexPath);
+            if (source != null) {
+                sources.put(shaderType, source);
+            }
+        }
 
-		if (readTesselation) {
-			AbsolutePackPath tessControlPath = directory.resolve(program + ".tcs");
-			tessControlSource = sourceProvider.apply(tessControlPath);
-
-			AbsolutePackPath tessEvalPath = directory.resolve(program + ".tes");
-			tessEvalSource = sourceProvider.apply(tessEvalPath);
-		}
-
-		AbsolutePackPath fragmentPath = directory.resolve(program + ".fsh");
-		String fragmentSource = sourceProvider.apply(fragmentPath);
-
-		if (vertexSource == null && fragmentSource != null) {
+		if (!sources.containsKey(ShaderType.VERTEX) && sources.containsKey(ShaderType.FRAGMENT)) {
 			// This is for really old packs that do not use a vertex shader.
 			Iris.logger.warn("Found a program (" + program + ") that has a fragment shader but no vertex shader? This is very legacy behavior and might not work right.");
-			vertexSource = """
+			sources.put(ShaderType.VERTEX, """
 				#version 120
 
 				varying vec4 irs_texCoords[3];
@@ -216,10 +210,10 @@ public class ProgramSet implements ProgramSetInterface {
 					irs_texCoords[2] = gl_TextureMatrix[1] * gl_MultiTexCoord2;
 					irs_Color = gl_Color;
 				}
-				""";
+				""");
 		}
 
-		return new ProgramSource(program, vertexSource, geometrySource, tessControlSource, tessEvalSource, fragmentSource, programSet, properties,
+		return new ProgramSource(program, sources, programSet, properties,
 			defaultBlendModeOverride);
 	}
 
@@ -356,7 +350,7 @@ public class ProgramSet implements ProgramSetInterface {
 				continue;
 			}
 
-			source.getFragmentSource().map(ConstDirectiveParser::findDirectives).ifPresent(directives -> {
+			source.getSource(ShaderType.FRAGMENT).map(ConstDirectiveParser::findDirectives).ifPresent(directives -> {
 				for (ConstDirectiveParser.ConstDirective directive : directives) {
 					packDirectiveHolder.processDirective(directive);
 				}

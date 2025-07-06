@@ -313,11 +313,11 @@ public class SodiumTerrainPipeline {
 
                 Map<PatchShaderType, String> transformed = TransformPatcherBridge.patchSodium(
                         sources.getName(),
-                        sources.getVertexSource().orElse(null),
-                        sources.getGeometrySource().orElse(null),
-                        sources.getTessControlSource().orElse(null),
-                        sources.getTessEvalSource().orElse(null),
-                        sources.getFragmentSource().orElse(null),
+                        sources.getSourceNullable(ShaderType.VERTEX),
+                        sources.getSourceNullable(ShaderType.GEOM),
+                        sources.getSourceNullable(ShaderType.TESS_CTRL),
+                        sources.getSourceNullable(ShaderType.TESS_EVALUATE),
+                        sources.getSourceNullable(ShaderType.FRAGMENT),
                         passInfo.alphaTest.orElseThrow(), inputs, parent.getTextureMap());
 
                 for (var type : PatchShaderType.values()) {

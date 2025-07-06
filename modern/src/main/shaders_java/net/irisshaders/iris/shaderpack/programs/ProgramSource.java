@@ -4,71 +4,42 @@ import net.irisshaders.iris.gl.blending.BlendModeOverride;
 import net.irisshaders.iris.shaderpack.properties.PackRenderTargetDirectives;
 import net.irisshaders.iris.shaderpack.properties.ProgramDirectives;
 import net.irisshaders.iris.shaderpack.properties.ShaderProperties;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class ProgramSource {
 	private final String name;
-	private final String vertexSource;
-	private final String geometrySource;
-	private final String tessControlSource;
-	private final String tessEvalSource;
-	private final String fragmentSource;
+    private final Map<ShaderType, String> sources = new EnumMap<>(ShaderType.class);
 	private final ProgramDirectives directives;
 	private final ProgramSet parent;
 
-	private ProgramSource(String name, String vertexSource, String geometrySource, String tessControlSource, String tessEvalSource, String fragmentSource,
-						  ProgramDirectives directives, ProgramSet parent) {
-		this.name = name;
-		this.vertexSource = vertexSource;
-		this.geometrySource = geometrySource;
-		this.tessControlSource = tessControlSource;
-		this.tessEvalSource = tessEvalSource;
-		this.fragmentSource = fragmentSource;
-		this.directives = directives;
-		this.parent = parent;
-	}
-
-	public ProgramSource(String name, String vertexSource, String geometrySource, String tessControlSource, String tessEvalSource, String fragmentSource,
+	public ProgramSource(String name, Map<ShaderType, String> sources,
 						 ProgramSet parent, ShaderProperties properties, BlendModeOverride defaultBlendModeOverride) {
 		this.name = name;
-		this.vertexSource = vertexSource;
-		this.geometrySource = geometrySource;
-		this.tessControlSource = tessControlSource;
-		this.tessEvalSource = tessEvalSource;
-		this.fragmentSource = fragmentSource;
+        for (var entry : sources.entrySet()) {
+            if (entry.getValue() != null) {
+                this.sources.put(entry.getKey(), entry.getValue());
+            }
+        }
 		this.parent = parent;
 		this.directives = new ProgramDirectives(this, properties,
 			PackRenderTargetDirectives.BASELINE_SUPPORTED_RENDER_TARGETS, defaultBlendModeOverride);
-	}
-
-	public ProgramSource withDirectiveOverride(ProgramDirectives overrideDirectives) {
-		return new ProgramSource(name, vertexSource, geometrySource, tessControlSource, tessEvalSource, fragmentSource, overrideDirectives, parent);
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public Optional<String> getVertexSource() {
-		return Optional.ofNullable(vertexSource);
-	}
+    public Optional<String> getSource(ShaderType type) {
+        return Optional.ofNullable(getSourceNullable(type));
+    }
 
-	public Optional<String> getGeometrySource() {
-		return Optional.ofNullable(geometrySource);
-	}
-
-	public Optional<String> getTessControlSource() {
-		return Optional.ofNullable(tessControlSource);
-	}
-
-	public Optional<String> getTessEvalSource() {
-		return Optional.ofNullable(tessEvalSource);
-	}
-
-	public Optional<String> getFragmentSource() {
-		return Optional.ofNullable(fragmentSource);
-	}
+    public String getSourceNullable(ShaderType type) {
+        return sources.get(type);
+    }
 
 	public ProgramDirectives getDirectives() {
 		return this.directives;
@@ -79,7 +50,7 @@ public class ProgramSource {
 	}
 
 	public boolean isValid() {
-		return vertexSource != null && fragmentSource != null;
+		return sources.containsKey(ShaderType.VERTEX) && sources.containsKey(ShaderType.FRAGMENT);
 	}
 
 	public Optional<ProgramSource> requireValid() {

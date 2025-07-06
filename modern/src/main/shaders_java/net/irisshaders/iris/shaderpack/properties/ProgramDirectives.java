@@ -13,6 +13,7 @@ import net.irisshaders.iris.shaderpack.parsing.CommentDirectiveParser;
 import net.irisshaders.iris.shaderpack.parsing.ConstDirectiveParser;
 import net.irisshaders.iris.shaderpack.parsing.DispatchingDirectiveHolder;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -58,8 +59,8 @@ public class ProgramDirectives {
 		// undefined data to be written to colortex7.
 		//
 		// TODO: Figure out how to infer the DRAWBUFFERS directive when it is missing.
-		Optional<CommentDirective> optionalDrawbuffersDirective = findDrawbuffersDirective(source.getFragmentSource());
-		Optional<CommentDirective> optionalRendertargetsDirective = findRendertargetsDirective(source.getFragmentSource());
+		Optional<CommentDirective> optionalDrawbuffersDirective = findDrawbuffersDirective(source.getSource(ShaderType.FRAGMENT));
+		Optional<CommentDirective> optionalRendertargetsDirective = findRendertargetsDirective(source.getSource(ShaderType.FRAGMENT));
 
 		Optional<CommentDirective> optionalCommentDirective = getAppliedDirective(optionalDrawbuffersDirective, optionalRendertargetsDirective);
 		drawBuffers = optionalCommentDirective.map(commentDirective -> {
@@ -112,7 +113,7 @@ public class ProgramDirectives {
 			}
 		});
 
-		source.getFragmentSource().map(ConstDirectiveParser::findDirectives).ifPresent(directives -> {
+		source.getSource(ShaderType.FRAGMENT).map(ConstDirectiveParser::findDirectives).ifPresent(directives -> {
 			for (ConstDirectiveParser.ConstDirective directive : directives) {
 				directiveHolder.processDirective(directive);
 			}

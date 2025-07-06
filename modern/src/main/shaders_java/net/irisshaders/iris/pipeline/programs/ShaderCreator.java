@@ -37,6 +37,7 @@ import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.apache.commons.io.IOUtils;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
 
 import java.io.ByteArrayInputStream;
@@ -64,11 +65,11 @@ public class ShaderCreator {
         return CompletableFuture.supplyAsync(() -> {
             return TransformPatcherBridge.patchVanilla(
                     name,
-                    source.getVertexSource().orElseThrow(RuntimeException::new),
-                    source.getGeometrySource().orElse(null),
-                    source.getTessControlSource().orElse(null),
-                    source.getTessEvalSource().orElse(null),
-                    source.getFragmentSource().orElseThrow(RuntimeException::new),
+                    source.getSource(ShaderType.VERTEX).orElseThrow(RuntimeException::new),
+                    source.getSource(ShaderType.GEOM).orElse(null),
+                    source.getSource(ShaderType.TESS_CTRL).orElse(null),
+                    source.getSource(ShaderType.TESS_EVALUATE).orElse(null),
+                    source.getSource(ShaderType.FRAGMENT).orElseThrow(RuntimeException::new),
                     alpha, isLines, true, inputs, pipeline.getTextureMap());
         }, Util.backgroundExecutor()).thenApplyAsync(transformed -> {
 
