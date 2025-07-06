@@ -13,7 +13,7 @@ public class EntityPatcherNew {
             translationUnit.removeVariable("entityColor");
         }
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             // add our own declarations
             // TODO: We're exposing entityColor to this stage even if it isn't declared in
             // this stage. But this is needed for the pass-through behavior.
@@ -37,7 +37,7 @@ public class EntityPatcherNew {
             translationUnit.prependMain("iris_vertexColor = iris_Color;");
             translationUnit.prependMain("entityColor = vec4(overlayColor.rgb, 1.0 - overlayColor.a);");
             translationUnit.prependMain("vec4 overlayColor = texelFetch(iris_overlay, iris_UV1, 0);");
-        } else if (parameters.type.glShaderType == ShaderType.TESSELATION_CONTROL) {
+        } else if (parameters.type == ShaderType.TESSELATION_CONTROL) {
             // replace read references to grab the color from the first vertex.
             translationUnit.replaceExpression("entityColor", "entityColor[gl_InvocationID]");
 
@@ -50,7 +50,7 @@ public class EntityPatcherNew {
             translationUnit.prependMain(
                     "entityColorTCS = entityColor[gl_InvocationID];\n" +
                     "iris_vertexColorTCS[gl_InvocationID] = iris_vertexColor[gl_InvocationID];");
-        } else if (parameters.type.glShaderType == ShaderType.TESSELATION_EVAL) {
+        } else if (parameters.type == ShaderType.TESSELATION_EVAL) {
             // replace read references to grab the color from the first vertex.
             translationUnit.replaceExpression("entityColor", "entityColorTCS");
 
@@ -62,7 +62,7 @@ public class EntityPatcherNew {
            translationUnit.prependMain(
                     "entityColorTES = entityColorTCS;\n" +
                     "iris_vertexColorTES = iris_vertexColorTCS[0];");
-        } else if (parameters.type.glShaderType == ShaderType.GEOMETRY) {
+        } else if (parameters.type == ShaderType.GEOMETRY) {
             // replace read references to grab the color from the first vertex.
             translationUnit.replaceExpression("entityColor", "entityColor[0]");
 
@@ -79,7 +79,7 @@ public class EntityPatcherNew {
                 translationUnit.rename("iris_vertexColor", "iris_vertexColorTES");
                 translationUnit.rename("entityColor", "entityColorTES");
             }
-        } else if (parameters.type.glShaderType == ShaderType.FRAGMENT) {
+        } else if (parameters.type == ShaderType.FRAGMENT) {
             translationUnit.injectVariable(
                     "in vec4 entityColor;");
             translationUnit.injectVariable("in vec4 iris_vertexColor;");
@@ -111,7 +111,7 @@ public class EntityPatcherNew {
             translationUnit.removeVariable("currentRenderedItemId");
         }
 
-        if (parameters.type.glShaderType == ShaderType.GEOMETRY) {
+        if (parameters.type == ShaderType.GEOMETRY) {
             translationUnit.replaceExpression("entityId",
                     "iris_entityInfo[0].x");
 
@@ -131,7 +131,7 @@ public class EntityPatcherNew {
                     "iris_entityInfo.z");
         }
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             // add our own declarations
             // TODO: We're exposing entityColor to this stage even if it isn't declared in
             // this stage. But this is needed for the pass-through behavior.
@@ -144,7 +144,7 @@ public class EntityPatcherNew {
             // stage.
             translationUnit.prependMain(
                     "iris_entityInfo = iris_Entity;");
-        } else if (parameters.type.glShaderType == ShaderType.TESSELATION_CONTROL) {
+        } else if (parameters.type == ShaderType.TESSELATION_CONTROL) {
             // TODO: this is passthrough behavior
             translationUnit.injectVariable(
                     "flat out ivec3 iris_entityInfoTCS[];");
@@ -153,7 +153,7 @@ public class EntityPatcherNew {
 
             translationUnit.prependMain(
                     "iris_entityInfoTCS[gl_InvocationID] = iris_entityInfo[gl_InvocationID];");
-        } else if (parameters.type.glShaderType == ShaderType.TESSELATION_EVAL) {
+        } else if (parameters.type == ShaderType.TESSELATION_EVAL) {
             // TODO: this is passthrough behavior
             translationUnit.injectVariable("flat out ivec3 iris_entityInfoTES;");
             translationUnit.injectVariable("flat in ivec3 iris_entityInfoTCS[];");
@@ -162,14 +162,14 @@ public class EntityPatcherNew {
 
             translationUnit.replaceExpression("iris_entityInfo", "iris_EntityInfoTCS[0]");
 
-        } else if (parameters.type.glShaderType == ShaderType.GEOMETRY) {
+        } else if (parameters.type == ShaderType.GEOMETRY) {
             // TODO: this is passthrough behavior
             translationUnit.injectVariable(
                     "flat out ivec3 iris_entityInfoGS;");
             translationUnit.injectVariable("flat in ivec3 iris_entityInfo" + (parameters.hasTesselation ? "TES" : "") + "[];");
             translationUnit.prependMain(
                     "iris_entityInfoGS = iris_entityInfo" + (parameters.hasTesselation ? "TES" : "") + "[0];");
-        } else if (parameters.type.glShaderType == ShaderType.FRAGMENT) {
+        } else if (parameters.type == ShaderType.FRAGMENT) {
             translationUnit.injectVariable(
                     "flat in ivec3 iris_entityInfo;");
 

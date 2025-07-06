@@ -22,7 +22,6 @@ import net.irisshaders.iris.gl.texture.TextureAccess;
 import net.irisshaders.iris.pathways.FullScreenQuadRenderer;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.samplers.IrisImages;
 import net.irisshaders.iris.samplers.IrisSamplers;
@@ -250,14 +249,14 @@ public class ShadowCompositeRenderer {
 	private Program createProgram(ProgramSource source, ImmutableSet<Integer> flipped, ImmutableSet<Integer> flippedAtLeastOnceSnapshot,
 								  ShadowRenderTargets targets) {
 		// TODO: Properly handle empty shaders
-		Map<PatchShaderType, String> transformed = TransformPatcherBridge.patchComposite(
+		Map<ShaderType, String> transformed = TransformPatcherBridge.patchComposite(
 			source.getName(),
 			source.getSource(ShaderType.VERTEX).orElseThrow(NullPointerException::new),
 			source.getSourceNullable(ShaderType.GEOM),
 			source.getSource(ShaderType.FRAGMENT).orElseThrow(NullPointerException::new), TextureStage.SHADOWCOMP, pipeline.getTextureMap());
-		String vertex = transformed.get(PatchShaderType.VERTEX);
-		String geometry = transformed.get(PatchShaderType.GEOMETRY);
-		String fragment = transformed.get(PatchShaderType.FRAGMENT);
+		String vertex = transformed.get(ShaderType.VERTEX);
+		String geometry = transformed.get(ShaderType.GEOMETRY);
+		String fragment = transformed.get(ShaderType.FRAGMENT);
 		ShaderPrinter.printProgram(source.getName()).addSources(transformed).print();
 
 		Objects.requireNonNull(flipped);
@@ -303,7 +302,7 @@ public class ShadowCompositeRenderer {
 				try {
 					String transformed = TransformPatcherBridge.patchCompute(source.getName(), source.getSource().orElse(null), TextureStage.SHADOWCOMP, pipeline.getTextureMap());
 
-					ShaderPrinter.printProgram(source.getName()).addSource(PatchShaderType.COMPUTE, transformed).print();
+					ShaderPrinter.printProgram(source.getName()).addSource(ShaderType.COMPUTE, transformed).print();
 
 					builder = ProgramBuilder.beginCompute(source.getName(), transformed, IrisSamplers.COMPOSITE_RESERVED_TEXTURE_UNITS);
 				} catch (RuntimeException e) {

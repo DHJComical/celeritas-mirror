@@ -1,6 +1,5 @@
 package net.irisshaders.iris.pipeline.foss_transform;
 
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.parameter.Parameters;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.taumc.glsl.Transformer;
@@ -22,7 +21,7 @@ public class CompositeTransformer {
     public static void patchCompositeCore(Transformer translationUnit, Parameters parameters) {
         patchCompositeDepth(translationUnit, parameters);
 
-        if (parameters.type == PatchShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             translationUnit.rename("vaPosition", "Position");
             translationUnit.rename("vaUV0", "UV0");
             translationUnit.replaceExpression("modelViewMatrix", "mat4(1.0)");
@@ -44,7 +43,7 @@ public class CompositeTransformer {
             translationUnit.replaceExpression("gl_TextureMatrix[" + i + "]", "mat4(1.0f)");
         }
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             translationUnit.replaceExpression("gl_MultiTexCoord0","vec4(UV0, 0.0, 1.0)");
             translationUnit.injectVariable("in vec2 UV0;");
 
@@ -54,7 +53,7 @@ public class CompositeTransformer {
         // No color attributes, the color is always solid white.
         translationUnit.replaceExpression("gl_Color", "vec4(1.0, 1.0, 1.0, 1.0)");
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             // https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glNormal.xml
             // The initial value of the current normal is the unit vector, (0, 0, 1).
             translationUnit.replaceExpression("gl_Normal", "vec3(0.0, 0.0, 1.0)");
@@ -62,7 +61,7 @@ public class CompositeTransformer {
 
         translationUnit.replaceExpression("gl_NormalMatrix", "mat3(1.0)");
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             translationUnit.injectVariable("in vec3 Position;");
             if (translationUnit.containsCall("ftransform")) {
                 translationUnit.injectFunction(

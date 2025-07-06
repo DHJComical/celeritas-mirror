@@ -47,7 +47,6 @@ import net.irisshaders.iris.pipeline.programs.FallbackShader;
 import net.irisshaders.iris.pipeline.programs.ShaderCreator;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
 import net.irisshaders.iris.pipeline.programs.ShaderMap;
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.samplers.IrisImages;
 import net.irisshaders.iris.samplers.IrisSamplers;
@@ -97,6 +96,7 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import org.apache.commons.lang3.StringUtils;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 import org.joml.Vector4f;
@@ -573,7 +573,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 				try {
 					String transformed = TransformPatcherBridge.patchCompute(source.getName(), source.getSource().orElse(null), TextureStage.GBUFFERS_AND_SHADOW, customTextureMap);
 
-					ShaderPrinter.printProgram(source.getName()).addSource(PatchShaderType.COMPUTE, transformed).print();
+					ShaderPrinter.printProgram(source.getName()).addSource(ShaderType.COMPUTE, transformed).print();
 
 					builder = ProgramBuilder.beginCompute(source.getName(), transformed, IrisSamplers.WORLD_RESERVED_TEXTURE_UNITS);
 				} catch (ShaderCompileException e) {
@@ -637,7 +637,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 				try {
 					String transformed = TransformPatcherBridge.patchCompute(source.getName(), source.getSource().orElse(null), stage, customTextureMap);
 
-					ShaderPrinter.printProgram(source.getName()).addSource(PatchShaderType.COMPUTE, transformed).print();
+					ShaderPrinter.printProgram(source.getName()).addSource(ShaderType.COMPUTE, transformed).print();
 
 					builder = ProgramBuilder.beginCompute(source.getName(), transformed, IrisSamplers.COMPOSITE_RESERVED_TEXTURE_UNITS);
 				} catch (RuntimeException e) {

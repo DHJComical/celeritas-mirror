@@ -1,6 +1,5 @@
 package net.irisshaders.iris.pipeline.foss_transform;
 
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.parameter.SodiumParameters;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
@@ -21,7 +20,7 @@ public class SodiumTransformer {
         translationUnit.rename("chunkOffset", "u_RegionOffset");
         translationUnit.injectVariable("uniform mat4 iris_LightmapTextureMatrix;");
 
-        if (parameters.type == PatchShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             // _draw_translation replaced with Chunks[_draw_id].offset.xyz
             translationUnit.replaceExpression("vaPosition", "_vert_position + _get_draw_translation(_draw_id)");
             translationUnit.replaceExpression("vaColor", "_vert_color");
@@ -47,7 +46,7 @@ public class SodiumTransformer {
         translationUnit.injectFunction("uniform mat4 iris_LightmapTextureMatrix;");
         translationUnit.rename("gl_ProjectionMatrix", "iris_ProjectionMatrix");
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
 
             translationUnit.rename("gl_MultiTexCoord2", "gl_MultiTexCoord1");
             translationUnit.replaceExpression("gl_MultiTexCoord0", "vec4(_vert_tex_diffuse_coord, 0.0f, 1.0f)");
@@ -63,7 +62,7 @@ public class SodiumTransformer {
 
         translationUnit.rename("gl_Color", "_vert_color");
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             translationUnit.rename("gl_Normal", "iris_Normal");
             translationUnit.injectVariable("in vec3 iris_Normal;");
         }
@@ -84,7 +83,7 @@ public class SodiumTransformer {
         translationUnit.rename("gl_ModelViewMatrixInverse", "iris_ModelViewMatrixInverse");
         translationUnit.rename("gl_ProjectionMatrixInverse", "iris_ProjectionMatrixInverse");
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             // TODO: Vaporwave-Shaderpack expects that vertex positions will be aligned to
             // chunks.
             if (translationUnit.containsCall("ftransform")) {
