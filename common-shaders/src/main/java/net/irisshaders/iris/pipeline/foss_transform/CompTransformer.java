@@ -1,8 +1,8 @@
 package net.irisshaders.iris.pipeline.foss_transform;
 
-import net.irisshaders.iris.gl.shader.ShaderType;
 import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.parameter.Parameters;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.taumc.glsl.Transformer;
 import org.taumc.glsl.grammar.GLSLLexer;
 import org.taumc.glsl.grammar.GLSLParser;
