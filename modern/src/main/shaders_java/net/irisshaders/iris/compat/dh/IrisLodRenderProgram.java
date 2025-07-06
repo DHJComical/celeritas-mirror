@@ -1,5 +1,6 @@
 package net.irisshaders.iris.compat.dh;
 
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.distanthorizons.api.DhApi;
@@ -134,13 +135,10 @@ public class IrisLodRenderProgram {
 	}
 
 	public static IrisLodRenderProgram createProgram(String name, boolean isShadowPass, boolean translucent, ProgramSource source, CustomUniforms uniforms, IrisRenderingPipeline pipeline) {
+        Preconditions.checkArgument(source.isValid());
 		Map<ShaderType, String> transformed = TransformPatcherBridge.patchDHTerrain(
 			name,
-			source.getSource(ShaderType.VERTEX).orElseThrow(RuntimeException::new),
-			source.getSource(ShaderType.TESS_CTRL).orElse(null),
-			source.getSource(ShaderType.TESS_EVALUATE).orElse(null),
-			source.getSource(ShaderType.GEOM).orElse(null),
-			source.getSource(ShaderType.FRAGMENT).orElseThrow(RuntimeException::new),
+			source.getSourcesMap(),
 			pipeline.getTextureMap());
 		String vertex = transformed.get(ShaderType.VERTEX);
 		String tessControl = transformed.get(ShaderType.TESS_CTRL);

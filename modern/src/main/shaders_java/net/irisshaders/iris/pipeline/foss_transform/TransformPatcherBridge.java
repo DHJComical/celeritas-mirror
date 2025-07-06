@@ -19,9 +19,9 @@ import java.util.Map;
 
 public class TransformPatcherBridge {
 
-    private static Map<ShaderType, String> transform(String name, String vertex, String geometry, String tessControl, String tessEval, String fragment,
+    private static Map<ShaderType, String> transform(String name, Map<ShaderType, String> sources,
                                                      Parameters parameters) {
-        return ShaderTransformer.transform(name, vertex, geometry, tessControl, tessEval, fragment, parameters);
+        return ShaderTransformer.transform(name, sources, parameters);
     }
 
     private static Map<ShaderType, String> transformCompute(String name, String compute,
@@ -30,43 +30,43 @@ public class TransformPatcherBridge {
     }
 
     public static Map<ShaderType, String> patchVanilla(
-            String name, String vertex, String geometry, String tessControl, String tessEval, String fragment,
+            String name, Map<ShaderType, String> sources,
             AlphaTest alpha, boolean isLines,
             boolean hasChunkOffset,
             ShaderAttributeInputs inputs,
             Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
-        return transform(name, vertex, geometry, tessControl, tessEval, fragment,
-                new VanillaParameters(Patch.VANILLA, textureMap, alpha, isLines, hasChunkOffset, inputs, geometry != null, tessControl != null || tessEval != null));
+        return transform(name,sources,
+                new VanillaParameters(Patch.VANILLA, textureMap, alpha, isLines, hasChunkOffset, inputs, sources.containsKey(ShaderType.GEOM), sources.containsKey(ShaderType.TESS_CTRL) || sources.containsKey(ShaderType.TESS_EVALUATE)));
     }
 
 
     public static Map<ShaderType, String> patchDHTerrain(
-            String name, String vertex, String tessControl, String tessEval, String geometry, String fragment,
+            String name, Map<ShaderType, String> sources,
             Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
-        return transform(name, vertex, geometry, tessControl, tessEval, fragment,
+        return transform(name, sources,
                 new DHParameters(Patch.DH_TERRAIN, textureMap));
     }
 
 
     public static Map<ShaderType, String> patchDHGeneric(
-            String name, String vertex, String tessControl, String tessEval, String geometry, String fragment,
+            String name, Map<ShaderType, String> sources,
             Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
-        return transform(name, vertex, geometry, tessControl, tessEval, fragment,
+        return transform(name, sources,
                 new DHParameters(Patch.DH_GENERIC, textureMap));
     }
 
-    public static Map<ShaderType, String> patchSodium(String name, String vertex, String geometry, String tessControl, String tessEval, String fragment,
+    public static Map<ShaderType, String> patchSodium(String name, Map<ShaderType, String> sources,
                                                            AlphaTest alpha, ShaderAttributeInputs inputs,
                                                            Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
-        return transform(name, vertex, geometry, tessControl, tessEval, fragment,
+        return transform(name, sources,
                 new SodiumParameters(Patch.SODIUM, textureMap, alpha, inputs));
     }
 
     public static Map<ShaderType, String> patchComposite(
-            String name, String vertex, String geometry, String fragment,
+            String name, Map<ShaderType, String> sources,
             TextureStage stage,
             Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
-        return transform(name, vertex, geometry, null, null, fragment, new TextureStageParameters(Patch.COMPOSITE, stage, textureMap));
+        return transform(name, sources, new TextureStageParameters(Patch.COMPOSITE, stage, textureMap));
     }
 
     public static String patchCompute(

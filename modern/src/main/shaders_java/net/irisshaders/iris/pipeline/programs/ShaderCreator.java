@@ -1,5 +1,6 @@
 package net.irisshaders.iris.pipeline.programs;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -62,13 +63,10 @@ public class ShaderCreator {
 		BlendModeOverride blendModeOverride = source.getDirectives().getBlendModeOverride().orElse(programId.getBlendModeOverride());
 
         return CompletableFuture.supplyAsync(() -> {
+            Preconditions.checkArgument(source.isValid());
             return TransformPatcherBridge.patchVanilla(
                     name,
-                    source.getSource(ShaderType.VERTEX).orElseThrow(RuntimeException::new),
-                    source.getSource(ShaderType.GEOM).orElse(null),
-                    source.getSource(ShaderType.TESS_CTRL).orElse(null),
-                    source.getSource(ShaderType.TESS_EVALUATE).orElse(null),
-                    source.getSource(ShaderType.FRAGMENT).orElseThrow(RuntimeException::new),
+                    source.getSourcesMap(),
                     alpha, isLines, true, inputs, pipeline.getTextureMap());
         }, Util.backgroundExecutor()).thenApplyAsync(transformed -> {
 

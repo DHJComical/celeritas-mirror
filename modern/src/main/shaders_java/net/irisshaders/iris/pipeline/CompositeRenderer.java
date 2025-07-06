@@ -1,5 +1,6 @@
 package net.irisshaders.iris.pipeline;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -308,11 +309,10 @@ public class CompositeRenderer {
 	private Program createProgram(ProgramSource source, ImmutableSet<Integer> flipped, ImmutableSet<Integer> flippedAtLeastOnceSnapshot,
 								  Supplier<ShadowRenderTargets> shadowTargetsSupplier) {
 		// TODO: Properly handle empty shaders
+        Preconditions.checkArgument(source.isValid());
 		Map<ShaderType, String> transformed = TransformPatcherBridge.patchComposite(
 			source.getName(),
-			source.getSource(ShaderType.VERTEX).orElseThrow(NullPointerException::new),
-			source.getSource(ShaderType.GEOM).orElse(null),
-			source.getSource(ShaderType.FRAGMENT).orElseThrow(NullPointerException::new), textureStage, pipeline.getTextureMap());
+			source.getSourcesMap(), textureStage, pipeline.getTextureMap());
 		String vertex = transformed.get(ShaderType.VERTEX);
 		String geometry = transformed.get(ShaderType.GEOMETRY);
 		String fragment = transformed.get(ShaderType.FRAGMENT);

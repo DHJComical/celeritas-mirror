@@ -1,5 +1,6 @@
 package net.irisshaders.iris.shadows;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -249,11 +250,10 @@ public class ShadowCompositeRenderer {
 	private Program createProgram(ProgramSource source, ImmutableSet<Integer> flipped, ImmutableSet<Integer> flippedAtLeastOnceSnapshot,
 								  ShadowRenderTargets targets) {
 		// TODO: Properly handle empty shaders
+        Preconditions.checkArgument(source.isValid());
 		Map<ShaderType, String> transformed = TransformPatcherBridge.patchComposite(
 			source.getName(),
-			source.getSource(ShaderType.VERTEX).orElseThrow(NullPointerException::new),
-			source.getSourceNullable(ShaderType.GEOM),
-			source.getSource(ShaderType.FRAGMENT).orElseThrow(NullPointerException::new), TextureStage.SHADOWCOMP, pipeline.getTextureMap());
+			source.getSourcesMap(), TextureStage.SHADOWCOMP, pipeline.getTextureMap());
 		String vertex = transformed.get(ShaderType.VERTEX);
 		String geometry = transformed.get(ShaderType.GEOMETRY);
 		String fragment = transformed.get(ShaderType.FRAGMENT);

@@ -6,6 +6,7 @@ import net.irisshaders.iris.shaderpack.properties.ProgramDirectives;
 import net.irisshaders.iris.shaderpack.properties.ShaderProperties;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import java.util.Optional;
 public class ProgramSource {
 	private final String name;
     private final Map<ShaderType, String> sources = new EnumMap<>(ShaderType.class);
+    private final Map<ShaderType, String> sourcesView = Collections.unmodifiableMap(sources);
 	private final ProgramDirectives directives;
 	private final ProgramSet parent;
 
@@ -39,6 +41,10 @@ public class ProgramSource {
 
     public String getSourceNullable(ShaderType type) {
         return sources.get(type);
+    }
+
+    public Map<ShaderType, String> getSourcesMap() {
+        return sourcesView;
     }
 
 	public ProgramDirectives getDirectives() {

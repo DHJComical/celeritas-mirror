@@ -28,31 +28,24 @@ public class ShaderTransformer {
     private static final Object2ObjectLinkedOpenHashMap<TransformKey, Map<ShaderType, String>> shaderTransformationCache = new Object2ObjectLinkedOpenHashMap<>();
     public static final boolean useCache = true;
 
-    public record TransformKey<P extends Parameters>(Patch patchType, EnumMap<ShaderType, String> inputs, P params) {}
+    public record TransformKey<P extends Parameters>(Patch patchType, Map<ShaderType, String> inputs, P params) {}
 
-    public static <P extends Parameters> Map<ShaderType, String> transform(String name, String vertex, String geometry, String tessControl, String tessEval, String fragment, P parameters) {
-        if (vertex == null && geometry == null && tessControl == null && tessEval == null && fragment == null) {
+    public static <P extends Parameters> Map<ShaderType, String> transform(String name, Map<ShaderType, String> sources, P parameters) {
+        if (sources.isEmpty()) {
             return null;
         } else {
             Map<ShaderType, String> result;
 
             var patchType = parameters.patch;
 
-            EnumMap<ShaderType, String> inputs = new EnumMap<>(ShaderType.class);
-            inputs.put(ShaderType.VERTEX, vertex);
-            inputs.put(ShaderType.GEOMETRY, geometry);
-            inputs.put(ShaderType.TESS_CTRL, tessControl);
-            inputs.put(ShaderType.TESS_EVALUATE, tessEval);
-            inputs.put(ShaderType.FRAGMENT, fragment);
-
-            var key = new TransformKey(patchType, inputs, parameters);
+            var key = new TransformKey(patchType, Map.copyOf(sources), parameters);
 
             synchronized (shaderTransformationCache) {
                 result = shaderTransformationCache.getAndMoveToFirst(key);
             }
 
             if(result == null || !useCache) {
-                result = ShaderTransformationDiskCache.transformIfAbsent(key, () -> transformInternal(name, inputs, patchType, parameters));
+                result = ShaderTransformationDiskCache.transformIfAbsent(key, () -> transformInternal(name, sources, patchType, parameters));
                 // Clear this, we don't want whatever random type was last transformed being considered for the key
                 parameters.type = null;
                 synchronized (shaderTransformationCache) {
@@ -122,7 +115,7 @@ public class ShaderTransformer {
         return builder.toString();
     }
 
-    private static <P extends Parameters> Map<ShaderType, String> transformInternal(String name, EnumMap<ShaderType, String> inputs, Patch patchType, P parameters) {
+    private static <P extends Parameters> Map<ShaderType, String> transformInternal(String name, Map<ShaderType, String> inputs, Patch patchType, P parameters) {
         EnumMap<ShaderType, String> result = new EnumMap<>(ShaderType.class);
         EnumMap<ShaderType, Transformer> types = new EnumMap<>(ShaderType.class);
         EnumMap<ShaderType, String> prepatched = new EnumMap<>(ShaderType.class);
