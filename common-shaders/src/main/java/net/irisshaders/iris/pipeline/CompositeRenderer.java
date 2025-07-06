@@ -47,6 +47,7 @@ import net.irisshaders.iris.targets.RenderTargets;
 import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.lwjgl.opengl.GL15C;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
@@ -307,9 +308,9 @@ public class CompositeRenderer {
 		// TODO: Properly handle empty shaders
 		Map<PatchShaderType, String> transformed = TransformPatcherBridge.patchComposite(
 			source.getName(),
-			source.getVertexSource().orElseThrow(NullPointerException::new),
-			source.getGeometrySource().orElse(null),
-			source.getFragmentSource().orElseThrow(NullPointerException::new), textureStage, pipeline.getTextureMap());
+			source.getSource(ShaderType.VERTEX).orElseThrow(NullPointerException::new),
+			source.getSource(ShaderType.GEOM).orElse(null),
+			source.getSource(ShaderType.FRAGMENT).orElseThrow(NullPointerException::new), textureStage, pipeline.getTextureMap());
 		String vertex = transformed.get(PatchShaderType.VERTEX);
 		String geometry = transformed.get(PatchShaderType.GEOMETRY);
 		String fragment = transformed.get(PatchShaderType.FRAGMENT);

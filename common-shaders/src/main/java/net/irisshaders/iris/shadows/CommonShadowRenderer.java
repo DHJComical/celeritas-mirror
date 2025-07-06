@@ -87,7 +87,7 @@ public abstract class CommonShadowRenderer {
         if (shadow != null) {
             // Assume that the shader pack is doing voxelization if a geometry shader is detected.
             // Also assume voxelization if image load / store is detected.
-            this.packHasVoxelization = shadow.getGeometrySource().isPresent();
+            this.packHasVoxelization = shadow.getSource(ShaderType.GEOM).isPresent();
             this.packCullingState = shadowDirectives.getCullingState();
         } else {
             this.packHasVoxelization = false;

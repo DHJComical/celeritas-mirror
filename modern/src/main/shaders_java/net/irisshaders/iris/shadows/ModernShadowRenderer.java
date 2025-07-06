@@ -48,6 +48,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.embeddedt.embeddium.compat.mc.MCCamera;
 import org.embeddedt.embeddium.compat.mc.MCLevelRenderer;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
+
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;

@@ -158,11 +158,11 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 	public static IrisGenericRenderProgram createProgram(String name, boolean isShadowPass, boolean translucent, ProgramSource source, CustomUniforms uniforms, ModernIrisRenderingPipeline pipeline) {
 		Map<PatchShaderType, String> transformed = TransformPatcherBridge.patchDHGeneric(
 			name,
-			source.getVertexSource().orElseThrow(RuntimeException::new),
-			source.getTessControlSource().orElse(null),
-			source.getTessEvalSource().orElse(null),
-			source.getGeometrySource().orElse(null),
-			source.getFragmentSource().orElseThrow(RuntimeException::new),
+            source.getSource(ShaderType.VERTEX).orElseThrow(RuntimeException::new),
+            source.getSource(ShaderType.TESS_CTRL).orElse(null),
+            source.getSource(ShaderType.TESS_EVALUATE).orElse(null),
+            source.getSource(ShaderType.GEOM).orElse(null),
+            source.getSource(ShaderType.FRAGMENT).orElseThrow(RuntimeException::new),
 			pipeline.getTextureMap());
 		String vertex = transformed.get(PatchShaderType.VERTEX);
 		String tessControl = transformed.get(PatchShaderType.TESS_CONTROL);

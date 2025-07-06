@@ -44,6 +44,7 @@ import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.*;
 
@@ -317,11 +318,11 @@ public class FinalPassRenderer {
 	private Program createProgram(ProgramSource source, ImmutableSet<Integer> flipped, ImmutableSet<Integer> flippedAtLeastOnceSnapshot,
 								  Supplier<ShadowRenderTargets> shadowTargetsSupplier) {
 		// TODO: Properly handle empty shaders
-		Map<PatchShaderType, String> transformed = TransformPatcherBridge.patchComposite(
-			source.getName(),
-			source.getVertexSource().orElseThrow(NullPointerException::new),
-			source.getGeometrySource().orElse(null),
-			source.getFragmentSource().orElseThrow(NullPointerException::new), TextureStage.COMPOSITE_AND_FINAL, pipeline.getTextureMap());
+        Map<PatchShaderType, String> transformed = TransformPatcherBridge.patchComposite(
+                source.getName(),
+                source.getSource(ShaderType.VERTEX).orElseThrow(NullPointerException::new),
+                source.getSource(ShaderType.GEOM).orElse(null),
+                source.getSource(ShaderType.FRAGMENT).orElseThrow(NullPointerException::new), TextureStage.COMPOSITE_AND_FINAL, pipeline.getTextureMap());
 		String vertex = transformed.get(PatchShaderType.VERTEX);
 		String geometry = transformed.get(PatchShaderType.GEOMETRY);
 		String fragment = transformed.get(PatchShaderType.FRAGMENT);
