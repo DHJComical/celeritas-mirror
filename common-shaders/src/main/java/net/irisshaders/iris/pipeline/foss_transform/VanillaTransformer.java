@@ -1,7 +1,6 @@
 package net.irisshaders.iris.pipeline.foss_transform;
 
 import net.irisshaders.iris.gl.blending.AlphaTests;
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.parameter.VanillaParameters;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.taumc.glsl.Transformer;
@@ -22,7 +21,7 @@ public class VanillaTransformer {
 
         ShaderTransformer.commonPatch(translationUnit, parameters, false);
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             // Alias of gl_MultiTexCoord1 on 1.15+ for OptiFine
             // See https://github.com/IrisShaders/Iris/issues/1149
             translationUnit.rename("gl_MultiTexCoord2", "gl_MultiTexCoord1");
@@ -58,7 +57,7 @@ public class VanillaTransformer {
         translationUnit.injectVariable(
                 "uniform vec4 iris_ColorModulator;");
 
-        if (parameters.inputs.hasColor() && parameters.type == PatchShaderType.VERTEX) {
+        if (parameters.inputs.hasColor() && parameters.type == ShaderType.VERTEX) {
             // TODO: Handle the fragment / geometry shader here
             if (parameters.alpha == AlphaTests.VERTEX_ALPHA) {
                 translationUnit.replaceExpression("gl_Color",
@@ -68,7 +67,7 @@ public class VanillaTransformer {
                         "(iris_Color * iris_ColorModulator)");
             }
 
-            if (parameters.type.glShaderType == ShaderType.VERTEX) {
+            if (parameters.type == ShaderType.VERTEX) {
                 translationUnit.injectVariable(
                         "in vec4 iris_Color;");
             }
@@ -82,7 +81,7 @@ public class VanillaTransformer {
             translationUnit.rename("gl_Color", "iris_ColorModulator");
         }
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             if (parameters.inputs.hasNormal()) {
                 if (!parameters.inputs.isNewLines()) {
                     translationUnit.rename("gl_Normal", "iris_Normal");
@@ -121,7 +120,7 @@ public class VanillaTransformer {
         translationUnit.injectVariable("uniform mat4 iris_ProjMatInverse;");
         translationUnit.injectVariable("uniform mat4 iris_ModelViewMatInverse;");
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             translationUnit.injectVariable(
                     "in vec3 iris_Position;");
             if (translationUnit.containsCall("ftransform")) {
@@ -249,7 +248,7 @@ public class VanillaTransformer {
 
         upgradeStorageQualifiers(translationUnit, parameters);
 
-        if (parameters.type == PatchShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             translationUnit.replaceExpression("gl_Vertex", "vec4(iris_Position, 1.0)");
             translationUnit.rename("vaPosition", "iris_Position");
             if (parameters.inputs.hasColor()) {

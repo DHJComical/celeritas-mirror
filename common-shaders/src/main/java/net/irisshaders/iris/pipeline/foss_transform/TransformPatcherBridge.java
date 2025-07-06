@@ -6,7 +6,6 @@ import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.helpers.Tri;
 import net.irisshaders.iris.pipeline.transform.Patch;
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.parameter.ComputeParameters;
 import net.irisshaders.iris.pipeline.transform.parameter.DHParameters;
 import net.irisshaders.iris.pipeline.transform.parameter.Parameters;
@@ -14,64 +13,25 @@ import net.irisshaders.iris.pipeline.transform.parameter.SodiumParameters;
 import net.irisshaders.iris.pipeline.transform.parameter.TextureStageParameters;
 import net.irisshaders.iris.pipeline.transform.parameter.VanillaParameters;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 
-import java.lang.reflect.Method;
 import java.util.Map;
 
 import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 
 public class TransformPatcherBridge {
-    private static final boolean USE_GLSL_TRANSFORMER;
 
-    private static final Method transformPatcherTransform, transformPatcherTransformCompute;
-
-    static {
-        boolean useGlslTransformer = Boolean.getBoolean("cornea.use_glsl_transformer");
-        Method transform = null, transformCompute = null;
-        try {
-            Class<?> transformPatcher = Class.forName("net.irisshaders.iris.pipeline.transform.TransformPatcher");
-            transform = transformPatcher.getDeclaredMethod("transform", String.class, String.class, String.class, String.class, String.class, String.class, Parameters.class);
-            transformCompute = transformPatcher.getDeclaredMethod("transformCompute", String.class, String.class, Parameters.class);
-        } catch(ReflectiveOperationException e) {
-        }
-
-        if(useGlslTransformer && transform == null) {
-            IRIS_LOGGER.warn("glsl-transformer is requested, but is not available in this jar");
-            useGlslTransformer = false;
-        }
-
-        transformPatcherTransform = transform;
-        transformPatcherTransformCompute = transformCompute;
-        USE_GLSL_TRANSFORMER = useGlslTransformer;
+    private static Map<ShaderType, String> transform(String name, String vertex, String geometry, String tessControl, String tessEval, String fragment,
+                                                     Parameters parameters) {
+        return ShaderTransformer.transform(name, vertex, geometry, tessControl, tessEval, fragment, parameters);
     }
 
-    private static Map<PatchShaderType, String> transform(String name, String vertex, String geometry, String tessControl, String tessEval, String fragment,
+    private static Map<ShaderType, String> transformCompute(String name, String compute,
                                                           Parameters parameters) {
-        if (USE_GLSL_TRANSFORMER) {
-            try {
-                return (Map<PatchShaderType, String>)transformPatcherTransform.invoke(null, name, vertex, geometry, tessControl, tessEval, fragment, parameters);
-            } catch (ReflectiveOperationException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            return ShaderTransformer.transform(name, vertex, geometry, tessControl, tessEval, fragment, parameters);
-        }
+        return ShaderTransformer.transformCompute(name, compute, parameters);
     }
 
-    private static Map<PatchShaderType, String> transformCompute(String name, String compute,
-                                                          Parameters parameters) {
-        if (USE_GLSL_TRANSFORMER) {
-            try {
-                return (Map<PatchShaderType, String>)transformPatcherTransformCompute.invoke(null, name, compute, parameters);
-            } catch (ReflectiveOperationException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            return ShaderTransformer.transformCompute(name, compute, parameters);
-        }
-    }
-
-    public static Map<PatchShaderType, String> patchVanilla(
+    public static Map<ShaderType, String> patchVanilla(
             String name, String vertex, String geometry, String tessControl, String tessEval, String fragment,
             AlphaTest alpha, boolean isLines,
             boolean hasChunkOffset,
@@ -82,7 +42,7 @@ public class TransformPatcherBridge {
     }
 
 
-    public static Map<PatchShaderType, String> patchDHTerrain(
+    public static Map<ShaderType, String> patchDHTerrain(
             String name, String vertex, String tessControl, String tessEval, String geometry, String fragment,
             Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
         return transform(name, vertex, geometry, tessControl, tessEval, fragment,
@@ -90,21 +50,21 @@ public class TransformPatcherBridge {
     }
 
 
-    public static Map<PatchShaderType, String> patchDHGeneric(
+    public static Map<ShaderType, String> patchDHGeneric(
             String name, String vertex, String tessControl, String tessEval, String geometry, String fragment,
             Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
         return transform(name, vertex, geometry, tessControl, tessEval, fragment,
                 new DHParameters(Patch.DH_GENERIC, textureMap));
     }
 
-    public static Map<PatchShaderType, String> patchSodium(String name, String vertex, String geometry, String tessControl, String tessEval, String fragment,
+    public static Map<ShaderType, String> patchSodium(String name, String vertex, String geometry, String tessControl, String tessEval, String fragment,
                                                            AlphaTest alpha, ShaderAttributeInputs inputs,
                                                            Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
         return transform(name, vertex, geometry, tessControl, tessEval, fragment,
                 new SodiumParameters(Patch.SODIUM, textureMap, alpha, inputs));
     }
 
-    public static Map<PatchShaderType, String> patchComposite(
+    public static Map<ShaderType, String> patchComposite(
             String name, String vertex, String geometry, String fragment,
             TextureStage stage,
             Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
@@ -116,6 +76,6 @@ public class TransformPatcherBridge {
             TextureStage stage,
             Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
         return transformCompute(name, compute, new ComputeParameters(Patch.COMPUTE, stage, textureMap))
-                .getOrDefault(PatchShaderType.COMPUTE, null);
+                .getOrDefault(ShaderType.COMPUTE, null);
     }
 }

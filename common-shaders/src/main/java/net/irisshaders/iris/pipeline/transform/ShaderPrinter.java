@@ -1,6 +1,8 @@
 package net.irisshaders.iris.pipeline.transform;
 
 import org.apache.commons.io.FilenameUtils;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
+import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 
 import java.io.IOException;
@@ -64,7 +66,7 @@ public class ShaderPrinter {
 		private final String prefix = isActive ? String.format("%03d_", ++programCounter) : null;
 
 		// the prefix and the sources list aren't created if debug is disabled
-		private final List<String> sources = isActive ? new ArrayList<>(PatchShaderType.values().length * 2) : null;
+		private final List<String> sources = isActive ? new ArrayList<>(ShaderType.values().length * 2) : null;
 
 		private String name;
 		private boolean done = false; // makes the print function idempotent
@@ -85,19 +87,19 @@ public class ShaderPrinter {
 			}
 		}
 
-		public ProgramPrintBuilder addSource(PatchShaderType type, String source) {
+		public ProgramPrintBuilder addSource(ShaderType type, String source) {
 			if (sources == null) {
 				return this;
 			}
-			addItem(type.extension, source);
+			addItem("." + type.fileExtension, source);
 			return this;
 		}
 
-		public ProgramPrintBuilder addSources(Map<PatchShaderType, String> sources) {
+		public ProgramPrintBuilder addSources(Map<ShaderType, String> sources) {
 			if (sources == null) {
 				return this;
 			}
-			for (Map.Entry<PatchShaderType, String> entry : sources.entrySet()) {
+			for (Map.Entry<ShaderType, String> entry : sources.entrySet()) {
 				addSource(entry.getKey(), entry.getValue());
 			}
 			return this;

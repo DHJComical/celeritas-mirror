@@ -3,7 +3,6 @@ package net.irisshaders.iris.pipeline.foss_transform;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.pipeline.transform.Patch;
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.parameter.Parameters;
 import net.irisshaders.iris.pipeline.transform.parameter.SodiumParameters;
 import net.irisshaders.iris.pipeline.transform.parameter.VanillaParameters;
@@ -26,25 +25,25 @@ import java.util.regex.Pattern;
 public class ShaderTransformer {
 
     private static final int CACHE_SIZE = 100;
-    private static final Object2ObjectLinkedOpenHashMap<TransformKey, Map<PatchShaderType, String>> shaderTransformationCache = new Object2ObjectLinkedOpenHashMap<>();
+    private static final Object2ObjectLinkedOpenHashMap<TransformKey, Map<ShaderType, String>> shaderTransformationCache = new Object2ObjectLinkedOpenHashMap<>();
     public static final boolean useCache = true;
 
-    public record TransformKey<P extends Parameters>(Patch patchType, EnumMap<PatchShaderType, String> inputs, P params) {}
+    public record TransformKey<P extends Parameters>(Patch patchType, EnumMap<ShaderType, String> inputs, P params) {}
 
-    public static <P extends Parameters> Map<PatchShaderType, String> transform(String name, String vertex, String geometry, String tessControl, String tessEval, String fragment, P parameters) {
+    public static <P extends Parameters> Map<ShaderType, String> transform(String name, String vertex, String geometry, String tessControl, String tessEval, String fragment, P parameters) {
         if (vertex == null && geometry == null && tessControl == null && tessEval == null && fragment == null) {
             return null;
         } else {
-            Map<PatchShaderType, String> result;
+            Map<ShaderType, String> result;
 
             var patchType = parameters.patch;
 
-            EnumMap<PatchShaderType, String> inputs = new EnumMap<>(PatchShaderType.class);
-            inputs.put(PatchShaderType.VERTEX, vertex);
-            inputs.put(PatchShaderType.GEOMETRY, geometry);
-            inputs.put(PatchShaderType.TESS_CONTROL, tessControl);
-            inputs.put(PatchShaderType.TESS_EVAL, tessEval);
-            inputs.put(PatchShaderType.FRAGMENT, fragment);
+            EnumMap<ShaderType, String> inputs = new EnumMap<>(ShaderType.class);
+            inputs.put(ShaderType.VERTEX, vertex);
+            inputs.put(ShaderType.GEOMETRY, geometry);
+            inputs.put(ShaderType.TESS_CTRL, tessControl);
+            inputs.put(ShaderType.TESS_EVALUATE, tessEval);
+            inputs.put(ShaderType.FRAGMENT, fragment);
 
             var key = new TransformKey(patchType, inputs, parameters);
 
@@ -68,16 +67,16 @@ public class ShaderTransformer {
         }
     }
 
-    public static <P extends Parameters> Map<PatchShaderType, String> transformCompute(String name, String compute, P parameters) {
+    public static <P extends Parameters> Map<ShaderType, String> transformCompute(String name, String compute, P parameters) {
         if (compute == null) {
             return null;
         } else {
-            Map<PatchShaderType, String> result;
+            Map<ShaderType, String> result;
 
             var patchType = parameters.patch;
 
-            EnumMap<PatchShaderType, String> inputs = new EnumMap<>(PatchShaderType.class);
-            inputs.put(PatchShaderType.COMPUTE, compute);
+            EnumMap<ShaderType, String> inputs = new EnumMap<>(ShaderType.class);
+            inputs.put(ShaderType.COMPUTE, compute);
 
             var key = new TransformKey(patchType, inputs, parameters);
 
@@ -123,12 +122,12 @@ public class ShaderTransformer {
         return builder.toString();
     }
 
-    private static <P extends Parameters> Map<PatchShaderType, String> transformInternal(String name, EnumMap<PatchShaderType, String> inputs, Patch patchType, P parameters) {
-        EnumMap<PatchShaderType, String> result = new EnumMap<>(PatchShaderType.class);
-        EnumMap<PatchShaderType, Transformer> types = new EnumMap<>(PatchShaderType.class);
-        EnumMap<PatchShaderType, String> prepatched = new EnumMap<>(PatchShaderType.class);
+    private static <P extends Parameters> Map<ShaderType, String> transformInternal(String name, EnumMap<ShaderType, String> inputs, Patch patchType, P parameters) {
+        EnumMap<ShaderType, String> result = new EnumMap<>(ShaderType.class);
+        EnumMap<ShaderType, Transformer> types = new EnumMap<>(ShaderType.class);
+        EnumMap<ShaderType, String> prepatched = new EnumMap<>(ShaderType.class);
 
-        for (PatchShaderType type : PatchShaderType.values()) {
+        for (ShaderType type : ShaderType.values()) {
             parameters.type = type;
             if (inputs.get(type) == null) {
                 continue;
@@ -258,7 +257,7 @@ public class ShaderTransformer {
     }
 
     public static void patchMultiTexCoord3(Transformer translationUnit, Parameters parameters) {
-        if (parameters.type.glShaderType == ShaderType.VERTEX && translationUnit.hasVariable("gl_MultiTexCoord3") && !translationUnit.hasVariable("mc_midTexCoord")) {
+        if (parameters.type == ShaderType.VERTEX && translationUnit.hasVariable("gl_MultiTexCoord3") && !translationUnit.hasVariable("mc_midTexCoord")) {
             translationUnit.rename("gl_MultiTexCoord3", "mc_midTexCoord");
             translationUnit.injectVariable("attribute vec4 mc_midTexCoord;");
         }
@@ -323,19 +322,19 @@ public class ShaderTransformer {
 
     public static void commonPatch(Transformer root, Parameters parameters, boolean core) {
         root.rename("gl_FogFragCoord", "iris_FogFragCoord");
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             root.injectVariable("out float iris_FogFragCoord;");
             root.prependMain("iris_FogFragCoord = 0.0f;");
-        } else if (parameters.type.glShaderType == ShaderType.FRAGMENT) {
+        } else if (parameters.type == ShaderType.FRAGMENT) {
             root.injectVariable("in float iris_FogFragCoord;");
         }
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             root.injectVariable("vec4 iris_FrontColor;");
             root.rename("gl_FrontColor", "iris_FrontColor");
         }
 
-        if (parameters.type.glShaderType == ShaderType.FRAGMENT) {
+        if (parameters.type == ShaderType.FRAGMENT) {
             if (root.containsCall("gl_FragColor")) {
                 root.replaceExpression("gl_FragColor", "gl_FragData[0]", GLSLParser::unary_expression);
             }
@@ -364,7 +363,7 @@ public class ShaderTransformer {
 
         }
 
-        if (parameters.type.glShaderType == ShaderType.VERTEX || parameters.type.glShaderType == ShaderType.FRAGMENT) {
+        if (parameters.type == ShaderType.VERTEX || parameters.type == ShaderType.FRAGMENT) {
             upgradeStorageQualifiers(root, parameters);
         }
 
@@ -406,7 +405,7 @@ public class ShaderTransformer {
                 token.setText(GLSLParser.VOCABULARY.getLiteralName(GLSLParser.IN).replace("'", ""));
             }
             else if (token.getType() == GLSLParser.VARYING) {
-                if (parameters.type.glShaderType == ShaderType.VERTEX) {
+                if (parameters.type == ShaderType.VERTEX) {
                     token.setType(GLSLParser.OUT);
                     token.setText(GLSLParser.VOCABULARY.getLiteralName(GLSLParser.OUT).replace("'", ""));
                 } else {

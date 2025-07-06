@@ -33,7 +33,7 @@ import net.irisshaders.iris.pathways.colorspace.ColorSpaceFragmentConverter;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
 import net.irisshaders.iris.pipeline.programs.ShaderMap;
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
+import net.irisshaders.iris.pipeline.transform.ShaderType;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.samplers.IrisImages;
 import net.irisshaders.iris.samplers.IrisSamplers;
@@ -1301,7 +1301,7 @@ public abstract class CommonIrisRenderingPipeline implements WorldRenderingPipel
                 try {
                     String transformed = TransformPatcherBridge.patchCompute(source.getName(), source.getSource().orElse(null), stage, getTextureMap());
 
-                    ShaderPrinter.printProgram(source.getName()).addSource(PatchShaderType.COMPUTE, transformed).print();
+                    ShaderPrinter.printProgram(source.getName()).addSource(ShaderType.COMPUTE, transformed).print();
 
                     builder = ProgramBuilder.beginCompute(source.getName(), transformed, IrisSamplers.COMPOSITE_RESERVED_TEXTURE_UNITS);
                 } catch (RuntimeException e) {
@@ -1373,7 +1373,7 @@ public abstract class CommonIrisRenderingPipeline implements WorldRenderingPipel
                             TextureStage.GBUFFERS_AND_SHADOW,
                             getTextureMap());
 
-                    ShaderPrinter.printProgram(source.getName()).addSource(PatchShaderType.COMPUTE, transformed).print();
+                    ShaderPrinter.printProgram(source.getName()).addSource(ShaderType.COMPUTE, transformed).print();
 
                     builder = ProgramBuilder.beginCompute(source.getName(), transformed, IrisSamplers.WORLD_RESERVED_TEXTURE_UNITS);
                 } catch (ShaderCompileException e) {

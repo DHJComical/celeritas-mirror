@@ -15,7 +15,6 @@ import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.fallback.ShaderSynthesizer;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.shaderpack.loading.ProgramId;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
@@ -75,11 +74,11 @@ public class ShaderCreator {
                     alpha, isLines, true, inputs, pipeline.getTextureMap());
         }, Util.backgroundExecutor()).thenApplyAsync(transformed -> {
 
-            String vertex = transformed.get(PatchShaderType.VERTEX);
-            String geometry = transformed.get(PatchShaderType.GEOMETRY);
-            String tessControl = transformed.get(PatchShaderType.TESS_CONTROL);
-            String tessEval = transformed.get(PatchShaderType.TESS_EVAL);
-            String fragment = transformed.get(PatchShaderType.FRAGMENT);
+            String vertex = transformed.get(ShaderType.VERTEX);
+            String geometry = transformed.get(ShaderType.GEOMETRY);
+            String tessControl = transformed.get(ShaderType.TESS_CTRL);
+            String tessEval = transformed.get(ShaderType.TESS_EVALUATE);
+            String fragment = transformed.get(ShaderType.FRAGMENT);
 
             String shaderJsonString = String.format("""
 			    {
@@ -191,8 +190,8 @@ public class ShaderCreator {
 			    ]
 			}""", name, name);
 		ShaderPrinter.printProgram(name)
-			.addSource(PatchShaderType.VERTEX, vertex)
-			.addSource(PatchShaderType.FRAGMENT, fragment)
+			.addSource(ShaderType.VERTEX, vertex)
+			.addSource(ShaderType.FRAGMENT, fragment)
 			.addJson(shaderJsonString)
 			.print();
 

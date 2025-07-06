@@ -30,7 +30,6 @@ import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
@@ -156,7 +155,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 	}
 
 	public static IrisGenericRenderProgram createProgram(String name, boolean isShadowPass, boolean translucent, ProgramSource source, CustomUniforms uniforms, ModernIrisRenderingPipeline pipeline) {
-		Map<PatchShaderType, String> transformed = TransformPatcherBridge.patchDHGeneric(
+		Map<ShaderType, String> transformed = TransformPatcherBridge.patchDHGeneric(
 			name,
             source.getSource(ShaderType.VERTEX).orElseThrow(RuntimeException::new),
             source.getSource(ShaderType.TESS_CTRL).orElse(null),
@@ -164,11 +163,11 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
             source.getSource(ShaderType.GEOM).orElse(null),
             source.getSource(ShaderType.FRAGMENT).orElseThrow(RuntimeException::new),
 			pipeline.getTextureMap());
-		String vertex = transformed.get(PatchShaderType.VERTEX);
-		String tessControl = transformed.get(PatchShaderType.TESS_CONTROL);
-		String tessEval = transformed.get(PatchShaderType.TESS_EVAL);
-		String geometry = transformed.get(PatchShaderType.GEOMETRY);
-		String fragment = transformed.get(PatchShaderType.FRAGMENT);
+		String vertex = transformed.get(ShaderType.VERTEX);
+		String tessControl = transformed.get(ShaderType.TESS_CTRL);
+		String tessEval = transformed.get(ShaderType.TESS_EVALUATE);
+		String geometry = transformed.get(ShaderType.GEOMETRY);
+		String fragment = transformed.get(ShaderType.FRAGMENT);
 		ShaderPrinter.printProgram(name + "_g")
 			.addSources(transformed)
 			.setName("dh_" + name + "_g")

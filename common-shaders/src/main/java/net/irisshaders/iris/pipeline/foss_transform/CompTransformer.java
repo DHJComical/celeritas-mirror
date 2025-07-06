@@ -1,6 +1,5 @@
 package net.irisshaders.iris.pipeline.foss_transform;
 
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.parameter.Parameters;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.taumc.glsl.Transformer;
@@ -14,7 +13,7 @@ public class CompTransformer {
     private static final ShaderType[] pipeline = {ShaderType.VERTEX, ShaderType.TESSELATION_CONTROL, ShaderType.TESSELATION_EVAL, ShaderType.GEOMETRY, ShaderType.FRAGMENT};
 
     public static void transformEach(Transformer root, Parameters parameters) {
-        if (parameters.type == PatchShaderType.VERTEX) {
+        if (parameters.type == ShaderType.VERTEX) {
             if ( root.containsCall("fract(worldpos.y + 0.001)")) {
                 root.replaceExpression("fract(worldpos.y + 0.001)", "fract(worldpos.y + 0.01)");
             }
@@ -43,7 +42,7 @@ public class CompTransformer {
     }
 
     // does transformations that require cross-shader type data
-    public static void transformGrouped(Map<PatchShaderType, Transformer> trees, Parameters parameters) {
+    public static void transformGrouped(Map<ShaderType, Transformer> trees, Parameters parameters) {
 		/*
 		  find attributes that are declared as "in" in geometry or fragment but not
 		  declared as "out" in the previous stage. The missing "out" declarations for
@@ -62,16 +61,7 @@ public class CompTransformer {
 
         ShaderType prevType = null;
         for (ShaderType type : pipeline) {
-            PatchShaderType[] patchTypes = PatchShaderType.fromGlShaderType(type);
-
-            // check if the patch types have sources and continue if not
-            boolean hasAny = false;
-            for (PatchShaderType currentType : patchTypes) {
-                if (trees.get(currentType) != null) {
-                    hasAny = true;
-                }
-            }
-            if (!hasAny) {
+            if (trees.get(type) == null) {
                 continue;
             }
 
@@ -82,52 +72,51 @@ public class CompTransformer {
                 continue;
             }
 
-            PatchShaderType prevPatchTypes = PatchShaderType.fromGlShaderType(prevType)[0];
+            ShaderType prevPatchTypes = prevType;
             var prevTree = trees.get(prevPatchTypes);
 
             Map<String, GLSLParser.Single_declarationContext> outDec = prevTree.findQualifiers(GLSLLexer.OUT);
-            for (PatchShaderType currentType : patchTypes) {
-                var currentTree = trees.get(currentType);
 
-                if (currentTree == null) {
+            var currentTree = trees.get(type);
+
+            if (currentTree == null) {
+                continue;
+            }
+
+            Map<String, GLSLParser.Single_declarationContext> inDec = currentTree.findQualifiers(GLSLLexer.IN);
+
+            for (String in : inDec.keySet()) {
+
+                if (in.startsWith("gl_")) {
                     continue;
                 }
 
-                Map<String, GLSLParser.Single_declarationContext> inDec = currentTree.findQualifiers(GLSLLexer.IN);
+                if (!outDec.containsKey(in)) {
 
-                for (String in : inDec.keySet()) {
-
-                    if (in.startsWith("gl_")) {
+                    if (!currentTree.containsCall(in)) {
                         continue;
                     }
 
-                    if (!outDec.containsKey(in)) {
+                    prevTree.makeOutDeclaration(inDec.get(in), in);
 
-                        if (!currentTree.containsCall(in)) {
-                            continue;
-                        }
+                    if (!prevTree.hasAssigment(in)) {
+                        prevTree.initialize(inDec.get(in), in);
+                    }
 
-                        prevTree.makeOutDeclaration(inDec.get(in), in);
+                } else {
+                    var outType = outDec.get(in).fully_specified_type().type_specifier().type_specifier_nonarray().children.get(0);
+                    var inType = inDec.get(in).fully_specified_type().type_specifier().type_specifier_nonarray().children.get(0);
 
+                    if (outDec.get(in).fully_specified_type().type_specifier().array_specifier() != null) {
+                        continue;
+                    }
+
+                    if (inType.getText().equals(outType.getText())) {
                         if (!prevTree.hasAssigment(in)) {
                             prevTree.initialize(inDec.get(in), in);
                         }
-
-                    } else {
-                        var outType = outDec.get(in).fully_specified_type().type_specifier().type_specifier_nonarray().children.get(0);
-                        var inType = inDec.get(in).fully_specified_type().type_specifier().type_specifier_nonarray().children.get(0);
-
-                        if (outDec.get(in).fully_specified_type().type_specifier().array_specifier() != null) {
-                            continue;
-                        }
-
-                        if (inType.getText().equals(outType.getText())) {
-                            if (!prevTree.hasAssigment(in)) {
-                                prevTree.initialize(inDec.get(in), in);
-                            }
-                        }
-
                     }
+
                 }
             }
 

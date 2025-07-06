@@ -20,7 +20,6 @@ import net.irisshaders.iris.gl.program.ProgramUniforms;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.shaderpack.loading.ProgramId;
 import net.irisshaders.iris.shaderpack.programs.ProgramSet;
@@ -149,7 +148,7 @@ public class SodiumTerrainPipeline {
 
                 passInfo.alphaTest = sources.getDirectives().getAlphaTestOverride().or(() -> Optional.of(defaultPassAlpha));
 
-                Map<PatchShaderType, String> transformed = TransformPatcherBridge.patchSodium(
+                Map<ShaderType, String> transformed = TransformPatcherBridge.patchSodium(
                         sources.getName(),
                         sources.getSourceNullable(ShaderType.VERTEX),
                         sources.getSourceNullable(ShaderType.GEOM),
@@ -158,8 +157,8 @@ public class SodiumTerrainPipeline {
                         sources.getSourceNullable(ShaderType.FRAGMENT),
                         passInfo.alphaTest.orElseThrow(), inputs, parent.getTextureMap());
 
-                for (var type : PatchShaderType.values()) {
-                    passInfo.sources.put(type.glShaderType, Optional.ofNullable(transformed.get(type)));
+                for (var type : ShaderType.values()) {
+                    passInfo.sources.put(type, Optional.ofNullable(transformed.get(type)));
                 }
 
                 ShaderPrinter.printProgram(sources.getName() + "_sodium_" + pass.getName()).addSources(transformed).print();

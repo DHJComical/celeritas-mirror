@@ -5,13 +5,13 @@ import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.helpers.Tri;
 import net.irisshaders.iris.pipeline.transform.Patch;
-import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 
 public abstract class Parameters {
 	public final Patch patch;
 	private final Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap;
-	public PatchShaderType type; // may only be set by TransformPatcher
+	public ShaderType type; // may only be set by TransformPatcher
 	// WARNING: adding new fields requires updating hashCode and equals methods!
 
 	public Parameters(Patch patch, Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
