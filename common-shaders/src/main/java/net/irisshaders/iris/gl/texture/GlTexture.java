@@ -14,14 +14,11 @@ import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.system.MemoryUtil;
 
-import java.nio.ByteBuffer;
-import java.util.function.IntSupplier;
-
 public class GlTexture extends GlObject implements TextureAccess {
 	private final TextureType target;
 
 	public GlTexture(TextureType target, int sizeX, int sizeY, int sizeZ, int internalFormat, int format, int pixelType, byte[] pixels, TextureFilteringData filteringData) {
-		this.setHandle(GlStateManager._genTexture());
+		this.setHandle(GL_STATE_MANAGER.glGenTextures());
 		IrisRenderSystem.bindTextureForSetup(target.getGlType(), handle());
 
 		TextureUploadHelper.resetTextureUploadState();

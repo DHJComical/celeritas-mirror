@@ -37,7 +37,6 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.apache.commons.io.IOUtils;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.embeddedt.embeddium.compat.mc.MCVertexFormat;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 

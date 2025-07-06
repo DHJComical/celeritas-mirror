@@ -4,7 +4,6 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import org.apache.commons.codec.binary.Hex;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

@@ -14,6 +14,7 @@ import net.irisshaders.iris.shadows.frustum.CommonFrustumHolder;
 import net.irisshaders.iris.uniforms.CelestialUniforms;
 import org.embeddedt.embeddium.compat.mc.MCCamera;
 import org.embeddedt.embeddium.compat.mc.MCLevelRenderer;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.ARBTextureSwizzle;
 import org.lwjgl.opengl.GL20C;

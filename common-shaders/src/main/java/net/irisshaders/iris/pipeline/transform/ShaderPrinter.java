@@ -2,7 +2,6 @@ package net.irisshaders.iris.pipeline.transform;
 
 import org.apache.commons.io.FilenameUtils;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.taumc.celeritas.api.v0.CeleritasShadersApi;
 
 import java.io.IOException;

@@ -5,9 +5,7 @@ import com.google.common.primitives.Ints;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import net.irisshaders.iris.compat.sodium.impl.shader_overrides.IrisTerrainPass;
-import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
-import org.embeddedt.embeddium.compat.mc.MCResourceLocation;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.blending.AlphaTests;
@@ -32,6 +30,7 @@ import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import java.util.*;
 import java.util.function.IntFunction;
 
+import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
 public class SodiumTerrainPipeline {
@@ -128,7 +127,7 @@ public class SodiumTerrainPipeline {
             };
             var programSource = gbufferProgramSource.get(pass == IrisTerrainPass.SHADOW_CUTOUT ? IrisTerrainPass.SHADOW : pass);
             if (programSource == null) {
-                Celeritas.logger().warn("Missing program source for pass {}", pass.name());
+                IRIS_LOGGER.warn("Missing program source for pass {}", pass.name());
                 continue;
             }
             programSource.ifPresentOrElse(sources -> {

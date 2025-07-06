@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.shader.GlShader;
 import org.lwjgl.opengl.GL20C;
+import org.lwjgl.opengl.KHRDebug;
 
 public class ProgramCreator {
 	private static final Logger LOGGER = LogManager.getLogger(ProgramCreator.class);
