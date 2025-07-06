@@ -8,6 +8,7 @@ import net.irisshaders.iris.gl.IrisRenderSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.KHRDebug;
 

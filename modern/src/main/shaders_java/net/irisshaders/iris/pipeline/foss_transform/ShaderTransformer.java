@@ -2,13 +2,13 @@ package net.irisshaders.iris.pipeline.foss_transform;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.irisshaders.iris.gl.blending.AlphaTest;
-import net.irisshaders.iris.gl.shader.ShaderType;
 import net.irisshaders.iris.pipeline.transform.Patch;
 import net.irisshaders.iris.pipeline.transform.PatchShaderType;
 import net.irisshaders.iris.pipeline.transform.parameter.Parameters;
 import net.irisshaders.iris.pipeline.transform.parameter.SodiumParameters;
 import net.irisshaders.iris.pipeline.transform.parameter.VanillaParameters;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.taumc.glsl.ShaderParser;
 import org.taumc.glsl.StorageCollector;
 import org.taumc.glsl.Transformer;

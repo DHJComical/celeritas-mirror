@@ -211,11 +211,11 @@ public class IrisChunkShaderInterface implements ChunkShaderInterface {
             GlFramebuffer framebuffer;
 
             if (isShadowPass) {
-                framebuffer = pipeline.getShadowFramebuffer();
+                framebuffer = pipeline.getPassInfo(IrisTerrainPass.SHADOW).framebuffer();
             } else if (pass.isReverseOrder()) {
-                framebuffer = pipeline.getTranslucentFramebuffer();
+                framebuffer = pipeline.getPassInfo(IrisTerrainPass.GBUFFER_TRANSLUCENT).framebuffer();
             } else {
-                framebuffer = pipeline.getTerrainSolidFramebuffer();
+                framebuffer = pipeline.getPassInfo(IrisTerrainPass.GBUFFER_SOLID).framebuffer();
             }
 
             if (framebuffer != null) {

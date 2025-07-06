@@ -9,10 +9,10 @@ import net.irisshaders.iris.gl.sampler.SamplerHolder;
 import net.irisshaders.iris.gl.shader.GlShader;
 import net.irisshaders.iris.gl.shader.ProgramCreator;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
-import net.irisshaders.iris.gl.shader.ShaderType;
 import net.irisshaders.iris.gl.state.ValueUpdateNotifier;
 import net.irisshaders.iris.gl.texture.InternalTextureFormat;
 import net.irisshaders.iris.gl.texture.TextureType;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.IntSupplier;
