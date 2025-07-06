@@ -2,17 +2,17 @@ package net.irisshaders.iris.gl.program;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.ProgramManager;
-import net.irisshaders.iris.gl.GlResource;
 import net.irisshaders.iris.gl.IrisRenderSystem;
+import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.lwjgl.opengl.GL43C;
 
-public final class Program extends GlResource {
+public final class Program extends GlObject {
 	private final ProgramUniforms uniforms;
 	private final ProgramSamplers samplers;
 	private final ProgramImages images;
 
 	Program(int program, ProgramUniforms uniforms, ProgramSamplers samplers, ProgramImages images) {
-		super(program);
+		this.setHandle(program);
 
 		this.uniforms = uniforms;
 		this.samplers = samplers;
@@ -27,7 +27,7 @@ public final class Program extends GlResource {
 
 	public void use() {
 		IrisRenderSystem.memoryBarrier(GL43C.GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL43C.GL_TEXTURE_FETCH_BARRIER_BIT | GL43C.GL_SHADER_STORAGE_BARRIER_BIT);
-		ProgramManager.glUseProgram(getGlId());
+		ProgramManager.glUseProgram(handle());
 
 		uniforms.update();
 		samplers.update();
@@ -35,7 +35,7 @@ public final class Program extends GlResource {
 	}
 
 	public void destroyInternal() {
-		GlStateManager.glDeleteProgram(getGlId());
+		GlStateManager.glDeleteProgram(handle());
 	}
 
 	/**
@@ -44,7 +44,7 @@ public final class Program extends GlResource {
 	 */
 	@Deprecated
 	public int getProgramId() {
-		return getGlId();
+		return handle();
 	}
 
 	public int getActiveImages() {

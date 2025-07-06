@@ -1,18 +1,18 @@
 package net.irisshaders.iris.targets;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.irisshaders.iris.gl.GlResource;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.texture.DepthBufferFormat;
+import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL13C;
 import org.lwjgl.opengl.GL43C;
 
-public class DepthTexture extends GlResource {
+public class DepthTexture extends GlObject {
 	public DepthTexture(String name, int width, int height, DepthBufferFormat format) {
-		super(IrisRenderSystem.createTexture(GL11C.GL_TEXTURE_2D));
-		int texture = getGlId();
+		this.setHandle(IrisRenderSystem.createTexture(GL11C.GL_TEXTURE_2D));
+		int texture = handle();
 
 		resize(width, height, format);
 		GLDebug.nameObject(GL43C.GL_TEXTURE, texture, name);
@@ -31,11 +31,11 @@ public class DepthTexture extends GlResource {
 	}
 
 	public int getTextureId() {
-		return getGlId();
+		return handle();
 	}
 
 	@Override
 	protected void destroyInternal() {
-		GlStateManager._deleteTexture(getGlId());
+		GlStateManager._deleteTexture(handle());
 	}
 }

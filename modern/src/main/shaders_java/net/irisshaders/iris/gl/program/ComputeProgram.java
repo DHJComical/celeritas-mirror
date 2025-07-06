@@ -3,16 +3,16 @@ package net.irisshaders.iris.gl.program;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.ProgramManager;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.gl.GlResource;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shaderpack.FilledIndirectPointer;
+import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.joml.Vector2f;
 import org.joml.Vector3i;
 import org.lwjgl.opengl.GL43C;
 import org.lwjgl.opengl.GL46C;
 
-public final class ComputeProgram extends GlResource {
+public final class ComputeProgram extends GlObject {
 	private final ProgramUniforms uniforms;
 	private final ProgramSamplers samplers;
 	private final ProgramImages images;
@@ -25,7 +25,7 @@ public final class ComputeProgram extends GlResource {
 	private FilledIndirectPointer indirectPointer;
 
 	ComputeProgram(int program, ProgramUniforms uniforms, ProgramSamplers samplers, ProgramImages images) {
-		super(program);
+		this.setHandle(program);
 
 		localSize = new int[3];
 		IrisRenderSystem.getProgramiv(program, GL43C.GL_COMPUTE_WORK_GROUP_SIZE, localSize);
@@ -65,7 +65,7 @@ public final class ComputeProgram extends GlResource {
 	}
 
 	public void use() {
-		ProgramManager.glUseProgram(getGlId());
+		ProgramManager.glUseProgram(handle());
 
 		uniforms.update();
 		samplers.update();
@@ -86,7 +86,7 @@ public final class ComputeProgram extends GlResource {
 	}
 
 	public void destroyInternal() {
-		GlStateManager.glDeleteProgram(getGlId());
+		GlStateManager.glDeleteProgram(handle());
 	}
 
 	/**
@@ -95,7 +95,7 @@ public final class ComputeProgram extends GlResource {
 	 */
 	@Deprecated
 	public int getProgramId() {
-		return getGlId();
+		return handle();
 	}
 
 	public int getActiveImages() {

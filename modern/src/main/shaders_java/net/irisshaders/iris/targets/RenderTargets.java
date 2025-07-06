@@ -78,7 +78,7 @@ public class RenderTargets {
 		destroyed = true;
 
 		for (GlFramebuffer owned : ownedFramebuffers) {
-			owned.destroy();
+			owned.delete();
 		}
 
 		for (RenderTarget target : targets) {
@@ -87,8 +87,8 @@ public class RenderTargets {
 			}
 		}
 
-		noTranslucents.destroy();
-		noHand.destroy();
+		noTranslucents.delete();
+		noHand.delete();
 	}
 
 	public int getRenderTargetCount() {
@@ -346,7 +346,7 @@ public class RenderTargets {
 
 			if (drawBuffers[i] >= getRenderTargetCount()) {
 				// TODO: This causes resource leaks, also we should really verify this in the shaderpack parser...
-				framebuffer.destroy();
+				framebuffer.delete();
 				ownedFramebuffers.remove(framebuffer);
 				throw new IllegalStateException("Render target with index " + drawBuffers[i] + " is not supported, only "
 					+ getRenderTargetCount() + " render targets are supported.");
@@ -372,7 +372,7 @@ public class RenderTargets {
 	}
 
 	public void destroyFramebuffer(GlFramebuffer framebuffer) {
-		framebuffer.destroy();
+		framebuffer.delete();
 		ownedFramebuffers.remove(framebuffer);
 	}
 

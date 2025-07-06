@@ -1,9 +1,9 @@
 package net.irisshaders.iris.targets.backed;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.irisshaders.iris.gl.GlResource;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.texture.TextureUploadHelper;
+import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11C;
@@ -12,9 +12,9 @@ import org.lwjgl.opengl.GL43C;
 
 import java.nio.ByteBuffer;
 
-public class SingleColorTexture extends GlResource {
+public class SingleColorTexture extends GlObject {
 	public SingleColorTexture(int red, int green, int blue, int alpha) {
-		super(IrisRenderSystem.createTexture(GL11C.GL_TEXTURE_2D));
+		this.setHandle(IrisRenderSystem.createTexture(GL11C.GL_TEXTURE_2D));
 		ByteBuffer pixel = BufferUtils.createByteBuffer(4);
 		pixel.put((byte) red);
 		pixel.put((byte) green);
@@ -22,7 +22,7 @@ public class SingleColorTexture extends GlResource {
 		pixel.put((byte) alpha);
 		pixel.position(0);
 
-		int texture = getGlId();
+		int texture = handle();
 
 		GLDebug.nameObject(GL43C.GL_TEXTURE, texture, "single color (" + red + ", " + green + "," + blue + "," + alpha + ")");
 
@@ -36,11 +36,11 @@ public class SingleColorTexture extends GlResource {
 	}
 
 	public int getTextureId() {
-		return getGlId();
+		return handle();
 	}
 
 	@Override
 	protected void destroyInternal() {
-		GlStateManager._deleteTexture(getGlId());
+		GlStateManager._deleteTexture(handle());
 	}
 }

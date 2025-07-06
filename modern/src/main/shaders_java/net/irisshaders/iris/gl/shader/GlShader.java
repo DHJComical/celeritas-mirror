@@ -3,10 +3,10 @@
 package net.irisshaders.iris.gl.shader;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.irisshaders.iris.gl.GlResource;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.lwjgl.opengl.GL20C;
@@ -17,13 +17,13 @@ import java.util.Locale;
 /**
  * A compiled OpenGL shader object.
  */
-public class GlShader extends GlResource {
+public class GlShader extends GlObject {
 	private static final Logger LOGGER = LogManager.getLogger(GlShader.class);
 
 	private final String name;
 
 	public GlShader(ShaderType type, String name, String src) {
-		super(createShader(type, name, src));
+		this.setHandle(createShader(type, name, src));
 
 		this.name = name;
 	}
@@ -55,11 +55,11 @@ public class GlShader extends GlResource {
 	}
 
 	public int getHandle() {
-		return this.getGlId();
+		return this.handle();
 	}
 
 	@Override
 	protected void destroyInternal() {
-		GlStateManager.glDeleteShader(this.getGlId());
+		GlStateManager.glDeleteShader(this.handle());
 	}
 }

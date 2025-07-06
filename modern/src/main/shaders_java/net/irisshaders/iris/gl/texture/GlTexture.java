@@ -1,9 +1,9 @@
 package net.irisshaders.iris.gl.texture;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.irisshaders.iris.gl.GlResource;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.shaderpack.texture.TextureFilteringData;
+import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL13C;
 import org.lwjgl.opengl.GL20C;
@@ -13,22 +13,22 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.ByteBuffer;
 import java.util.function.IntSupplier;
 
-public class GlTexture extends GlResource implements TextureAccess {
+public class GlTexture extends GlObject implements TextureAccess {
 	private final TextureType target;
 
 	public GlTexture(TextureType target, int sizeX, int sizeY, int sizeZ, int internalFormat, int format, int pixelType, byte[] pixels, TextureFilteringData filteringData) {
-		super(GlStateManager._genTexture());
-		IrisRenderSystem.bindTextureForSetup(target.getGlType(), getGlId());
+		this.setHandle(GlStateManager._genTexture());
+		IrisRenderSystem.bindTextureForSetup(target.getGlType(), handle());
 
 		TextureUploadHelper.resetTextureUploadState();
 
 		ByteBuffer buffer = MemoryUtil.memAlloc(pixels.length);
 		buffer.put(pixels);
 		buffer.flip();
-		target.apply(this.getGlId(), sizeX, sizeY, sizeZ, internalFormat, format, pixelType, buffer);
+		target.apply(this.handle(), sizeX, sizeY, sizeZ, internalFormat, format, pixelType, buffer);
 		MemoryUtil.memFree(buffer);
 
-		int texture = this.getGlId();
+		int texture = this.handle();
 
 		IrisRenderSystem.texParameteri(texture, target.getGlType(), GL11C.GL_TEXTURE_MIN_FILTER, filteringData.shouldBlur() ? GL11C.GL_LINEAR : GL11C.GL_NEAREST);
 		IrisRenderSystem.texParameteri(texture, target.getGlType(), GL11C.GL_TEXTURE_MAG_FILTER, filteringData.shouldBlur() ? GL11C.GL_LINEAR : GL11C.GL_NEAREST);
@@ -57,7 +57,7 @@ public class GlTexture extends GlResource implements TextureAccess {
 	}
 
 	public void bind(int unit) {
-		IrisRenderSystem.bindTextureToUnit(target.getGlType(), unit, getGlId());
+		IrisRenderSystem.bindTextureToUnit(target.getGlType(), unit, handle());
 	}
 
 	@Override
@@ -67,11 +67,11 @@ public class GlTexture extends GlResource implements TextureAccess {
 
 	@Override
 	public IntSupplier getTextureId() {
-		return this::getGlId;
+		return this::handle;
 	}
 
 	@Override
 	protected void destroyInternal() {
-		GlStateManager._deleteTexture(getGlId());
+		GlStateManager._deleteTexture(handle());
 	}
 }

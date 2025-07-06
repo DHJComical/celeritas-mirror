@@ -1283,7 +1283,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		renderTargets.destroy();
 		dhCompat.clearPipeline();
 
-		customImages.forEach(GlImage::destroy);
+		customImages.forEach(GlImage::delete);
 
 		if (shadowRenderer != null) {
 			shadowRenderer.destroy();
