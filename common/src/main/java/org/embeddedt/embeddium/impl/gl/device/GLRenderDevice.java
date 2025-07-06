@@ -135,20 +135,14 @@ public class GLRenderDevice implements RenderDevice {
 
             this.stateTracker.notifyBufferDeleted(buffer);
 
-            int handle = buffer.handle();
-            buffer.invalidateHandle();
-
-            GL20C.glDeleteBuffers(handle);
+            buffer.delete();
         }
 
         @Override
         public void deleteVertexArray(GlVertexArray vertexArray) {
             this.stateTracker.notifyVertexArrayDeleted(vertexArray);
 
-            int handle = vertexArray.handle();
-            vertexArray.invalidateHandle();
-
-            GL30C.glDeleteVertexArrays(handle);
+            vertexArray.delete();
         }
 
         @Override

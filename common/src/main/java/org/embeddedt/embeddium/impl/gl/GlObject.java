@@ -35,7 +35,10 @@ public abstract class GlObject {
         return this.handle != INVALID_HANDLE;
     }
 
-    public final void invalidateHandle() {
+    public final void delete() {
+        this.destroyInternal();
         this.handle = INVALID_HANDLE;
     }
+
+    protected abstract void destroyInternal();
 }

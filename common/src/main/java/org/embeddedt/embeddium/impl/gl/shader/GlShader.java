@@ -43,9 +43,8 @@ public class GlShader extends GlObject {
         return this.name;
     }
 
-    public void delete() {
+    @Override
+    protected void destroyInternal() {
         GL20C.glDeleteShader(this.handle());
-
-        this.invalidateHandle();
     }
 }

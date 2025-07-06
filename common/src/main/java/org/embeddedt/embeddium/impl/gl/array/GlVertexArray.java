@@ -12,4 +12,9 @@ public class GlVertexArray extends GlObject {
     public GlVertexArray() {
         this.setHandle(GL30C.glGenVertexArrays());
     }
+
+    @Override
+    protected void destroyInternal() {
+        GL30C.glDeleteVertexArrays(this.handle());
+    }
 }
