@@ -8,6 +8,7 @@ import java.util.Map;
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiGenericObjectShaderProgram;
 import com.seibel.distanthorizons.api.interfaces.render.IDhApiRenderableBoxGroup;
@@ -29,6 +30,7 @@ import net.irisshaders.iris.gl.shader.GlShader;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.foss_transform.ShaderTransformer;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.samplers.IrisSamplers;
@@ -155,13 +157,10 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 	}
 
 	public static IrisGenericRenderProgram createProgram(String name, boolean isShadowPass, boolean translucent, ProgramSource source, CustomUniforms uniforms, ModernIrisRenderingPipeline pipeline) {
+        Preconditions.checkArgument(source.isValid());
 		Map<ShaderType, String> transformed = TransformPatcherBridge.patchDHGeneric(
 			name,
-            source.getSource(ShaderType.VERTEX).orElseThrow(RuntimeException::new),
-            source.getSource(ShaderType.TESS_CTRL).orElse(null),
-            source.getSource(ShaderType.TESS_EVALUATE).orElse(null),
-            source.getSource(ShaderType.GEOM).orElse(null),
-            source.getSource(ShaderType.FRAGMENT).orElseThrow(RuntimeException::new),
+            source.getSourcesMap(),
 			pipeline.getTextureMap());
 		String vertex = transformed.get(ShaderType.VERTEX);
 		String tessControl = transformed.get(ShaderType.TESS_CTRL);

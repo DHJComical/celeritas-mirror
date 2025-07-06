@@ -7,6 +7,7 @@ import java.util.Map;
 
 import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.objects.math.DhApiVec3f;
@@ -135,13 +136,10 @@ public class IrisLodRenderProgram {
 	}
 
 	public static IrisLodRenderProgram createProgram(String name, boolean isShadowPass, boolean translucent, ProgramSource source, CustomUniforms uniforms, ModernIrisRenderingPipeline pipeline) {
+        Preconditions.checkArgument(source.isValid());
 		Map<ShaderType, String> transformed = TransformPatcherBridge.patchDHTerrain(
 			name,
-			source.getSource(ShaderType.VERTEX).orElseThrow(RuntimeException::new),
-			source.getSource(ShaderType.TESS_CTRL).orElse(null),
-			source.getSource(ShaderType.TESS_EVALUATE).orElse(null),
-			source.getSource(ShaderType.GEOM).orElse(null),
-			source.getSource(ShaderType.FRAGMENT).orElseThrow(RuntimeException::new),
+			source.getSourcesMap(),
 			pipeline.getTextureMap());
 		String vertex = transformed.get(ShaderType.VERTEX);
 		String tessControl = transformed.get(ShaderType.TESS_CTRL);

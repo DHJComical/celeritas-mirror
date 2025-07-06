@@ -9,6 +9,7 @@ import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import static com.mitchej123.glsm.RenderSystemService.RENDER_SYSTEM;
 import static org.embeddedt.embeddium.compat.mc.MinecraftVersionShimService.MINECRAFT_SHIM;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -317,11 +318,10 @@ public class FinalPassRenderer {
 	private Program createProgram(ProgramSource source, ImmutableSet<Integer> flipped, ImmutableSet<Integer> flippedAtLeastOnceSnapshot,
 								  Supplier<ShadowRenderTargets> shadowTargetsSupplier) {
 		// TODO: Properly handle empty shaders
+        Preconditions.checkArgument(source.isValid());
         Map<ShaderType, String> transformed = TransformPatcherBridge.patchComposite(
                 source.getName(),
-                source.getSource(ShaderType.VERTEX).orElseThrow(NullPointerException::new),
-                source.getSource(ShaderType.GEOM).orElse(null),
-                source.getSource(ShaderType.FRAGMENT).orElseThrow(NullPointerException::new), TextureStage.COMPOSITE_AND_FINAL, pipeline.getTextureMap());
+                source.getSourcesMap(), TextureStage.COMPOSITE_AND_FINAL, pipeline.getTextureMap());
 		String vertex = transformed.get(ShaderType.VERTEX);
 		String geometry = transformed.get(ShaderType.GEOMETRY);
 		String fragment = transformed.get(ShaderType.FRAGMENT);
