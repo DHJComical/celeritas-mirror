@@ -40,5 +40,10 @@ public abstract class GlObject {
         this.handle = INVALID_HANDLE;
     }
 
+    @Deprecated // kept around to avoid huge diffs in old Iris code
+    public final void destroy() {
+        this.delete();
+    }
+
     protected abstract void destroyInternal();
 }

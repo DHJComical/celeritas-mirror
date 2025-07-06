@@ -1190,7 +1190,8 @@ public abstract class CommonIrisRenderingPipeline implements WorldRenderingPipel
         renderTargets.destroy();
         dhCompat.clearPipeline();
 
-        customImages.forEach(GlImage::destroy);
+        customImages.forEach(GlImage::delete);
+
 
         if (shadowRenderer != null) {
             shadowRenderer.destroy();

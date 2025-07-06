@@ -5,7 +5,6 @@ import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import org.lwjgl.opengl.GL43C;
 
-// Do not extend GlResource, this is immutable.
 public class ShaderStorageBuffer {
 	protected final int index;
 	protected final ShaderStorageInfo info;

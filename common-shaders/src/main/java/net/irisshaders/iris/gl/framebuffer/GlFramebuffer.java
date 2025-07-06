@@ -4,20 +4,20 @@ import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import net.irisshaders.iris.gl.GlResource;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.texture.DepthBufferFormat;
 import net.irisshaders.iris.texture.TextureInfoCache;
+import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.lwjgl.opengl.GL30C;
 
-public class GlFramebuffer extends GlResource {
+public class GlFramebuffer extends GlObject {
 	private final Int2IntMap attachments;
 	private final int maxDrawBuffers;
 	private final int maxColorAttachments;
 	private boolean hasDepthAttachment;
 
 	public GlFramebuffer() {
-		super(IrisRenderSystem.createFramebuffer());
+		this.setHandle(IrisRenderSystem.createFramebuffer());
 
 		this.attachments = new Int2IntArrayMap();
 		this.maxDrawBuffers = GL_STATE_MANAGER.glGetInteger(GL30C.GL_MAX_DRAW_BUFFERS);
@@ -29,7 +29,7 @@ public class GlFramebuffer extends GlResource {
 		int internalFormat = TextureInfoCache.INSTANCE.getInfo(texture).getInternalFormat();
 		DepthBufferFormat depthBufferFormat = DepthBufferFormat.fromGlEnumOrDefault(internalFormat);
 
-		int fb = getGlId();
+		int fb = handle();
 
 		if (depthBufferFormat.isCombinedStencil()) {
 			IrisRenderSystem.framebufferTexture2D(fb, GL30C.GL_FRAMEBUFFER, GL30C.GL_DEPTH_STENCIL_ATTACHMENT, GL30C.GL_TEXTURE_2D, texture, 0);
@@ -41,14 +41,14 @@ public class GlFramebuffer extends GlResource {
 	}
 
 	public void addColorAttachment(int index, int texture) {
-		int fb = getGlId();
+		int fb = handle();
 
 		IrisRenderSystem.framebufferTexture2D(fb, GL30C.GL_FRAMEBUFFER, GL30C.GL_COLOR_ATTACHMENT0 + index, GL30C.GL_TEXTURE_2D, texture, 0);
 		attachments.put(index, texture);
 	}
 
 	public void noDrawBuffers() {
-		IrisRenderSystem.drawBuffers(getGlId(), new int[]{GL30C.GL_NONE});
+		IrisRenderSystem.drawBuffers(handle(), new int[]{GL30C.GL_NONE});
 	}
 
 	public void drawBuffers(int[] buffers) {
@@ -67,11 +67,11 @@ public class GlFramebuffer extends GlResource {
 			glBuffers[index++] = GL30C.GL_COLOR_ATTACHMENT0 + buffer;
 		}
 
-		IrisRenderSystem.drawBuffers(getGlId(), glBuffers);
+		IrisRenderSystem.drawBuffers(handle(), glBuffers);
 	}
 
 	public void readBuffer(int buffer) {
-		IrisRenderSystem.readBuffer(getGlId(), GL30C.GL_COLOR_ATTACHMENT0 + buffer);
+		IrisRenderSystem.readBuffer(handle(), GL30C.GL_COLOR_ATTACHMENT0 + buffer);
 	}
 
 	public int getColorAttachment(int index) {
@@ -83,19 +83,19 @@ public class GlFramebuffer extends GlResource {
 	}
 
 	public void bind() {
-		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, getGlId());
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_FRAMEBUFFER, handle());
 	}
 
 	public void bindAsReadBuffer() {
-		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, getGlId());
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, handle());
 	}
 
 	public void bindAsDrawBuffer() {
-		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, getGlId());
+		GL_STATE_MANAGER.glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, handle());
 	}
 
 	protected void destroyInternal() {
-		GL_STATE_MANAGER.glDeleteFramebuffers(getGlId());
+		GL_STATE_MANAGER.glDeleteFramebuffers(handle());
 	}
 
 	public int getStatus() {
@@ -105,6 +105,6 @@ public class GlFramebuffer extends GlResource {
 	}
 
 	public int getId() {
-		return getGlId();
+		return handle();
 	}
 }

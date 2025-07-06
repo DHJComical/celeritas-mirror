@@ -2,15 +2,21 @@ package net.irisshaders.iris.gl.image;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import net.irisshaders.iris.gl.GlResource;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.texture.InternalTextureFormat;
 import net.irisshaders.iris.gl.texture.PixelFormat;
 import net.irisshaders.iris.gl.texture.PixelType;
 import net.irisshaders.iris.gl.texture.TextureType;
-import org.lwjgl.opengl.*;
+import org.embeddedt.embeddium.impl.gl.GlObject;
+import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
+import org.lwjgl.opengl.ARBClearTexture;
+import org.lwjgl.opengl.GL11C;
+import org.lwjgl.opengl.GL13C;
+import org.lwjgl.opengl.GL20C;
+import org.lwjgl.opengl.GL30C;
+import org.lwjgl.opengl.GL43C;
 
-public class GlImage extends GlResource {
+public class GlImage extends GlObject {
 	protected final String name;
 	protected final String samplerName;
 	protected final TextureType target;
@@ -20,7 +26,7 @@ public class GlImage extends GlResource {
 	private final boolean clear;
 
 	public GlImage(String name, String samplerName, TextureType target, PixelFormat format, InternalTextureFormat internalFormat, PixelType pixelType, boolean clear, int width, int height, int depth) {
-		super(IrisRenderSystem.createTexture(target.getGlType()));
+		this.setHandle(IrisRenderSystem.createTexture(target.getGlType()));
 
 		this.name = name;
 		this.samplerName = samplerName;
@@ -30,12 +36,12 @@ public class GlImage extends GlResource {
 		this.pixelType = pixelType;
 		this.clear = clear;
 
-//		GLDebug.nameObject(GL43C.GL_TEXTURE, getGlId(), name);
+		GLDebug.nameObject(GL43C.GL_TEXTURE, handle(), name);
 
-		IrisRenderSystem.bindTextureForSetup(target.getGlType(), getGlId());
-		target.apply(getGlId(), width, height, depth, internalFormat.getGlFormat(), format.getGlFormat(), pixelType.getGlFormat(), null);
+		IrisRenderSystem.bindTextureForSetup(target.getGlType(), handle());
+		target.apply(handle(), width, height, depth, internalFormat.getGlFormat(), format.getGlFormat(), pixelType.getGlFormat(), null);
 
-		int texture = getGlId();
+		int texture = handle();
 
 		setup(texture, width, height, depth);
 
@@ -81,7 +87,7 @@ public class GlImage extends GlResource {
 	}
 
 	public int getId() {
-		return getGlId();
+		return handle();
 	}
 
 	/**
@@ -96,7 +102,7 @@ public class GlImage extends GlResource {
 
 	@Override
 	protected void destroyInternal() {
-		GL_STATE_MANAGER.glDeleteTextures(getGlId());
+		GL_STATE_MANAGER.glDeleteTextures(handle());
 	}
 
 	public InternalTextureFormat getInternalFormat() {
@@ -130,10 +136,10 @@ public class GlImage extends GlResource {
 
 		@Override
 		public void updateNewSize(int width, int height) {
-			IrisRenderSystem.bindTextureForSetup(target.getGlType(), getGlId());
-			target.apply(getGlId(), (int) (width * relativeWidth), (int) (height * relativeHeight), 0, internalTextureFormat.getGlFormat(), format.getGlFormat(), pixelType.getGlFormat(), null);
+			IrisRenderSystem.bindTextureForSetup(target.getGlType(), handle());
+			target.apply(handle(), (int) (width * relativeWidth), (int) (height * relativeHeight), 0, internalTextureFormat.getGlFormat(), format.getGlFormat(), pixelType.getGlFormat(), null);
 
-			int texture = getGlId();
+			int texture = handle();
 
 			setup(texture, width, height, 0);
 

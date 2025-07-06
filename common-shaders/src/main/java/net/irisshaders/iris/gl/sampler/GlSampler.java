@@ -1,15 +1,15 @@
 package net.irisshaders.iris.gl.sampler;
 
-import net.irisshaders.iris.gl.GlResource;
 import net.irisshaders.iris.gl.IrisRenderSystem;
+import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL13C;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
 
-public class GlSampler extends GlResource {
+public class GlSampler extends GlObject {
 	public GlSampler(boolean linear, boolean mipmapped, boolean shadow, boolean hardwareShadow) {
-		super(IrisRenderSystem.genSampler());
+		this.setHandle(IrisRenderSystem.genSampler());
 
 		IrisRenderSystem.samplerParameteri(getId(), GL11C.GL_TEXTURE_MIN_FILTER, linear ? GL11C.GL_LINEAR : GL11C.GL_NEAREST);
 		IrisRenderSystem.samplerParameteri(getId(), GL11C.GL_TEXTURE_MAG_FILTER, linear ? GL11C.GL_LINEAR : GL11C.GL_NEAREST);
@@ -27,10 +27,10 @@ public class GlSampler extends GlResource {
 
 	@Override
 	protected void destroyInternal() {
-		IrisRenderSystem.destroySampler(getGlId());
+		IrisRenderSystem.destroySampler(handle());
 	}
 
 	public int getId() {
-		return getGlId();
+		return handle();
 	}
 }

@@ -5,9 +5,9 @@ import java.util.Random;
 
 import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 
-import net.irisshaders.iris.gl.GlResource;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.texture.TextureUploadHelper;
+import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL13C;
@@ -18,14 +18,14 @@ import org.lwjgl.opengl.GL43C;
  * An extremely simple noise texture. Each color channel contains a uniform random value from 0 to 255. Essentially just
  * dumps an array of random bytes into a texture and calls it a day, literally could not be any simpler than that.
  */
-public class NoiseTexture extends GlResource {
+public class NoiseTexture extends GlObject {
 	int width;
 	int height;
 
 	public NoiseTexture(int width, int height) {
-		super(IrisRenderSystem.createTexture(GL11C.GL_TEXTURE_2D));
+		this.setHandle(IrisRenderSystem.createTexture(GL11C.GL_TEXTURE_2D));
 
-		int texture = getGlId();
+		int texture = handle();
 		IrisRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_LINEAR);
 		IrisRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_LINEAR);
 		IrisRenderSystem.texParameteri(texture, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_WRAP_S, GL13C.GL_REPEAT);
@@ -71,11 +71,11 @@ public class NoiseTexture extends GlResource {
 	}
 
 	public int getTextureId() {
-		return getGlId();
+		return handle();
 	}
 
 	@Override
 	protected void destroyInternal() {
-		GL_STATE_MANAGER.glDeleteTextures(getGlId());
+		GL_STATE_MANAGER.glDeleteTextures(handle());
 	}
 }
