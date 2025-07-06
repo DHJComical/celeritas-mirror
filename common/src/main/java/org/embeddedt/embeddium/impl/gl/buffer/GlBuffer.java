@@ -17,4 +17,9 @@ public abstract class GlBuffer extends GlObject {
     public void setActiveMapping(GlBufferMapping mapping) {
         this.activeMapping = mapping;
     }
+
+    @Override
+    protected void destroyInternal() {
+        GL20C.glDeleteBuffers(this.handle());
+    }
 }
