@@ -7,6 +7,8 @@ import static com.mitchej123.glsm.GLStateManagerService.GL_STATE_MANAGER;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
+import org.embeddedt.embeddium.impl.gl.shader.GlShader;
 import org.lwjgl.opengl.GL20C;
 
 public class ProgramCreator {
@@ -25,9 +27,9 @@ public class ProgramCreator {
 		GL_STATE_MANAGER.glBindAttribLocation(program, 1, "UV0");
 
 		for (GlShader shader : shaders) {
-//			GLDebug.nameObject(KHRDebug.GL_SHADER, shader.getHandle(), shader.getName());
+			GLDebug.nameObject(KHRDebug.GL_SHADER, shader.handle(), shader.getName());
 
-			GL_STATE_MANAGER.glAttachShader(program, shader.getHandle());
+			GL_STATE_MANAGER.glAttachShader(program, shader.handle());
 		}
 
         GL_STATE_MANAGER.glLinkProgram(program);
@@ -36,7 +38,7 @@ public class ProgramCreator {
 
 		//Always detach shaders according to https://www.khronos.org/opengl/wiki/Shader_Compilation#Cleanup
 		for (GlShader shader : shaders) {
-			IrisRenderSystem.detachShader(program, shader.getHandle());
+			IrisRenderSystem.detachShader(program, shader.handle());
 		}
 
 		String log = IrisRenderSystem.getProgramInfoLog(program);

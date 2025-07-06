@@ -26,7 +26,6 @@ import net.irisshaders.iris.gl.blending.BufferBlendOverride;
 import net.irisshaders.iris.gl.program.ProgramImages;
 import net.irisshaders.iris.gl.program.ProgramSamplers;
 import net.irisshaders.iris.gl.program.ProgramUniforms;
-import net.irisshaders.iris.gl.shader.GlShader;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
@@ -39,6 +38,7 @@ import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.builtin.BuiltinReplacementUniforms;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import net.minecraft.client.Minecraft;
+import org.embeddedt.embeddium.impl.gl.shader.GlShader;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -82,28 +82,28 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 		this.bufferBlendOverrides = bufferBlendOverrides;
 
 		GlShader vert = new GlShader(ShaderType.VERTEX, name + ".vsh", vertex);
-		GL43C.glAttachShader(id, vert.getHandle());
+		GL43C.glAttachShader(id, vert.handle());
 
 		GlShader tessCont = null;
 		if (tessControl != null) {
 			tessCont = new GlShader(ShaderType.TESSELATION_CONTROL, name + ".tcs", tessControl);
-			GL43C.glAttachShader(id, tessCont.getHandle());
+			GL43C.glAttachShader(id, tessCont.handle());
 		}
 
 		GlShader tessE = null;
 		if (tessEval != null) {
 			tessE = new GlShader(ShaderType.TESSELATION_EVAL, name + ".tes", tessEval);
-			GL43C.glAttachShader(id, tessE.getHandle());
+			GL43C.glAttachShader(id, tessE.handle());
 		}
 
 		GlShader geom = null;
 		if (geometry != null) {
 			geom = new GlShader(ShaderType.GEOMETRY, name + ".gsh", geometry);
-			GL43C.glAttachShader(id, geom.getHandle());
+			GL43C.glAttachShader(id, geom.handle());
 		}
 
 		GlShader frag = new GlShader(ShaderType.FRAGMENT, name + ".fsh", fragment);
-		GL43C.glAttachShader(id, frag.getHandle());
+		GL43C.glAttachShader(id, frag.handle());
 
 		GL32.glLinkProgram(this.id);
 		int status = GL32.glGetProgrami(this.id, 35714);

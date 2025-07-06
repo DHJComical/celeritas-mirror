@@ -9,12 +9,12 @@ import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.image.ImageHolder;
 import net.irisshaders.iris.gl.sampler.GlSampler;
 import net.irisshaders.iris.gl.sampler.SamplerHolder;
-import net.irisshaders.iris.gl.shader.GlShader;
 import net.irisshaders.iris.gl.shader.ProgramCreator;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.gl.state.ValueUpdateNotifier;
 import net.irisshaders.iris.gl.texture.InternalTextureFormat;
 import net.irisshaders.iris.gl.texture.TextureType;
+import org.embeddedt.embeddium.impl.gl.shader.GlShader;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.jetbrains.annotations.Nullable;
 
