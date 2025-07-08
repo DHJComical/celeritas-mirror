@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.render.chunk;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import org.embeddedt.embeddium.impl.gl.array.GlVertexArray;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeBinding;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
@@ -9,10 +10,7 @@ import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.DrawCommandList;
 import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatch;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
-import org.embeddedt.embeddium.impl.gl.tessellation.GlIndexType;
-import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
-import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
-import org.embeddedt.embeddium.impl.gl.tessellation.TessellationBinding;
+import org.embeddedt.embeddium.impl.gl.tessellation.*;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
@@ -297,11 +295,19 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         return bindings;
     }
 
-    private GlTessellation createRegionTessellation(CommandList commandList, RenderRegion.DeviceResources resources) {
-        return commandList.createTessellation(new TessellationBinding[] {
+    protected TessellationBinding[] makeTessellationBindingArray(CommandList commandList, RenderRegion.DeviceResources resources) {
+        return new TessellationBinding[] {
                 TessellationBinding.forVertexBuffer(resources.getVertexBuffer(), this.generateVertexAttributeBindings()),
                 TessellationBinding.forElementBuffer(this.currentRenderPass.isSorted() ? resources.getIndexBuffer() : this.getSharedIndexBuffer(this.renderPassConfiguration.getPrimitiveTypeForPass(this.currentRenderPass), commandList).getBufferObject())
-        });
+        };
+    }
+
+    protected GlTessellation createRegionTessellation(CommandList commandList, RenderRegion.DeviceResources resources) {
+        var bindings = makeTessellationBindingArray(commandList, resources);
+        GlVertexArrayTessellation tessellation = new GlVertexArrayTessellation(new GlVertexArray(), bindings);
+        tessellation.init(commandList);
+
+        return tessellation;
     }
 
     private static void executeDrawBatch(CommandList commandList, GlTessellation tessellation, GlPrimitiveType primitiveType, MultiDrawBatch batch) {
