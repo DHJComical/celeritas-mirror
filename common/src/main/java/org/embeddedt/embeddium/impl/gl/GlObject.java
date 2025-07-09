@@ -7,7 +7,7 @@ package org.embeddedt.embeddium.impl.gl;
  * relied on too heavily.
  */
 public abstract class GlObject {
-    private static final int INVALID_HANDLE = Integer.MIN_VALUE;
+    private static final int INVALID_HANDLE = 0;
 
     private int handle = INVALID_HANDLE;
 
