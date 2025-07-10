@@ -67,7 +67,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             return;
         }
 
-        super.begin(renderPass);
+        this.begin(renderPass);
 
         // If there is no active program, shader compilation probably failed, and we can't render anything.
         if (this.activeProgram != null) {
@@ -120,7 +120,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             GLDebug.popGroup();
         }
 
-        super.end(renderPass);
+        this.end(renderPass);
     }
 
     private static void fillCommandBuffer(MultiDrawBatch batch,
