@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.render.chunk.vertex.format;
 
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
+import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 import java.util.HashMap;
@@ -37,10 +38,6 @@ public interface ChunkVertexType {
         defines.put("VERT_POS_SCALE", String.valueOf(this.getPositionScale()));
         defines.put("VERT_POS_OFFSET", String.valueOf(this.getPositionOffset()));
         defines.put("VERT_TEX_SCALE", String.valueOf(this.getTextureScale()));
-
-        if(!ShaderModBridge.emulateLegacyColorBrightnessFormat()) {
-            defines.put("USE_VANILLA_COLOR_FORMAT", "");
-        }
 
         return defines;
     }

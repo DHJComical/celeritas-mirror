@@ -2,15 +2,20 @@ package org.embeddedt.embeddium.impl.render.chunk;
 
 import org.embeddedt.embeddium.api.util.ColorABGR;
 import org.embeddedt.embeddium.api.util.ColorMixer;
-import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 
-public interface ChunkColorWriter {
-    int writeColor(int colorWithAlpha, float aoValue);
+public enum ChunkColorWriter {
+    SEPARATE_AO {
+        @Override
+        public int writeColor(int colorWithAlpha, float aoValue) {
+            return ColorABGR.withAlpha(colorWithAlpha, aoValue);
+        }
+    },
+    EMBEDDIUM {
+        @Override
+        public int writeColor(int colorWithAlpha, float aoValue) {
+            return ColorMixer.mulSingleWithoutAlpha(colorWithAlpha, (int)(aoValue * 255));
+        }
+    };
 
-    ChunkColorWriter LEGACY = ColorABGR::withAlpha;
-    ChunkColorWriter EMBEDDIUM = (color, ao) -> ColorMixer.mulSingleWithoutAlpha(color, (int)(ao * 255));
-
-    static ChunkColorWriter get() {
-        return ShaderModBridge.emulateLegacyColorBrightnessFormat() ? LEGACY : EMBEDDIUM;
-    }
+    public abstract int writeColor(int colorWithAlpha, float aoValue);
 }

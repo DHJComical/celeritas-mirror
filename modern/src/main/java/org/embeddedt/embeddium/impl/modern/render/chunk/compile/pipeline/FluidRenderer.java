@@ -96,7 +96,7 @@ public class FluidRenderer {
     //? if forgelike
     private final EmbeddiumFluidSpriteCache fluidSpriteCache = new EmbeddiumFluidSpriteCache();
 
-    private final ChunkColorWriter colorEncoder = ChunkColorWriter.get();
+    private final ChunkColorWriter colorEncoder;
     private final MojangVertexConsumer vertexConsumer = new MojangVertexConsumer();
 
     //? if fabric && ffapi && >=1.17
@@ -130,6 +130,8 @@ public class FluidRenderer {
         this.doVanillaRenderedFluidsExist = net.minecraft.core.registries.BuiltInRegistries.FLUID.getTagOrEmpty(EmbeddiumTags.RENDERS_WITH_VANILLA).iterator().hasNext();
         //?} else
         /*this.doVanillaRenderedFluidsExist = false;*/
+
+        this.colorEncoder = WorldRenderingSettings.INSTANCE.shouldUseSeparateAo() ? ChunkColorWriter.SEPARATE_AO : ChunkColorWriter.EMBEDDIUM;
     }
 
     /**
