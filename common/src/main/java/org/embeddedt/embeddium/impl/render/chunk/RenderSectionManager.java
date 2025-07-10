@@ -141,6 +141,10 @@ public abstract class RenderSectionManager {
         return false;
     }
 
+    protected boolean isDebugInfoShown() {
+        return false;
+    }
+
     public void update(Viewport positionedViewport, int frame, boolean spectator) {
         this.lastCameraPosition = positionedViewport.getBlockCoord();
         var transform = positionedViewport.getTransform();
@@ -324,13 +328,20 @@ public abstract class RenderSectionManager {
         RenderDevice device = RenderDevice.INSTANCE;
         CommandList commandList = device.createCommandList();
 
-        var timer = renderPassDrawTimers.computeIfAbsent(pass, $ -> new TimerQueryManager());
+        boolean shouldProfile = isDebugInfoShown();
 
-        timer.startProfiling();
+        TimerQueryManager timer = null;
+
+        if (shouldProfile) {
+            timer = renderPassDrawTimers.computeIfAbsent(pass, $ -> new TimerQueryManager());
+            timer.startProfiling();
+        }
 
         this.chunkRenderer.render(matrices, commandList, this.getCurrentRenderListManager().getRenderLists(), pass, occlusionCamera, camera);
 
-        timer.finishProfiling();
+        if (shouldProfile) {
+            timer.finishProfiling();
+        }
 
         commandList.flush();
     }
