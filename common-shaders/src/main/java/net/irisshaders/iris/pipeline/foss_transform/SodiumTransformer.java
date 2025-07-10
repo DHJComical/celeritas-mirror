@@ -1,6 +1,5 @@
 package net.irisshaders.iris.pipeline.foss_transform;
 
-import net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp.XHFPModelVertexType;
 import net.irisshaders.iris.pipeline.transform.parameter.SodiumParameters;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.taumc.glsl.Transformer;
@@ -8,6 +7,9 @@ import org.taumc.glsl.Transformer;
 import static net.irisshaders.iris.pipeline.foss_transform.ShaderTransformer.*;
 
 public class SodiumTransformer {
+    public static final int MID_TEXTURE_MAX_VALUE = 32768;
+    public static final float MID_TEX_SCALE = 1.0f / MID_TEXTURE_MAX_VALUE;
+
     public static void patchSodiumCore(Transformer translationUnit, SodiumParameters parameters) {
         translationUnit.rename("alphaTestRef", "iris_currentAlphaTest");
         translationUnit.rename("modelViewMatrix", "iris_ModelViewMatrix");
@@ -28,7 +30,7 @@ public class SodiumTransformer {
             translationUnit.rename("vaUV2", "_vert_tex_light_coord");
 
             translationUnit.replaceExpression("textureMatrix", "mat4(1.0f)");
-            replaceMidTexCoord(translationUnit, XHFPModelVertexType.MID_TEX_SCALE);
+            replaceMidTexCoord(translationUnit, MID_TEX_SCALE);
 
             injectVertInit(translationUnit, parameters);
         }
@@ -37,7 +39,7 @@ public class SodiumTransformer {
     public static void patchSodium(Transformer translationUnit, SodiumParameters parameters) {
         commonPatch(translationUnit, parameters, false);
 
-        replaceMidTexCoord(translationUnit, XHFPModelVertexType.MID_TEX_SCALE);
+        replaceMidTexCoord(translationUnit, MID_TEX_SCALE);
 
         translationUnit.replaceExpression("gl_TextureMatrix[0]", "mat4(1.0f)");
         translationUnit.replaceExpression("gl_TextureMatrix[1]", "iris_LightmapTextureMatrix");

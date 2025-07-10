@@ -1,5 +1,6 @@
 package net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp;
 
+import net.irisshaders.iris.pipeline.foss_transform.SodiumTransformer;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeFormat;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
@@ -22,13 +23,9 @@ public class XHFPModelVertexType implements ChunkVertexType {
 		.addElement("at_midBlock", GlVertexFormat.NEXT_ALIGNED_POINTER, GlVertexAttributeFormat.BYTE, 4, false, false)
 		.build();
 
-    private static final int TEXTURE_MAX_VALUE = 32768;
-
-    public static final float MID_TEX_SCALE = 1.0f / TEXTURE_MAX_VALUE;
-
     public static int encodeTexture(float u, float v) {
-        return ((Math.round(u * TEXTURE_MAX_VALUE) & 0xFFFF) << 0) |
-                ((Math.round(v * TEXTURE_MAX_VALUE) & 0xFFFF) << 16);
+        return ((Math.round(u * SodiumTransformer.MID_TEXTURE_MAX_VALUE) & 0xFFFF) << 0) |
+                ((Math.round(v * SodiumTransformer.MID_TEXTURE_MAX_VALUE) & 0xFFFF) << 16);
     }
 
 
