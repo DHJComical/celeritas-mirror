@@ -7,6 +7,7 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.lwjgl.system.MemoryUtil;
 
 import java.util.List;
+import java.util.Map;
 
 public class CompactChunkVertex implements ChunkVertexType {
     public static final GlVertexFormat VERTEX_FORMAT = GlVertexFormat.builder(20)
@@ -70,8 +71,10 @@ public class CompactChunkVertex implements ChunkVertexType {
     }
 
     @Override
-    public List<String> getDefines() {
-        return List.of("USE_VERTEX_COMPRESSION");
+    public Map<String, String> getDefines() {
+        var map = ChunkVertexType.super.getDefines();
+        map.put("USE_VERTEX_COMPRESSION", "");
+        return map;
     }
 
     private static short encodePosition(float value) {

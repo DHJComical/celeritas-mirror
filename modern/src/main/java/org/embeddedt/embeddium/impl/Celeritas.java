@@ -194,7 +194,7 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
     }
 
     public static boolean canUseVanillaVertices() {
-        return !Celeritas.options().performance.useCompactVertexFormat && !ShaderModBridge.areShadersEnabled();
+        return !Celeritas.options().performance.useCompactVertexFormat;
     }
 
     public static boolean canApplyTranslucencySorting() {

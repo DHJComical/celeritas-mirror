@@ -14,6 +14,7 @@ import net.irisshaders.iris.pipeline.transform.parameter.TextureStageParameters;
 import net.irisshaders.iris.pipeline.transform.parameter.VanillaParameters;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 
 import java.util.Map;
 
@@ -56,10 +57,10 @@ public class TransformPatcherBridge {
     }
 
     public static Map<ShaderType, String> patchSodium(String name, Map<ShaderType, String> sources,
-                                                           AlphaTest alpha, ShaderAttributeInputs inputs,
-                                                           Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
+                                                      AlphaTest alpha, ShaderAttributeInputs inputs,
+                                                      Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap, TerrainRenderPass pass) {
         return transform(name, sources,
-                new SodiumParameters(Patch.SODIUM, textureMap, alpha, inputs));
+                new SodiumParameters(Patch.SODIUM, textureMap, alpha, inputs, pass.vertexType()));
     }
 
     public static Map<ShaderType, String> patchComposite(
