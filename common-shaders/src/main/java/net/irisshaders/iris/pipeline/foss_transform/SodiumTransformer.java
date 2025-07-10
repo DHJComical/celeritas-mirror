@@ -1,7 +1,7 @@
 package net.irisshaders.iris.pipeline.foss_transform;
 
+import net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp.XHFPModelVertexType;
 import net.irisshaders.iris.pipeline.transform.parameter.SodiumParameters;
-import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.taumc.glsl.Transformer;
 
@@ -28,7 +28,7 @@ public class SodiumTransformer {
             translationUnit.rename("vaUV2", "_vert_tex_light_coord");
 
             translationUnit.replaceExpression("textureMatrix", "mat4(1.0f)");
-            replaceMidTexCoord(translationUnit, 1.0f / 32768.0f);
+            replaceMidTexCoord(translationUnit, XHFPModelVertexType.MID_TEX_SCALE);
 
             injectVertInit(translationUnit, parameters);
         }
@@ -37,7 +37,7 @@ public class SodiumTransformer {
     public static void patchSodium(Transformer translationUnit, SodiumParameters parameters) {
         commonPatch(translationUnit, parameters, false);
 
-        replaceMidTexCoord(translationUnit, 1.0f / 32768.0f);
+        replaceMidTexCoord(translationUnit, XHFPModelVertexType.MID_TEX_SCALE);
 
         translationUnit.replaceExpression("gl_TextureMatrix[0]", "mat4(1.0f)");
         translationUnit.replaceExpression("gl_TextureMatrix[1]", "iris_LightmapTextureMatrix");
@@ -116,51 +116,7 @@ public class SodiumTransformer {
     }
 
     private static void injectVertInit(Transformer translationUnit, SodiumParameters parameters) {
-        String separateAo = WorldRenderingSettings.INSTANCE.shouldUseSeparateAo() ? "a_Color" : "vec4(a_Color.rgb * a_Color.a, 1.0f)";
-        translationUnit.injectVariable(
-                // translated from sodium's chunk_vertex.glsl
-                "vec3 _vert_position;");
-        translationUnit.injectVariable(
-                "vec2 _vert_tex_diffuse_coord;");
-        translationUnit.injectVariable(
-                "ivec2 _vert_tex_light_coord;");
-        translationUnit.injectVariable(
-                "vec4 _vert_color;");
-        translationUnit.injectVariable(
-                "uint _draw_id;");
-        translationUnit.injectFunction(
-                "const uint MATERIAL_USE_MIP_OFFSET = 0u;");
-
-        translationUnit.injectFunction(
-                "vec3 _get_draw_translation(uint pos) {\n" +
-                        "    return _get_relative_chunk_coord(pos) * vec3(16.0f);\n" +
-                        "}");
-
-        translationUnit.injectFunction(
-
-                "uvec3 _get_relative_chunk_coord(uint pos) {\n" +
-                        "    // Packing scheme is defined by LocalSectionIndex\n" +
-                        "    return uvec3(pos) >> uvec3(5u, 0u, 2u) & uvec3(7u, 3u, 7u);\n" +
-                        "}");
-
-        translationUnit.injectFunction(
-                "void _vert_init() {" +
-                        "uint packed_draw_params = (a_LightCoord & 0xFFFFu);" +
-                        "_vert_position = vec3(a_PosId.xyz);" +
-                        "_vert_tex_diffuse_coord = a_TexCoord;" +
-                        "_vert_tex_light_coord = ivec2((uvec2((a_LightCoord >> 16) & 0xFFFFu) >> uvec2(0, 8)) & uvec2(0xFFu));" +
-                        "_vert_color = " + separateAo + ";" +
-                        "_draw_id = (packed_draw_params >> 8) & 0xFFu; }");
-
-        translationUnit.injectFunction(
-                "float _material_mip_bias(uint material) {\n" +
-                        "    return ((material >> MATERIAL_USE_MIP_OFFSET) & 1u) != 0u ? 0.0f : -4.0f;\n" +
-                        "}");
-
-        addIfNotExists(translationUnit, "a_PosId", "in vec3 a_PosId;");
-        addIfNotExists(translationUnit, "a_TexCoord", "in vec2 a_TexCoord;");
-        addIfNotExists(translationUnit, "a_Color", "in vec4 a_Color;");
-        addIfNotExists(translationUnit, "a_LightCoord", "in uint a_LightCoord;");
+        // Rest of the code is injected in ShaderTransformer#computeCeleritasHeader
         translationUnit.prependMain("_vert_init();");
     }
 }

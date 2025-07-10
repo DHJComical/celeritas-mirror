@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.block.Block;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
@@ -76,7 +77,7 @@ public class BlockRenderer {
 
     private final FRAPIRenderHandler fabricModelRenderingHandler;
 
-    private final ChunkColorWriter colorEncoder = ChunkColorWriter.get();
+    private final ChunkColorWriter colorEncoder;
 
     private final boolean isRenderPassOptEnabled;
     private final MojangVertexConsumer vertexConsumer = new MojangVertexConsumer();
@@ -107,6 +108,8 @@ public class BlockRenderer {
         /*this.fabricModelRenderingHandler = null;
         *///?}
         this.isRenderPassOptEnabled = Celeritas.options().performance.useRenderPassOptimization;
+
+        this.colorEncoder = WorldRenderingSettings.INSTANCE.shouldUseSeparateAo() ? ChunkColorWriter.SEPARATE_AO : ChunkColorWriter.EMBEDDIUM;
     }
 
     /**

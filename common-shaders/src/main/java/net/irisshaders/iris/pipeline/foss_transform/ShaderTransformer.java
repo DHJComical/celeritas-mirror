@@ -6,8 +6,12 @@ import net.irisshaders.iris.pipeline.transform.Patch;
 import net.irisshaders.iris.pipeline.transform.parameter.Parameters;
 import net.irisshaders.iris.pipeline.transform.parameter.SodiumParameters;
 import net.irisshaders.iris.pipeline.transform.parameter.VanillaParameters;
+import net.irisshaders.iris.shaderpack.preprocessor.JcppProcessor;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.embeddedt.embeddium.impl.gl.shader.ShaderConstants;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
+import org.embeddedt.embeddium.impl.render.shader.ShaderLoader;
 import org.taumc.glsl.ShaderParser;
 import org.taumc.glsl.StorageCollector;
 import org.taumc.glsl.Transformer;
@@ -227,10 +231,23 @@ public class ShaderTransformer {
         for (var entry : types.entrySet()) {
             // TODO - move printing of shaders into glsl-transformation-lib itself
             entry.getValue().mutateTree(tree -> {
-                result.put(entry.getKey(), getFormattedShader(tree, prepatched.get(entry.getKey())));
+                String header = prepatched.get(entry.getKey());
+                if (entry.getKey() == ShaderType.VERTEX && patchType == Patch.SODIUM) {
+                    // Inject _vert_init contents
+                    header += computeCeleritasHeader((SodiumParameters)parameters);
+                }
+                String formattedShader = getFormattedShader(tree, header);
+                result.put(entry.getKey(), formattedShader);
             });
         }
         return result;
+    }
+
+    private static String computeCeleritasHeader(SodiumParameters parameters) {
+        var defines = parameters.vertexType.getDefines();
+        String chunkVertexHeader = org.embeddedt.embeddium.impl.gl.shader.ShaderParser.parseShader(ShaderLoader.getShaderSource("sodium:include/chunk_vertex.glsl"), ShaderLoader::getShaderSource,
+                ShaderConstants.builder().addAll(defines).build());
+        return "\n\n" + chunkVertexHeader + "\n\n";
     }
 
     private static void patchVanillaCore(Transformer translationUnit, VanillaParameters parameters) {

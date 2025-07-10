@@ -24,16 +24,11 @@ public enum IrisTerrainPass {
 		return this == SHADOW || this == SHADOW_CUTOUT;
 	}
 
-	public TerrainRenderPass toTerrainPass(RenderPassConfiguration configuration) {
-		switch (this) {
-			case SHADOW, GBUFFER_SOLID:
-				return configuration.defaultSolidMaterial().pass;
-			case SHADOW_CUTOUT, GBUFFER_CUTOUT:
-				return configuration.defaultCutoutMippedMaterial().pass;
-			case GBUFFER_TRANSLUCENT:
-				return configuration.defaultTranslucentMaterial().pass;
-			default:
-				return null;
-		}
+	public TerrainRenderPass toTerrainPass(RenderPassConfiguration<?> configuration) {
+        return switch (this) {
+            case SHADOW, GBUFFER_SOLID -> configuration.defaultSolidMaterial().pass;
+            case SHADOW_CUTOUT, GBUFFER_CUTOUT -> configuration.defaultCutoutMippedMaterial().pass;
+            case GBUFFER_TRANSLUCENT -> configuration.defaultTranslucentMaterial().pass;
+        };
 	}
 }

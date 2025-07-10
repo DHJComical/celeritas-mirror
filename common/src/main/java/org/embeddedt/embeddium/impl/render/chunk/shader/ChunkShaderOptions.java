@@ -2,7 +2,6 @@ package org.embeddedt.embeddium.impl.render.chunk.shader;
 
 import org.embeddedt.embeddium.impl.gl.shader.ShaderConstants;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 
 public record ChunkShaderOptions(ChunkFogMode fog, TerrainRenderPass pass) {
 
@@ -21,16 +20,8 @@ public record ChunkShaderOptions(ChunkFogMode fog, TerrainRenderPass pass) {
         var vertexType = pass.vertexType();
         var primitiveType = pass.primitiveType();
 
-        constants.addAll(vertexType.getDefines());
+        vertexType.getDefines().forEach(constants::add);
         constants.addAll(primitiveType.getDefines());
-
-        constants.add("VERT_POS_SCALE", String.valueOf(vertexType.getPositionScale()));
-        constants.add("VERT_POS_OFFSET", String.valueOf(vertexType.getPositionOffset()));
-        constants.add("VERT_TEX_SCALE", String.valueOf(vertexType.getTextureScale()));
-
-        if(!ShaderModBridge.emulateLegacyColorBrightnessFormat()) {
-            constants.add("USE_VANILLA_COLOR_FORMAT");
-        }
 
         return constants.build();
     }

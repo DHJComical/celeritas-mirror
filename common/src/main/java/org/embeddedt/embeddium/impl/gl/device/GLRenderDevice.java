@@ -254,14 +254,6 @@ public class GLRenderDevice implements RenderDevice {
 
             return buffer;
         }
-
-        @Override
-        public GlTessellation createTessellation(TessellationBinding[] bindings) {
-            GlVertexArrayTessellation tessellation = new GlVertexArrayTessellation(new GlVertexArray(), bindings);
-            tessellation.init(this);
-
-            return tessellation;
-        }
     }
 
     private class ImmediateDrawCommandList implements DrawCommandList {

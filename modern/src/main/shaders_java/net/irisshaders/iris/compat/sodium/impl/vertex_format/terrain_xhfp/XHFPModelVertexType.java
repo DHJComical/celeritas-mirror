@@ -24,6 +24,8 @@ public class XHFPModelVertexType implements ChunkVertexType {
 
     private static final int TEXTURE_MAX_VALUE = 32768;
 
+    public static final float MID_TEX_SCALE = 1.0f / TEXTURE_MAX_VALUE;
+
     public static int encodeTexture(float u, float v) {
         return ((Math.round(u * TEXTURE_MAX_VALUE) & 0xFFFF) << 0) |
                 ((Math.round(v * TEXTURE_MAX_VALUE) & 0xFFFF) << 16);

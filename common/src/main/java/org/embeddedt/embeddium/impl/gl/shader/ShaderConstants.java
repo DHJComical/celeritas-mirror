@@ -66,5 +66,10 @@ public class ShaderConstants {
             }
             return this;
         }
+
+        public ShaderConstants.Builder addAll(Map<String, String> defines) {
+            defines.forEach(this::add);
+            return this;
+        }
     }
 }

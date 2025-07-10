@@ -416,7 +416,6 @@ public class SodiumGameOptionPages {
                         .setName(ComponentUtil.translatable("sodium.options.use_compact_vertex_format.name"))
                         .setTooltip(ComponentUtil.translatable("sodium.options.use_compact_vertex_format.tooltip"))
                         .setControl(TickBoxControl::new)
-                        .setEnabled(!ShaderModBridge.areShadersEnabled())
                         .setImpact(OptionImpact.MEDIUM)
                         .setBinding((opts, value) -> {
                             opts.performance.useCompactVertexFormat = value;
