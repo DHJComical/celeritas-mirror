@@ -779,7 +779,7 @@ public abstract class RenderSectionManager {
 
         while (counts.hasNext()) {
             var entry = counts.next();
-            var duration = timingMap.get(entry.getKey());
+            var duration = timingMap.getLong(entry.getKey());
             String time;
             if (duration == 0) {
                 time = "?? ms";
