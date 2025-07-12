@@ -74,10 +74,10 @@ public abstract class RenderSectionManager {
 
     private final int minSection, maxSection;
 
-    private final RenderListManager renderListManager;
+    protected final RenderListManager renderListManager;
 
     @Nullable
-    private final RenderListManager shadowRenderListManager;
+    protected final RenderListManager shadowRenderListManager;
 
     protected final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
 
