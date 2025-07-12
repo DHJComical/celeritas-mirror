@@ -33,7 +33,6 @@ import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.embeddedt.embeddium.impl.util.iterator.ByteIterator;
-import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 import org.embeddedt.embeddium.impl.util.suppliers.ExpiringSupplier;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
@@ -84,7 +83,18 @@ public abstract class RenderSectionManager {
 
     private final Object2ObjectOpenHashMap<TerrainRenderPass, TimerQueryManager> renderPassDrawTimers = new Object2ObjectOpenHashMap<>();
 
-    public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier, BiFunction<RenderDevice, RenderPassConfiguration<?>, ChunkRenderer> chunkRenderer, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
+    @Deprecated
+    public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier,
+                                BiFunction<RenderDevice, RenderPassConfiguration<?>, ChunkRenderer> chunkRenderer,
+                                int renderDistance, CommandList commandList, int minSection, int maxSection,
+                                int requestedThreads) {
+        this(configuration, contextSupplier, chunkRenderer, renderDistance, commandList, minSection, maxSection, requestedThreads, false);
+    }
+
+    public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier,
+                                BiFunction<RenderDevice, RenderPassConfiguration<?>, ChunkRenderer> chunkRenderer,
+                                int renderDistance, CommandList commandList, int minSection, int maxSection,
+                                int requestedThreads, boolean hasShadowPass) {
         this.chunkRenderer = chunkRenderer.apply(RenderDevice.INSTANCE, configuration);
 
         this.renderPassConfiguration = configuration;
@@ -98,7 +108,7 @@ public abstract class RenderSectionManager {
         this.minSection = minSection;
         this.maxSection = maxSection;
         this.renderListManager = new RenderListManager(this.minSection, this.maxSection, this.getAsyncOcclusionMode() == AsyncOcclusionMode.EVERYTHING, this.createSectionTicker());
-        if (ShaderModBridge.areShadersEnabled()) {
+        if (hasShadowPass) {
             this.shadowRenderListManager = new RenderListManager(this.minSection, this.maxSection, this.getAsyncOcclusionMode() != AsyncOcclusionMode.NONE, this.createSectionTicker());
         } else {
             this.shadowRenderListManager = null;
@@ -248,8 +258,7 @@ public abstract class RenderSectionManager {
     private float getSearchDistance() {
         float distance;
 
-        // TODO: does *every* shaderpack really disable fog?
-        if (this.useFogOcclusion() && !ShaderModBridge.areShadersEnabled()) {
+        if (this.useFogOcclusion()) {
             distance = this.getEffectiveRenderDistance();
         } else {
             distance = this.getRenderDistance();
