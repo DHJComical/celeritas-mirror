@@ -20,6 +20,7 @@ import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks.ChunkBuilderMeshingTask;
 import org.embeddedt.embeddium.impl.modern.render.chunk.config.ModernRenderPassConfigurationBuilder;
+import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
@@ -55,7 +56,8 @@ public class ModernRenderSectionManager extends RenderSectionManager {
                 commandList,
                 WorldUtil.getMinSection(world),
                 WorldUtil.getMaxSection(world),
-                Celeritas.options().performance.chunkBuilderThreads);
+                Celeritas.options().performance.chunkBuilderThreads,
+                ShaderModBridge.areShadersEnabled());
         this.world = world;
         this.sectionCache = new ClonedChunkSectionCache(this.world);
     }
@@ -130,7 +132,8 @@ public class ModernRenderSectionManager extends RenderSectionManager {
 
     @Override
     protected boolean useFogOcclusion() {
-        return Celeritas.options().performance.useFogOcclusion;
+        // TODO: does *every* shaderpack really disable fog?
+        return Celeritas.options().performance.useFogOcclusion && !ShaderModBridge.areShadersEnabled();
     }
 
     @Override

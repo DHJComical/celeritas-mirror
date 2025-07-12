@@ -1,12 +1,9 @@
 package org.embeddedt.embeddium.impl.render.chunk.vertex.format;
 
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
-import org.embeddedt.embeddium.impl.render.ShaderModBridge;
-import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public interface ChunkVertexType {
