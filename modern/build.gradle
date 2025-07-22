@@ -271,6 +271,13 @@ unimined.minecraft {
 
 }
 
+sourceSets {
+    test {
+        compileClasspath += main.compileClasspath
+        runtimeClasspath += main.runtimeClasspath
+    }
+}
+
 tasks.named("runClient") {
     workingDir = project.getLayout().getProjectDirectory().dir("run").asFile
 }
@@ -279,6 +286,9 @@ dependencies {
     compileOnly("org.projectlombok:lombok:1.18.30")
     compileOnly('com.google.code.findbugs:jsr305:3.0.2')
     annotationProcessor("org.projectlombok:lombok:1.18.30")
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.13.4'
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     shadow(project(":common")) {
         transitive = false
@@ -381,6 +391,10 @@ dependencies {
 
     // Mod compat dependencies
     ModDependencyCollector.addModDependencies(project)
+}
+
+test {
+    useJUnitPlatform()
 }
 
 jar {
