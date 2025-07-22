@@ -99,6 +99,8 @@ public class FluidRenderer {
     private final ChunkColorWriter colorEncoder;
     private final MojangVertexConsumer vertexConsumer = new MojangVertexConsumer();
 
+    private final FluidOcclusionCache occlusionCache = new FluidOcclusionCache();
+
     //? if fabric && ffapi && >=1.17
     /*private final FabricFluidRenderer fabricFluidRenderer = new FabricFluidRenderer();*/
 
@@ -162,15 +164,18 @@ public class FluidRenderer {
         }
 
         VoxelShape sideShape = blockState.getFaceOcclusionShape(/*? if <1.21.2 {*/world, pos,/*?}*/ dir);
-        if (sideShape == Shapes.block()) {
+        if (sideShape == Shapes.block() || (sideShape != Shapes.empty() && Block.isShapeFullBlock(sideShape))) {
             // The face fills the 1x1 area, so the fluid is occluded
+            if (dir == Direction.UP) {
+                // Need to consider the side faces of the block too, as they might not be full and may reveal the
+                // fluid
+                var fullOcclusionShape = blockState.getOcclusionShape(/*? if <1.21.2 {*/world, pos/*?}*/);
+                return !this.occlusionCache.isTopFluidFacePotentiallyVisible(fullOcclusionShape);
+            }
             return true;
-        } else if (sideShape == Shapes.empty()) {
-            // The face does not exist, so the fluid is not occluded
-            return false;
         } else {
-            // Check if the face fills the 1x1 area
-            return Block.isShapeFullBlock(sideShape);
+            // The face does not fill the 1x1 area, so the fluid is not occluded
+            return false;
         }
     }
 
