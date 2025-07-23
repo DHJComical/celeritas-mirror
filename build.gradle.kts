@@ -61,10 +61,16 @@ val publishTask = tau.publishing.publish {
 
             evaluationDependsOn(it.project.buildTreePath)
 
-            dependsOn(it.project.tasks.named<Copy>("packageJar"))
+            val packageJarTask: Copy? = it.project.tasks.findByName("packageJar") as Copy?
+
+            if (packageJarTask == null) {
+                return@forEach
+            }
+
+            dependsOn(packageJarTask)
 
             modArtifact {
-                files(it.project.provider { it.project.tasks.named<Copy>("packageJar").get().inputs.files.singleFile })
+                files(it.project.provider { packageJarTask.inputs.files.singleFile })
 
                 minecraftVersionRange = bs.ModLoader.getMinecraftVersion(name)
                 javaVersions.add(JavaVersion.VERSION_21)

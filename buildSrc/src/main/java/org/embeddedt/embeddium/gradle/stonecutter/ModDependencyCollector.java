@@ -6,6 +6,7 @@ import kotlin.Unit;
 import org.gradle.api.Project;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 
 public class ModDependencyCollector {
     record Dependency(String cursePrefix, List<DependencyCondition> versionConditions) {
@@ -81,7 +82,7 @@ public class ModDependencyCollector {
         });
     }
 
-    public static void addModDependencies(Project project) {
+    public static void obtainDeps(Project project, BiConsumer<String, String> dependencyHandler) {
         var scBuild = project.getExtensions().getByType(StonecutterBuildExtension.class);
         var mcVersion = scBuild.getCurrent().getVersion();
         var configurationName = LOAD_IN_DEV ? "modImplementation" : "modCompileOnly";
@@ -89,7 +90,7 @@ public class ModDependencyCollector {
             var vers = dep.versionConditions.stream().filter(c -> scBuild.eval(mcVersion, c.evalCondition)).findFirst();
             vers.ifPresent(dependencyCondition -> {
                 String cfg = Objects.requireNonNullElse(dependencyCondition.configurationName, configurationName);
-                project.getDependencies().add(cfg, dep.cursePrefix + dependencyCondition.version);
+                dependencyHandler.accept(cfg, dep.cursePrefix + dependencyCondition.version);
             });
         });
     }
