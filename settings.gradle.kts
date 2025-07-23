@@ -86,18 +86,27 @@ createStonecutterProject("babric", listOf("1.2.5", "1.0.0-beta.7.3", "1.0.0-beta
 data class CeleritasTarget(val friendlyName: String, val loaders: List<String>, val semanticName: String = friendlyName)
 
 createStonecutterProject("modern", listOf(
-        CeleritasTarget("1.20.1", listOf("forge", "fabric")),
-        CeleritasTarget("1.16.5", listOf("forge")),
-        CeleritasTarget("1.18.2", listOf("forge")),
+        CeleritasTarget("1.20.1", listOf("forge")),
+        //CeleritasTarget("1.16.5", listOf("forge")),
+        //CeleritasTarget("1.18.2", listOf("forge")),
         //CeleritasTarget("1.20.4", listOf("neoforge")),
-        CeleritasTarget("1.21.1", listOf("fabric", "neoforge")),
+        //CeleritasTarget("1.21.1", listOf("fabric", "neoforge")),
         //CeleritasTarget("1.19.2", listOf("forge", "fabric"))
 ), { it.friendlyName }) { targets ->
-    centralScript = "build.gradle"
     targets.forEach {
         val target = it
         it.loaders.forEach { loader ->
-            vers(target.friendlyName + "-" + loader, target.semanticName)
+            val versionConfig = vers(target.friendlyName + "-" + loader, target.semanticName)
+            val buildscriptType = if (loader == "neoforge" || (loader == "forge" && stonecutter.eval(target.semanticName, ">=1.17"))) {
+                "mdg"
+            } else if (loader == "forge") {
+                "unimined"
+            } else if (loader == "fabric") {
+                "loom"
+            } else {
+                throw IllegalArgumentException("Unhandled loader/version combo: ${target.friendlyName}-${loader}")
+            }
+            versionConfig.buildscript = "build.${buildscriptType}.gradle.kts"
         }
     }
 }
