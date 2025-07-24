@@ -92,7 +92,7 @@ public abstract class GenerateATFromAWTask extends DefaultTask {
 
         @Override
         public void visitHeader(String namespace) {
-            writeLine("# accessWidener for " + namespace + " names");
+            writeLine("# generated AT for " + namespace + " names");
         }
 
         @Override

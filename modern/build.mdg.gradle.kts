@@ -6,6 +6,7 @@ import net.neoforged.moddevgradle.legacyforge.dsl.ObfuscationExtension
 import net.neoforged.nfrtgradle.CreateMinecraftArtifacts
 import org.embeddedt.embeddium.gradle.build.extensions.versionedProperty
 import org.embeddedt.embeddium.gradle.fabric.remapper.GenerateATFromAWTask
+import org.embeddedt.embeddium.gradle.fabric.remapper.GenerateNamedToIntermediaryTSRGTask
 import org.embeddedt.embeddium.gradle.mdg.remapper.ReobfuscateCodeAndMixinsTask
 import org.embeddedt.embeddium.gradle.stonecutter.ModDependencyCollector
 import org.gradle.kotlin.dsl.named
@@ -47,10 +48,15 @@ val config: MDGConfig = if (modLoader == ModLoader.NEOFORGE) {
 } else {
     apply(plugin = "net.neoforged.moddev.legacyforge")
     val legacyForge = project.extensions.getByName("legacyForge") as LegacyForgeExtension
-    legacyForge.version = "1.20.1-47.3.0"
+    legacyForge.version = versionedProperty("forge")
     val obfuscation = project.extensions.getByType<ObfuscationExtension>()
+    val generateNamedToIntermediary = tasks.register<GenerateNamedToIntermediaryTSRGTask>("generateNamedToIntermediaryTSRG") {
+        tsrgPath = layout.buildDirectory.file("generated/namedToIntermediaryCeleritas.tsrg")
+        forgeVersion = legacyForge.version
+    }
     generateAccessTransformer.configure {
-        tsrgMappings = obfuscation.namedToSrgMappings
+        tsrgMappings = generateNamedToIntermediary.flatMap { it -> it.tsrgPath }
+        dependsOn(generateNamedToIntermediary)
     }
     tasks.named("reobfJar").configure {
         enabled = false
@@ -135,15 +141,23 @@ dependencies {
         for (module in rootProject.property("fabric_api_modules").toString().split(",")) {
             compileOnly(fabricApiModuleFinder.module(modLoader, module,ffapiVersion))
         }
-
-        compileOnly("net.fabricmc:fabric-loader:${rootProject.property("fabricloader")}")
     }
+
+    compileOnly("net.fabricmc:fabric-loader:${rootProject.property("fabricloader")}")
+
     if (modLoader != ModLoader.NEOFORGE) {
         val mixinExtrasVersion = rootProject.property("mixinextras").toString()
         compileOnly("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
 
         implementation("io.github.llamalad7:mixinextras-${modLoader.friendlyName}:$mixinExtrasVersion")
         "jarJar"("io.github.llamalad7:mixinextras-${modLoader.friendlyName}:$mixinExtrasVersion")
+    }
+
+    if (stonecutter.eval(minecraftVersion, "<1.19.3")) {
+        val jomlDep = "org.joml:joml:${rootProject.property("joml_version")}"
+        implementation(jomlDep)
+        "jarJar"(jomlDep)
+        "additionalRuntimeClasspath"(jomlDep)
     }
 
     ModDependencyCollector.obtainDeps(project) { cfg, dep ->
