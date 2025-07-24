@@ -7,7 +7,7 @@ import java.net.URI
 
 plugins {
     id("celeritas.platform-conventions")
-    id("celeritas.unimined-platform-conventions")
+    id("xyz.wagyourtail.unimined") version "1.3.15-SNAPSHOT"
 }
 
 repositories {

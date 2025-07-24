@@ -1,10 +1,14 @@
 import bs.ModLoader
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.neoforged.moddevgradle.dsl.ModDevExtension
 import net.neoforged.moddevgradle.legacyforge.dsl.LegacyForgeExtension
 import net.neoforged.moddevgradle.legacyforge.dsl.ObfuscationExtension
+import net.neoforged.nfrtgradle.CreateMinecraftArtifacts
 import org.embeddedt.embeddium.gradle.build.extensions.versionedProperty
 import org.embeddedt.embeddium.gradle.fabric.remapper.GenerateATFromAWTask
+import org.embeddedt.embeddium.gradle.mdg.remapper.ReobfuscateCodeAndMixinsTask
 import org.embeddedt.embeddium.gradle.stonecutter.ModDependencyCollector
+import org.gradle.kotlin.dsl.named
 
 plugins {
     // Apply the plugin. You can find the latest version at https://projects.neoforged.net/neoforged/ModDevGradle
@@ -21,6 +25,8 @@ version = rootProject.version
 val modLoader = ModLoader.fromProject(project)!!
 val minecraftVersion = ModLoader.getMinecraftVersion(project)!!
 
+val defaultArchiveBaseName = "celeritas-${modLoader.friendlyName}-mc${minecraftVersion.replace("^1\\.".toRegex(), "")}"
+
 val generatedATPath = layout.buildDirectory.file("generated/accesstransformer.cfg")
 
 val generateAccessTransformer = tasks.register<GenerateATFromAWTask>("generateAccessTransformer") {
@@ -28,19 +34,39 @@ val generateAccessTransformer = tasks.register<GenerateATFromAWTask>("generateAc
     accessWidenerPath.set(rootProject.file("modern/src/main/resources/embeddium.accesswidener"))
 }
 
-val modDevExtension: ModDevExtension = if (modLoader == ModLoader.NEOFORGE) {
+class MDGConfig(val modDevExtension: ModDevExtension, val productionJarTask: String)
+
+tasks.named<Jar>("jar") {
+    archiveBaseName = defaultArchiveBaseName
+    archiveClassifier.set("deobf")
+}
+
+val config: MDGConfig = if (modLoader == ModLoader.NEOFORGE) {
     apply(plugin = "net.neoforged.moddev")
-    project.extensions.getByName("neoForge") as ModDevExtension
+    MDGConfig(project.extensions.getByName("neoForge") as ModDevExtension, "jar")
 } else {
     apply(plugin = "net.neoforged.moddev.legacyforge")
     val legacyForge = project.extensions.getByName("legacyForge") as LegacyForgeExtension
     legacyForge.version = "1.20.1-47.3.0"
+    val obfuscation = project.extensions.getByType<ObfuscationExtension>()
     generateAccessTransformer.configure {
-        val obfuscation = project.extensions.getByType<ObfuscationExtension>()
         tsrgMappings = obfuscation.namedToSrgMappings
     }
-    legacyForge
+    tasks.named("reobfJar").configure {
+        enabled = false
+    }
+    tasks.register<ReobfuscateCodeAndMixinsTask>("celeritasRemapJar") {
+        tsrgMappings = obfuscation.namedToSrgMappings
+        deobfMinecraftJar = tasks.named<CreateMinecraftArtifacts>("createMinecraftArtifacts").flatMap { it -> it.compiledArtifact }
+        classpath = sourceSets.main.get().compileClasspath
+        archiveBaseName.set(defaultArchiveBaseName)
+        archiveClassifier.set("reobf")
+        input = tasks.named<Jar>("jar").flatMap { it -> it.archiveFile }
+    }
+    MDGConfig(legacyForge, "celeritasRemapJar")
 }
+
+val modDevExtension = config.modDevExtension
 
 val parchmentVersion = versionedProperty("parchment_version")
 
@@ -129,4 +155,34 @@ tasks.named<Jar>("jar") {
     manifest {
         attributes.put("MixinConfigs", modMixinConfigs.joinToString(","))
     }
+}
+
+tasks.named<ProcessResources>("processResources") {
+    from(generateAccessTransformer.flatMap { it -> it.accessTransformerPath }) {
+        into("META-INF/")
+    }
+}
+
+val shadowJar = tasks.register<ShadowJar>("shadowRemapJar") {
+    archiveBaseName = defaultArchiveBaseName
+    archiveClassifier = ""
+    configurations = listOf(project.configurations.shadow.get())
+    from(tasks.named(config.productionJarTask))
+    manifest.inheritFrom(tasks.named<Jar>("jar").get().manifest)
+    if (modLoader == ModLoader.FORGE && stonecutter.eval(minecraftVersion, "<1.17")) {
+        relocate("com.llamalad7.mixinextras", "org.embeddedt.embeddium.impl.shadow.mixinextras")
+        relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml")
+    }
+    mergeServiceFiles()
+
+    from("COPYING", "COPYING.LESSER", "README.md")
+}
+
+val packageJar = tasks.register("packageJar", Copy::class) {
+    from(shadowJar.get().archiveFile)
+    into("${rootProject.layout.buildDirectory.get()}/libs/${project.version}")
+}
+
+tasks.named("assemble") {
+    dependsOn(packageJar)
 }

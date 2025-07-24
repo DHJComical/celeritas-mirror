@@ -41,4 +41,3 @@ bin/
 **/run/
 
 /versions-local.json
-/modern/versions/*/src/main/resources/META-INF/accesstransformer.cfg

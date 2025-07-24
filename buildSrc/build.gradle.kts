@@ -5,7 +5,6 @@ plugins {
 }
 
 dependencies {
-    compileOnly("net.fabricmc:mapping-io:0.3.0")
     implementation("com.google.guava:guava:33.1.0-jre")
     implementation("org.ow2.asm:asm:9.6")
     implementation("org.ow2.asm:asm-tree:9.6")
@@ -15,9 +14,11 @@ dependencies {
     implementation("club.minnced:discord-webhooks:0.8.4")
     implementation("net.fabricmc:fabric-loader:0.15.11")
     implementation("net.fabricmc:access-widener:2.1.0")
+    implementation("net.fabricmc:tiny-remapper:0.11.0")
+    implementation("net.fabricmc:mapping-io:0.7.1")
+    implementation("net.fabricmc:mapping-io-extras:0.7.1")
     implementation("net.neoforged:srgutils:1.0.0")
     implementation("org.apache.commons:commons-compress:1.26.0")
-    implementation("xyz.wagyourtail.unimined:xyz.wagyourtail.unimined.gradle.plugin:1.3.15-SNAPSHOT")
     implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.0")
     implementation("dev.kikugie:stonecutter:0.7-beta.2")
 }
