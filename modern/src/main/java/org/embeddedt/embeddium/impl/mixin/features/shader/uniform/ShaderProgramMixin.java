@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.shader.uniform;
 
-//? if >=1.17 {
+//? if >=1.17 && <1.21.5 {
 import com.mojang.blaze3d.shaders.Uniform;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;

@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.light;
 
-//? if forgelike && >=1.19 {
+//? if forgelike && >=1.19 && <1.21.5 {
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;

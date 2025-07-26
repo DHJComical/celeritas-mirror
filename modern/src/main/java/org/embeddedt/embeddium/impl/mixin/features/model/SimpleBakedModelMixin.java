@@ -6,12 +6,12 @@ import net.minecraftforge.client.extensions.IForgeBakedModel;
 import net.minecraftforge.client.model.data.ModelData;
 //?} else if forge && <1.19 {
 /*import net.minecraftforge.client.model.data.IModelData;
-*///?} else if neoforge {
+*///?} else if neoforge && <1.21.5 {
 /*import net.neoforged.neoforge.client.extensions.IBakedModelExtension;
 import net.neoforged.neoforge.client.model.data.ModelData;
 *///?}
 
-//? if forgelike {
+//? if forgelike && <1.21.5 {
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.SimpleBakedModel;

@@ -63,6 +63,18 @@ stonecutter.parameters {
         else -> 4
     }
     swaps["doAnimateTickBiomeLambda"] = "@Shadow private void ${doAnimateTickBiomeLambdaName}(BlockPos.MutableBlockPos pos, AmbientParticleSettings settings) {throw new AssertionError();} private final Consumer<AmbientParticleSettings> embeddium\$particleSettingsConsumer = settings -> ${doAnimateTickBiomeLambdaName}(embeddium\$particlePos, settings);"
+
+    replacements.string {
+        direction = eval(current.version, ">=1.21.5")
+        phase = "first"
+        replace("net.neoforged.neoforge.client.model.data", "net.neoforged.neoforge.model.data")
+    }
+
+    replacements.string {
+        direction = eval(current.version, ">=1.21.5")
+        phase = "first"
+        replace("com.mojang.blaze3d.platform.GlStateManager", "com.mojang.blaze3d.opengl.GlStateManager")
+    }
 }
 
 ModDependencyCollector.defineConsts(stonecutter)

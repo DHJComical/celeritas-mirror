@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.gl.compat;
 
+//? if <1.21.5 {
+
 //? if >=1.17
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
@@ -21,8 +23,9 @@ public class FogHelper implements FogService {
         /*return GlStateManager.FOG.end;
         *///?} else if <1.21.2 {
         return RenderSystem.getShaderFogEnd();
-        //?} else
+        //?} else {
         /*return RenderSystem.getShaderFog().end();*/
+        //?}
     }
 
     public float getFogStart() {
@@ -102,3 +105,61 @@ public class FogHelper implements FogService {
         return ChunkFogMode.SMOOTH;
     }
 }
+//?}
+
+//? if >=1.21.5 {
+
+/*import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.fog.FogData;
+import org.embeddedt.embeddium.impl.mixin.core.render.world.GameRendererAccessor;
+import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
+import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkFogMode;
+import org.joml.Vector4f;
+
+public class FogHelper implements FogService {
+    public interface FogDataGetter {
+        FogData celeritas$getLastFogData();
+        Vector4f celeritas$getLastFogColor();
+    }
+
+    private static FogDataGetter fogRenderer() {
+        return (FogDataGetter)((GameRendererAccessor)Minecraft.getInstance().gameRenderer).celeritas$getFogRenderer();
+    }
+
+    @Override
+    public float getFogEnd() {
+        return fogRenderer().celeritas$getLastFogData().renderDistanceEnd;
+    }
+
+    @Override
+    public float getFogStart() {
+        return fogRenderer().celeritas$getLastFogData().renderDistanceStart;
+    }
+
+    @Override
+    public float getFogDensity() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getFogShapeIndex() {
+        return 1; // TODO
+    }
+
+    @Override
+    public float getFogCutoff() {
+        return getFogEnd();
+    }
+
+    @Override
+    public float[] getFogColor() {
+        var colorVec = fogRenderer().celeritas$getLastFogColor();
+        return new float[] { colorVec.x, colorVec.y, colorVec.z, colorVec.w };
+    }
+
+    @Override
+    public ChunkFogMode getFogMode() {
+        return ChunkFogMode.SMOOTH;
+    }
+}
+*///?}

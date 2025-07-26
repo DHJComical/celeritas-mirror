@@ -10,7 +10,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import org.embeddedt.embeddium.api.ChunkMeshEvent;
 import org.embeddedt.embeddium.impl.Celeritas;
 
-@EventBusSubscriber(modid = Celeritas.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = Celeritas.MODID, value = Dist.CLIENT/^? if <1.21.5 {^/, bus = EventBusSubscriber.Bus.GAME/^?}^/)
 public class AddSectionGeometryHandler {
     private static final ThreadLocal<PoseStack> DUMMY_POSE_STACK = ThreadLocal.withInitial(PoseStack::new);
 

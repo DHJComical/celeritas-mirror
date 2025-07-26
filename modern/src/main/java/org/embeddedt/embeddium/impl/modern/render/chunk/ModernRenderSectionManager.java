@@ -19,7 +19,6 @@ import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks.ChunkBuilderMeshingTask;
-import org.embeddedt.embeddium.impl.modern.render.chunk.config.ModernRenderPassConfigurationBuilder;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
@@ -48,7 +47,7 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     @Getter
     private final ClonedChunkSectionCache sectionCache;
 
-    protected ModernRenderSectionManager(RenderPassConfiguration<RenderType> configuration, ClientLevel world, int renderDistance, CommandList commandList) {
+    protected ModernRenderSectionManager(RenderPassConfiguration<?> configuration, ClientLevel world, int renderDistance, CommandList commandList) {
         super(configuration,
                 () -> new ModernChunkBuildContext(world, configuration),
                 ModernChunkRenderer::new,
@@ -63,7 +62,10 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     }
 
     public static ModernRenderSectionManager create(ChunkVertexType vertexType, ClientLevel world, int renderDistance, CommandList commandList) {
-        var renderPassConfiguration = ModernRenderPassConfigurationBuilder.build(vertexType);
+        //? if <1.21.5 {
+        var renderPassConfiguration = org.embeddedt.embeddium.impl.modern.render.chunk.config.ModernRenderPassConfigurationBuilder.build(vertexType);
+        //?} else
+        /*var renderPassConfiguration = org.embeddedt.embeddium.impl.modern.render.chunk.config.PostmodernRenderPassConfigurationBuilder.build(vertexType);*/
         return new ModernRenderSectionManager(renderPassConfiguration, world, renderDistance, commandList);
     }
 
