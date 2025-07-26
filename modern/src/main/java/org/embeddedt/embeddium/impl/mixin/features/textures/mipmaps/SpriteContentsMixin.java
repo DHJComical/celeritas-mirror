@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.impl.mixin.features.textures.mipmaps;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import org.embeddedt.embeddium.api.options.storage.MinecraftOptionsStorage;
 import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.impl.util.NativeImageHelper;
 import org.embeddedt.embeddium.impl.util.color.ColorSRGB;
@@ -53,6 +52,14 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
     @Unique
     private SpriteTransparencyLevel embeddium$transparencyLevel;
 
+
+    private static int getMipmapLevels() {
+        //? if >=1.19 {
+        return Minecraft.getInstance().options.mipmapLevels().get();
+        //?} else
+        /*return Minecraft.getInstance().options.mipmapLevels;*/
+    }
+
     // While Fabric allows us to @Inject into the constructor here, that's just a specific detail of FabricMC's mixin
     // fork. Upstream Mixin doesn't allow arbitrary @Inject usage in constructor. However, we can use @ModifyVariable
     // just fine, in a way that hopefully doesn't conflict with other mods.
@@ -72,7 +79,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
     private void sodium$beforeGenerateMipLevels(SpriteContents instance, NativeImage nativeImage, ResourceLocation identifier) {
         // Only fill in transparent colors if mipmaps are on and the texture name does not contain "leaves".
         // We're injecting after the "name" field has been set, so this is safe even though we're in a constructor.
-        embeddium$processTransparentImages(nativeImage, MinecraftOptionsStorage.getMipmapLevels() > 0 && this.name.getPath().startsWith("block/") && !this.name.getPath().contains("leaves"));
+        embeddium$processTransparentImages(nativeImage, getMipmapLevels() > 0 && this.name.getPath().startsWith("block/") && !this.name.getPath().contains("leaves"));
 
         this.originalImage = nativeImage;
     }
@@ -81,7 +88,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
     private void sodium$beforeGenerateMipLevels(TextureAtlasSprite instance, ResourceLocation name, TextureAtlas pAtlas, TextureAtlasSprite.Info pSpriteInfo, int pMipLevel, int pStorageX, int pStorageY, int pX, int pY, NativeImage pImage) {
         // Only fill in transparent colors if mipmaps are on and the texture name does not contain "leaves".
         // We're injecting after the "name" field has been set, so this is safe even though we're in a constructor.
-        embeddium$processTransparentImages(pImage, MinecraftOptionsStorage.getMipmapLevels() > 0 && !name.getPath().contains("leaves"));
+        embeddium$processTransparentImages(pImage, getMipmapLevels() > 0 && !name.getPath().contains("leaves"));
 
         this.name = name;
     }
@@ -90,7 +97,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
     private void sodium$beforeGenerateMipLevels(TextureAtlasSprite instance, TextureAtlasSprite.Info info, TextureAtlas pAtlas, TextureAtlasSprite.Info pSpriteInfo, int pMipLevel, int pStorageX, int pStorageY, int pX, int pY, NativeImage pImage) {
         // Only fill in transparent colors if mipmaps are on and the texture name does not contain "leaves".
         // We're injecting after the "name" field has been set, so this is safe even though we're in a constructor.
-        embeddium$processTransparentImages(pImage, MinecraftOptionsStorage.getMipmapLevels() > 0 && !info.name().getPath().contains("leaves"));
+        embeddium$processTransparentImages(pImage, getMipmapLevels() > 0 && !info.name().getPath().contains("leaves"));
 
         this.info = info;
     }

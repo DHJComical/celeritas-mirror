@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl;
 
-//? if forge && >=1.18 {
+//? if settings_gui && forge && >=1.18 {
 import net.minecraftforge.api.distmarker.Dist;
 //? if <1.19 {
 /*import net.minecraftforge.client.ConfigGuiHandler;

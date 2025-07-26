@@ -133,6 +133,16 @@ val stonecutterExt = project.extensions.getByType<StonecutterBuildExtension>()
 val modMixinConfigs = mutableListOf("embeddium.mixins.json")
 project.extra.set("celeritasMixinConfigs", modMixinConfigs)
 
+if (generateSequence(project) { it.parent }.any { it.name == "modern" }) {
+    if (stonecutterExt.constants.getOrDefault("settings_gui", false)) {
+        sourceSets {
+            main {
+                java.srcDir("src/main/gui_java")
+            }
+        }
+    }
+}
+
 tasks.named<ProcessResources>("processResources") {
     val mixinCompatLevel = if (stonecutterExt.eval(minecraftVersion, "<1.17")) {
         "JAVA_8"

@@ -1,5 +1,7 @@
 package net.irisshaders.iris.compat.sodium.impl.options;
 
+//? if settings_gui {
+
 import com.google.common.collect.ImmutableList;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.IrisCommon;
@@ -121,3 +123,4 @@ public class IrisSodiumOptions {
 		};
 	}
 }
+//?}

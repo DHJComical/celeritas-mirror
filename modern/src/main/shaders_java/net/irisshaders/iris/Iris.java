@@ -5,7 +5,10 @@ import com.mojang.blaze3d.platform.GlDebug;
 //? if fabric
 /*import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;*/
 import net.irisshaders.iris.compat.dh.DHCompat;
-import net.irisshaders.iris.compat.sodium.impl.options.IrisSodiumOptions;
+import net.irisshaders.iris.config.IrisConfig;
+import net.irisshaders.iris.gl.shader.ShaderCompileException;
+import net.irisshaders.iris.gl.shader.StandardMacros;
+import net.irisshaders.iris.gui.debug.DebugLoadFailedGridScreen;
 import net.irisshaders.iris.gui.screen.ShaderPackScreen;
 import net.irisshaders.iris.pipeline.ModernIrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.PipelineManager;
@@ -70,7 +73,8 @@ public class Iris {
 	public static void onLoadingComplete() {
 		Iris.getPipelineManager().preparePipeline(DimensionId.OVERWORLD);
 
-        IrisSodiumOptions.init();
+        //? if settings_gui
+        net.irisshaders.iris.compat.sodium.impl.options.IrisSodiumOptions.init();
 	}
 
 	public static void handleKeybinds(Minecraft minecraft) {
