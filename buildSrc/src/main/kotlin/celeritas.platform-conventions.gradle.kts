@@ -48,6 +48,7 @@ repositories {
         url = uri("https://maven.su5ed.dev/releases")
         content {
             includeGroupAndSubgroups("dev.su5ed.sinytra")
+            includeGroupAndSubgroups("org.sinytra")
         }
     }
     maven {
