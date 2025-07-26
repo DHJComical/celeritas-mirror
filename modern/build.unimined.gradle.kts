@@ -25,6 +25,10 @@ configurations.all {
             useVersion("9.6")
             because("Force ASM to a modern version that supports Java 21")
         }
+        if (requested.group == "org.lwjgl") {
+            useVersion("3.3.3")
+            because("Force LWJGL to a modern version that supports Java 21")
+        }
     }
 }
 
