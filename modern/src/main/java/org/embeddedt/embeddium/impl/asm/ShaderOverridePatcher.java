@@ -24,7 +24,7 @@ public class ShaderOverridePatcher {
                 continue;
             }
             var methodType = Type.getMethodType(m.desc);
-            if (methodType.getArgumentCount() != 0) {
+            if (methodType.getArgumentTypes().length != 0) {
                 continue;
             }
             if (!methodType.getReturnType().equals(returnType)) {

@@ -1,7 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin;
 
-//? if forge && <1.17
-/*import com.llamalad7.mixinextras.MixinExtrasBootstrap;*/
 import org.embeddedt.embeddium.impl.SodiumPreLaunch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,8 +48,12 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
 
             SodiumPreLaunch.onPreLaunch();
 
-            //? if forge && <1.17
-            /*MixinExtrasBootstrap.init();*/
+            //? if forge && <1.17 {
+            /*com.llamalad7.mixinextras.MixinExtrasBootstrap.init();
+            if (!net.minecraftforge.fml.loading.FMLLoader.isProduction()) {
+                org.spongepowered.asm.mixin.MixinEnvironment.setCompatibilityLevel(org.spongepowered.asm.mixin.MixinEnvironment.CompatibilityLevel.JAVA_18);
+            }
+            *///?}
 
             //? if forge && <=1.20.1
             org.embeddedt.embeddium.impl.asm.legacy.LegacyAddonPatcher.install();
