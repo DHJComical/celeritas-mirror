@@ -1,3 +1,4 @@
+//? if >=1.18 {
 package org.embeddedt.embeddium.impl.platform.unix;
 
 import org.jetbrains.annotations.Nullable;
@@ -21,3 +22,4 @@ public class Libc {
         }
     }
 }
+//? }
