@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.immediate.buffer_builder;
 
+//? if <1.21.5 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexBuffer;
@@ -64,3 +65,4 @@ public class VertexBufferMixin {
         return 0;
     }
 }
+//?}

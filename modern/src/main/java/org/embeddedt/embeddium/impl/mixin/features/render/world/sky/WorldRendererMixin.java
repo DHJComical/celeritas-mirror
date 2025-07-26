@@ -1,14 +1,9 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.world.sky;
 
-//? if >=1.21.2 {
-/*import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
-import net.minecraft.client.renderer.FogParameters;
-*///?}
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
 //? if >=1.17
 import net.minecraft.world.level.material.FogType;
@@ -61,7 +56,7 @@ public class WorldRendererMixin {
             ) {
     //?} else {
     /*@Inject(method = "addSkyPass", at = @At("HEAD"), cancellable = true)
-    private void preRenderSky(FrameGraphBuilder frameGraphBuilder, Camera camera, float f, FogParameters fogParameters, CallbackInfo ci) {
+    private void preRenderSky(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) Camera camera) {
     *///?}
         if (ShaderModBridge.areShadersEnabled()) {
             return;

@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
+//? if <1.21.5 {
+
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 //? if forgelike && >=1.19 {
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -320,3 +322,4 @@ public class MultipartBakedModelMixin {
     }
     *///?}
 }
+//?}

@@ -6,6 +6,7 @@ import net.minecraftforge.common.ForgeConfig;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 //?} else if neoforge {
 /*import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+//? if <1.21.5
 import net.neoforged.neoforge.common.NeoForgeConfig;
 *///?}
 
@@ -19,7 +20,7 @@ import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
-//? if >=1.19
+//? if >=1.19 && <1.21.5
 import org.embeddedt.embeddium.impl.modern.render.chunk.light.ForgeLightPipeline;
 
 public final class ForgeLoaderServices implements LoaderServices {
@@ -27,13 +28,13 @@ public final class ForgeLoaderServices implements LoaderServices {
     public boolean hasCustomLightPipeline() {
         //? if forge && >=1.19 {
         return ForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get();
-        //?} else if neoforge {
+        //?} else if neoforge && <1.21.5 {
         /*return NeoForgeConfig.CLIENT.experimentalForgeLightPipelineEnabled.get();
         *///?} else
         /*return false;*/
     }
 
-    //? if >=1.19 {
+    //? if >=1.19 && <1.21.5 {
     @Override
     public LightPipeline createCustomLightPipeline(LightMode mode, LightDataAccess cache) {
         return mode == LightMode.SMOOTH ? ForgeLightPipeline.smooth(cache) : ForgeLightPipeline.flat(cache);
