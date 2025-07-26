@@ -56,8 +56,6 @@ dependencies {
         isTransitive = false
     }
 
-    compileOnly("com.google.code.findbugs:jsr305:3.0.2")
-
     modImplementation("net.fabricmc:fabric-loader:${rootProject.property("fabricloader")}")
 
     val ffapiVersion = versionedProperty("fabric_api_version")
