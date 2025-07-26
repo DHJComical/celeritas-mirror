@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.gradle.stonecutter;
 
+import bs.ModLoader;
 import dev.kikugie.stonecutter.build.StonecutterBuildExtension;
 import dev.kikugie.stonecutter.controller.StonecutterControllerExtension;
 import kotlin.Unit;
@@ -82,10 +83,18 @@ public class ModDependencyCollector {
         });
     }
 
+    private static String getConfigurationName(Project project) {
+        String configurationName = LOAD_IN_DEV ? "implementation" : "compileOnly";
+        if (ModLoader.fromProject(project) != ModLoader.NEOFORGE) {
+            configurationName = "mod" + Character.toUpperCase(configurationName.charAt(0)) + configurationName.substring(1);
+        }
+        return configurationName;
+    }
+
     public static void obtainDeps(Project project, BiConsumer<String, String> dependencyHandler) {
         var scBuild = project.getExtensions().getByType(StonecutterBuildExtension.class);
         var mcVersion = scBuild.getCurrent().getVersion();
-        var configurationName = LOAD_IN_DEV ? "modImplementation" : "modCompileOnly";
+        var configurationName = getConfigurationName(project);
         dependencyMap(scBuild.getCurrent().getProject()).forEach((key, dep) -> {
             var vers = dep.versionConditions.stream().filter(c -> scBuild.eval(mcVersion, c.evalCondition)).findFirst();
             vers.ifPresent(dependencyCondition -> {

@@ -1,6 +1,7 @@
 import bs.ModLoader
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.neoforged.moddevgradle.dsl.ModDevExtension
+import net.neoforged.moddevgradle.dsl.NeoForgeExtension
 import net.neoforged.moddevgradle.legacyforge.dsl.LegacyForgeExtension
 import net.neoforged.moddevgradle.legacyforge.dsl.ObfuscationExtension
 import net.neoforged.nfrtgradle.CreateMinecraftArtifacts
@@ -44,7 +45,9 @@ tasks.named<Jar>("jar") {
 
 val config: MDGConfig = if (modLoader == ModLoader.NEOFORGE) {
     apply(plugin = "net.neoforged.moddev")
-    MDGConfig(project.extensions.getByName("neoForge") as ModDevExtension, "jar")
+    val neoForge = project.extensions.getByName("neoForge") as NeoForgeExtension
+    neoForge.version = versionedProperty("neoforge")
+    MDGConfig(neoForge, "jar")
 } else {
     apply(plugin = "net.neoforged.moddev.legacyforge")
     val legacyForge = project.extensions.getByName("legacyForge") as LegacyForgeExtension
