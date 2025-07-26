@@ -5,17 +5,60 @@ pluginManagement {
         mavenLocal()
         mavenCentral()
         gradlePluginPortal()
-        maven("https://maven.minecraftforge.net")
-        maven("https://repo.spongepowered.org/repository/maven-public/")
-        maven("https://maven.parchmentmc.org")
-        maven("https://maven.fabricmc.net")
-        maven("https://maven.architectury.dev")
-        maven("https://maven.neoforged.net/releases")
-        maven("https://maven.kikugie.dev/releases")
-        maven("https://maven.kikugie.dev/snapshots")
-        maven("https://maven.wagyourtail.xyz/releases")
-        maven("https://maven.wagyourtail.xyz/snapshots")
-        maven("https://maven.taumc.org/releases")
+        maven {
+            name = "sponge"
+            url = uri("https://repo.spongepowered.org/maven-public/")
+            content {
+                includeGroupAndSubgroups("org.spongepowered")
+            }
+        }
+        maven {
+            name = "Fabric Maven"
+            url = uri("https://maven.fabricmc.net/")
+            content {
+                includeGroupAndSubgroups("net.fabricmc")
+                includeGroup("fabric-loom")
+            }
+        }
+        maven("https://maven.minecraftforge.net/") {
+            content {
+                includeGroupAndSubgroups("net.minecraftforge")
+            }
+        }
+        maven("https://maven.neoforged.net/releases") {
+            content {
+                includeGroupAndSubgroups("net.neoforged")
+            }
+        }
+        maven("https://maven.kikugie.dev/releases") {
+            content {
+                includeGroupAndSubgroups("dev.kikugie")
+            }
+        }
+        maven("https://maven.kikugie.dev/snapshots") {
+            content {
+                includeGroupAndSubgroups("dev.kikugie")
+            }
+        }
+        maven {
+            name = "wagyourtail releases"
+            url = uri("https://maven.wagyourtail.xyz/releases")
+            content {
+                includeGroupAndSubgroups("xyz.wagyourtail")
+            }
+        }
+        maven {
+            name = "wagyourtail snapshots"
+            url = uri("https://maven.wagyourtail.xyz/snapshots")
+            content {
+                includeGroupAndSubgroups("xyz.wagyourtail")
+            }
+        }
+        maven("https://maven.taumc.org/releases") {
+            content {
+                includeGroupAndSubgroups("org.taumc")
+            }
+        }
     }
 
     plugins {
@@ -86,9 +129,9 @@ createStonecutterProject("babric", listOf("1.2.5", "1.0.0-beta.7.3", "1.0.0-beta
 data class CeleritasTarget(val friendlyName: String, val loaders: List<String>, val semanticName: String = friendlyName)
 
 createStonecutterProject("modern", listOf(
-        CeleritasTarget("1.20.1", listOf("forge")),
+        CeleritasTarget("1.20.1", listOf("forge", "fabric")),
         //CeleritasTarget("1.16.5", listOf("forge")),
-        CeleritasTarget("1.18.2", listOf("forge")),
+        //CeleritasTarget("1.18.2", listOf("forge")),
         //CeleritasTarget("1.20.4", listOf("neoforge")),
         //CeleritasTarget("1.21.1", listOf("fabric", "neoforge")),
         //CeleritasTarget("1.19.2", listOf("forge", "fabric"))

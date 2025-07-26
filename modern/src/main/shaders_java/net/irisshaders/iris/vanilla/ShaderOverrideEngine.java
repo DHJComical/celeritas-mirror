@@ -8,7 +8,9 @@ import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.programs.ModernShaderKey;
+import net.irisshaders.iris.pipeline.programs.ExtendedShader;
 import net.irisshaders.iris.shadows.ModernShadowRenderer;
+import net.minecraft.client.renderer.ShaderInstance;
 import org.embeddedt.embeddium.compat.mc.MCShaderInstance;
 
 import javax.annotation.Nullable;
@@ -21,6 +23,17 @@ import static net.irisshaders.iris.IrisLogging.IRIS_LOGGER;
 public class ShaderOverrideEngine {
     private static final Map<String, Supplier<MCShaderInstance>> iris$overrides = new Object2ObjectOpenHashMap<>();
     private static final Set<String> missingOverrides = new ObjectOpenHashSet<>();
+
+    @SuppressWarnings("unused") // called from ShaderOverridePatcher injection
+    public static @Nullable ShaderInstance wrapGameRendererReturn(@Nullable ShaderInstance shader) {
+        if (shader != null && !(shader instanceof ExtendedShader)) {
+            var override = getOverride(shader.getName());
+            if (override != null) {
+                return (ShaderInstance)(Object)override;
+            }
+        }
+        return shader;
+    }
 
     private static @Nullable MCShaderInstance iris$findOverride(ModernShaderKey key) {
         WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
