@@ -22,6 +22,7 @@ stonecutter.parameters {
     const("forgelike", configuredModLoader == ModLoader.NEOFORGE || configuredModLoader == ModLoader.FORGE)
 
     const("shaders", stonecutter.compare(current.version, "1.20") >= 0 && stonecutter.compare(current.version, "1.21.3") < 0)
+    const("settings_gui", stonecutter.compare(current.version, "1.21.5") < 0)
 
     val fabricApiVersion =
         if (configuredModLoader == ModLoader.FABRIC) {
