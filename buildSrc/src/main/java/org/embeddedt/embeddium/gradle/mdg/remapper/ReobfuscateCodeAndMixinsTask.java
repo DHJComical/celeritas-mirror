@@ -47,7 +47,6 @@ public abstract class ReobfuscateCodeAndMixinsTask extends Jar {
         IMappingProvider mappings = TinyRemapperMappingsHelper.create(mappingTree, "source", "target");
         TinyRemapper remapper = TinyRemapper.newRemapper()
                 .extension(new MixinExtension())
-                .extension(new MixinWildcardPatchExtension(mappingTree))
                 .withMappings(mappings)
                 .build();
 

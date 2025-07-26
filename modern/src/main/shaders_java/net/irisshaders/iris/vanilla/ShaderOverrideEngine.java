@@ -7,6 +7,7 @@ import net.irisshaders.iris.pathways.HandRenderer;
 import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
+import net.irisshaders.iris.pipeline.programs.ExtendedShader;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
 import net.irisshaders.iris.shadows.ShadowRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -19,6 +20,17 @@ import java.util.function.Supplier;
 public class ShaderOverrideEngine {
     private static final Map<String, Supplier<ShaderInstance>> iris$overrides = new Object2ObjectOpenHashMap<>();
     private static final Set<String> missingOverrides = new ObjectOpenHashSet<>();
+
+    @SuppressWarnings("unused") // called from ShaderOverridePatcher injection
+    public static @Nullable ShaderInstance wrapGameRendererReturn(@Nullable ShaderInstance shader) {
+        if (shader != null && !(shader instanceof ExtendedShader)) {
+            var override = getOverride(shader.getName());
+            if (override != null) {
+                return override;
+            }
+        }
+        return shader;
+    }
 
     private static @Nullable ShaderInstance iris$findOverride(ShaderKey key) {
         WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();

@@ -30,7 +30,7 @@ dependencies {
     val jcpp = "org.anarres:jcpp:1.4.14"
     val shaderDeps = arrayOf(glslTransformLib, jcpp)
 
-    val additionalDepConfig = listOf("additionalRuntimeClasspath").first { it -> configurations.findByName(it) != null }
+    val additionalDepConfig = listOf("additionalRuntimeClasspath").firstOrNull { it -> configurations.findByName(it) != null }
 
     shaderDeps.forEach {
         implementation(it) {
@@ -39,6 +39,8 @@ dependencies {
         shadow(it) {
             isTransitive = false
         }
-        add(additionalDepConfig, it)
+        if (additionalDepConfig != null) {
+            add(additionalDepConfig, it)
+        }
     }
 }

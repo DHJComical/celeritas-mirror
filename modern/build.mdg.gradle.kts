@@ -97,8 +97,7 @@ tasks.named("createMinecraftArtifacts") {
 
 modDevExtension.accessTransformers.from(generatedATPath)
 
-val modMixinConfigs = mutableListOf("embeddium.mixins.json")
-project.extra.set("celeritasMixinConfigs", modMixinConfigs)
+val modMixinConfigs = project.extra.get("celeritasMixinConfigs") as MutableList<String>
 
 if (stonecutter.constants.getOrDefault("shaders", false)) {
     apply(plugin = "celeritas.shader-conventions")

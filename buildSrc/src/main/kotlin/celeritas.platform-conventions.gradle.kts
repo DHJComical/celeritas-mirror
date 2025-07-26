@@ -1,5 +1,7 @@
 import bs.ModLoader
 import dev.kikugie.stonecutter.build.StonecutterBuildExtension
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import org.embeddedt.embeddium.gradle.build.extensions.versionedProperty
 import java.nio.file.Files
 import java.nio.file.Path
@@ -126,6 +128,9 @@ val minecraftVersion = ModLoader.getMinecraftVersion(project)
 
 val stonecutterExt = project.extensions.getByType<StonecutterBuildExtension>()
 
+val modMixinConfigs = mutableListOf("embeddium.mixins.json")
+project.extra.set("celeritasMixinConfigs", modMixinConfigs)
+
 tasks.named<ProcessResources>("processResources") {
     val mixinCompatLevel = if (stonecutterExt.eval(minecraftVersion, "<1.17")) {
         "JAVA_8"
@@ -179,6 +184,18 @@ tasks.named<ProcessResources>("processResources") {
                         .resolve("META-INF/neoforge.mods.toml")
 
                 Files.copy(file.toPath(), outputPath, StandardCopyOption.REPLACE_EXISTING)
+            }
+        }
+        if (modLoader == ModLoader.FABRIC) {
+            fileTree(outputs.files.asPath) {
+                include("fabric.mod.json")
+            }.forEach { file ->
+                val slurper = JsonSlurper()
+                val parse = slurper.parse(file) as MutableMap<String, Any>
+
+                parse["mixins"] = modMixinConfigs.toList()
+
+                file.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(parse)))
             }
         }
     }
