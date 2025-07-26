@@ -98,27 +98,9 @@ tasks.named("createMinecraftArtifacts") {
 modDevExtension.accessTransformers.from(generatedATPath)
 
 val modMixinConfigs = mutableListOf("embeddium.mixins.json")
+project.extra.set("celeritasMixinConfigs", modMixinConfigs)
 
 if (stonecutter.constants.getOrDefault("shaders", false)) {
-    sourceSets {
-        main {
-            arrayOf("shaders", "batching").forEach { it ->
-                java.srcDir("src/main/${it}_java")
-                resources.srcDir("src/main/${it}_resources")
-            }
-        }
-    }
-
-    modMixinConfigs.add("oculus-batched-entity-rendering.mixins.json")
-    modMixinConfigs.addAll(listOf(
-            "mixins.oculus.json",
-            "mixins.oculus.compat.sodium.json",
-            "mixins.oculus.compat.indigo.json",
-            "mixins.oculus.compat.indium.json",
-            "mixins.oculus.compat.dh.json",
-            "mixins.oculus.compat.pixelmon.json"
-    ))
-
     apply(plugin = "celeritas.shader-conventions")
 }
 
