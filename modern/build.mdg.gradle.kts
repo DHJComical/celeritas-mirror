@@ -6,8 +6,8 @@ import net.neoforged.moddevgradle.legacyforge.dsl.LegacyForgeExtension
 import net.neoforged.moddevgradle.legacyforge.dsl.ObfuscationExtension
 import net.neoforged.nfrtgradle.CreateMinecraftArtifacts
 import org.embeddedt.embeddium.gradle.build.extensions.versionedProperty
-import org.embeddedt.embeddium.gradle.fabric.remapper.GenerateATFromAWTask
-import org.embeddedt.embeddium.gradle.fabric.remapper.GenerateNamedToIntermediaryTSRGTask
+import org.embeddedt.embeddium.gradle.mdg.remapper.GenerateATFromAWTask
+import org.embeddedt.embeddium.gradle.mdg.remapper.GenerateNamedToIntermediaryTSRGTask
 import org.embeddedt.embeddium.gradle.mdg.remapper.ReobfuscateCodeAndMixinsTask
 import org.embeddedt.embeddium.gradle.stonecutter.ModDependencyCollector
 import org.gradle.kotlin.dsl.named
@@ -16,6 +16,7 @@ plugins {
     // Apply the plugin. You can find the latest version at https://projects.neoforged.net/neoforged/ModDevGradle
     id("net.neoforged.moddev") version "2.0.103" apply false
     id("net.neoforged.moddev.legacyforge") version "2.0.103" apply false
+    id("embeddium-mdg-remapper")
     id("celeritas.platform-conventions")
     id("celeritas.shader-conventions") apply false
     id("embeddium-fabric-module-finder")

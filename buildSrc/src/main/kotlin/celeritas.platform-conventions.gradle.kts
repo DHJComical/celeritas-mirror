@@ -153,7 +153,7 @@ tasks.named<ProcessResources>("processResources") {
     }
     val inputProps = mapOf(
             "forgeid" to if (modLoader == ModLoader.NEOFORGE) "neoforge" else "forge",
-            "minecraft" to versionedProperty("minecraft_dependency"),
+            "minecraft" to (versionedProperty("minecraft_dependency") ?: ""),
             "mod_version" to version,
             "mixinCompatLevel" to mixinCompatLevel,
             "mod_id" to rootProject.property("mod_id"),

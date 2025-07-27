@@ -74,6 +74,7 @@ plugins {
 
 rootProject.name = "celeritas"
 
+includeBuild("celeritas-build-plugin")
 include("common")
 include("common-shaders")
 
