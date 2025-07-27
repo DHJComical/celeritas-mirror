@@ -52,7 +52,7 @@ public class ModelPartMixin implements ModelPartExtended {
             ImmutableList.Builder<ModelPart> listBuilder = ImmutableList.builder();
             listBuilder.add((ModelPart)(Object)this);
             for(ModelPart part : this.children.values()) {
-                listBuilder.addAll(part.getAllParts().toList());
+                listBuilder.addAll(part.getAllParts()/*? if <1.21.5 {*/.toList()/*?}*/);
             }
             embeddium$allParts = listBuilder.build();
         }

@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.util;
 
+//? if <1.21.5 {
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -20,3 +21,4 @@ public class TextureUtil {
         /*return 0;*/
     }
 }
+//?}
