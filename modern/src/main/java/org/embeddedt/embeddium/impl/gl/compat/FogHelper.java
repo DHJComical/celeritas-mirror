@@ -24,8 +24,8 @@ public class FogHelper implements FogService {
         *///?} else if <1.21.2 {
         return RenderSystem.getShaderFogEnd();
         //?} else {
-        /*return RenderSystem.getShaderFog().end();*/
-        //?}
+        /*return RenderSystem.getShaderFog().end();
+        *///?}
     }
 
     public float getFogStart() {

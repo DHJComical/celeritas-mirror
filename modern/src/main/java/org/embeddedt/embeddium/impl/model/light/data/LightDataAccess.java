@@ -84,7 +84,7 @@ public abstract class LightDataAccess {
                 sl = world.getBrightness(LightLayer.SKY, pos);
             } else {
                 // call the vanilla method so mods using custom lightmap logic work correctly
-                int packedCoords = LevelRenderer.getLightColor(world, state, pos);
+                int packedCoords = LevelRenderer.getLightColor(/*? if >=1.21.5 {*//*LevelRenderer.BrightnessGetter.DEFAULT,*//*?}*/ world, state, pos);
                 bl = LightTexture.block(packedCoords);
                 sl = LightTexture.sky(packedCoords);
             }

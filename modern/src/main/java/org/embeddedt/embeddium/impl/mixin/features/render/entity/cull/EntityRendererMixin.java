@@ -6,22 +6,29 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 //? if >=1.21 {
 /*import net.minecraft.world.entity.Leashable;
 *///?}
+import net.minecraft.world.phys.AABB;
 import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
-import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EntityRenderer.class)
 public abstract class EntityRendererMixin<T extends Entity> {
     @Shadow
     @Final
     protected EntityRenderDispatcher entityRenderDispatcher;
+
+    //? if >=1.21.5 {
+    /*@Shadow
+    protected abstract AABB getBoundingBoxForCulling(Entity par1);
+    *///?} else {
+    private AABB getBoundingBoxForCulling(Entity entity) {
+        return entity.getBoundingBoxForCulling();
+    }
+    //? }
 
     @ModifyExpressionValue(method = "shouldRender", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/culling/Frustum;isVisible(Lnet/minecraft/world/phys/AABB;)Z", ordinal = 0))
     private boolean checkSectionForCullingMain(boolean isWithinFrustum, @Local(ordinal = 0, argsOnly = true) T entity) {
@@ -31,7 +38,7 @@ public abstract class EntityRendererMixin<T extends Entity> {
 
         var renderer = CeleritasWorldRenderer.instanceNullable();
 
-        return renderer == null || renderer.isEntityVisible(entity, (EntityRenderer)(Object)this);
+        return renderer == null || renderer.isEntityVisible(entity, this.getBoundingBoxForCulling(entity));
     }
 
     //? if >=1.21 {
@@ -43,7 +50,15 @@ public abstract class EntityRendererMixin<T extends Entity> {
 
         var renderer = CeleritasWorldRenderer.instanceNullable();
 
-        return renderer == null || renderer.isEntityVisible(leashable.getLeashHolder(), this.entityRenderDispatcher.getRenderer(leashable.getLeashHolder()));
+        if (renderer == null) {
+            return false;
+        }
+
+        var leashHolder = leashable.getLeashHolder();
+
+        var boundingBox = ((EntityRendererMixin<?>)(Object)this.entityRenderDispatcher.getRenderer(leashHolder)).getBoundingBoxForCulling(leashHolder);
+
+        return renderer.isEntityVisible(leashable.getLeashHolder(), boundingBox);
     }
     *///?}
 }

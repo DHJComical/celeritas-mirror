@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.features.gui.screen;
 
+//? if <1.21.5 {
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -174,3 +176,4 @@ public class LevelLoadingScreenMixin {
         }
     }
 }
+//?}

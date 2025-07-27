@@ -279,7 +279,7 @@ public class CeleritasWorldRenderer {
     /**
      * Performs a render pass for the given {@link RenderType} and draws all visible chunks for it.
      */
-    public void drawChunkLayer(RenderType renderLayer, Matrix4f pose, double x, double y, double z) {
+    public <T> void drawChunkLayer(T renderLayer, Matrix4f pose, double x, double y, double z) {
         ChunkRenderMatrices matrices = ChunkRenderMatricesBuilder.from(pose);
 
         Collection<TerrainRenderPass> passes = this.renderSectionManager.getRenderPassConfiguration().vanillaRenderStages().get(renderLayer);
@@ -580,7 +580,7 @@ public class CeleritasWorldRenderer {
      * Returns whether or not the entity intersects with any visible chunks in the graph.
      * @return True if the entity is visible, otherwise false
      */
-    public boolean isEntityVisible(Entity entity, EntityRenderer renderer) {
+    public boolean isEntityVisible(Entity entity, AABB boundingBox) {
         if (!this.useEntityCulling || this.renderSectionManager.isInShadowPass()) {
             return true;
         }
@@ -590,12 +590,7 @@ public class CeleritasWorldRenderer {
             return true;
         }
 
-        //? if <1.21.2
-        AABB box = entity.getBoundingBoxForCulling();
-        //? if >=1.21.2
-        /*AABB box = renderer.getBoundingBoxForCulling(entity);*/
-
-        return this.isBoxVisible(box);
+        return this.isBoxVisible(boundingBox);
     }
 
     public boolean isBoxVisible(AABB box) {

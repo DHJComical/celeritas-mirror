@@ -21,9 +21,6 @@ public class MixinLevelRenderer {
 
     @ModifyExpressionValue(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;entitiesForRendering()Ljava/lang/Iterable;"))
     private Iterable<Entity> batchedentityrendering$sortEntityList(Iterable<Entity> unsortedList) {
-        // Sort the entity list first in order to allow vanilla's entity batching code to work better.
-        this.level.getProfiler().push("sortEntityList");
-
         Map<EntityType<?>, List<Entity>> sortedEntities = new HashMap<>();
 
         List<Entity> entities = new ArrayList<>();
@@ -32,8 +29,6 @@ public class MixinLevelRenderer {
         });
 
         sortedEntities.values().forEach(entities::addAll);
-
-        this.level.getProfiler().pop();
 
         return entities;
     }

@@ -8,6 +8,11 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.client.renderer.*;
 //? if neoforge
 /*import net.neoforged.neoforge.client.ClientHooks;*/
+//? if >=1.21.5 {
+/*import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
+import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
+*///?}
 import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
@@ -154,6 +159,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      * @reason Redirect the chunk layer render passes to our renderer
      * @author JellySquid
      */
+    //? if <1.21.5 {
     @Overwrite
     private void /*? if <1.20.2 {*/ renderChunkLayer /*?} else {*/ /*renderSectionLayer *//*?}*/(RenderType renderLayer, /*? if <1.20.6 {*/ PoseStack matrices, /*?}*/ double x, double y, double z /*? if >=1.20.6 {*/ /*,Matrix4f pose *//*?}*/ /*? if >=1.17 {*/, Matrix4f matrix /*?}*/) {
         RenderDevice.enterManagedCode();
@@ -189,6 +195,21 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         renderLayer.clearRenderState();
         *///?}
     }
+    //?} else {
+    /*@Redirect(method = "lambda$addMainPass$3", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;)V"))
+    private void renderChunkLayer(ChunkSectionsToRender renderObject, ChunkSectionLayerGroup group, @Local(ordinal = 0) Matrix4f pose, @Local(ordinal = 0) Camera camera) {
+        RenderDevice.enterManagedCode();
+
+        try {
+            var pos = camera.getPosition();
+            for (var layer : group.layers()) {
+                this.renderer.drawChunkLayer(layer, pose, pos.x(), pos.y(), pos.z());
+            }
+        } finally {
+            RenderDevice.exitManagedCode();
+        }
+    }
+    *///?}
 
     /**
      * @reason Redirect the terrain setup phase to our renderer

@@ -138,9 +138,9 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
 
     private static void commonClientInit() {
         GLRenderDevice.VANILLA_STATE_RESETTER = () -> {
-            //? if >=1.17 {
+            //? if >=1.17 && <1.21.5
             com.mojang.blaze3d.vertex.BufferUploader.reset();
-            //?} else
+            //? if <1.17
             /*com.mojang.blaze3d.vertex.VertexBuffer.unbind();*/
         };
     }
