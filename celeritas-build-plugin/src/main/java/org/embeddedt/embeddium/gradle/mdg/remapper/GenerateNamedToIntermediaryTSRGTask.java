@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.gradle.fabric.remapper;
+package org.embeddedt.embeddium.gradle.mdg.remapper;
 
 import com.google.gson.JsonParser;
 import net.neoforged.srgutils.IMappingFile;

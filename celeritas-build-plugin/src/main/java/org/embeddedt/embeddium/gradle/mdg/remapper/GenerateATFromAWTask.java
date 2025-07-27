@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.gradle.fabric.remapper;
+package org.embeddedt.embeddium.gradle.mdg.remapper;
 
 import net.fabricmc.accesswidener.AccessWidenerReader;
 import net.fabricmc.accesswidener.AccessWidenerRemapper;
