@@ -18,8 +18,6 @@ dependencies {
 repositories {
     mavenCentral()
     maven("https://maven.fabricmc.net/")
-    maven("https://maven.wagyourtail.xyz/releases")
-    maven("https://maven.wagyourtail.xyz/snapshots")
     maven("https://maven.kikugie.dev/releases")
     maven("https://maven.kikugie.dev/snapshots")
 }

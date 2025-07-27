@@ -74,7 +74,8 @@ plugins {
 
 rootProject.name = "celeritas"
 
-includeBuild("celeritas-build-plugin")
+includeBuild("plugins/celeritas-mdg-plugin")
+includeBuild("plugins/celeritas-unimined-plugin")
 include("common")
 
 val includedVersionsProp = if(extra.has("target_versions")) extra["target_versions"].toString().split(",") else null

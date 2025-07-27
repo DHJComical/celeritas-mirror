@@ -1,10 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.embeddedt.embeddium.gradle.build.conventions.LWJGLHelper
-import org.embeddedt.embeddium.gradle.build.conventions.ProductionJarHelper
+import org.embeddedt.embeddium.gradle.unimined.ProductionJarHelper
 import xyz.wagyourtail.jvmdg.gradle.task.files.DowngradeFiles
 
 plugins {
     id("celeritas.platform-conventions")
+    id("celeritas-unimined-plugin")
     id("xyz.wagyourtail.unimined") version "1.3.15-SNAPSHOT"
     id("xyz.wagyourtail.jvmdowngrader") version "1.1.3"
 }
