@@ -1,12 +1,13 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.embeddedt.embeddium.gradle.build.conventions.LWJGLHelper
-import org.embeddedt.embeddium.gradle.build.conventions.ProductionJarHelper
+import org.embeddedt.embeddium.gradle.unimined.ProductionJarHelper
 import xyz.wagyourtail.unimined.api.minecraft.EnvType
 import xyz.wagyourtail.unimined.api.minecraft.task.AbstractRemapJarTask
 import java.net.URI
 
 plugins {
     id("celeritas.platform-conventions")
+    id("celeritas-unimined-plugin")
     id("xyz.wagyourtail.unimined") version "1.3.15-SNAPSHOT"
 }
 

@@ -1,9 +1,11 @@
-package org.embeddedt.embeddium.gradle.build.conventions;
+package org.embeddedt.embeddium.gradle.unimined;
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar;
+import kotlin.Unit;
 import org.gradle.api.Project;
 import org.gradle.jvm.tasks.Jar;
 import org.gradle.language.jvm.tasks.ProcessResources;
+import xyz.wagyourtail.unimined.api.minecraft.task.RemapJarTask;
 //import xyz.wagyourtail.unimined.api.minecraft.task.RemapJarTask;
 
 import java.util.List;
@@ -46,7 +48,6 @@ public class ProductionJarHelper {
 
             shadowJar.from("COPYING", "COPYING.LESSER", "README.md");
         });
-        /*
         var remapJarTask = project.getTasks().named("remapJar");
         remapJarTask.configure(task -> {
             if (task instanceof RemapJarTask remapJar) {
@@ -59,8 +60,7 @@ public class ProductionJarHelper {
                 remapJar.getAsJar().getArchiveClassifier().set("remapped-thin");
             }
         });
-         */
-        //project.getTasks().named("assemble").configure(task -> task.dependsOn(remapJarTask));
+        project.getTasks().named("assemble").configure(task -> task.dependsOn(remapJarTask));
     }
 
     private static Map<String, String> getProcessedProperties(Project project) {
