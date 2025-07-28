@@ -59,6 +59,7 @@ stonecutter.parameters {
     }
 
     val doAnimateTickBiomeLambdaName = "lambda\$doAnimateTick\$" + when {
+        eval (current.version, ">=1.21.5") -> 9
         eval (current.version, ">=1.18 <1.21.5-alpha.25.8.a") -> 8
         eval (current.version, ">=1.17") -> 5
         else -> 4

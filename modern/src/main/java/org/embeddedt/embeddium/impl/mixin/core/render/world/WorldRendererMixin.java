@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 *///?}
 import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.modern.render.chunk.ChunkRenderMatricesBuilder;
 import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
@@ -297,6 +298,13 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
             RenderDevice.exitManagedCode();
         }
     }
+
+    //? if >=1.21.5 {
+    /*@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/framegraph/FramePass;executes(Ljava/lang/Runnable;)V", ordinal = 0))
+    private void captureProjectionMatrix(CallbackInfo ci, @Local(ordinal = 1, argsOnly = true) Matrix4f projectionMatrix) {
+        ChunkRenderMatricesBuilder.PROJECTION_MATRIX.set(projectionMatrix);
+    }
+    *///?}
 
     /**
      * @author embeddedt

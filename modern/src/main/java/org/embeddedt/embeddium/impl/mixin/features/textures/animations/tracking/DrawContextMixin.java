@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.mixin.features.textures.animations.tracking
 
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 
-//? if >=1.20 {
+//? if >=1.20 <1.21.5 {
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.spongepowered.asm.mixin.Mixin;
@@ -38,7 +38,7 @@ public class DrawContextMixin {
         SpriteUtil.markSpriteActive(sprite);
     }
 }
-//?} else {
+//?} else if <1.20 {
 /*import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 

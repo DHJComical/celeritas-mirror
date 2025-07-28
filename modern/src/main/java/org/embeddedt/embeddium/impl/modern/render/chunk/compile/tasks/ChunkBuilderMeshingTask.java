@@ -1,9 +1,11 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
+//? if >=1.21.5
+/*import net.minecraft.client.renderer.block.model.BlockModelPart;*/
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
@@ -21,7 +23,6 @@ import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectio
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
-import org.embeddedt.embeddium.impl.util.collections.SetUtil;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
@@ -40,7 +41,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.client.model.data.ModelData;
 //? if forge && <1.19
 /*import net.minecraftforge.client.ForgeHooksClient;*/
-//? if neoforge
+//? if neoforge && <1.21.5
 /*import net.neoforged.neoforge.client.model.data.ModelData;*/
 import org.embeddedt.embeddium.api.ChunkDataBuiltEvent;
 import org.embeddedt.embeddium.impl.chunk.MeshAppenderRenderer;
@@ -106,6 +107,9 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
         boolean voxelizingLight = WorldRenderingSettings.INSTANCE.shouldVoxelizeLightBlocks();
 
+        //? if >=1.21.5
+        /*ObjectArrayList<BlockModelPart> renderedParts = new ObjectArrayList<>(10);*/
+
         try {
             for (int y = minY; y < maxY; y++) {
                 if (cancellationToken.isCancelled()) {
@@ -132,22 +136,37 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
                         if (blockState.getRenderShape() == RenderShape.MODEL) {
                             long seed = blockState.getSeed(blockPos);
-                            context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, cache.getBlockModels().getBlockModel(blockState), seed);
-                            var model = context.model();
+                            context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, seed);
 
-                            //? if forgelike {
+                            var vanillaModel = cache.getBlockModels().getBlockModel(blockState);
+                            //? if <1.21.5 {
+                            var model = vanillaModel;
+                            context.model(model);
+                            //?}
+
+                            //? if forgelike && <1.21.5 {
                             var modelData = model.getModelData(context.localSlice(), blockPos, blockState, modelDataGetter.getModelData(blockPos));
                             context.setModelData(modelData);
 
                             context.random().setSeed(seed); // for render layers
                             //?}
 
-                            //? if forgelike && >=1.19 {
+
+                            //? if >=1.21.5 {
+                            /*vanillaModel.collectParts(context.localSlice(), blockPos, blockState, context.random(), renderedParts);
+                            //noinspection ForLoopReplaceableByForEach
+                            for (int i = 0; i < renderedParts.size(); i++) {
+                                context.model(renderedParts.get(i));
+                                context.renderLayer(context.model().getRenderType(blockState));
+                                cache.getBlockRenderer().renderModel(context, buffers);
+                            }
+                            renderedParts.clear();
+                            *///?} else if forgelike && >=1.19 {
                             // We optimize the asList() call to return a cached ImmutableList, so this will not allocate.
                             var renderTypeList = model.getRenderTypes(blockState, context.random(), modelData).asList();
                             //noinspection ForLoopReplaceableByForEach
                             for (int i = 0; i < renderTypeList.size(); i++) {
-                                context.setRenderLayer(renderTypeList.get(i));
+                                context.renderLayer(renderTypeList.get(i));
                                 cache.getBlockRenderer().renderModel(context, buffers);
                             }
                             //?} else if forge && <1.19 {
@@ -159,12 +178,12 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                                 ForgeHooksClient.setRenderType(layer);
                                 //?} else
                                 /^ForgeHooksClient.setRenderLayer(layer);^/
-                                context.setRenderLayer(layer);
+                                context.renderLayer(layer);
                                 cache.getBlockRenderer()
                                         .renderModel(context, buffers);
                             }
                             *///?} else {
-                            /*context.setRenderLayer(ItemBlockRenderTypes.getChunkRenderType(blockState));
+                            /*context.renderLayer(ItemBlockRenderTypes.getChunkRenderType(blockState));
                             cache.getBlockRenderer()
                                     .renderModel(context, buffers);
                             *///?}
@@ -173,8 +192,9 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         FluidState fluidState = blockState.getFluidState();
 
                         if (!fluidState.isEmpty()) {
-                            context.update(GeometryCategory.FLUID, blockPos, modelOffset, blockState, null, 42L);
-                            context.setRenderLayer(ItemBlockRenderTypes.getRenderLayer(fluidState));
+                            context.model(null);
+                            context.update(GeometryCategory.FLUID, blockPos, modelOffset, blockState, 42L);
+                            context.renderLayer(ItemBlockRenderTypes.getRenderLayer(fluidState));
                             cache.getFluidRenderer().render(context, buffers);
                         }
 
@@ -188,7 +208,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                                 /*BlockEntityRenderer<BlockEntity> renderer = net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher.instance.getRenderer(entity);*/
 
                                 if (renderer != null) {
-                                    (renderer.shouldRenderOffScreen(entity) ? renderData.globalBlockEntities : renderData.culledBlockEntities).add(entity);
+                                    (renderer.shouldRenderOffScreen(/*? if <1.21.5 {*/entity/*?}*/) ? renderData.globalBlockEntities : renderData.culledBlockEntities).add(entity);
                                 }
                             }
                         }

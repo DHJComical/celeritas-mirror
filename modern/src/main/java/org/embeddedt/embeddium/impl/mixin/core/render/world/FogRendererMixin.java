@@ -3,9 +3,6 @@ package org.embeddedt.embeddium.impl.mixin.core.render.world;
 //? if >=1.21.5 {
 
 /*import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.client.Camera;
-import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.fog.FogData;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
@@ -30,9 +27,13 @@ public class FogRendererMixin implements FogHelper.FogDataGetter {
         return celeritas$lastFogColor;
     }
 
-    @Inject(method = "setupFog", at = @At("RETURN"))
+    @Inject(method = "setupFog", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/fog/FogData;renderDistanceStart:F", ordinal = 0))
     private void captureFogData(CallbackInfoReturnable<Vector4f> cir, @Local(ordinal = 0) FogData fogdata) {
         this.celeritas$lastFogData = fogdata;
+    }
+
+    @Inject(method = "setupFog", at = @At("RETURN"))
+    private void captureFogColor(CallbackInfoReturnable<Vector4f> cir) {
         this.celeritas$lastFogColor = cir.getReturnValue();
     }
 }

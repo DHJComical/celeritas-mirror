@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.model.block;
 
+//? if <1.21.5 {
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.render.immediate.model.BakedModelEncoder;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
@@ -113,3 +114,4 @@ public class BlockModelRendererMixin {
         }
     }
 }
+//?}
