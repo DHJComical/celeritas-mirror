@@ -63,9 +63,16 @@ public class ModelPartMixin implements ModelPartExtended {
      * @author embeddedt
      * @reason heavily reduce stream allocations
      */
+    //? if <1.21.5 {
     @Overwrite
     public Stream<ModelPart> getAllParts() {
         return embeddium$getPartsList().stream();
     }
+    //?} else {
+    /*@Overwrite
+    public List<ModelPart> getAllParts() {
+        return embeddium$getPartsList();
+    }
+    *///?}
 }
 //?}

@@ -20,10 +20,12 @@ public class ParticleEngineMixin {
             "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V"
             //? if forge && <1.17
             /*"renderParticles"*/
-            //? if neoforge
+            //? if neoforge && <1.21.5
             /*"render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V"*/
+            //? if neoforge && >=1.21.5
+            /*"renderParticleType(Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/particle/ParticleRenderType;Ljava/util/Queue;Lnet/minecraft/client/renderer/culling/Frustum;)V"*/
     }, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/culling/Frustum;isVisible(Lnet/minecraft/world/phys/AABB;)Z"))
-    private boolean celeritas$useSectionVisibility(Frustum instance, AABB aabb) {
+    private /*? if neoforge && >=1.21.5 {*/ /*static *//*?}*/ boolean celeritas$useSectionVisibility(Frustum instance, AABB aabb) {
         var renderer = CeleritasWorldRenderer.instanceNullable();
 
         if (renderer == null) {

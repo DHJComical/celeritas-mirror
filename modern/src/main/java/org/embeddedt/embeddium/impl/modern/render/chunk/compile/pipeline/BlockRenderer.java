@@ -3,6 +3,8 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.RenderType;
+//? if >=1.21.5
+/*import net.minecraft.client.renderer.chunk.ChunkSectionLayer;*/
 import net.minecraft.world.level.block.Block;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.Celeritas;
@@ -93,9 +95,17 @@ public class BlockRenderer {
 
     private int quadRenderingFlags = 0;
 
+    //? if <1.21.5 {
     private final Map<Block, RenderType> renderTypeOverrides;
+    //?} else
+    /*private final Map<Block, ChunkSectionLayer> renderTypeOverrides;*/
 
-    public BlockRenderer(ColorProviderRegistry colorRegistry, LightPipelineProvider lighters, @Nullable Map<Block, RenderType> renderTypeOverrides) {
+    public BlockRenderer(ColorProviderRegistry colorRegistry, LightPipelineProvider lighters,
+                         //? if <1.21.5 {
+                         @Nullable Map<Block, RenderType> renderTypeOverrides
+                         //?} else
+                         /*@Nullable Map<Block, ChunkSectionLayer> renderTypeOverrides*/
+    ) {
         this.colorProviderRegistry = colorRegistry;
         this.lighters = lighters;
         this.renderTypeOverrides = renderTypeOverrides;
@@ -119,10 +129,10 @@ public class BlockRenderer {
      */
     public void renderModel(BlockRenderContext ctx, ChunkBuildBuffers buffers) {
         int defaultQuadRenderingFlags = USE_ALL_THINGS;
-        RenderType blockRenderType = ctx.renderLayer();
+        var blockRenderType = ctx.renderLayer();
 
         if (this.renderTypeOverrides != null) {
-            RenderType type = this.renderTypeOverrides.get(ctx.state().getBlock());
+            var type = this.renderTypeOverrides.get(ctx.state().getBlock());
             if (type != null) {
                 blockRenderType = type;
                 defaultQuadRenderingFlags &= ~USE_RENDER_PASS_OPTIMIZATION;
@@ -206,10 +216,13 @@ public class BlockRenderer {
     }
 
     private List<BakedQuad> getGeometry(BlockRenderContext ctx, Direction face) {
+        //? if <1.21.5 {
         var random = ctx.random();
         random.setSeed(ctx.seed());
 
         return ctx.model().getQuads(ctx.state(), face, random/*? if forgelike && >=1.19 {*/, ctx.modelData(), ctx.renderLayer()/*?}*/ /*? if forgelike && <1.19 {*//*, ctx.modelData()*//*?}*/);
+        //?} else
+        /*return ctx.model().getQuads(face);*/
     }
 
     private boolean isFaceVisible(BlockRenderContext ctx, Direction face) {
@@ -419,7 +432,11 @@ public class BlockRenderer {
     /*private LightMode getLightingMode(BlockRenderContext ctx) {
         var model = ctx.model();
         var state = ctx.state();
-        boolean canBeSmooth = this.useAmbientOcclusion && switch(model.useAmbientOcclusion(state, ctx.modelData(), ctx.renderLayer())) {
+        //? if <1.21.5 {
+        var aoTristate = model.useAmbientOcclusion(state, ctx.modelData(), ctx.renderLayer());
+        //?} else
+        /^var aoTristate = model.ambientOcclusion();^/
+        boolean canBeSmooth = this.useAmbientOcclusion && switch(aoTristate) {
             case TRUE -> true;
             case DEFAULT -> ctx.lightEmission() == 0;
             case FALSE -> false;

@@ -46,10 +46,11 @@ public class BlockRenderContext {
      * The model used for this block.
      */
     @Getter
+    @Setter
     //? if <1.21.5-alpha.25.7.a {
     private net.minecraft.client.resources.model.BakedModel model;
     //?} else
-    /*private net.minecraft.client.renderer.block.model.BlockStateModel model;*/
+    /*private net.minecraft.client.renderer.block.model.BlockModelPart model;*/
 
     private long seed;
 
@@ -62,11 +63,12 @@ public class BlockRenderContext {
     //? if forgelike && <1.19.1
     /*private IModelData modelData;*/
 
-    //? if >=1.15 {
+    @Getter
     @Setter
-    @Accessors(fluent = false)
+    //? if <1.21.5 {
     private RenderType renderLayer;
-    //?}
+    //?} else
+    /*private net.minecraft.client.renderer.chunk.ChunkSectionLayer renderLayer;*/
 
     private int lightValue = -1;
 
@@ -84,10 +86,6 @@ public class BlockRenderContext {
     }
 
     public void update(GeometryCategory category, BlockPos pos, BlockPos origin, BlockState state,
-                       //? if <1.21.5-alpha.25.7.a {
-                       net.minecraft.client.resources.model.BakedModel model,
-                       //?} else
-                       /*net.minecraft.client.renderer.block.model.BlockStateModel model,*/
                        long seed) {
         this.category = category;
         this.pos.set(pos);
@@ -98,7 +96,6 @@ public class BlockRenderContext {
         this.seed = seed;
 
         this.random.setSeed(seed);
-        this.model = model;
 
         this.lightValue = -1;
     }
@@ -168,15 +165,6 @@ public class BlockRenderContext {
         return this.modelData;
     }
     *///?}
-
-    //? if >=1.15 {
-    /**
-     * @return The render layer for model rendering
-     */
-    public RenderType renderLayer() {
-        return this.renderLayer;
-    }
-    //?}
 
     /**
      * @return The light emission of the current block

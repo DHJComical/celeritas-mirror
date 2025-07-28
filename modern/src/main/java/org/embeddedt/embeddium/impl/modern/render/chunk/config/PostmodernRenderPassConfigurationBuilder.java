@@ -2,27 +2,78 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.config;
 
 //? if >=1.21.5 {
 
-/*import com.mojang.blaze3d.pipeline.RenderPipeline;
+/*import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlTextureView;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTextureView;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import org.embeddedt.embeddium.impl.mixin.core.render.blaze.GlCommandEncoderAccessor;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.QuadPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.lwjgl.opengl.GL32C;
 
 import java.util.*;
 
 public class PostmodernRenderPassConfigurationBuilder {
-    private record PostmodernPipelineState(RenderPipeline vanillaPipeline) implements TerrainRenderPass.PipelineState {
+    private static RenderPass currentChunkRenderPass;
+
+    private record PostmodernPipelineState(ChunkSectionLayer layer, RenderPipeline vanillaPipeline) implements TerrainRenderPass.PipelineState {
         @Override
         public void setup() {
+            if (currentChunkRenderPass != null) {
+                throw new IllegalStateException("In previous render pass");
+            }
+            var encoder = RenderSystem.getDevice().createCommandEncoder();
+            var rendertarget = layer.outputTarget();
+            currentChunkRenderPass = encoder
+                    .createRenderPass(
+                            () -> "Section layers for " + layer.name(),
+                            rendertarget.getColorTextureView(),
+                            OptionalInt.empty(),
+                            rendertarget.getDepthTextureView(),
+                            OptionalDouble.empty()
+                    );
+            if (encoder instanceof GlCommandEncoderAccessor glEncoder) {
+                glEncoder.invokeApplyPipelineState(vanillaPipeline);
+            } else {
+                throw new IllegalStateException("Unexpected command encoder class: " + encoder.getClass().getName());
+            }
+            GlStateManager._activeTexture(GL32C.GL_TEXTURE0);
+            bindAndApplyConfig(layer.textureView());
+            GlStateManager._activeTexture(GL32C.GL_TEXTURE2);
+            bindAndApplyConfig(Minecraft.getInstance().gameRenderer.lightTexture().getTextureView());
+            GlStateManager._activeTexture(GL32C.GL_TEXTURE0);
+        }
 
+        private static void bindAndApplyConfig(GpuTextureView view) {
+            if (view instanceof GlTextureView glView) {
+                GlStateManager._bindTexture(glView.texture().glId());
+            } else {
+                throw new IllegalStateException("Unexpected texture view class: " + view.getClass().getName());
+            }
+            int j = 3553;
+            GlStateManager._texParameter(j, 33084, view.baseMipLevel());
+            GlStateManager._texParameter(j, 33085, view.baseMipLevel() + view.mipLevels() - 1);
+            glView.texture().flushModeChanges(j);
         }
 
         @Override
         public void clear() {
-
+            GlStateManager._activeTexture(GL32C.GL_TEXTURE0);
+            GlStateManager._bindTexture(0);
+            GlStateManager._activeTexture(GL32C.GL_TEXTURE2);
+            GlStateManager._bindTexture(0);
+            GlStateManager._activeTexture(GL32C.GL_TEXTURE0);
+            Objects.requireNonNull(currentChunkRenderPass);
+            currentChunkRenderPass.close();
+            currentChunkRenderPass = null;
         }
     }
 
@@ -33,7 +84,7 @@ public class PostmodernRenderPassConfigurationBuilder {
             var pipeline = layer.pipeline();
             var alphaCutoff = Optional.ofNullable(pipeline.getShaderDefines().values().get("ALPHA_CUTOUT")).map(Float::parseFloat);
             var terrainPass = TerrainRenderPass.builder().name(layer.name().toLowerCase(Locale.ROOT))
-                    .pipelineState(new PostmodernPipelineState(pipeline))
+                    .pipelineState(new PostmodernPipelineState(layer, pipeline))
                     .vertexType(vertexType)
                     .primitiveType(QuadPrimitiveType.TRIANGULATED)
                     .fragmentDiscard(alphaCutoff.isPresent())
