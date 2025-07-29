@@ -15,12 +15,16 @@ out VS_OUT
     float v_MaterialAlphaCutoff;
 #endif
 
-#ifdef USE_FOG
+#if defined(USE_FOG_POSTMODERN)
+    float v_SphericalFragDistance;
+    float v_CylindricalFragDistance;
+#elif defined(USE_FOG)
     float v_FragDistance;
 #endif
 } vs_out;
 
 uniform int u_FogShape;
+
 uniform vec3 u_RegionOffset;
 
 #ifndef CELERITAS_NO_LIGHTMAP
@@ -38,7 +42,10 @@ void main() {
     vec3 translation = u_RegionOffset + _get_draw_translation(_draw_id);
     vec3 position = _vert_position + translation;
 
-#ifdef USE_FOG
+#if defined(USE_FOG_POSTMODERN)
+    vs_out.v_SphericalFragDistance = getFragDistance(FOG_SHAPE_SPHERICAL, position);
+    vs_out.v_CylindricalFragDistance = getFragDistance(FOG_SHAPE_CYLINDRICAL, position);
+#elif defined(USE_FOG)
     vs_out.v_FragDistance = getFragDistance(u_FogShape, position);
 #endif
 
