@@ -60,7 +60,7 @@ public class ShaderConstants {
             return new ShaderConstants(Collections.unmodifiableList(defines));
         }
 
-        public ShaderConstants.Builder addAll(List<String> defines) {
+        public ShaderConstants.Builder addAll(Collection<String> defines) {
             for (String value : defines) {
                 this.add(value);
             }
