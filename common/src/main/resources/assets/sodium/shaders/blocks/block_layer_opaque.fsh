@@ -12,8 +12,11 @@ in VS_OUT
     float v_MaterialAlphaCutoff;
 #endif
 
-#ifdef USE_FOG
-    float v_FragDistance; // The fragment's distance from the camera
+#if defined(USE_FOG_POSTMODERN)
+    float v_SphericalFragDistance;
+    float v_CylindricalFragDistance;
+#elif defined(USE_FOG)
+    float v_FragDistance;
 #endif
 } fs_in;
 
@@ -24,6 +27,13 @@ uniform vec4 u_FogColor; // The color of the shader fog
 #ifdef USE_FOG_SMOOTH
 uniform float u_FogStart; // The starting position of the shader fog
 uniform float u_FogEnd; // The ending position of the shader fog
+#endif
+
+#ifdef USE_FOG_POSTMODERN
+uniform float u_RenderDistFogStart;
+uniform float u_RenderDistFogEnd;
+uniform float u_EnvFogStart;
+uniform float u_EnvFogEnd;
 #endif
 
 #ifdef USE_FOG_EXP2
@@ -55,10 +65,14 @@ void main() {
 #endif
 
 #ifdef USE_FOG
-#ifdef USE_FOG_EXP2
+#ifdef USE_FOG_POSTMODERN
+    float fogValue = max(_linearFogValue(fs_in.v_CylindricalFragDistance, u_RenderDistFogStart, u_RenderDistFogEnd),
+                         _linearFogValue(fs_in.v_SphericalFragDistance, u_EnvFogStart, u_EnvFogEnd));
+
+    fragColor = vec4(mix(diffuseColor.rgb, u_FogColor.rgb, fogValue * u_FogColor.a), diffuseColor.a);
+#elif defined(USE_FOG_EXP2)
     fragColor = _exp2Fog(diffuseColor, fs_in.v_FragDistance, u_FogColor, u_FogDensity);
-#endif
-#ifdef USE_FOG_SMOOTH
+#elif defined(USE_FOG_SMOOTH)
     fragColor = _linearFog(diffuseColor, fs_in.v_FragDistance, u_FogColor, u_FogStart, u_FogEnd);
 #endif
 #else
