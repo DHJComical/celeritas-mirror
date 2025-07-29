@@ -18,10 +18,8 @@ import java.util.ServiceLoader;
  * but as the name implies, this only works on graphics cards produced by NVIDIA. The shader implementation however does
  * not depend on any vendor-specific extensions and is written using very simple GLSL code.
  */
-public abstract class ChunkShaderFogComponent {
+public abstract class ChunkShaderFogComponent implements ChunkShaderComponent {
     public static final FogService FOG_SERVICE = ServiceLoader.load(FogService.class).findFirst().orElseThrow();
-
-    public abstract void setup();
 
     public static class None extends ChunkShaderFogComponent {
         public None(ShaderBindingContext context) {

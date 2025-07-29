@@ -10,6 +10,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.joml.Matrix4fc;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,8 +23,8 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
     private final GlUniformMatrix4f uniformProjectionMatrix;
     private final GlUniformFloat3v uniformRegionOffset;
 
-    // The fog shader component used by this program in order to setup the appropriate GL state
-    private final ChunkShaderFogComponent fogShader;
+    // The additional shader components used by this program in order to setup the appropriate GL state
+    private final List<? extends ChunkShaderComponent> components;
 
     private GlPrimitiveType primitiveType;
 
@@ -38,7 +39,7 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
             this.uniformTextures.put(ChunkShaderTextureSlot.LIGHT, context.bindUniform("u_LightTex", GlUniformInt::new));
         }
 
-        this.fogShader = options.fog().getFactory().apply(context);
+        this.components = options.components().stream().map(c -> c.create(context)).toList();
     }
 
     @Deprecated // the shader interface should not modify pipeline state
@@ -51,7 +52,9 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
             throw new IllegalArgumentException("Unknown primitive type");
         }
 
-        this.fogShader.setup();
+        for (var c : this.components) {
+            c.setup();
+        }
     }
 
     @Override

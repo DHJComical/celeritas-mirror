@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.fog;
 
-import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkFogMode;
+import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderComponent;
 
 public interface FogService {
     float getFogEnd();
@@ -9,5 +9,5 @@ public interface FogService {
     int getFogShapeIndex();
     float getFogCutoff();
     float[] getFogColor();
-    ChunkFogMode getFogMode();
+    ChunkShaderComponent.Factory<?> getFogMode();
 }

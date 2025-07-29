@@ -6,7 +6,7 @@ import org.lwjgl.opengl.GL20;
 import java.util.List;
 import java.util.function.Function;
 
-public enum ChunkFogMode {
+public enum ChunkFogMode implements ChunkShaderComponent.Factory<ChunkShaderFogComponent> {
     NONE(ChunkShaderFogComponent.None::new, List.of()),
     EXP2(ChunkShaderFogComponent.Exp2::new, List.of("USE_FOG", "USE_FOG_EXP2")),
     SMOOTH(ChunkShaderFogComponent.Smooth::new, List.of("USE_FOG", "USE_FOG_SMOOTH"));
@@ -19,8 +19,9 @@ public enum ChunkFogMode {
         this.defines = defines;
     }
 
-    public Function<ShaderBindingContext, ChunkShaderFogComponent> getFactory() {
-        return this.factory;
+    @Override
+    public ChunkShaderFogComponent create(ShaderBindingContext context) {
+        return factory.apply(context);
     }
 
     public List<String> getDefines() {

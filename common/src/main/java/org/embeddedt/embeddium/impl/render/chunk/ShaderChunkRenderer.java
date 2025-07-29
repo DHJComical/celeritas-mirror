@@ -74,10 +74,16 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         }
     }
 
+    protected List<ChunkShaderComponent.Factory<?>> getShaderComponents() {
+        var componentFactories = new ArrayList<ChunkShaderComponent.Factory<?>>(4);
+        componentFactories.add(ChunkShaderFogComponent.FOG_SERVICE.getFogMode());
+        return componentFactories;
+    }
+
     protected void begin(TerrainRenderPass pass) {
         pass.startDrawing();
 
-        ChunkShaderOptions options = new ChunkShaderOptions(ChunkShaderFogComponent.FOG_SERVICE.getFogMode(), pass);
+        ChunkShaderOptions options = new ChunkShaderOptions(getShaderComponents(), pass);
 
         this.activeProgram = this.compileProgram(options);
 

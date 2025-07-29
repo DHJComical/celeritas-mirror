@@ -3,11 +3,15 @@ package org.embeddedt.embeddium.impl.render.chunk.shader;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderConstants;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 
-public record ChunkShaderOptions(ChunkFogMode fog, TerrainRenderPass pass) {
+import java.util.List;
+
+public record ChunkShaderOptions(List<ChunkShaderComponent.Factory<?>> components, TerrainRenderPass pass) {
 
     public ShaderConstants constants() {
         ShaderConstants.Builder constants = ShaderConstants.builder();
-        constants.addAll(this.fog.getDefines());
+        for (var component : components) {
+            constants.addAll(component.getDefines());
+        }
 
         if (this.pass.supportsFragmentDiscard()) {
             constants.add("USE_FRAGMENT_DISCARD");

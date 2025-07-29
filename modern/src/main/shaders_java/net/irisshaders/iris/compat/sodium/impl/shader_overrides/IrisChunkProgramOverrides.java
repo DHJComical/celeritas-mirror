@@ -99,7 +99,7 @@ public class IrisChunkProgramOverrides {
 					int handle = ((GlObject) shader).handle();
 					ShaderBindingContext contextExt = shader;
 					GLDebug.nameObject(GL43C.GL_PROGRAM, handle, "sodium-terrain-" + pass.toString().toLowerCase(Locale.ROOT));
-					return new IrisChunkShaderInterface(handle, contextExt, pipeline, new ChunkShaderOptions(ChunkFogMode.SMOOTH, pass.toTerrainPass(configuration)),
+					return new IrisChunkShaderInterface(handle, contextExt, pipeline, new ChunkShaderOptions(List.of(ChunkFogMode.SMOOTH), pass.toTerrainPass(configuration)),
 						createdShaders.get(ShaderType.TESS_CTRL) != null || createdShaders.get(ShaderType.TESS_EVALUATE) != null, pass == IrisTerrainPass.SHADOW || pass == IrisTerrainPass.SHADOW_CUTOUT, blendOverride, bufferOverrides, alpha, pipeline.getCustomUniforms());
 				});
 		} finally {
