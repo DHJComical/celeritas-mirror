@@ -3,6 +3,8 @@ package org.embeddedt.embeddium.impl.world.cloned;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMaps;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import lombok.Getter;
 import net.minecraft.Util;
 import net.minecraft.nbt.NbtUtils;
@@ -220,6 +222,15 @@ public class ClonedChunkSection {
         return array;
     }
 
+    private static Iterable<Map.Entry<BlockPos, BlockEntity>> fastIterable(Map<BlockPos, BlockEntity> blockEntityMap) {
+        if (blockEntityMap instanceof Object2ObjectMap<BlockPos, BlockEntity> fastutilMap) {
+            //noinspection unchecked
+            return (Iterable<Map.Entry<BlockPos, BlockEntity>>)(Iterable<?>)Object2ObjectMaps.fastIterable(fastutilMap);
+        } else {
+            return blockEntityMap.entrySet();
+        }
+    }
+
     @Nullable
     private static Int2ReferenceMap<BlockEntity> copyBlockEntities(LevelChunk chunk, SectionPos chunkCoord) {
         var chunkBlockEntityMap = chunk.getBlockEntities();
@@ -234,7 +245,7 @@ public class ClonedChunkSection {
         Int2ReferenceOpenHashMap<BlockEntity> blockEntities = null;
 
         // Copy the block entities from the chunk into our cloned section
-        for (Map.Entry<BlockPos, BlockEntity> entry : chunkBlockEntityMap.entrySet()) {
+        for (Map.Entry<BlockPos, BlockEntity> entry : fastIterable(chunkBlockEntityMap)) {
             BlockPos pos = entry.getKey();
             BlockEntity entity = entry.getValue();
 
