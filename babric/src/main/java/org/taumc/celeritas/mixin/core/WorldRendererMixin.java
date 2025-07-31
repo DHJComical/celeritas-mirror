@@ -52,7 +52,7 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
         }
     }
 
-    @Inject(method = "m_6748042", at = @At(opcode = Opcodes.PUTFIELD, value = "FIELD", target = "Lnet/minecraft/client/render/world/WorldRenderer;chunkGridSizeZ:I", shift = At.Shift.AFTER))
+    @Inject(method = { "reload", "m_6748042" }, at = @At(opcode = Opcodes.PUTFIELD, value = "FIELD", target = "Lnet/minecraft/client/render/world/WorldRenderer;chunkGridSizeZ:I", shift = At.Shift.AFTER))
     private void nullifyBuiltChunkStorage(CallbackInfo ci) {
         this.chunkGridSizeX = 0;
         this.chunkGridSizeY = 0;
