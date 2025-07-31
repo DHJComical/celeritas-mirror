@@ -1,12 +1,14 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-//? if >=1.21.5
-/*import net.minecraft.client.renderer.block.model.BlockModelPart;*/
+//? if >=1.21.5 {
+/*import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
+*///?}
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.world.level.block.AirBlock;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
@@ -121,7 +123,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         BlockState blockState = slice.getBlockState(x, y, z);
 
                         // Fast path - skip blocks that are air and don't have any custom logic
-                        if (blockState.isAir() && blockState.getRenderShape() == RenderShape.INVISIBLE && !WorldUtil.hasBlockEntity(blockState)) {
+                        if (blockState.getBlock().getClass() == AirBlock.class) {
                             continue;
                         }
 
