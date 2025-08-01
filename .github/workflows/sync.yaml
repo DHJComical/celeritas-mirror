@@ -1,0 +1,39 @@
+
+name: Sync Fork
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout local repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Sync upstream repository to this fork (stonecutter)
+        uses: repo-sync/github-sync@v2
+        with:
+          source_repo: "https://git.taumc.org/embeddedt/celeritas.git"
+
+          source_branch: "stonecutter"
+          
+          destination_branch: "stonecutter"
+          
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Sync upstream repository to this fork (shader-refactor)
+        uses: repo-sync/github-sync@v2
+        with:
+          source_repo: "https://git.taumc.org/embeddedt/celeritas.git"
+
+          source_branch: "shader-refactor"
+          
+          destination_branch: "shader-refactor"
+          
+          github_token: ${{ secrets.GITHUB_TOKEN }}
