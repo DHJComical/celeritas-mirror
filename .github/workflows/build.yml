@@ -1,0 +1,72 @@
+
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - 'stonecutter'
+      - 'sarder-refactor'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+      
+        target_branch: [stonecutter, sarder-refactor]
+    if: github.ref_name == matrix.target_branch
+
+    steps:
+      - name: Checkout sources from branch (${{ matrix.target_branch }})
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: |
+            8
+            17
+            21
+
+      - name: Initialize Gradle caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ matrix.target_branch }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('settings.gradle') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-${{ matrix.target_branch }}-
+
+      - name: Initialize Unimined caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            modern/versions/**/.gradle/unimined
+            forge1710/.gradle/unimined
+            forge122/.gradle/unimined
+            babric/.gradle/unimined
+          key: unimined-v2-${{ runner.os }}-${{ matrix.target_branch }}-${{ hashFiles('modern/build.gradle') }}-${{ hashFiles('settings.gradle.kts') }}
+          restore-keys: |
+            unimined-v2-${{ runner.os }}-${{ matrix.target_branch }}-
+
+      - name: Build all packaged jars for ${{ matrix.target_branch }}
+        run: |
+          chmod +x gradlew
+          ./gradlew packageJar
+
+      - name: Upload packaged jar for ${{ matrix.target_branch }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged-mod-${{ matrix.target_branch }}-${{ github.run_number }}
+          path: build/libs/*
+
+      - name: Show checksums
+        run: find build/libs -name \*.jar | sort | xargs sha256sum
