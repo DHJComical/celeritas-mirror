@@ -1,4 +1,5 @@
 
+
 name: Build and Test
 
 on:
@@ -10,16 +11,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-      
-        target_branch: [stonecutter, sarder-refactor]
-    if: github.ref_name == matrix.target_branch
+   
 
     steps:
-      - name: Checkout sources from branch (${{ matrix.target_branch }})
+     
+      - name: Checkout sources from branch (${{ github.ref_name }})
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
@@ -35,15 +31,16 @@ jobs:
             17
             21
 
+     
       - name: Initialize Gradle caches
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ matrix.target_branch }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('settings.gradle') }}
+          key: gradle-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('settings.gradle') }}
           restore-keys: |
-            gradle-${{ runner.os }}-${{ matrix.target_branch }}-
+            gradle-${{ runner.os }}-${{ github.ref_name }}-
 
       - name: Initialize Unimined caches
         uses: actions/cache@v4
@@ -53,19 +50,20 @@ jobs:
             forge1710/.gradle/unimined
             forge122/.gradle/unimined
             babric/.gradle/unimined
-          key: unimined-v2-${{ runner.os }}-${{ matrix.target_branch }}-${{ hashFiles('modern/build.gradle') }}-${{ hashFiles('settings.gradle.kts') }}
+          key: unimined-v2-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('modern/build.gradle') }}-${{ hashFiles('settings.gradle.kts') }}
           restore-keys: |
-            unimined-v2-${{ runner.os }}-${{ matrix.target_branch }}-
+            unimined-v2-${{ runner.os }}-${{ github.ref_name }}-
 
-      - name: Build all packaged jars for ${{ matrix.target_branch }}
+      - name: Build all packaged jars for ${{ github.ref_name }}
         run: |
           chmod +x gradlew
           ./gradlew packageJar
 
-      - name: Upload packaged jar for ${{ matrix.target_branch }}
+     
+      - name: Upload packaged jar for ${{ github.ref_name }}
         uses: actions/upload-artifact@v4
         with:
-          name: packaged-mod-${{ matrix.target_branch }}-${{ github.run_number }}
+          name: packaged-mod-${{ github.ref_name }}-${{ github.run_number }}
           path: build/libs/*
 
       - name: Show checksums
