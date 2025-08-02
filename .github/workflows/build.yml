@@ -1,26 +1,37 @@
 
-
 name: Build and Test
 
 on:
+  
   push:
     branches:
       - 'stonecutter'
       - 'sarder-refactor'
+      
+  
   workflow_dispatch:
-     
+    inputs:
+      branch:
+        description: 'The branch to build'
+        required: true
+        type: choice
+        options:
+          - stonecutter
+          - sarder-refactor
+        default: 'stonecutter'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-   
+
+    env:
+      TARGET_BRANCH: ${{ github.event.inputs.branch || github.ref_name }}
 
     steps:
-     
-      - name: Checkout sources from branch (${{ github.ref_name }})
+      - name: Checkout sources from branch (${{ env.TARGET_BRANCH }})
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ env.TARGET_BRANCH }}
           fetch-depth: 0
           fetch-tags: true
 
@@ -33,16 +44,15 @@ jobs:
             17
             21
 
-     
       - name: Initialize Gradle caches
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('settings.gradle') }}
+          key: gradle-${{ runner.os }}-${{ env.TARGET_BRANCH }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('settings.gradle') }}
           restore-keys: |
-            gradle-${{ runner.os }}-${{ github.ref_name }}-
+            gradle-${{ runner.os }}-${{ env.TARGET_BRANCH }}-
 
       - name: Initialize Unimined caches
         uses: actions/cache@v4
@@ -52,20 +62,19 @@ jobs:
             forge1710/.gradle/unimined
             forge122/.gradle/unimined
             babric/.gradle/unimined
-          key: unimined-v2-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('modern/build.gradle') }}-${{ hashFiles('settings.gradle.kts') }}
+          key: unimined-v2-${{ runner.os }}-${{ env.TARGET_BRANCH }}-${{ hashFiles('modern/build.gradle') }}-${{ hashFiles('settings.gradle.kts') }}
           restore-keys: |
-            unimined-v2-${{ runner.os }}-${{ github.ref_name }}-
+            unimined-v2-${{ runner.os }}-${{ env.TARGET_BRANCH }}-
 
-      - name: Build all packaged jars for ${{ github.ref_name }}
+      - name: Build all packaged jars for ${{ env.TARGET_BRANCH }}
         run: |
           chmod +x gradlew
           ./gradlew packageJar
 
-     
-      - name: Upload packaged jar for ${{ github.ref_name }}
+      - name: Upload packaged jar for ${{ env.TARGET_BRANCH }}
         uses: actions/upload-artifact@v4
         with:
-          name: packaged-mod-${{ github.ref_name }}-${{ github.run_number }}
+          name: packaged-mod-${{ env.TARGET_BRANCH }}-${{ github.run_number }}
           path: build/libs/*
 
       - name: Show checksums
