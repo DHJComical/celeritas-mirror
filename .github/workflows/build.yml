@@ -7,6 +7,8 @@ on:
     branches:
       - 'stonecutter'
       - 'sarder-refactor'
+  workflow_dispatch:
+     
 
 jobs:
   build:
