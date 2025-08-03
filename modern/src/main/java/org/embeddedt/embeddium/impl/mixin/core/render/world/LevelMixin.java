@@ -9,18 +9,16 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.embeddedt.embeddium.impl.model.BlockEntityImplInfo;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Mixin(Level.class)
 public abstract class LevelMixin {
@@ -52,9 +50,6 @@ public abstract class LevelMixin {
         listRef.set(list);
     }
 
-    @Unique
-    private static final ConcurrentHashMap<Class<? extends BlockEntity>, Boolean> OVERRIDES_GET_MODEL_DATA = new ConcurrentHashMap<>();
-
     /**
      * @author embeddedt
      * @reason Scan through block entities that are loaded for the first time and trigger section rebuilds if they have
@@ -74,20 +69,7 @@ public abstract class LevelMixin {
                 continue;
             }
 
-            boolean overridesModelData = OVERRIDES_GET_MODEL_DATA.computeIfAbsent(be.getClass(), clz -> {
-                try {
-                    Method method = clz.getMethod("getModelData");
-                    //? if neoforge
-                    /*return method.getDeclaringClass() != net.neoforged.neoforge.common.extensions.IBlockEntityExtension.class;*/
-                    //? if forge && >=1.17
-                    return method.getDeclaringClass() != net.minecraftforge.common.extensions.IForgeBlockEntity.class;
-                    //? if forge && <1.17
-                    /*return method.getDeclaringClass() != net.minecraftforge.common.extensions.IForgeTileEntity.class;*/
-                } catch (NoSuchMethodException e) {
-                    return false;
-                }
-            });
-            if (overridesModelData) {
+            if (BlockEntityImplInfo.providesModelData(be)) {
                 // We need to trigger a section rebuild to take the newly loaded model data into account.
                 // Not doing this can cause issues like Mekanism cables being disconnected when loading
                 // into singleplayer for the first time.
