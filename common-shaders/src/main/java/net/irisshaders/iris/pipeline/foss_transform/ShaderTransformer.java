@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 
 public class ShaderTransformer {
 
-    private static final int CACHE_SIZE = 100;
+    private static final int CACHE_SIZE = 256;
     private static final Object2ObjectLinkedOpenHashMap<TransformKey, Map<ShaderType, String>> shaderTransformationCache = new Object2ObjectLinkedOpenHashMap<>();
     public static final boolean useCache = true;
 
