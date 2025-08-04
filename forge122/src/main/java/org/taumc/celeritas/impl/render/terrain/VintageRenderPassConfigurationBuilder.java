@@ -25,7 +25,7 @@ public class VintageRenderPassConfigurationBuilder {
             // Forcefully reset the mipmap state to the expected value for terrain. Mods sometimes manage to corrupt it.
             boolean mipped = Minecraft.getMinecraft().gameSettings.mipmapLevels > 0;
             Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-            ((AbstractTexture)Minecraft.getMinecraft().getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)).setBlurMipmapDirect(false, mipped);
+            ((AbstractTexture) Minecraft.getMinecraft().getTextureManager().getTexture(TextureMap.LOCATION_BLOCKS_TEXTURE)).setBlurMipmapDirect(false, mipped);
         }
 
         @Override
@@ -56,7 +56,7 @@ public class VintageRenderPassConfigurationBuilder {
                 .name("translucent")
                 .fragmentDiscard(false)
                 .useReverseOrder(true)
-                .useTranslucencySorting(true) // TODO allow disabling
+                .useTranslucencySorting(CeleritasVintage.options().performance.useTranslucentFaceSorting)
                 .build();
 
         ImmutableListMultimap.Builder<BlockRenderLayer, TerrainRenderPass> vanillaRenderStages = ImmutableListMultimap.builder();
@@ -69,9 +69,23 @@ public class VintageRenderPassConfigurationBuilder {
 
         vanillaRenderStages.put(BlockRenderLayer.SOLID, solidPass);
         vanillaRenderStages.put(BlockRenderLayer.TRANSLUCENT, translucentPass);
-        vanillaRenderStages.put(BlockRenderLayer.SOLID, cutoutMippedPass);
 
-        cutoutMaterial = new Material(cutoutMippedPass, AlphaCutoffParameter.ONE_TENTH, false);
+        if (CeleritasVintage.options().performance.useRenderPassConsolidation) {
+            cutoutMaterial = new Material(cutoutMippedPass, AlphaCutoffParameter.ONE_TENTH, false);
+            vanillaRenderStages.put(BlockRenderLayer.SOLID, cutoutMippedPass);
+        } else {
+            TerrainRenderPass cutoutPass;
+
+            cutoutPass = builderForRenderType(BlockRenderLayer.CUTOUT, vertexType)
+                    .name("cutout")
+                    .fragmentDiscard(true)
+                    .useReverseOrder(false)
+                    .build();
+
+            cutoutMaterial = new Material(cutoutPass, AlphaCutoffParameter.ONE_TENTH, false);
+            vanillaRenderStages.put(BlockRenderLayer.CUTOUT, cutoutPass);
+            vanillaRenderStages.put(BlockRenderLayer.CUTOUT_MIPPED, cutoutMippedPass);
+        }
 
         // Now build the material map
         Map<BlockRenderLayer, Material> renderTypeToMaterialMap = new Reference2ReferenceOpenHashMap<>(4,
