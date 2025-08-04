@@ -67,7 +67,6 @@ public class SodiumGameOptions {
         public boolean enableMemoryTracing = false;
         public boolean useAdvancedStagingBuffers = true;
         public boolean disableIncompatibleModWarnings = false;
-        public boolean enableCeleritasIncognitoMode = false;
 
         public int cpuRenderAheadLimit = 3;
     }
