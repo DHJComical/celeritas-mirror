@@ -24,7 +24,7 @@ public class IrisDefines {
 	}
 
 	public static ImmutableList<StringPair> createIrisReplacements() {
-		ArrayList<StringPair> s = new ArrayList<>(StandardMacros.createStandardEnvironmentDefines());
+		ArrayList<StringPair> s = new ArrayList<>();
 
         CeleritasShaderVersionService.INSTANCE.processBiomeMap((key, value) -> define(s, key, value));
 
