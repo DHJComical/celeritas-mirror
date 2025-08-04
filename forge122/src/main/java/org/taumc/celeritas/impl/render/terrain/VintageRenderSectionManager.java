@@ -19,6 +19,7 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
 import org.jetbrains.annotations.Nullable;
+import org.taumc.celeritas.CeleritasVintage;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
 import org.taumc.celeritas.impl.render.terrain.compile.task.ChunkBuilderMeshingTask;
 import org.taumc.celeritas.impl.render.terrain.sprite.SpriteUtil;
@@ -31,20 +32,19 @@ public class VintageRenderSectionManager extends RenderSectionManager {
     @Getter
     private final ClonedChunkSectionCache sectionCache;
 
-    public VintageRenderSectionManager(RenderPassConfiguration<?> configuration, WorldClient world, int renderDistance, CommandList commandList, int minSection, int maxSection, int requestedThreads) {
-        super(configuration, () -> new VintageChunkBuildContext(world, configuration), ChunkRenderer::new, renderDistance, commandList, minSection, maxSection, requestedThreads);
+    public VintageRenderSectionManager(RenderPassConfiguration<?> configuration, WorldClient world, int renderDistance, CommandList commandList, int minSection, int maxSection) {
+        super(configuration, () -> new VintageChunkBuildContext(world, configuration), ChunkRenderer::new, renderDistance, commandList, minSection, maxSection, CeleritasVintage.options().performance.chunkBuilderThreads);
         this.world = world;
         this.sectionCache = new ClonedChunkSectionCache(world);
     }
 
     public static VintageRenderSectionManager create(ChunkVertexType vertexType, WorldClient world, int renderDistance, CommandList commandList) {
-        // TODO support thread option
-        return new VintageRenderSectionManager(VintageRenderPassConfigurationBuilder.build(vertexType), world, renderDistance, commandList, 0, 16, 0);
+        return new VintageRenderSectionManager(VintageRenderPassConfigurationBuilder.build(vertexType), world, renderDistance, commandList, 0, 16);
     }
 
     @Override
     protected AsyncOcclusionMode getAsyncOcclusionMode() {
-        return AsyncOcclusionMode.EVERYTHING;
+        return CeleritasVintage.options().performance.asyncOcclusionMode;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class VintageRenderSectionManager extends RenderSectionManager {
 
     @Override
     protected boolean useFogOcclusion() {
-        return true;
+        return CeleritasVintage.options().performance.useFogOcclusion;
     }
 
     @Override
@@ -99,7 +99,7 @@ public class VintageRenderSectionManager extends RenderSectionManager {
 
     @Override
     protected boolean allowImportantRebuilds() {
-        return false;
+        return !CeleritasVintage.options().performance.alwaysDeferChunkUpdates;
     }
 
     @Override
@@ -123,6 +123,11 @@ public class VintageRenderSectionManager extends RenderSectionManager {
 
         public ChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
             super(device, renderPassConfiguration);
+        }
+
+        @Override
+        public boolean useBlockFaceCulling(){
+            return CeleritasVintage.options().performance.useBlockFaceCulling;
         }
 
         @Override
