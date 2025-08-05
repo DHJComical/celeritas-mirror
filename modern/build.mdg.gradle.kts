@@ -92,6 +92,7 @@ modDevExtension.mods {
     create("embeddium") {
         sourceSet(sourceSets.main.get())
         sourceSet(project(":common").sourceSets.main.get())
+        sourceSet(project(":common-shaders").sourceSets.main.get())
     }
 }
 
@@ -119,6 +120,9 @@ modDevExtension.runs {
 
 dependencies {
     shadow(project(":common")) {
+        isTransitive = false
+    }
+    shadow(project(":common-shaders")) {
         isTransitive = false
     }
     val ffapiVersion = versionedProperty("ffapi")
