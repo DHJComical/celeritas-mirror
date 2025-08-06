@@ -5,6 +5,7 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.biome.BiomeColorHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.taumc.celeritas.CeleritasVintage;
 import org.taumc.celeritas.impl.world.cloned.CeleritasBlockAccess;
 
 @Mixin(value = BiomeColorHelper.class, priority = 1200)
@@ -20,7 +21,8 @@ public class BiomeColorHelperMixin {
             // Use Sodium's more efficient biome cache
             return ((CeleritasBlockAccess)blockAccess).getBlockTint(pos, colorResolver);
         }
-        int radius = 3; // TODO make configurable
+
+        int radius = CeleritasVintage.options().quality.biomeBlendRadius;
         if (radius == 0) {
             return colorResolver.getColorAtPos(blockAccess.getBiome(pos), pos);
         } else {
@@ -46,4 +48,3 @@ public class BiomeColorHelperMixin {
         }
     }
 }
-

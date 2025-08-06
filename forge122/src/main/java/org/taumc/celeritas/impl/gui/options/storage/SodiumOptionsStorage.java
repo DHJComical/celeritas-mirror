@@ -25,6 +25,6 @@ public class SodiumOptionsStorage implements OptionStorage<SodiumGameOptions> {
             throw new RuntimeException("Couldn't save configuration changes", e);
         }
 
-        CeleritasVintage.logger().info("Flushed changes to Embeddium configuration");
+        CeleritasVintage.logger().info("Flushed changes to Celeritas configuration");
     }
 }
