@@ -8,10 +8,15 @@ plugins {
     id("celeritas-unimined-plugin")
     id("xyz.wagyourtail.unimined") version "1.3.15-SNAPSHOT"
     id("xyz.wagyourtail.jvmdowngrader") version "1.1.3"
+    id("maven-publish")
 }
 
 group = "org.embeddedt"
 version = rootProject.version
+
+java {
+    withSourcesJar()
+}
 
 data class VersionData(val mcpVersion: String, val forgeVersion: String)
 
@@ -24,7 +29,7 @@ val minecraftVersion = project.name
 
 val versionData = versionDataMap.getValue(project.name)
 
-base.archivesName = "celeritas-forge-${project.name}"
+base.archivesName = "celeritas-forge-mc${project.name.replace("^1\\.".toRegex(), "")}"
 
 val modCompileOnly by configurations.creating
 configurations.compileOnly.get().extendsFrom(modCompileOnly)
@@ -101,4 +106,16 @@ ProductionJarHelper.createShadowRemapJar(project)
 tasks.register("packageJar", Copy::class) {
     from(tasks.named<ShadowJar>("shadowRemapJar").get().archiveFile)
     into("${rootProject.layout.buildDirectory.get()}/libs/${project.version}")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("default") {
+            artifactId = base.archivesName.get()
+            artifact(tasks.named<ShadowJar>("shadowRemapJar").map { it.archiveFile })
+            artifact(tasks.named("sourcesJar")) {
+                classifier = "sources"
+            }
+        }
+    }
 }

@@ -20,6 +20,7 @@ plugins {
     id("celeritas.platform-conventions")
     id("celeritas.shader-conventions") apply false
     id("embeddium-fabric-module-finder")
+    id("maven-publish")
 }
 
 group = "org.embeddedt"
@@ -42,6 +43,10 @@ class MDGConfig(val modDevExtension: ModDevExtension, val productionJarTask: Str
 tasks.named<Jar>("jar") {
     archiveBaseName = defaultArchiveBaseName
     archiveClassifier.set("deobf")
+}
+
+java {
+    withSourcesJar()
 }
 
 val config: MDGConfig = if (modLoader == ModLoader.NEOFORGE) {
@@ -153,6 +158,8 @@ dependencies {
 tasks.named<Jar>("jar") {
     manifest {
         attributes.put("MixinConfigs", modMixinConfigs.joinToString(","))
+        attributes.put("Fabric-Loom-Mixin-Remap-Type", "static")
+        attributes.put("Fabric-Mapping-Namespace", "intermediary")
     }
 }
 
@@ -184,4 +191,16 @@ val packageJar = tasks.register("packageJar", Copy::class) {
 
 tasks.named("assemble") {
     dependsOn(packageJar)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("default") {
+            artifactId = defaultArchiveBaseName
+            artifact(shadowJar.map { it.archiveFile })
+            artifact(tasks.named("sourcesJar")) {
+                classifier = "sources"
+            }
+        }
+    }
 }
