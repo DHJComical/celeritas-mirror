@@ -6,6 +6,7 @@ import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.*;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
+import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
@@ -28,7 +29,11 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
 
     public static PrimitiveRenderSectionManager create(ChunkVertexType vertexType, World world, int renderDistance, CommandList commandList) {
         // TODO support thread option
-        return new PrimitiveRenderSectionManager(PrimitiveRenderPassConfigurationBuilder.build(vertexType), world, renderDistance, commandList, 0, 8, -1);
+        //? if <1.8 {
+        int idealThreadCount = -1;
+        //?} else
+        /*int idealThreadCount = 0;*/
+        return new PrimitiveRenderSectionManager(PrimitiveRenderPassConfigurationBuilder.build(vertexType), world, renderDistance, commandList, 0, 8, idealThreadCount);
     }
 
     @Override
@@ -51,7 +56,10 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
         final boolean useOcclusionCulling;
         var camBlockPos = positionedViewport.getBlockCoord();
 
+        //? if <1.8 {
         var block = this.world.getBlock(camBlockPos.x(), camBlockPos.y(), camBlockPos.z());
+        //?} else
+        /*var block = this.world.getBlockState(new net.minecraft.util.math.BlockPos(camBlockPos.x(), camBlockPos.y(), camBlockPos.z())).getBlock();*/
 
         //? if >=1.7 {
         /*boolean opaque = block.isOpaqueCube();

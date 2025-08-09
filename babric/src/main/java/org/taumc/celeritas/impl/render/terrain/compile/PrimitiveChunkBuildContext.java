@@ -1,5 +1,6 @@
 package org.taumc.celeritas.impl.render.terrain.compile;
 
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import net.minecraft.world.World;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
@@ -14,16 +15,24 @@ import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 import org.taumc.celeritas.impl.render.terrain.PrimitiveRenderPassConfigurationBuilder;
 import org.taumc.celeritas.impl.render.terrain.SpriteTransparencyTracker;
 
+import java.nio.IntBuffer;
+
 public class PrimitiveChunkBuildContext extends ChunkBuildContext {
     public static final int NUM_PASSES = 2;
 
     public final World world;
     private final SpriteTransparencyTracker transparencyTracker;
 
+    public final BufferBuilder tesselator;
+
     public PrimitiveChunkBuildContext(World world, RenderPassConfiguration renderPassConfiguration) {
         super(renderPassConfiguration);
         this.world = world;
         this.transparencyTracker = CeleritasWorldRenderer.instance().getTransparencyTracker();
+        //? if >=1.8 {
+        /*this.tesselator = new BufferBuilder(8192);
+        *///?} else
+        this.tesselator = BufferBuilder.INSTANCE;
     }
 
     private final ChunkVertexEncoder.Vertex[] vertices = ChunkVertexEncoder.Vertex.uninitializedQuad();
@@ -42,7 +51,7 @@ public class PrimitiveChunkBuildContext extends ChunkBuildContext {
     private static final int[] NORMAL_WINDING = new int[] {0, 1, 2, 3};
     private static final int[] BACKFACE_WINDING = new int[] {3, 2, 1, 0};
 
-    public void copyRawBuffer(int[] rawBuffer, int vertexCount, ChunkBuildBuffers buffers, Material material) {
+    public void copyRawBuffer(IntBuffer rawBuffer, int vertexCount, ChunkBuildBuffers buffers, Material material) {
         if (vertexCount == 0) {
             return;
         }
@@ -65,25 +74,32 @@ public class PrimitiveChunkBuildContext extends ChunkBuildContext {
         //?}
     }
 
-    private void outputQuads(int[] rawBuffer, ChunkVertexEncoder.Vertex[] celeritasVertices, int numQuads, ChunkBuildBuffers buffers, Material material, int[] winding) {
+    private void outputQuads(IntBuffer rawBuffer, ChunkVertexEncoder.Vertex[] celeritasVertices, int numQuads, ChunkBuildBuffers buffers, Material material, int[] winding) {
         int ptr = 0;
         var tracker = this.transparencyTracker;
         for (int quadIdx = 0; quadIdx < numQuads; quadIdx++) {
             float uSum = 0, vSum = 0;
             for (int vIdx = 0; vIdx < 4; vIdx++) {
                 var vertex = celeritasVertices[winding[vIdx]];
-                vertex.x = Float.intBitsToFloat(rawBuffer[ptr++]);
-                vertex.y = Float.intBitsToFloat(rawBuffer[ptr++]);
-                vertex.z = Float.intBitsToFloat(rawBuffer[ptr++]);
-                float u = Float.intBitsToFloat(rawBuffer[ptr++]);
-                float v = Float.intBitsToFloat(rawBuffer[ptr++]);
+                vertex.x = Float.intBitsToFloat(rawBuffer.get(ptr++));
+                vertex.y = Float.intBitsToFloat(rawBuffer.get(ptr++));
+                vertex.z = Float.intBitsToFloat(rawBuffer.get(ptr++));
+
+                // In 1.8+, color comes before all UVs. In 1.7-, texture UV comes before color.
+                //? if >=1.8
+                /*vertex.color = rawBuffer.get(ptr++);*/
+
+                float u = Float.intBitsToFloat(rawBuffer.get(ptr++));
+                float v = Float.intBitsToFloat(rawBuffer.get(ptr++));
                 vertex.u = u;
                 uSum += u;
                 vertex.v = v;
                 vSum += v;
-                vertex.color = rawBuffer[ptr++];
-                vertex.vanillaNormal = rawBuffer[ptr++];
-                vertex.light = rawBuffer[ptr++];
+                //? if <1.8 {
+                vertex.color = rawBuffer.get(ptr++);
+                vertex.vanillaNormal = rawBuffer.get(ptr++);
+                //?}
+                vertex.light = rawBuffer.get(ptr++);
             }
             int trueNormal = QuadUtil.calculateNormal(celeritasVertices);
             for (int vIdx = 0; vIdx < 4; vIdx++) {

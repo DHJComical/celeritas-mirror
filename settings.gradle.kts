@@ -122,7 +122,7 @@ createStonecutterProject("forge122", listOf("1.12.2", "1.10.2")) { versions ->
     versions(versions)
 }
 
-createStonecutterProject("babric", listOf("1.2.5", "1.0.0-beta.7.3", "1.0.0-beta.8.1", "1.7.10")) { versions ->
+createStonecutterProject("babric", listOf("1.2.5", "1.0.0-beta.7.3", "1.0.0-beta.8.1", "1.7.10", "1.8.9")) { versions ->
     centralScript = "build.gradle.kts"
     versions(versions)
 }

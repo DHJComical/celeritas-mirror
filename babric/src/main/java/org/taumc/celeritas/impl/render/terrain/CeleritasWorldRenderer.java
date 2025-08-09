@@ -19,7 +19,7 @@ import java.util.*;
 /**
  * Provides an extension to vanilla's world renderer.
  */
-public class CeleritasWorldRenderer extends SimpleWorldRenderer<World, PrimitiveRenderSectionManager, Integer, BlockEntity, Float> {
+public class CeleritasWorldRenderer extends SimpleWorldRenderer<World, PrimitiveRenderSectionManager, Object, BlockEntity, Float> {
     @Getter
     private SpriteTransparencyTracker transparencyTracker;
 
@@ -57,7 +57,12 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<World, Primitive
 
     @Override
     protected CameraState captureCameraState(float ticks) {
-        Entity viewEntity = Objects.requireNonNull(MinecraftAccessor.celeritas$getInstance().camera, "Client must have view entity");
+        //? if <1.8 {
+        Entity viewEntity = MinecraftAccessor.celeritas$getInstance().camera;
+        //?} else
+        /*Entity viewEntity = MinecraftAccessor.celeritas$getInstance().getCamera();*/
+
+        Objects.requireNonNull(viewEntity, "Client must have view entity");
 
         double x = viewEntity.prevTickX + (viewEntity.x - viewEntity.prevTickX) * ticks;
         double y = viewEntity.prevTickY + (viewEntity.y - viewEntity.prevTickY) * ticks + (double) viewEntity.getEyeHeight();
@@ -98,7 +103,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<World, Primitive
         float partialTicks = partialTicksBoxed;
         for (var blockEntity : list) {
             try {
-                BlockEntityRenderDispatcher.INSTANCE.render(blockEntity, partialTicks);
+                BlockEntityRenderDispatcher.INSTANCE.render(blockEntity, partialTicks /*? if >=1.8 {*//*, -1 *//*?}*/);
             } catch(RuntimeException e) {
                 if(blockEntity.isRemoved()) {
                     System.err.println("Suppressing crash from invalid tile entity");

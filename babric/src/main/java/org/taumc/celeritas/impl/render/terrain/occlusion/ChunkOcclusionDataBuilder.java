@@ -43,6 +43,11 @@ public class ChunkOcclusionDataBuilder {
         --this.openCount;
     }
 
+    public void markClosed(int x, int y, int z) {
+        this.closed.set(pack(x, y, z), true);
+        --this.openCount;
+    }
+
     private static int pack(Vector3i pos) {
         return pack(pos.x() & 15, pos.y() & 15, pos.z() & 15);
     }

@@ -3,6 +3,8 @@ package org.taumc.celeritas.impl.render.terrain;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+//? if >=1.8
+/*import net.minecraft.client.render.block.BlockLayer;*/
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.QuadPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -18,7 +20,7 @@ import java.util.Map;
 
 public class PrimitiveRenderPassConfigurationBuilder {
     public static final TerrainRenderPass SOLID_PASS, CUTOUT_MIPPED_PASS, TRANSLUCENT_PASS;
-    public static final Material SOLID_MATERIAL, CUTOUT_MIPPED_MATERIAL, TRANSLUCENT_MATERIAL;
+    public static final Material SOLID_MATERIAL, CUTOUT_MATERIAL, CUTOUT_MIPPED_MATERIAL, TRANSLUCENT_MATERIAL;
 
     private record PrimitivePipelineState(int pass, boolean disableBlend) implements TerrainRenderPass.PipelineState {
         @Override
@@ -77,9 +79,11 @@ public class PrimitiveRenderPassConfigurationBuilder {
         TRANSLUCENT_MATERIAL = new Material(TRANSLUCENT_PASS, AlphaCutoffParameter.ZERO, true);
         SOLID_MATERIAL = new Material(SOLID_PASS, AlphaCutoffParameter.ZERO, true);
         CUTOUT_MIPPED_MATERIAL = new Material(CUTOUT_MIPPED_PASS, AlphaCutoffParameter.ONE_TENTH, true);
+        CUTOUT_MATERIAL = new Material(CUTOUT_MIPPED_PASS, AlphaCutoffParameter.ONE_TENTH, false);
     }
 
-    public static RenderPassConfiguration<Integer> build(ChunkVertexType vertexType) {
+    public static RenderPassConfiguration<?> build(ChunkVertexType vertexType) {
+        //? if <1.8 {
         Int2ObjectMap<Collection<TerrainRenderPass>> vanillaRenderStages = new Int2ObjectOpenHashMap<>();
 
         vanillaRenderStages.put(1, List.of(TRANSLUCENT_PASS));
@@ -91,6 +95,17 @@ public class PrimitiveRenderPassConfigurationBuilder {
 
         renderTypeToMaterialMap.put(0, CUTOUT_MIPPED_MATERIAL);
         renderTypeToMaterialMap.put(1, TRANSLUCENT_MATERIAL);
+        //?} else {
+        /*Map<BlockLayer, Collection<TerrainRenderPass>> vanillaRenderStages = new Reference2ReferenceOpenHashMap<>();
+        vanillaRenderStages.put(BlockLayer.SOLID, List.of(SOLID_PASS, CUTOUT_MIPPED_PASS));
+        vanillaRenderStages.put(BlockLayer.TRANSLUCENT, List.of(TRANSLUCENT_PASS));
+
+        Map<BlockLayer, Material> renderTypeToMaterialMap = new Reference2ReferenceOpenHashMap<>();
+        renderTypeToMaterialMap.put(BlockLayer.SOLID, SOLID_MATERIAL);
+        renderTypeToMaterialMap.put(BlockLayer.CUTOUT, CUTOUT_MATERIAL);
+        renderTypeToMaterialMap.put(BlockLayer.CUTOUT_MIPPED, CUTOUT_MIPPED_MATERIAL);
+        renderTypeToMaterialMap.put(BlockLayer.TRANSLUCENT, TRANSLUCENT_MATERIAL);
+        *///?}
 
         return new RenderPassConfiguration<>(renderTypeToMaterialMap,
                 vanillaRenderStages,

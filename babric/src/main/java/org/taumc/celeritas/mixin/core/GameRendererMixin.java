@@ -33,6 +33,7 @@ public class GameRendererMixin {
         GLStateManagerFogService.fogColorBlue = this.fogBlue;
     }
 
+    //? if <1.8 {
     private boolean lastVsyncStatus;
 
     @Inject(method = "render", at = @At("HEAD"))
@@ -48,4 +49,5 @@ public class GameRendererMixin {
     private boolean celeritas$forceNormalTranslucentTerrainRendering(GameOptions instance) {
         return false;
     }
+    //?}
 }

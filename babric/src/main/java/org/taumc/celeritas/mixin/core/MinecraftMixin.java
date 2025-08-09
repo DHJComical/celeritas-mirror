@@ -13,11 +13,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Minecraft.class)
 public class MinecraftMixin {
+    private static final String INIT_DISPLAY_METHOD =
+            //? if <1.8 {
+            "init"
+             //?} else
+            /*"initDisplay"*/
+    ;
+
     /**
      * @author embeddedt
      * @reason apparently b7.3 uses the default depth buffer precision (8-bit), which looks very bad
      */
-    @Redirect(method = "init", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;create()V"))
+    @Redirect(method = INIT_DISPLAY_METHOD, at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;create()V"))
     private void createWithHighPrecisionDepthBuffer() throws LWJGLException {
         Display.create(new PixelFormat().withDepthBits(24));
     }
@@ -26,12 +33,12 @@ public class MinecraftMixin {
      * @author embeddedt
      * @reason by default b7.3 does not mark the window as resizeable
      */
-    @Inject(method = "init", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;setTitle(Ljava/lang/String;)V"))
+    @Inject(method = INIT_DISPLAY_METHOD, at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;setTitle(Ljava/lang/String;)V"))
     private void makeResizeable(CallbackInfo ci) {
         Display.setResizable(true);
     }
 
-    @ModifyArg(method = "init", at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;setTitle(Ljava/lang/String;)V"), index = 0)
+    @ModifyArg(method = INIT_DISPLAY_METHOD, at = @At(value = "INVOKE", target = "Lorg/lwjgl/opengl/Display;setTitle(Ljava/lang/String;)V"), index = 0)
     private String removeDuplicateMinecraftInTitle(String newTitle) {
         if (newTitle.startsWith("Minecraft Minecraft")) {
             return newTitle.replaceFirst("^Minecraft ", "");
