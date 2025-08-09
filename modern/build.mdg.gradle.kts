@@ -53,6 +53,7 @@ val config: MDGConfig = if (modLoader == ModLoader.NEOFORGE) {
     apply(plugin = "net.neoforged.moddev")
     val neoForge = project.extensions.getByName("neoForge") as NeoForgeExtension
     neoForge.version = versionedProperty("neoforge")
+    neoForge.unitTest.enable()
     MDGConfig(neoForge, "jar")
 } else {
     apply(plugin = "net.neoforged.moddev.legacyforge")
@@ -93,10 +94,25 @@ if (parchmentVersion != null) {
     }
 }
 
-modDevExtension.mods {
-    create("embeddium") {
-        sourceSet(sourceSets.main.get())
-        sourceSet(project(":common").sourceSets.main.get())
+val mainMod = modDevExtension.mods.create("embeddium") {
+    sourceSet(sourceSets.main.get())
+    sourceSet(project(":common").sourceSets.main.get())
+}
+
+if (modLoader == ModLoader.NEOFORGE) {
+    (modDevExtension as NeoForgeExtension).unitTest.testedMod = mainMod
+
+    tasks.named<Test>("test") {
+        useJUnitPlatform()
+    }
+} else {
+    // Disable unit tests
+    sourceSets.named("test") {
+        java.setSrcDirs(emptyList<String>())
+        resources.setSrcDirs(emptyList<String>())
+    }
+    tasks.named("test") {
+        enabled = false
     }
 }
 
@@ -153,6 +169,10 @@ dependencies {
     ModDependencyCollector.obtainDeps(project) { cfg, dep ->
         dependencies.add(cfg, dep)
     }
+
+    testImplementation(platform("org.junit:junit-bom:${rootProject.property("junit_version")}"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.named<Jar>("jar") {

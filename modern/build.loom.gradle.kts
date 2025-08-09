@@ -80,6 +80,17 @@ dependencies {
     ModDependencyCollector.obtainDeps(project) { cfg, dep ->
         dependencies.add(cfg, dep)
     }
+
+    testImplementation("net.fabricmc:fabric-loader-junit:${rootProject.property("fabricloader")}")
+}
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
+    val junitDir = project.layout.buildDirectory.file("fabric-junit").get().asFile
+    doFirst {
+        junitDir.mkdirs()
+    }
+    workingDir = junitDir
 }
 
 if (stonecutter.constants.getOrDefault("shaders", false)) {
