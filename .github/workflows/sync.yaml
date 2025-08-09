@@ -25,7 +25,7 @@ jobs:
           
           destination_branch: "stonecutter"
           
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.PAT }}
           
       - name: Sync upstream repository to this fork (shader-refactor)
         uses: repo-sync/github-sync@v2
@@ -36,4 +36,4 @@ jobs:
           
           destination_branch: "shader-refactor"
           
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.PAT }}
