@@ -15,6 +15,7 @@ import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
 import org.joml.Matrix4f;
 import org.taumc.celeritas.CeleritasVintage;
@@ -54,7 +55,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
 
     @Override
     protected VintageRenderSectionManager createRenderSectionManager(CommandList commandList) {
-        return VintageRenderSectionManager.create(ChunkMeshFormats.VANILLA_LIKE, this.world, this.getEffectiveRenderDistance(), commandList);
+        return VintageRenderSectionManager.create(chooseVertexType(), this.world, this.getEffectiveRenderDistance(), commandList);
     }
 
     /**
@@ -116,6 +117,10 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
      * @return True if the entity is visible, otherwise false
      */
     public boolean isEntityVisible(Entity entity) {
+        if (!CeleritasVintage.options().performance.useEntityCulling || this.renderSectionManager.isInShadowPass()) {
+            return true;
+        }
+
         // Ensure entities with outlines or nametags are always visible
         if (entity.isGlowing() || entity.getAlwaysRenderNameTagForRender()) {
             return true;
@@ -127,5 +132,13 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
         /*AABB box = renderer.getBoundingBoxForCulling(entity);*/
 
         return this.isBoxVisible(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
+    }
+
+    private ChunkVertexType chooseVertexType() {
+        if (!CeleritasVintage.options().performance.useCompactVertexFormat) {
+            return ChunkMeshFormats.VANILLA_LIKE;
+        }
+
+        return ChunkMeshFormats.COMPACT;
     }
 }

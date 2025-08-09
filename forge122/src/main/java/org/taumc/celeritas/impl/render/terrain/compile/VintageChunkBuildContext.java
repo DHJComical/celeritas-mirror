@@ -20,6 +20,7 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncode
 import org.embeddedt.embeddium.impl.util.QuadUtil;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.system.MemoryUtil;
+import org.taumc.celeritas.CeleritasVintage;
 import org.taumc.celeritas.impl.extensions.SpriteExtension;
 import org.taumc.celeritas.impl.extensions.TextureMapExtension;
 import org.taumc.celeritas.impl.world.WorldSlice;
@@ -37,12 +38,14 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
     @Getter
     private final WorldSlice worldSlice;
     private final RenderPassConfiguration<?> renderPassConfiguration;
+    private final boolean useRenderPassOptimization;
 
     public VintageChunkBuildContext(WorldClient world, RenderPassConfiguration renderPassConfiguration) {
         super(renderPassConfiguration);
         this.renderPassConfiguration = renderPassConfiguration;
         this.worldSlice = new WorldSlice(world);
         this.textureAtlas = (TextureMapExtension) Minecraft.getMinecraft().getTextureMapBlocks();
+        this.useRenderPassOptimization = CeleritasVintage.options().performance.useRenderPassOptimization;
     }
 
     public void setupTranslation(int x, int y, int z) {
@@ -94,7 +97,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
     }
 
     private Material selectMaterial(Material material, TextureAtlasSprite sprite) {
-        if (sprite != null && sprite.getClass() == TextureAtlasSprite.class && !sprite.hasAnimationMetadata()) {
+        if (sprite != null && sprite.getClass() == TextureAtlasSprite.class && !sprite.hasAnimationMetadata() && this.useRenderPassOptimization) {
             var transparencyLevel = ((SpriteExtension)sprite).celeritas$getTransparencyLevel();
             if (transparencyLevel == SpriteTransparencyLevel.OPAQUE) {
                 // Downgrade to solid

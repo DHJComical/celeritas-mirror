@@ -101,12 +101,6 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
             mainEventBus.addListener((RegisterClientCommandsEvent event) -> DevCommands.register(event.getDispatcher()));
         }
 
-        if (options().advanced.enableCeleritasIncognitoMode) {
-            MODNAME = "Embeddium";
-            MOD_VERSION = "1.0.11-beta.420";
-            EmbeddiumConstants.MODNAME = "Embeddium";
-        }
-
         // TODO remove
         //? if shaders {
         modEventBus.addListener((RegisterKeyMappingsEvent ev) -> {

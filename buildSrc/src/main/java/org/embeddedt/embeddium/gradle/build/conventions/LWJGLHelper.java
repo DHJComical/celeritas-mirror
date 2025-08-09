@@ -17,7 +17,7 @@ public class LWJGLHelper {
 
     public static void convertLwjgl2To3(Project project) {
         project.getConfigurations().getByName("minecraftLibraries").getDependencies().removeIf(dep -> Objects.equals(dep.getGroup(), "org.lwjgl.lwjgl"));
-        project.getDependencies().add("minecraftLibraries", "org.taumc:legacy-lwjgl3:1.1-tau");
+        project.getDependencies().add("minecraftLibraries", "org.taumc:legacy-lwjgl3:1.2-tau");
         addLwjgl3(project, "minecraftLibraries");
     }
 
@@ -30,6 +30,7 @@ public class LWJGLHelper {
         for (String component : LWJGL3_COMPONENTS) {
             deps.add(configurationName, "org.lwjgl:" + component + ":" + LWJGL3_VERSION);
             deps.add(configurationName, "org.lwjgl:" + component + ":" + LWJGL3_VERSION + ":natives-" + "linux");
+            deps.add(configurationName, "org.lwjgl:" + component + ":" + LWJGL3_VERSION + ":natives-" + "windows");
         }
     }
 }

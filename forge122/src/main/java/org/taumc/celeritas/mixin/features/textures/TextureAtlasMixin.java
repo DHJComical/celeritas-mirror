@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.taumc.celeritas.CeleritasVintage;
 import org.taumc.celeritas.impl.extensions.SpriteExtension;
 import org.taumc.celeritas.impl.extensions.TextureMapExtension;
 
@@ -53,6 +54,10 @@ public class TextureAtlasMixin implements TextureMapExtension {
 
     @ModifyExpressionValue(method = "updateAnimations", at = @At(value = "INVOKE", target = "Ljava/util/List;iterator()Ljava/util/Iterator;"))
     private Iterator<TextureAtlasSprite> getFilteredIterator(Iterator<TextureAtlasSprite> iterator) {
-        return Iterators.filter(iterator, sprite -> ((SpriteExtension)sprite).celeritas$shouldUpdate());
+        if (CeleritasVintage.options().performance.animateOnlyVisibleTextures) {
+            return Iterators.filter(iterator, sprite -> ((SpriteExtension)sprite).celeritas$shouldUpdate());
+        } else {
+            return iterator;
+        }
     }
 }
