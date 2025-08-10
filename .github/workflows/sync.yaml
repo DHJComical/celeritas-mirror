@@ -1,39 +1,117 @@
 
-name: Sync Fork
+name: Main Pipeline
 
 on:
   schedule:
     - cron: '0 */12 * * *'
-
   workflow_dispatch:
 
 jobs:
-  sync:
+  sync-and-build-stonecutter:
+    name: Sync, Build & Release Stonecutter
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
-      - name: Checkout local repository
+      - name: 1. Get 'stonecutter' hash BEFORE sync
+        id: get_before_hash
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          
-      - name: Sync upstream repository to this fork (stonecutter)
+          ref: 'stonecutter'
+      - run: echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+      
+      - name: 2. Sync 'stonecutter' from upstream
         uses: repo-sync/github-sync@v2
         with:
           source_repo: "https://git.taumc.org/embeddedt/celeritas.git"
+          source_branch: 'stonecutter'
+          destination_branch: 'stonecutter'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
-          source_branch: "stonecutter"
-          
-          destination_branch: "stonecutter"
-          
-          github_token: ${{ secrets.PAT }}
-          
-      - name: Sync upstream repository to this fork (shader-refactor)
+      - name: 3. Get 'stonecutter' hash AFTER sync
+        id: get_after_hash
+        uses: actions/checkout@v4
+        with:
+          ref: 'stonecutter'
+      - run: echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+      - name: 4. Compare hashes and decide to continue
+        id: check_changes
+        run: |
+          echo "Branch: stonecutter"
+          echo "Before Hash: ${{ steps.get_before_hash.outputs.hash }}"
+          echo "After Hash:  ${{ steps.get_after_hash.outputs.hash }}"
+          if [ "${{ steps.get_before_hash.outputs.hash }}" == "${{ steps.get_after_hash.outputs.hash }}" ]; then
+            echo "✅ No new commits. Skipping build and release."
+            echo "continue=false" >> $GITHUB_OUTPUT
+          else
+            echo "🚀 New commits detected. Proceeding to build and release."
+            echo "continue=true" >> $GITHUB_OUTPUT
+          fi
+      
+      
+      - name: Set up JDK
+        if: steps.check_changes.outputs.continue == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: |
+            8
+            17
+            21
+
+      - name: Initialize Gradle caches
+        if: steps.check_changes.outputs.continue == 'true'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-stonecutter-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('settings.gradle') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-stonecutter-
+
+      - name: Build all packaged jars
+        if: steps.check_changes.outputs.continue == 'true'
+        run: |
+          chmod +x gradlew
+          ./gradlew packageJar
+          echo "Build complete. JARs are located in build/libs/"
+
+      - name: Generate release tag
+        if: steps.check_changes.outputs.continue == 'true'
+        id: generate_tag
+        run: echo "tag_name=stonecutter-snapshot-$(date +%Y%m%d)-${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        if: steps.check_changes.outputs.continue == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.generate_tag.outputs.tag_name }}
+          release_name: "Automated Snapshot ${{ steps.generate_tag.outputs.tag_name }}"
+          body: |
+            Automated release triggered by new commits on the stonecutter branch.
+            - **Branch:** `stonecutter`
+            - **Last Commit:** `${{ steps.get_after_hash.outputs.hash }}`
+            
+            These are development builds and may be unstable.
+          files: build/libs/*.jar
+          prerelease: true
+
+  sync-sarder-refactor:
+    name: Sync Sarder-Refactor
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: github.event_name == 'schedule'
+    steps:
+      - name: Sync 'sarder-refactor' from upstream
         uses: repo-sync/github-sync@v2
         with:
           source_repo: "https://git.taumc.org/embeddedt/celeritas.git"
-
-          source_branch: "shader-refactor"
-          
-          destination_branch: "shader-refactor"
-          
-          github_token: ${{ secrets.PAT }}
+          source_branch: 'sarder-refactor'
+          destination_branch: 'sarder-refactor'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
