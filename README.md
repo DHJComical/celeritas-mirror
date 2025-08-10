@@ -1,4 +1,4 @@
-<img src="modern/src/main/resources/icon.png" width="128">
+<img src="icon.png" width="128">
 
 # Celeritas
 
