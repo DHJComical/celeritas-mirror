@@ -177,7 +177,9 @@ dependencies {
 
 tasks.named<Jar>("jar") {
     manifest {
-        attributes.put("MixinConfigs", modMixinConfigs.joinToString(","))
+        if (modLoader == ModLoader.NEOFORGE) {
+            attributes.put("MixinConfigs", modMixinConfigs.joinToString(","))
+        }
         attributes.put("Fabric-Loom-Mixin-Remap-Type", "static")
         attributes.put("Fabric-Mapping-Namespace", "intermediary")
     }
