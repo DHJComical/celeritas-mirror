@@ -83,6 +83,8 @@ public abstract class RenderSectionManager {
 
     private final Object2ObjectOpenHashMap<TerrainRenderPass, TimerQueryManager> renderPassDrawTimers = new Object2ObjectOpenHashMap<>();
 
+    protected final ReferenceSet<RenderSection> sectionsRequestingUpdate = new ReferenceOpenHashSet<>();
+
     @Deprecated
     public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier,
                                 BiFunction<RenderDevice, RenderPassConfiguration<?>, ChunkRenderer> chunkRenderer,
@@ -368,8 +370,26 @@ public abstract class RenderSectionManager {
         return false;
     }
 
+    /**
+     * Inject sections that requested a rebuild between graph updates into the appropriate rebuild lists.
+     */
+    private void promoteInterimRebuildList() {
+        var rebuildLists = this.getCurrentRenderListManager().getRebuildLists().byUpdateType();
+        for (var section : this.sectionsRequestingUpdate) {
+            rebuildLists.get(section.getPendingUpdate()).add(section);
+        }
+    }
+
     public void updateChunks(boolean updateImmediately) {
         this.regions.update();
+
+        // Promotion of the interim rebuild list is not required if a graph update is requested, as the graph
+        // generates a new rebuild list anyway
+        if (!this.renderListManager.isNeedsUpdate() && !sectionsRequestingUpdate.isEmpty()) {
+            this.promoteInterimRebuildList();
+        }
+
+        this.sectionsRequestingUpdate.clear();
 
         if (!rebuildListHasUpdates()) {
             return;
@@ -663,7 +683,11 @@ public abstract class RenderSectionManager {
             if (pendingUpdate != null) {
                 section.setPendingUpdate(pendingUpdate);
 
-                this.markGraphDirty();
+                if (!this.getCurrentRenderListManager().isNeedsUpdate() && this.sectionsRequestingUpdate.size() < this.builder.getSchedulingBudget()) {
+                    this.sectionsRequestingUpdate.add(section);
+                } else {
+                    this.markGraphDirty();
+                }
             }
         }
     }
