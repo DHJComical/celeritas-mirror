@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.lists;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.Reference2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,6 +18,7 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
     @Getter(AccessLevel.PACKAGE)
     private final ObjectArrayList<ChunkRenderList> sortedRenderLists;
     private final EnumMap<ChunkUpdateType, ArrayDeque<RenderSection>> sortedRebuildLists;
+    private final int[] rebuildQueueOverflowCounts;
     private final Reference2ReferenceOpenHashMap<RenderRegion, ChunkRenderList> renderListsByRegion;
 
     private final int frame;
@@ -30,6 +32,7 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
 
         this.sortedRenderLists = new ObjectArrayList<>();
         this.sortedRebuildLists = new EnumMap<>(ChunkUpdateType.class);
+        this.rebuildQueueOverflowCounts = new int[ChunkUpdateType.values().length];
         this.ignoreQueueSizeLimit = ignoreQueueSizeLimit;
         this.renderListsByRegion = new Reference2ReferenceOpenHashMap<>();
 
@@ -74,6 +77,7 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
             if (this.ignoreQueueSizeLimit || queue.size() < type.getMaximumQueueSize()) {
                 queue.add(section);
             } else {
+                this.rebuildQueueOverflowCounts[type.ordinal()]++;
                 this.hasAdditionalUpdates = true;
             }
         }
@@ -84,6 +88,15 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
     }
 
     public ChunkRebuildLists getRebuildLists() {
-        return new ChunkRebuildLists(this.sortedRebuildLists, this.hasAdditionalUpdates);
+        EnumMap<ChunkUpdateType, Integer> overflowCounts = new EnumMap<>(ChunkUpdateType.class);
+        if (this.hasAdditionalUpdates) {
+            var values = ChunkUpdateType.values();
+            for (int i = 0; i < values.length; i++) {
+                if (this.rebuildQueueOverflowCounts[i] != 0) {
+                    overflowCounts.put(values[i], this.rebuildQueueOverflowCounts[i]);
+                }
+            }
+        }
+        return new ChunkRebuildLists(this.sortedRebuildLists, this.hasAdditionalUpdates, overflowCounts);
     }
 }

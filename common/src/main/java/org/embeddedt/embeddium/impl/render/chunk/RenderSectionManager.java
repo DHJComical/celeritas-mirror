@@ -809,14 +809,13 @@ public abstract class RenderSectionManager {
         list.add(String.format("G: %d/%d, I: %d/%d MiB (%d buffers)", MathUtil.toMib(deviceUsed), MathUtil.toMib(deviceAllocated), MathUtil.toMib(indexUsed), MathUtil.toMib(indexAllocated), count));
         list.add(String.format("Transfer Queue: %s", this.regions.getStagingBuffer().toString()));
 
-        var rebuildLists = this.getCurrentRenderListManager().getRebuildLists().byUpdateType();
+        var rebuildLists = this.getCurrentRenderListManager().getRebuildLists();
 
-        list.add(String.format("Chunk Queues: U=%02d (P0=%03d | P1=%03d | P2=%03d)%s",
+        list.add(String.format("Chunk Queues: U=%02d (P0=%03d | P1=%03d | P2=%03d)",
                 this.buildResults.size(),
-                rebuildLists.get(ChunkUpdateType.IMPORTANT_REBUILD).size(),
-                rebuildLists.get(ChunkUpdateType.REBUILD).size(),
-                rebuildLists.get(ChunkUpdateType.INITIAL_BUILD).size(),
-                this.getCurrentRenderListManager().getRebuildLists().hasAdditionalUpdates() ? "(++)" : ""
+                rebuildLists.getUpdateCount(ChunkUpdateType.IMPORTANT_REBUILD),
+                rebuildLists.getUpdateCount(ChunkUpdateType.REBUILD),
+                rebuildLists.getUpdateCount(ChunkUpdateType.INITIAL_BUILD)
         ));
 
         var debugStats = renderListManager.getDebugStatistics();

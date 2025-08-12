@@ -12,8 +12,12 @@ import java.util.Map;
  * @param byUpdateType a map from update type to the appropriate list of sections
  * @param hasAdditionalUpdates whether there were additional updates not queued for efficiency reasons
  */
-public record ChunkRebuildLists(Map<ChunkUpdateType, ArrayDeque<RenderSection>> byUpdateType, boolean hasAdditionalUpdates) {
+public record ChunkRebuildLists(Map<ChunkUpdateType, ArrayDeque<RenderSection>> byUpdateType, boolean hasAdditionalUpdates, Map<ChunkUpdateType, Integer> queueOverflowCounts) {
     public static final ChunkRebuildLists EMPTY;
+
+    public int getUpdateCount(ChunkUpdateType type) {
+        return byUpdateType.get(type).size() + queueOverflowCounts.getOrDefault(type, 0);
+    }
 
     static {
         Map<ChunkUpdateType, ArrayDeque<RenderSection>> rebuildLists = new EnumMap<>(ChunkUpdateType.class);
@@ -22,6 +26,6 @@ public record ChunkRebuildLists(Map<ChunkUpdateType, ArrayDeque<RenderSection>> 
             rebuildLists.put(type, new ArrayDeque<>());
         }
 
-        EMPTY = new ChunkRebuildLists(rebuildLists, false);
+        EMPTY = new ChunkRebuildLists(rebuildLists, false, new EnumMap<>(ChunkUpdateType.class));
     }
 }
