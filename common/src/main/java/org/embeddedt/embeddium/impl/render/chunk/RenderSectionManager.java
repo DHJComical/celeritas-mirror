@@ -408,6 +408,12 @@ public abstract class RenderSectionManager {
         for (var result : results) {
             result.delete();
         }
+
+        // Forcefully mark the graph as needing updates if the previous render list detected an overflow of the
+        // update queue. This is necessary to queue those additional chunks.
+        if (this.getCurrentRenderListManager().getRebuildLists().hasAdditionalUpdates()) {
+            this.markGraphDirty();
+        }
     }
 
     public final void tickVisibleRenders() {
@@ -421,11 +427,15 @@ public abstract class RenderSectionManager {
 
         for (var result : filtered) {
             if(result.info != null) {
-                // The chunk graph must be rebuilt whenever a section is remeshed, in order to consider changes in
-                // geometry, visibility data, etc.
-                this.markGraphDirty();
+                boolean changed = this.updateSectionInfo(result.render, result.info);
 
-                this.updateSectionInfo(result.render, result.info);
+                if (changed) {
+                    // The chunk graph must be rebuilt if the render section reports the info has changed. This
+                    // could indicate an occlusion data update, block entity addition/removal, animated texture
+                    // change, etc.
+                    this.markGraphDirty();
+                }
+
                 // We only change the translucency info on full rebuilds, as sorts can keep using the same data
                 this.updateTranslucencyInfo(result.render, result.meshes);
             }
@@ -451,19 +461,24 @@ public abstract class RenderSectionManager {
     }
 
     @MustBeInvokedByOverriders
-    protected void updateSectionInfo(RenderSection render, @Nullable BuiltRenderSectionData info) {
-        render.setInfo(info);
-        long visibilityData = info != null ? info.visibilityData : VisibilityEncoding.NULL;
-        this.renderListManager.updateVisibilityData(render.getChunkX(), render.getChunkY(), render.getChunkZ(), visibilityData);
-        if (this.shadowRenderListManager != null) {
-            this.shadowRenderListManager.updateVisibilityData(render.getChunkX(), render.getChunkY(), render.getChunkZ(), visibilityData);
+    protected boolean updateSectionInfo(RenderSection render, @Nullable BuiltRenderSectionData info) {
+        boolean changed = render.setInfo(info);
+
+        if (changed) {
+            long visibilityData = info != null ? info.visibilityData : VisibilityEncoding.NULL;
+            this.renderListManager.updateVisibilityData(render.getChunkX(), render.getChunkY(), render.getChunkZ(), visibilityData);
+            if (this.shadowRenderListManager != null) {
+                this.shadowRenderListManager.updateVisibilityData(render.getChunkX(), render.getChunkY(), render.getChunkZ(), visibilityData);
+            }
+
+            if (!(info instanceof MinecraftBuiltRenderSectionData<?, ?> data)) {
+                this.sectionsWithGlobalEntities.remove(render);
+            } else if (!data.globalBlockEntities.isEmpty()) {
+                this.sectionsWithGlobalEntities.add(render);
+            }
         }
 
-        if (!(info instanceof MinecraftBuiltRenderSectionData<?, ?> data)) {
-            this.sectionsWithGlobalEntities.remove(render);
-        } else if (!data.globalBlockEntities.isEmpty()) {
-            this.sectionsWithGlobalEntities.add(render);
-        }
+        return changed;
     }
 
     private static List<ChunkBuildOutput> filterChunkBuildResults(ArrayList<ChunkBuildOutput> outputs) {

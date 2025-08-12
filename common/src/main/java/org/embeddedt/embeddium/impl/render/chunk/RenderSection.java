@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The render state object for a chunk section. This contains all the graphics state for each render pass along with
@@ -33,7 +34,6 @@ public class RenderSection extends AbstractSection {
     }
 
     // Rendering State
-    private boolean built = false; // merge with the flags?
     private BuiltRenderSectionData contextData;
     private boolean hasAnythingToRender;
     @Getter
@@ -91,28 +91,17 @@ public class RenderSection extends AbstractSection {
             this.buildCancellationToken = null;
         }
 
-        this.clearRenderState();
+        this.setInfo(null);
         this.disposed = true;
     }
 
-    public void setInfo(@Nullable BuiltRenderSectionData info) {
-        if (info != null) {
-            this.setRenderState(info);
-        } else {
-            this.clearRenderState();
+    public boolean setInfo(@Nullable BuiltRenderSectionData info) {
+        boolean changed = !Objects.equals(info, this.contextData);
+        if (changed) {
+            this.contextData = info;
+            this.updateCachedContextDataFlags();
         }
-    }
-
-    private void setRenderState(@NotNull BuiltRenderSectionData info) {
-        this.built = true;
-        this.contextData = info;
-        this.updateCachedContextDataFlags();
-    }
-
-    private void clearRenderState() {
-        this.built = false;
-        this.contextData = null;
-        this.updateCachedContextDataFlags();
+        return changed;
     }
 
     public boolean isDisposed() {
@@ -120,7 +109,7 @@ public class RenderSection extends AbstractSection {
     }
 
     public boolean isBuilt() {
-        return this.built;
+        return this.contextData != null;
     }
 
     public RenderRegion getRegion() {
