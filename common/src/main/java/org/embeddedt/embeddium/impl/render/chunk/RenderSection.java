@@ -163,6 +163,23 @@ public class RenderSection extends AbstractSection {
         this.pendingUpdateType = type;
     }
 
+    /**
+     * Request a type of chunk update for this render section. This may "upgrade" an existing pending update for the
+     * section.
+     * @param type the chunk update
+     * @return true if the section's chunk update type has changed
+     */
+    public boolean requestUpdate(ChunkUpdateType type) {
+        type = ChunkUpdateType.getPromotionUpdateType(this.pendingUpdateType, type);
+
+        if (type != null) {
+            this.pendingUpdateType = type;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public int getLastBuiltFrame() {
         return this.lastBuiltFrame;
     }

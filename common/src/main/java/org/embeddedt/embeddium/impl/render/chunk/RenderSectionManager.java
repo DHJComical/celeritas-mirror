@@ -679,10 +679,7 @@ public abstract class RenderSectionManager {
                 pendingUpdate = ChunkUpdateType.REBUILD;
             }
 
-            pendingUpdate = ChunkUpdateType.getPromotionUpdateType(section.getPendingUpdate(), pendingUpdate);
-            if (pendingUpdate != null) {
-                section.setPendingUpdate(pendingUpdate);
-
+            if (section.requestUpdate(pendingUpdate)) {
                 if (!this.getCurrentRenderListManager().isNeedsUpdate() && this.sectionsRequestingUpdate.size() < this.builder.getSchedulingBudget()) {
                     this.sectionsRequestingUpdate.add(section);
                 } else {

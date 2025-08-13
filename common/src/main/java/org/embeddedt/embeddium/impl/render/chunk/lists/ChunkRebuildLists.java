@@ -19,6 +19,18 @@ public record ChunkRebuildLists(Map<ChunkUpdateType, ArrayDeque<RenderSection>> 
         return byUpdateType.get(type).size() + queueOverflowCounts.getOrDefault(type, 0);
     }
 
+    public boolean isEmpty() {
+        if (hasAdditionalUpdates) {
+            return false;
+        }
+        for (var queue : byUpdateType.values()) {
+            if (!queue.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     static {
         Map<ChunkUpdateType, ArrayDeque<RenderSection>> rebuildLists = new EnumMap<>(ChunkUpdateType.class);
 
