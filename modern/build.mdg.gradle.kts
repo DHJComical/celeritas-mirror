@@ -135,6 +135,11 @@ modDevExtension.runs {
             programArgument("--mixin.config")
             programArgument(config)
         }
+        if (stonecutter.eval(minecraftVersion, ">=1.20.5")) {
+            // Use generational ZGC as we are on Java 21+
+            jvmArgument("-XX:+UseZGC")
+            jvmArgument("-XX:+ZGenerational")
+        }
     }
 }
 
