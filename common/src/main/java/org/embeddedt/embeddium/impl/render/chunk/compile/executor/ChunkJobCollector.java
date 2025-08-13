@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.executor;
 
-import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkTaskOutput;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,17 +9,17 @@ import java.util.function.Consumer;
 
 public class ChunkJobCollector {
     private final Semaphore semaphore = new Semaphore(0);
-    private final Consumer<ChunkJobResult<ChunkBuildOutput>> collector;
+    private final Consumer<ChunkJobResult<? extends ChunkTaskOutput>> collector;
     private final List<ChunkJob> submitted = new ArrayList<>();
 
     private final int budget;
 
-    public ChunkJobCollector(int budget, Consumer<ChunkJobResult<ChunkBuildOutput>> collector) {
+    public ChunkJobCollector(int budget, Consumer<ChunkJobResult<? extends ChunkTaskOutput>> collector) {
         this.budget = budget;
         this.collector = collector;
     }
 
-    public void onJobFinished(ChunkJobResult<ChunkBuildOutput> result) {
+    public void onJobFinished(ChunkJobResult<? extends ChunkTaskOutput> result) {
         this.semaphore.release(1);
         this.collector.accept(result);
     }

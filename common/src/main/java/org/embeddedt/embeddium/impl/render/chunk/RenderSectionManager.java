@@ -10,6 +10,7 @@ import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.profiling.TimerQueryManager;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkTaskOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobResult;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobCollector;
@@ -57,7 +58,7 @@ public abstract class RenderSectionManager {
 
     private final Long2ReferenceMap<RenderSection> sectionByPosition = new Long2ReferenceOpenHashMap<>();
 
-    private final ConcurrentLinkedDeque<ChunkJobResult<ChunkBuildOutput>> buildResults = new ConcurrentLinkedDeque<>();
+    private final ConcurrentLinkedDeque<ChunkJobResult<? extends ChunkTaskOutput>> buildResults = new ConcurrentLinkedDeque<>();
     private final ConcurrentLinkedDeque<Runnable> asyncSubmittedTasks = new ConcurrentLinkedDeque<>();
 
     private final ChunkRenderer chunkRenderer;
@@ -440,14 +441,14 @@ public abstract class RenderSectionManager {
         this.getCurrentRenderListManager().tickVisibleRenders();
     }
 
-    private void processChunkBuildResults(ArrayList<ChunkBuildOutput> results) {
+    private void processChunkBuildResults(ArrayList<? extends ChunkTaskOutput> results) {
         var filtered = filterChunkBuildResults(results);
 
         this.regions.uploadMeshes(RenderDevice.INSTANCE.createCommandList(), filtered);
 
         for (var result : filtered) {
-            if(result.info != null) {
-                boolean changed = this.updateSectionInfo(result.render, result.info);
+            if (result instanceof ChunkBuildOutput buildResult) {
+                boolean changed = this.updateSectionInfo(result.render, buildResult.info);
 
                 if (changed) {
                     // The chunk graph must be rebuilt if the render section reports the info has changed. This
@@ -457,7 +458,7 @@ public abstract class RenderSectionManager {
                 }
 
                 // We only change the translucency info on full rebuilds, as sorts can keep using the same data
-                this.updateTranslucencyInfo(result.render, result.meshes);
+                this.updateTranslucencyInfo(result.render, buildResult.meshes);
             }
 
             var job = result.render.getBuildCancellationToken();
@@ -501,8 +502,8 @@ public abstract class RenderSectionManager {
         return changed;
     }
 
-    private static List<ChunkBuildOutput> filterChunkBuildResults(ArrayList<ChunkBuildOutput> outputs) {
-        var map = new Reference2ReferenceLinkedOpenHashMap<RenderSection, ChunkBuildOutput>();
+    private static List<? extends ChunkTaskOutput> filterChunkBuildResults(ArrayList<? extends ChunkTaskOutput> outputs) {
+        var map = new Reference2ReferenceLinkedOpenHashMap<RenderSection, ChunkTaskOutput>();
 
         for (var output : outputs) {
             if (output.render.isDisposed() || output.render.getLastBuiltFrame() > output.buildTime) {
@@ -520,9 +521,9 @@ public abstract class RenderSectionManager {
         return new ArrayList<>(map.values());
     }
 
-    private ArrayList<ChunkBuildOutput> collectChunkBuildResults() {
-        ArrayList<ChunkBuildOutput> results = new ArrayList<>();
-        ChunkJobResult<ChunkBuildOutput> result;
+    private ArrayList<? extends ChunkTaskOutput> collectChunkBuildResults() {
+        ArrayList<ChunkTaskOutput> results = new ArrayList<>();
+        ChunkJobResult<? extends ChunkTaskOutput> result;
 
         while ((result = this.buildResults.poll()) != null) {
             results.add(result.unwrap());
@@ -549,7 +550,7 @@ public abstract class RenderSectionManager {
                 continue;
             }
 
-            ChunkBuilderTask<ChunkBuildOutput> task = type.isSort() ? this.createSortTask(section, frame) : this.createRebuildTask(section, frame);
+            ChunkBuilderTask<? extends ChunkTaskOutput> task = type.isSort() ? this.createSortTask(section, frame) : this.createRebuildTask(section, frame);
 
             if (task == null && type.isSort()) {
                 // Ignore sorts that became invalid

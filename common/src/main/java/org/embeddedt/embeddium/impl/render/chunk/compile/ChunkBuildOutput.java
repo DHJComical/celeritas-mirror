@@ -12,32 +12,21 @@ import org.jetbrains.annotations.Nullable;
  * the main thread. If a task is cancelled after finishing its work and not before the result is processed, the result
  * will instead be discarded.
  */
-public class ChunkBuildOutput {
-    public final RenderSection render;
-
-    public final @Nullable BuiltRenderSectionData info;
+public class ChunkBuildOutput extends ChunkTaskOutput {
+    public final BuiltRenderSectionData info;
     public final Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes;
 
-    public final int buildTime;
-
-    private boolean partialUpload;
-
-    public ChunkBuildOutput(RenderSection render, @Nullable BuiltRenderSectionData info, Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes, int buildTime) {
-        this.render = render;
+    public ChunkBuildOutput(RenderSection render, BuiltRenderSectionData info, Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> meshes, int buildTime) {
+        super(render, buildTime);
         this.info = info;
         this.meshes = meshes;
-
-        this.buildTime = buildTime;
 
         if (this.info != null) {
             this.info.bake();
         }
     }
 
-    public BuiltSectionMeshParts getMesh(TerrainRenderPass pass) {
-        return this.meshes.get(pass);
-    }
-
+    @Override
     public void delete() {
         for (BuiltSectionMeshParts data : this.meshes.values()) {
             if(data.getVertexData() != null) {
@@ -47,13 +36,5 @@ public class ChunkBuildOutput {
                 data.getIndexData().free();
             }
         }
-    }
-
-    public boolean isIndexOnlyUpload() {
-        return partialUpload;
-    }
-
-    public void setIndexOnlyUpload(boolean flag) {
-        partialUpload = flag;
     }
 }

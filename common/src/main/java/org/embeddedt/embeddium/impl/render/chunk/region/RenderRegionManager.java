@@ -12,12 +12,13 @@ import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkSortOutput;
+import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkTaskOutput;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 public class RenderRegionManager {
     private final Long2ReferenceOpenHashMap<RenderRegion> regions = new Long2ReferenceOpenHashMap<>();
@@ -51,10 +52,9 @@ public class RenderRegionManager {
         }
     }
 
-    public void uploadMeshes(CommandList commandList, Collection<ChunkBuildOutput> results) {
+    public void uploadMeshes(CommandList commandList, Collection<? extends ChunkTaskOutput> results) {
         for (var entry : this.createMeshUploadQueues(results)) {
-            this.uploadMeshes(commandList, entry.getKey(), entry.getValue().stream().filter(o -> !o.isIndexOnlyUpload()).toList());
-            this.uploadResorts(commandList, entry.getKey(), entry.getValue().stream().filter(ChunkBuildOutput::isIndexOnlyUpload).toList());
+            new MeshUploader(commandList, entry.getKey()).processResults(entry.getValue());
         }
     }
 
@@ -64,75 +64,41 @@ public class RenderRegionManager {
         return entries instanceof Reference2ReferenceMap.FastEntrySet ? () -> ((Reference2ReferenceMap.FastEntrySet<K, V>)entries).fastIterator() : entries;
     }
 
-    private void uploadMeshes(CommandList commandList, RenderRegion region, Collection<ChunkBuildOutput> results) {
-        Map<GlVertexFormat, ArrayList<PendingSectionUpload>> uploadsByFormat = new Object2ObjectOpenHashMap<>(2);
+    private class MeshUploader {
+        private final Map<GlVertexFormat, ArrayList<PendingSectionUpload>> uploadsByFormat = new Object2ObjectOpenHashMap<>(2);
+        private final CommandList commandList;
+        private final RenderRegion region;
 
-        boolean needIndexBuffer = false;
+        private boolean needIndexBuffer;
 
-        for (ChunkBuildOutput result : results) {
+        private MeshUploader(CommandList commandList, RenderRegion region) {
+            this.commandList = commandList;
+            this.region = region;
+        }
+
+        private ArrayList<PendingSectionUpload> getUploadQueue(TerrainRenderPass pass) {
+            return uploadsByFormat.computeIfAbsent(pass.vertexType().getVertexFormat(), $ -> new ArrayList<>());
+        }
+
+        private void processBuildResult(ChunkBuildOutput result) {
             // Delete all existing data for the section in the region
             region.removeMeshes(result.render.getSectionIndex());
 
             // Add uploads for any new data
             for (var entry : fastIterable(result.meshes)) {
-                var format = this.renderPassConfiguration.getVertexTypeForPass(entry.getKey()).getVertexFormat();
-                var uploads = uploadsByFormat.computeIfAbsent(format, $ -> new ArrayList<>());
                 BuiltSectionMeshParts mesh = Objects.requireNonNull(entry.getValue());
 
                 needIndexBuffer |= mesh.getIndexData() != null;
 
-                uploads.add(new PendingSectionUpload(result.render, mesh, entry.getKey(),
-                        new PendingUpload(mesh.getVertexData()), mesh.getIndexData() != null ? new PendingUpload(mesh.getIndexData()) : null));
+                getUploadQueue(entry.getKey()).add(new PendingMeshRebuildUpload(result.render, mesh, entry.getKey(),
+                        PendingUpload.of(mesh.getVertexData()), PendingUpload.of(mesh.getIndexData())));
             }
         }
 
-        // If we have nothing to upload, abort!
-        if (uploadsByFormat.isEmpty()) {
-            return;
-        }
+        private void processSortResult(ChunkSortOutput result) {
+            needIndexBuffer = true;
 
-        boolean bufferChanged = false;
-
-        for (var entry : uploadsByFormat.entrySet()) {
-            var resources = region.createResources(entry.getKey(), commandList);
-            var uploads = entry.getValue();
-            var geometryArena = resources.getGeometryArena();
-
-            bufferChanged |= geometryArena.upload(commandList, uploads.stream()
-                    .map(upload -> upload.vertexUpload));
-
-            if (needIndexBuffer) {
-                bufferChanged |= resources.getOrCreateIndexArena(commandList).upload(commandList, uploads.stream()
-                        .map(upload -> upload.indexUpload).filter(Objects::nonNull));
-            }
-        }
-
-
-        // If any of the buffers changed, the tessellation will need to be updated
-        // Once invalidated the tessellation will be re-created on the next attempted use
-        if (bufferChanged) {
-            region.refresh(commandList);
-        }
-
-        // Collect the upload results
-        for (var uploads : uploadsByFormat.values()) {
-            for (PendingSectionUpload upload : uploads) {
-                var storage = region.createStorage(upload.pass, renderPassConfiguration);
-                storage.setMeshes(upload.section.getSectionIndex(),
-                        upload.vertexUpload.getResult(), upload.indexUpload != null ? upload.indexUpload.getResult() : null, upload.meshData.getVertexRanges());
-            }
-        }
-
-        region.removeEmptyStorages();
-    }
-
-    private void uploadResorts(CommandList commandList, RenderRegion region, Collection<ChunkBuildOutput> results) {
-        Map<GlVertexFormat, ArrayList<PendingResortUpload>> uploadsByFormat = new Object2ObjectOpenHashMap<>(2);
-
-        for (ChunkBuildOutput result : results) {
             for (var entry : fastIterable(result.meshes)) {
-                var format = this.renderPassConfiguration.getVertexTypeForPass(entry.getKey()).getVertexFormat();
-                var uploads = uploadsByFormat.computeIfAbsent(format, $ -> new ArrayList<>());
                 var pass = entry.getKey();
                 var mesh = entry.getValue();
 
@@ -142,44 +108,73 @@ public class RenderRegionManager {
                     storage.removeIndexBuffer(result.render.getSectionIndex());
                 }
 
-                Objects.requireNonNull(mesh.getIndexData());
-
-                uploads.add(new PendingResortUpload(result.render, mesh, pass, new PendingUpload(mesh.getIndexData())));
+                getUploadQueue(entry.getKey()).add(new PendingMeshSortUpload(result.render, pass, PendingUpload.of(mesh.indexData())));
             }
         }
 
-        // If we have nothing to upload, abort!
-        if (uploadsByFormat.isEmpty()) {
-            return;
-        }
-
-        boolean bufferChanged = false;
-
-        for (var entry : uploadsByFormat.entrySet()) {
-            var resources = region.createResources(entry.getKey(), commandList);
-            var uploads = entry.getValue();
-
-            bufferChanged |= resources.getOrCreateIndexArena(commandList).upload(commandList, uploads.stream()
-                    .map(upload -> upload.indexUpload).filter(Objects::nonNull));
-        }
-
-        // If any of the buffers changed, the tessellation will need to be updated
-        // Once invalidated the tessellation will be re-created on the next attempted use
-        if (bufferChanged) {
-            region.refresh(commandList);
-        }
-
-        // Collect the upload results
-        for (var uploads : uploadsByFormat.values()) {
-            for (PendingResortUpload upload : uploads) {
-                var storage = region.createStorage(upload.pass, renderPassConfiguration);
-                storage.replaceIndexBuffer(upload.section.getSectionIndex(), upload.indexUpload.getResult());
+        public void processResults(Collection<? extends ChunkTaskOutput> results) {
+            for (ChunkTaskOutput output : results) {
+                if (output instanceof ChunkBuildOutput result) {
+                    processBuildResult(result);
+                } else if (output instanceof ChunkSortOutput result) {
+                    processSortResult(result);
+                } else {
+                    throw new IllegalStateException("Unexpected result type: " + output.getClass().getName());
+                }
             }
+
+            // If we have nothing to upload, abort!
+            if (uploadsByFormat.isEmpty()) {
+                return;
+            }
+
+            boolean bufferChanged = false;
+
+            for (var entry : uploadsByFormat.entrySet()) {
+                var resources = region.createResources(entry.getKey(), commandList);
+                var uploads = entry.getValue();
+                var geometryArena = resources.getGeometryArena();
+
+                bufferChanged |= geometryArena.upload(commandList, uploads.stream()
+                        .map(PendingSectionUpload::vertexUpload).filter(Objects::nonNull));
+
+                if (needIndexBuffer) {
+                    bufferChanged |= resources.getOrCreateIndexArena(commandList).upload(commandList, uploads.stream()
+                            .map(PendingSectionUpload::indexUpload).filter(Objects::nonNull));
+                }
+            }
+
+
+            // If any of the buffers changed, the tessellation will need to be updated
+            // Once invalidated the tessellation will be re-created on the next attempted use
+            if (bufferChanged) {
+                region.refresh(commandList);
+            }
+
+            // Collect the upload results
+            for (var uploads : uploadsByFormat.values()) {
+                for (PendingSectionUpload upload : uploads) {
+                    var storage = region.createStorage(upload.pass(), renderPassConfiguration);
+                    if (upload instanceof PendingMeshRebuildUpload meshUpload) {
+                        // Replace meshes
+                        var indexResult = upload.indexUpload() != null ? upload.indexUpload().getResult() : null;
+                        storage.setMeshes(upload.section().getSectionIndex(),
+                                upload.vertexUpload().getResult(), indexResult, meshUpload.meshData().getVertexRanges());
+                    } else if (upload instanceof PendingMeshSortUpload) {
+                        // Replace index buffer
+                        storage.replaceIndexBuffer(upload.section().getSectionIndex(), upload.indexUpload().getResult());
+                    } else {
+                        throw new IllegalStateException();
+                    }
+                }
+            }
+
+            region.removeEmptyStorages();
         }
     }
 
-    private Reference2ReferenceMap.FastEntrySet<RenderRegion, List<ChunkBuildOutput>> createMeshUploadQueues(Collection<ChunkBuildOutput> results) {
-        var map = new Reference2ReferenceOpenHashMap<RenderRegion, List<ChunkBuildOutput>>();
+    private <T extends ChunkTaskOutput> Reference2ReferenceMap.FastEntrySet<RenderRegion, List<T>> createMeshUploadQueues(Collection<T> results) {
+        var map = new Reference2ReferenceOpenHashMap<RenderRegion, List<T>>();
 
         for (var result : results) {
             var queue = map.computeIfAbsent(result.render.getRegion(), k -> new ArrayList<>());
@@ -224,14 +219,21 @@ public class RenderRegionManager {
         return instance;
     }
 
-    private record PendingSectionUpload(RenderSection section, BuiltSectionMeshParts meshData, TerrainRenderPass pass, PendingUpload vertexUpload, PendingUpload indexUpload) {
-        private PendingSectionUpload(RenderSection section, BuiltSectionMeshParts meshData, TerrainRenderPass pass, PendingUpload vertexUpload) {
-            this(section, meshData, pass, vertexUpload, null);
-        }
+    private interface PendingSectionUpload {
+        RenderSection section();
+        TerrainRenderPass pass();
+        PendingUpload vertexUpload();
+        PendingUpload indexUpload();
     }
 
-    private record PendingResortUpload(RenderSection section, BuiltSectionMeshParts meshData, TerrainRenderPass pass, PendingUpload indexUpload) {
+    private record PendingMeshRebuildUpload(RenderSection section, BuiltSectionMeshParts meshData, TerrainRenderPass pass,
+                                            PendingUpload vertexUpload, PendingUpload indexUpload) implements PendingSectionUpload {}
 
+    private record PendingMeshSortUpload(RenderSection section, TerrainRenderPass pass, PendingUpload indexUpload) implements PendingSectionUpload {
+        @Override
+        public PendingUpload vertexUpload() {
+            return null;
+        }
     }
 
 
