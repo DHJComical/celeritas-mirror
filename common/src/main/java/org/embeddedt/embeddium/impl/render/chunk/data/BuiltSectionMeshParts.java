@@ -4,39 +4,20 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.gl.util.VertexRange;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
+import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.jetbrains.annotations.Nullable;
 
-public class BuiltSectionMeshParts {
-    private final VertexRange[] ranges;
-    private final NativeBuffer buffer;
-    private final NativeBuffer indexBuffer;
-    private final TranslucentQuadAnalyzer.SortState sortState;
+import java.util.Map;
 
-    public BuiltSectionMeshParts(NativeBuffer buffer, @Nullable NativeBuffer indexBuffer, TranslucentQuadAnalyzer.SortState sortState, VertexRange[] ranges) {
-        this.ranges = ranges;
-        this.buffer = buffer;
-        this.indexBuffer = indexBuffer;
-        this.sortState = sortState;
-    }
-
-    public NativeBuffer getVertexData() {
-        return this.buffer;
-    }
-
-    @Nullable
-    public NativeBuffer getIndexData() {
-        return this.indexBuffer;
-    }
-
-    public VertexRange[] getVertexRanges() {
-        return this.ranges;
-    }
-
-    public TranslucentQuadAnalyzer.SortState getSortState() {
-        return this.sortState;
+public record BuiltSectionMeshParts(NativeBuffer vertexBuffer, @Nullable NativeBuffer indexBuffer, @Nullable TranslucentQuadAnalyzer.SortState sortState, Map<ModelQuadFacing, VertexRange> ranges) {
+    public void free() {
+        vertexBuffer.free();
+        if (indexBuffer != null) {
+            indexBuffer.free();
+        }
     }
 
     public static Reference2ReferenceMap<TerrainRenderPass, BuiltSectionMeshParts> groupFromBuildBuffers(ChunkBuildBuffers buffers, float relativeCameraX, float relativeCameraY, float relativeCameraZ) {

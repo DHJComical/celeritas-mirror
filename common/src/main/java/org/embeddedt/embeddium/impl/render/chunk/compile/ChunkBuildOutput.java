@@ -29,12 +29,7 @@ public class ChunkBuildOutput extends ChunkTaskOutput {
     @Override
     public void delete() {
         for (BuiltSectionMeshParts data : this.meshes.values()) {
-            if(data.getVertexData() != null) {
-                data.getVertexData().free();
-            }
-            if(data.getIndexData() != null) {
-                data.getIndexData().free();
-            }
+            data.free();
         }
     }
 }

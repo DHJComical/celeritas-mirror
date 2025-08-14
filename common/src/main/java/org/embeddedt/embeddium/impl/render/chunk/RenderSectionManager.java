@@ -475,7 +475,7 @@ public abstract class RenderSectionManager {
         Map<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> sortStates = new Reference2ObjectArrayMap<>();
         for(var entry : meshes.entrySet()) {
             if(entry.getKey().isSorted()) {
-                sortStates.put(entry.getKey(), entry.getValue().getSortState().compactForStorage());
+                sortStates.put(entry.getKey(), Objects.requireNonNull(entry.getValue().sortState()).compactForStorage());
             }
         }
         render.setTranslucencySortStates(sortStates.isEmpty() ? Collections.emptyMap() : sortStates);

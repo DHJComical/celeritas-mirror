@@ -17,10 +17,7 @@ import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A collection of temporary buffers for each worker thread which will be used to build chunk meshes for given render
@@ -88,7 +85,7 @@ public final class ChunkBuildBuffers {
         }
 
         List<ByteBuffer> vertexBuffers = new ArrayList<>();
-        VertexRange[] vertexRanges = new VertexRange[ModelQuadFacing.COUNT];
+        var vertexRanges = new EnumMap<ModelQuadFacing, VertexRange>(ModelQuadFacing.class);
 
         int vertexCount = 0;
 
@@ -103,7 +100,7 @@ public final class ChunkBuildBuffers {
             }
 
             vertexBuffers.add(buffer.slice());
-            vertexRanges[facing.ordinal()] = new VertexRange(vertexCount, buffer.count());
+            vertexRanges.put(facing, new VertexRange(vertexCount, buffer.count()));
 
             vertexCount += buffer.count();
         }

@@ -88,10 +88,10 @@ public class RenderRegionManager {
             for (var entry : fastIterable(result.meshes)) {
                 BuiltSectionMeshParts mesh = Objects.requireNonNull(entry.getValue());
 
-                needIndexBuffer |= mesh.getIndexData() != null;
+                needIndexBuffer |= mesh.indexBuffer() != null;
 
                 getUploadQueue(entry.getKey()).add(new PendingMeshRebuildUpload(result.render, mesh, entry.getKey(),
-                        PendingUpload.of(mesh.getVertexData()), PendingUpload.of(mesh.getIndexData())));
+                        PendingUpload.of(mesh.vertexBuffer()), PendingUpload.of(mesh.indexBuffer())));
             }
         }
 
@@ -159,7 +159,7 @@ public class RenderRegionManager {
                         // Replace meshes
                         var indexResult = upload.indexUpload() != null ? upload.indexUpload().getResult() : null;
                         storage.setMeshes(upload.section().getSectionIndex(),
-                                upload.vertexUpload().getResult(), indexResult, meshUpload.meshData().getVertexRanges());
+                                upload.vertexUpload().getResult(), indexResult, meshUpload.meshData().ranges());
                     } else if (upload instanceof PendingMeshSortUpload) {
                         // Replace index buffer
                         storage.replaceIndexBuffer(upload.section().getSectionIndex(), upload.indexUpload().getResult());

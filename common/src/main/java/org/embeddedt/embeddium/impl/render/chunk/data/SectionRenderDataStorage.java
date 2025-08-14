@@ -8,6 +8,7 @@ import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Map;
 
 public class SectionRenderDataStorage {
     private final GlBufferSegment[] allocations = new GlBufferSegment[RenderRegion.REGION_SIZE];
@@ -31,7 +32,7 @@ public class SectionRenderDataStorage {
     }
 
     public void setMeshes(int localSectionIndex,
-                          GlBufferSegment allocation, @Nullable GlBufferSegment indexAllocation, VertexRange[] ranges) {
+                          GlBufferSegment allocation, @Nullable GlBufferSegment indexAllocation, Map<ModelQuadFacing, VertexRange> ranges) {
         if (this.allocations[localSectionIndex] != null) {
             this.allocations[localSectionIndex].delete();
             this.allocations[localSectionIndex] = null;
@@ -57,7 +58,7 @@ public class SectionRenderDataStorage {
         int verticesPerPrimitive = primitiveType.getVerticesPerPrimitive();
 
         for (int facingIndex = 0; facingIndex < ModelQuadFacing.COUNT; facingIndex++) {
-            VertexRange vertexRange = ranges[facingIndex];
+            VertexRange vertexRange = ranges.get(ModelQuadFacing.VALUES[facingIndex]);
             int vertexCount;
 
             if (vertexRange != null) {
