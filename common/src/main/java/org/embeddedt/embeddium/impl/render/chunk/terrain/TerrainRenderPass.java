@@ -3,12 +3,14 @@ package org.embeddedt.embeddium.impl.render.chunk.terrain;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Singular;
 import lombok.experimental.Accessors;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -54,6 +56,8 @@ public class TerrainRenderPass {
     private final @NotNull ChunkPrimitiveType primitiveType;
     private final @NotNull ChunkVertexType vertexType;
 
+    private final Map<String, String> extraDefines;
+
     @Builder
     public TerrainRenderPass(String name,
                              PipelineState pipelineState,
@@ -62,7 +66,8 @@ public class TerrainRenderPass {
                              boolean useTranslucencySorting,
                              boolean hasNoLightmap,
                              @NotNull ChunkVertexType vertexType,
-                             @NotNull ChunkPrimitiveType primitiveType) {
+                             @NotNull ChunkPrimitiveType primitiveType,
+                             @Singular Map<String, String> extraDefines) {
         if(name == null || name.length() == 0) {
             throw new IllegalArgumentException("Name not specified for terrain pass");
         }
@@ -77,6 +82,7 @@ public class TerrainRenderPass {
         this.hasNoLightmap = hasNoLightmap;
         this.primitiveType = primitiveType;
         this.vertexType = vertexType;
+        this.extraDefines = Map.copyOf(extraDefines);
     }
 
     public boolean isReverseOrder() {
@@ -109,6 +115,10 @@ public class TerrainRenderPass {
 
     public ChunkVertexType vertexType() {
         return this.vertexType;
+    }
+
+    public Map<String, String> extraDefines() {
+        return this.extraDefines;
     }
 
     @Override

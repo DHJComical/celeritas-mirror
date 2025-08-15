@@ -16,6 +16,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.Alp
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.lwjgl.opengl.GL32C;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ModernRenderPassConfigurationBuilder {
@@ -63,7 +64,13 @@ public class ModernRenderPassConfigurationBuilder {
     }
 
     private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(RenderType chunkRenderType, ChunkVertexType vertexType) {
-        return TerrainRenderPass.builder().pipelineState(new ModernRenderTypePipelineState(chunkRenderType)).vertexType(vertexType).primitiveType(QuadPrimitiveType.TRIANGULATED);
+        var extraDefines = new HashMap<String, String>();
+
+        if (Celeritas.options().quality.chunkFadeInDuration > 0) {
+            extraDefines.put("CHUNK_FADE_IN_DURATION_MS", String.valueOf(Celeritas.options().quality.chunkFadeInDuration));
+        }
+
+        return TerrainRenderPass.builder().extraDefines(extraDefines).pipelineState(new ModernRenderTypePipelineState(chunkRenderType)).vertexType(vertexType).primitiveType(QuadPrimitiveType.TRIANGULATED);
     }
 
     public static RenderPassConfiguration<RenderType> build(ChunkVertexType vertexType) {

@@ -21,6 +21,8 @@ public record ChunkShaderOptions(List<ChunkShaderComponent.Factory<?>> component
             constants.add("CELERITAS_NO_LIGHTMAP");
         }
 
+        constants.addAll(pass.extraDefines());
+
         var vertexType = pass.vertexType();
         var primitiveType = pass.primitiveType();
 

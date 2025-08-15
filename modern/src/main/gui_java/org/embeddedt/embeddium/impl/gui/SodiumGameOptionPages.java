@@ -345,6 +345,15 @@ public class SodiumGameOptionPages {
                         .setEnabled(!ShaderModBridge.isNvidiumEnabled())
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
+                .add(OptionImpl.createBuilder(int.class, sodiumOpts)
+                        .setId(StandardOptions.Option.CHUNK_FADE_IN_DURATION)
+                        .setName(ComponentUtil.translatable("celeritas.options.chunk_fade_in_duration.name"))
+                        .setTooltip(ComponentUtil.translatable("celeritas.options.chunk_fade_in_duration.tooltip"))
+                        .setControl(o -> new SliderControl(o, 0, 2000, 100, ControlValueFormatter.translateVariable("celeritas.options.chunk_fade_in_duration.value")))
+                        .setImpact(OptionImpact.LOW)
+                        .setBinding((opts, value) -> opts.quality.chunkFadeInDuration = value, opts -> opts.quality.chunkFadeInDuration)
+                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
+                        .build())
                 .build());
 
         groups.add(OptionGroup.createBuilder()
