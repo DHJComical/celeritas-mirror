@@ -31,10 +31,7 @@ jobs:
 
       - name: 3. Get 'stonecutter' hash AFTER sync
         id: get_after_hash
-        uses: actions/checkout@v4
-        with:
-          ref: 'stonecutter'
-      - run: echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+        run: echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: 4. Compare hashes and decide to continue
         id: check_changes
