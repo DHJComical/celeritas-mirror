@@ -12,4 +12,8 @@ public interface ChunkShaderInterface {
     void setModelViewMatrix(Matrix4fc matrix);
     void setRegionOffset(float x, float y, float z);
     void setTextureSlot(ChunkShaderTextureSlot slot, int val);
+
+    default void setSectionAges(long timestamp, long[] loadTimes) {
+
+    }
 }

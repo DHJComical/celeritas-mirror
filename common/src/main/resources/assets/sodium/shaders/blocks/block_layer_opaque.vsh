@@ -10,6 +10,8 @@ out VS_OUT
     vec4 v_Color;
     vec2 v_TexCoord;
 
+    float v_ChunkAgeMs;
+
     float v_MaterialMipBias;
 #ifdef USE_FRAGMENT_DISCARD
     float v_MaterialAlphaCutoff;
@@ -34,6 +36,8 @@ vec4 _sample_lightmap(sampler2D lightMap, ivec2 uv) {
     return texture(lightMap, clamp(uv / 256.0, vec2(0.5 / 16.0), vec2(15.5 / 16.0)));
 }
 #endif
+
+uniform float celeritas_ChunkAges[REGION_SIZE];
 
 void main() {
     _vert_init();
@@ -64,4 +68,5 @@ void main() {
 #ifdef USE_FRAGMENT_DISCARD
     vs_out.v_MaterialAlphaCutoff = _material_alpha_cutoff(_material_params);
 #endif
+    vs_out.v_ChunkAgeMs = celeritas_ChunkAges[_draw_id];
 }

@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.region;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import lombok.Getter;
 import org.embeddedt.embeddium.impl.gl.arena.GlBufferArena;
 import org.embeddedt.embeddium.impl.gl.arena.staging.StagingBuffer;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
@@ -43,6 +44,11 @@ public class RenderRegion {
     private final int x, y, z;
 
     private final RenderSection[] sections = new RenderSection[RenderRegion.REGION_SIZE];
+    @Getter
+    private final long[] sectionLoadTimes = new long[RenderRegion.REGION_SIZE];
+    @Getter
+    private long newestSectionLoadTime;
+
     private int sectionCount;
 
     private final Map<TerrainRenderPass, SectionRenderDataStorage> sectionRenderData = new Reference2ReferenceOpenHashMap<>();
@@ -109,6 +115,7 @@ public class RenderRegion {
         this.allDeviceResources = List.of();
 
         Arrays.fill(this.sections, null);
+        Arrays.fill(this.sectionLoadTimes, 0);
     }
 
     public boolean isEmpty() {
@@ -178,6 +185,7 @@ public class RenderRegion {
         }
 
         this.sections[sectionIndex] = section;
+        this.sectionLoadTimes[sectionIndex] = 0;
         this.sectionCount++;
     }
 
@@ -196,7 +204,14 @@ public class RenderRegion {
         }
 
         this.sections[sectionIndex] = null;
+        this.sectionLoadTimes[sectionIndex] = 0;
         this.sectionCount--;
+    }
+
+    public void updateSectionLoadTime(RenderSection section) {
+        long timestamp = System.nanoTime();
+        this.sectionLoadTimes[section.getSectionIndex()] = timestamp;
+        this.newestSectionLoadTime = timestamp;
     }
 
     @Nullable

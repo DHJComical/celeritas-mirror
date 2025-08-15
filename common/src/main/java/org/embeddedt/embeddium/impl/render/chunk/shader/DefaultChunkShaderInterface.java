@@ -2,26 +2,34 @@ package org.embeddedt.embeddium.impl.render.chunk.shader;
 
 import org.embeddedt.embeddium.impl.gl.shader.ShaderBindingContext;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat3v;
+import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloatArray;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformInt;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformMatrix4f;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.QuadPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.joml.Matrix4fc;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
+import java.nio.FloatBuffer;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A forward-rendering shader program for chunks.
  */
 public class DefaultChunkShaderInterface implements ChunkShaderInterface {
+    private static final long MAX_CHUNK_AGE = TimeUnit.SECONDS.toMillis(30);
+
     private final Map<ChunkShaderTextureSlot, GlUniformInt> uniformTextures;
 
     private final GlUniformMatrix4f uniformModelViewMatrix;
     private final GlUniformMatrix4f uniformProjectionMatrix;
     private final GlUniformFloat3v uniformRegionOffset;
+    private final GlUniformFloatArray uniformChunkAges;
 
     // The additional shader components used by this program in order to setup the appropriate GL state
     private final List<? extends ChunkShaderComponent> components;
@@ -32,6 +40,7 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
         this.uniformModelViewMatrix = context.bindUniform("u_ModelViewMatrix", GlUniformMatrix4f::new);
         this.uniformProjectionMatrix = context.bindUniform("u_ProjectionMatrix", GlUniformMatrix4f::new);
         this.uniformRegionOffset = context.bindUniform("u_RegionOffset", GlUniformFloat3v::new);
+        this.uniformChunkAges = context.bindUniformIfPresent("celeritas_ChunkAges", GlUniformFloatArray::new);
 
         this.uniformTextures = new EnumMap<>(ChunkShaderTextureSlot.class);
         this.uniformTextures.put(ChunkShaderTextureSlot.BLOCK, context.bindUniform("u_BlockTex", GlUniformInt::new));
@@ -79,6 +88,23 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
 
         if (uniform != null) {
             uniform.setInt(val);
+        }
+    }
+
+    @Override
+    public void setSectionAges(long timestamp, long[] loadTimes) {
+        var uniform = this.uniformChunkAges;
+
+        if (uniform != null) {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                FloatBuffer buf = stack.callocFloat(loadTimes.length);
+                long ptr = MemoryUtil.memAddress(buf);
+                for (long loadTime : loadTimes) {
+                    MemoryUtil.memPutFloat(ptr, (float) Math.min(MAX_CHUNK_AGE, (timestamp - loadTime) / (1000000L)));
+                    ptr += 4;
+                }
+                uniform.set(buf);
+            }
         }
     }
 }

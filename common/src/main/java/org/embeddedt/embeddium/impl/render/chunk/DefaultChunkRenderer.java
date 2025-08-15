@@ -88,6 +88,8 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
 
             this.configureShaderInterface(shader);
 
+            long timestamp = System.nanoTime();
+
             while (iterator.hasNext()) {
                 ChunkRenderList renderList = iterator.next();
 
@@ -111,6 +113,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
                 var tessellation = this.prepareTessellation(commandList, region);
 
                 setModelMatrixUniforms(shader, region, camera);
+                shader.setSectionAges(timestamp, region.getSectionLoadTimes());
                 executeDrawBatch(commandList, tessellation, primitiveType, this.batch);
             }
 

@@ -7,6 +7,8 @@ in VS_OUT
     vec4 v_Color;
     vec2 v_TexCoord;
 
+    float v_ChunkAgeMs;
+
     float v_MaterialMipBias;
 #ifdef USE_FRAGMENT_DISCARD
     float v_MaterialAlphaCutoff;
@@ -65,6 +67,11 @@ void main() {
 #endif
 
 #ifdef USE_FOG
+#if defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0
+    // Make chunk fade in over a short duration
+    diffuseColor = vec4(mix(u_FogColor.rgb, diffuseColor.rgb, (clamp(fs_in.v_ChunkAgeMs, 0, CHUNK_FADE_IN_DURATION_MS) / CHUNK_FADE_IN_DURATION_MS)), diffuseColor.a);
+#endif
+
 #ifdef USE_FOG_POSTMODERN
     float fogValue = max(_linearFogValue(fs_in.v_CylindricalFragDistance, u_RenderDistFogStart, u_RenderDistFogEnd),
                          _linearFogValue(fs_in.v_SphericalFragDistance, u_EnvFogStart, u_EnvFogEnd));

@@ -16,6 +16,8 @@ uint _draw_id;
 // The material bits for the primitive
 uint _material_params;
 
+#define REGION_SIZE 256
+
 uvec3 _get_relative_chunk_coord(uint pos) {
     // Packing scheme is defined by LocalSectionIndex
     return uvec3(pos) >> uvec3(5u, 0u, 2u) & uvec3(7u, 3u, 7u);
