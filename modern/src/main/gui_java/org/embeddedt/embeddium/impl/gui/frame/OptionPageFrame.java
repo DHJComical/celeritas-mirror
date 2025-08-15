@@ -153,20 +153,20 @@ public class OptionPageFrame extends AbstractFrame {
         int boxX = dim.x();
 
         Option<?> option = element.getOption();
-        var tooltip = new ArrayList<>(this.split(option.getTooltip().getString(), boxWidth - (textPadding * 2)));
+        var tooltip = new ArrayList<>(this.split(option.getTooltip(), boxWidth - (textPadding * 2)));
 
         OptionImpact impact = option.getImpact();
 
         if (impact != null) {
             var impactString = ComponentUtil.translatable("sodium.options.performance_impact_string", impact.getLocalizedName()).withStyle(ChatFormatting.GRAY);
-            tooltip.add(impactString.getString());
+            tooltip.add(impactString.getVisualOrderText());
         }
 
         var id = option.getId();
 
         if (OptionIdentifier.isPresent(page.getId()) && OptionIdentifier.isPresent(id) && !Objects.equals(normalizeModForTooltip(page.getId().getModId()), normalizeModForTooltip(id.getModId()))) {
             var addedByModString = ComponentUtil.translatable("embeddium.options.added_by_mod_string", ComponentUtil.literal(PlatformUtil.getModName(id.getModId())).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY);
-            tooltip.add(addedByModString.getString());
+            tooltip.add(addedByModString.getVisualOrderText());
         }
 
         int boxHeight = (tooltip.size() * 12) + boxPadding;

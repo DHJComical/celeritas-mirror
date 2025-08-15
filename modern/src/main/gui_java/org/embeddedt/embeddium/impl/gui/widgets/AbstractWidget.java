@@ -24,6 +24,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.FormattedCharSequence;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -91,8 +92,8 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener/*? 
         return Minecraft.getInstance().font.getSplitter().splitLines(string, width, Style.EMPTY).stream().map(t -> t.getString()).toList();
     }
 
-    public static List<String> split(Component component, int width) {
-        return split(component.getString(), width);
+    public static List<FormattedCharSequence> split(Component component, int width) {
+        return Minecraft.getInstance().font.split(component, width);
     }
 
     //? if >=1.18 {
