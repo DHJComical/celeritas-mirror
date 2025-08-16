@@ -14,6 +14,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.Alp
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.taumc.celeritas.CeleritasVintage;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -35,7 +36,13 @@ public class VintageRenderPassConfigurationBuilder {
     };
 
     private static TerrainRenderPass.TerrainRenderPassBuilder builderForRenderType(BlockRenderLayer chunkRenderType, ChunkVertexType vertexType) {
-        return TerrainRenderPass.builder().pipelineState(MIPMAP_CONTROLLED_STATE).vertexType(vertexType).primitiveType(QuadPrimitiveType.TRIANGULATED);
+        var extraDefines = new HashMap<String, String>();
+
+        if (CeleritasVintage.options().quality.chunkFadeInDuration > 0) {
+            extraDefines.put("CHUNK_FADE_IN_DURATION_MS", String.valueOf(CeleritasVintage.options().quality.chunkFadeInDuration));
+        }
+
+        return TerrainRenderPass.builder().extraDefines(extraDefines).pipelineState(MIPMAP_CONTROLLED_STATE).vertexType(vertexType).primitiveType(QuadPrimitiveType.TRIANGULATED);
     }
 
     public static RenderPassConfiguration<BlockRenderLayer> build(ChunkVertexType vertexType) {

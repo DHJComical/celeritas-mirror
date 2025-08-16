@@ -67,5 +67,6 @@ public final class StandardOptions {
         public static final ResourceLocation RENDER_PASS_CONSOLIDATION = ResourceLocationUtil.make("celeritas", "render_pass_consolidation");
         public static final ResourceLocation USE_FASTER_CLOUDS = ResourceLocationUtil.make("celeritas", "use_faster_clouds");
         public static final ResourceLocation ASYNC_GRAPH_SEARCH = ResourceLocationUtil.make("celeritas", "async_graph_search");
+        public static final ResourceLocation CHUNK_FADE_IN_DURATION = ResourceLocationUtil.make("celeritas", "chunk_fade_in_duration");
     }
 }

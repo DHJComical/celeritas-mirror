@@ -143,6 +143,7 @@ public class SodiumGameOptions {
         public GraphicsQuality leavesQuality;
         public boolean enableVignette;
         public int biomeBlendRadius = 3;
+        public int chunkFadeInDuration = 0;
 
         public QualitySettings() {
             this.weatherQuality = SodiumGameOptions.GraphicsQuality.DEFAULT;
