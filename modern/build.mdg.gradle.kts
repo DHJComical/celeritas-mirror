@@ -140,6 +140,8 @@ modDevExtension.runs {
             jvmArgument("-XX:+UseZGC")
             jvmArgument("-XX:+ZGenerational")
         }
+        jvmArgument("-XX:+UnlockDiagnosticVMOptions")
+        jvmArgument("-XX:+DebugNonSafepoints")
     }
 }
 
