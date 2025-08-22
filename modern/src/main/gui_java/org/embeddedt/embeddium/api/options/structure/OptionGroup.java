@@ -2,7 +2,6 @@ package org.embeddedt.embeddium.api.options.structure;
 
 import com.google.common.collect.ImmutableList;
 import org.embeddedt.embeddium.impl.Celeritas;
-import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.api.OptionGroupConstructionEvent;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
 
@@ -37,11 +36,6 @@ public class OptionGroup {
         private final List<Option<?>> options = new ArrayList<>();
 
         private OptionIdentifier<Void> id;
-
-        public Builder setId(ResourceLocation id) {
-            this.id = OptionIdentifier.create(id.getNamespace(), id.getPath());
-            return this;
-        }
 
         public Builder setId(OptionIdentifier<Void> id) {
             this.id = id;

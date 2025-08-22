@@ -4,10 +4,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,6 +23,8 @@ public class ModernDrawContext implements DrawContext {
         this.font = font;
         this.componentCache = new HashMap<>();
     }
+
+    private record FormattedWrapper(FormattedCharSequence sequence) implements TextComponent {}
 
     private Component applyStyles(Component c, Set<TextFormattingStyle> styles) {
         if (styles.isEmpty()) {
@@ -47,7 +51,13 @@ public class ModernDrawContext implements DrawContext {
         if (component instanceof TextComponent.Literal literal) {
             return ComponentUtil.literal(literal.text());
         } else if (component instanceof TextComponent.Translatable translatable) {
-            return ComponentUtil.translatable(translatable.key(), translatable.args());
+            return ComponentUtil.translatable(translatable.key(), translatable.args().stream().map(a -> {
+                if (a instanceof TextComponent c) {
+                    return compile(c);
+                } else {
+                    return a;
+                }
+            }).toArray());
         } else if (component instanceof TextComponent.Styled styled) {
             var innerComponent = compile(styled.inner());
             return applyStyles(innerComponent, styled.styles());
@@ -72,6 +82,9 @@ public class ModernDrawContext implements DrawContext {
 
     @Override
     public int drawString(TextComponent str, int x, int y, int color, boolean shadow) {
+        if (str instanceof FormattedWrapper wrapper) {
+            return gui.drawString(font, wrapper.sequence(), x, y, color, shadow);
+        }
         return gui.drawString(font, compile(str), x, y, color, shadow);
     }
 
@@ -113,6 +126,16 @@ public class ModernDrawContext implements DrawContext {
     @Override
     public String substrByWidth(String str, int maxWidth) {
         return font.plainSubstrByWidth(str, maxWidth);
+    }
+
+    @Override
+    public List<TextComponent> split(TextComponent component, int maxWidth) {
+        return font.split(compile(component), maxWidth).stream().map(FormattedWrapper::new).map(TextComponent.class::cast).toList();
+    }
+
+    @Override
+    public String extractString(TextComponent component) {
+        return compile(component).getString();
     }
 
     @Override

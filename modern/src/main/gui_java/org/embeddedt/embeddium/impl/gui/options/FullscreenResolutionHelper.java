@@ -9,7 +9,6 @@ import org.embeddedt.embeddium.api.options.control.SliderControl;
 import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.api.options.structure.StandardOptions;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
-import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 import java.util.Optional;
 
@@ -40,9 +39,9 @@ public class FullscreenResolutionHelper {
             }
         };
         return OptionImpl.createBuilder(int.class, SodiumGameOptionPages.getVanillaOpts())
-                .setId(StandardOptions.Option.FULLSCREEN_RESOLUTION)
-                .setName(ComponentUtil.translatable("options.fullscreen.resolution"))
-                .setTooltip(ComponentUtil.translatable("embeddium.options.fullscreen.resolution.tooltip"))
+                .setId(StandardOptions.Option.FULLSCREEN_RESOLUTION.cast())
+                .setName(TextComponent.translatable("options.fullscreen.resolution"))
+                .setTooltip(TextComponent.translatable("embeddium.options.fullscreen.resolution.tooltip"))
                 .setControl(option -> new SliderControl(option, -1, maxMode, 1, formatter))
                 .setBinding((opts, value) -> {
                     if (monitor != null) {

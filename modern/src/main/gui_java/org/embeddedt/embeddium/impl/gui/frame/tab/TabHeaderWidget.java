@@ -4,7 +4,6 @@ import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.loader.common.ModLogoUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-import net.minecraft.client.Minecraft;
 
 import java.util.Objects;
 
@@ -32,7 +31,7 @@ public class TabHeaderWidget extends FlatButtonWidget {
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         super.render(drawContext, mouseX, mouseY, delta);
         String icon = Objects.requireNonNullElse(this.logoTexture, FALLBACK_TEXTURE);
-        int fontHeight = Minecraft.getInstance().font.lineHeight;
+        int fontHeight = drawContext.lineHeight();
         int imgY = this.dim.getCenterY() - (fontHeight / 2);
         drawContext.blitWholeImage(icon, this.dim.x() + 5, imgY, fontHeight, fontHeight);
     }

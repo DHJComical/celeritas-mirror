@@ -2,10 +2,11 @@ package org.embeddedt.embeddium.api.options.control;
 
 import org.embeddedt.embeddium.api.options.structure.Option;
 import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
+import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-import net.minecraft.ChatFormatting;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -23,8 +24,8 @@ public class ControlElement<T> extends AbstractWidget implements OptionControlEl
 
     @Override
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-        String name = this.option.getName().getString();
-        String label;
+        String name = drawContext.extractString(this.option.getName());
+        TextComponent label;
 
         boolean hovered = this.isMouseOver(mouseX, mouseY);
 
@@ -34,12 +35,12 @@ public class ControlElement<T> extends AbstractWidget implements OptionControlEl
 
         if (this.option.isAvailable()) {
             if (this.option.hasChanged()) {
-                label = ChatFormatting.ITALIC + name + " *";
+                label = TextComponent.literal(name + " *").withStyle(TextFormattingStyle.ITALIC);
             } else {
-                label = ChatFormatting.WHITE + name;
+                label = TextComponent.literal(name).withStyle(TextFormattingStyle.WHITE);
             }
         } else {
-            label = String.valueOf(ChatFormatting.GRAY) + ChatFormatting.STRIKETHROUGH + name;
+            label = TextComponent.literal(name).withStyle(TextFormattingStyle.GRAY, TextFormattingStyle.STRIKETHROUGH);
         }
 
         drawContext.fill(this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), hovered ? style.bgHovered : style.bgDefault);

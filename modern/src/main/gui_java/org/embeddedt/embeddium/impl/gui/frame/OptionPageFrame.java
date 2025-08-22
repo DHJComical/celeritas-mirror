@@ -9,20 +9,9 @@ import org.embeddedt.embeddium.api.options.control.Control;
 import org.embeddedt.embeddium.api.options.control.ControlElement;
 import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
+import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-//$ guigfx
-import net.minecraft.client.gui.GuiGraphics;
-//? if >=1.20 {
-import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.navigation.FocusNavigationEvent;
-//?}
-import net.minecraft.locale.Language;
-import net.minecraft.network.chat.Component;
-//? if >=1.16.2
-import net.minecraft.util.FormattedCharSequence;
 import org.apache.commons.lang3.Validate;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.theme.DefaultColors;
@@ -150,20 +139,20 @@ public class OptionPageFrame extends AbstractFrame {
         int boxX = dim.x();
 
         Option<?> option = element.getOption();
-        var tooltip = new ArrayList<>(Minecraft.getInstance().font.split(option.getTooltip(), boxWidth - (textPadding * 2)));
+        var tooltip = new ArrayList<>(drawContext.split(option.getTooltip(), boxWidth - (textPadding * 2)));
 
         OptionImpact impact = option.getImpact();
 
         if (impact != null) {
-            var impactString = ComponentUtil.translatable("sodium.options.performance_impact_string", impact.getLocalizedName()).withStyle(ChatFormatting.GRAY);
-            tooltip.add(impactString.getVisualOrderText());
+            var impactString = TextComponent.translatable("sodium.options.performance_impact_string", impact.getLocalizedName()).withStyle(TextFormattingStyle.GRAY);
+            tooltip.add(impactString);
         }
 
         var id = option.getId();
 
         if (OptionIdentifier.isPresent(page.getId()) && OptionIdentifier.isPresent(id) && !Objects.equals(normalizeModForTooltip(page.getId().getModId()), normalizeModForTooltip(id.getModId()))) {
-            var addedByModString = ComponentUtil.translatable("embeddium.options.added_by_mod_string", ComponentUtil.literal(PlatformUtil.getModName(id.getModId())).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.GRAY);
-            tooltip.add(addedByModString.getVisualOrderText());
+            var addedByModString = TextComponent.translatable("embeddium.options.added_by_mod_string", TextComponent.literal(PlatformUtil.getModName(id.getModId())).withStyle(TextFormattingStyle.WHITE)).withStyle(TextFormattingStyle.GRAY);
+            tooltip.add(addedByModString);
         }
 
         int boxHeight = (tooltip.size() * 12) + boxPadding;
@@ -187,7 +176,7 @@ public class OptionPageFrame extends AbstractFrame {
         drawContext.drawBorder(boxX, boxY, boxX + boxWidth, boxY + boxHeight, DefaultColors.ELEMENT_ACTIVATED);
 
         for (int i = 0; i < tooltip.size(); i++) {
-            drawContext.drawString(TextComponent.literal(tooltip.get(i).toString()), boxX + textPadding, boxY + textPadding + (i * 12), 0xFFFFFFFF, true);
+            drawContext.drawString(tooltip.get(i), boxX + textPadding, boxY + textPadding + (i * 12), 0xFFFFFFFF, true);
         }
 
         drawContext.popMatrix();

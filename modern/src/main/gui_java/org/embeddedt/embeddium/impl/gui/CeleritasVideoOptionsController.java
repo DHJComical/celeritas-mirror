@@ -7,15 +7,12 @@ import org.embeddedt.embeddium.api.options.structure.Option;
 import org.embeddedt.embeddium.api.options.structure.OptionFlag;
 import org.embeddedt.embeddium.api.options.structure.OptionPage;
 import org.embeddedt.embeddium.api.options.structure.OptionStorage;
-import org.embeddedt.embeddium.impl.gui.console.Console;
-import org.embeddedt.embeddium.impl.gui.console.message.MessageLevel;
 import org.embeddedt.embeddium.impl.gui.frame.AbstractFrame;
 import org.embeddedt.embeddium.impl.gui.frame.BasicFrame;
 import org.embeddedt.embeddium.impl.gui.frame.tab.Tab;
 import org.embeddedt.embeddium.impl.gui.frame.tab.TabFrame;
 import org.embeddedt.embeddium.impl.gui.framework.*;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
-import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 
 import java.util.*;
@@ -126,16 +123,9 @@ public class CeleritasVideoOptionsController implements Renderable {
             dirtyStorages.add(option.getStorage());
         }));
 
-        if (flags.contains(OptionFlag.REQUIRES_GAME_RESTART)) {
-            Console.instance().logMessage(MessageLevel.WARN,
-                    ComponentUtil.translatable("sodium.console.game_restart"), 10.0);
-        }
-
         for (OptionStorage<?> storage : dirtyStorages) {
             storage.save(flags);
         }
-
-
     }
 
     protected void applyFlagSideEffects(Set<OptionFlag> flags) {

@@ -1,7 +1,6 @@
 package org.embeddedt.embeddium.api.options;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -57,10 +56,10 @@ public final class OptionIdentifier<T> {
     public boolean matches(OptionIdentifier<?> other) {
         return this == other;
     }
-    
-    public boolean matches(ResourceLocation other) {
-        return this.modId.equals(other.getNamespace()) && 
-               this.path.equals(other.getPath());
+
+    @SuppressWarnings("unchecked")
+    public <U> OptionIdentifier<U> cast() {
+        return (OptionIdentifier<U>)this;
     }
 
     @Override

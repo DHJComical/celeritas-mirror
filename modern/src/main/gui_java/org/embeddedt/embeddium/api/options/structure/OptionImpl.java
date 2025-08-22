@@ -3,10 +3,9 @@ package org.embeddedt.embeddium.api.options.structure;
 import org.embeddedt.embeddium.api.options.binding.GenericBinding;
 import org.embeddedt.embeddium.api.options.binding.OptionBinding;
 import org.embeddedt.embeddium.api.options.control.Control;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.Validate;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,8 +26,8 @@ public class OptionImpl<S, T> implements Option<T> {
     private final EnumSet<OptionFlag> flags;
 
     private final OptionIdentifier<T> id;
-    private final Component name;
-    private final Component tooltip;
+    private final TextComponent name;
+    private final TextComponent tooltip;
 
     private final OptionImpact impact;
 
@@ -41,8 +40,8 @@ public class OptionImpl<S, T> implements Option<T> {
 
     private OptionImpl(OptionStorage<S> storage,
                        OptionIdentifier<T> id,
-                       Component name,
-                       Component tooltip,
+                       TextComponent name,
+                       TextComponent tooltip,
                        OptionBinding<S, T> binding,
                        Function<OptionImpl<S, T>, Control<T>> control,
                        EnumSet<OptionFlag> flags,
@@ -67,12 +66,12 @@ public class OptionImpl<S, T> implements Option<T> {
     }
 
     @Override
-    public Component getName() {
+    public TextComponent getName() {
         return this.name;
     }
 
     @Override
-    public Component getTooltip() {
+    public TextComponent getTooltip() {
         return this.tooltip;
     }
 
@@ -137,8 +136,8 @@ public class OptionImpl<S, T> implements Option<T> {
         private final OptionStorage<S> storage;
         private final Class<T> type;
         private OptionIdentifier<T> id;
-        private Component name;
-        private Component tooltip;
+        private TextComponent name;
+        private TextComponent tooltip;
         private OptionBinding<S, T> binding;
         private Function<OptionImpl<S, T>, Control<T>> control;
         private OptionImpact impact;
@@ -152,13 +151,6 @@ public class OptionImpl<S, T> implements Option<T> {
             this.type = type;
         }
 
-        public Builder<S, T> setId(ResourceLocation id) {
-            Validate.notNull(id, "Id must not be null");
-
-            this.id = OptionIdentifier.create(id.getNamespace(), id.getPath(), this.type);
-            return this;
-        }
-
         public Builder<S, T> setId(OptionIdentifier<T> id) {
             Validate.notNull(id, "Id must not be null");
 
@@ -167,7 +159,7 @@ public class OptionImpl<S, T> implements Option<T> {
             return this;
         }
 
-        public Builder<S, T> setName(Component name) {
+        public Builder<S, T> setName(TextComponent name) {
             Validate.notNull(name, "Argument must not be null");
 
             this.name = name;
@@ -175,7 +167,7 @@ public class OptionImpl<S, T> implements Option<T> {
             return this;
         }
 
-        public Builder<S, T> setTooltip(Component tooltip) {
+        public Builder<S, T> setTooltip(TextComponent tooltip) {
             Validate.notNull(tooltip, "Argument must not be null");
 
             this.tooltip = tooltip;
@@ -240,11 +232,11 @@ public class OptionImpl<S, T> implements Option<T> {
                 //Celeritas.logger().warn("Id must be specified in option '{}', this might throw a exception on a future release", this.name.getString());
             } else {
                 if (this.name == null) {
-                    this.name = ComponentUtil.translatable(this.id.getModId() + ".options." + this.id.getPath() + ".name");
+                    this.name = TextComponent.translatable(this.id.getModId() + ".options." + this.id.getPath() + ".name");
                 }
 
                 if (this.tooltip == null) {
-                    this.tooltip = ComponentUtil.translatable(this.id.getModId() + ".options." + this.id.getPath() + ".tooltip");
+                    this.tooltip = TextComponent.translatable(this.id.getModId() + ".options." + this.id.getPath() + ".tooltip");
                 }
             }
 

@@ -4,7 +4,6 @@ import org.embeddedt.embeddium.api.options.structure.Option;
 import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
 import org.embeddedt.embeddium.impl.gui.framework.InteractionContext;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-import net.minecraft.client.renderer.Rect2i;
 import org.embeddedt.embeddium.impl.gui.theme.DefaultColors;
 
 public class TickBoxControl implements Control<Boolean> {
@@ -30,22 +29,22 @@ public class TickBoxControl implements Control<Boolean> {
     }
 
     private static class TickBoxControlElement extends ControlElement<Boolean> {
-        private final Rect2i button;
+        private final Dim2i button;
 
         public TickBoxControlElement(Option<Boolean> option, Dim2i dim) {
             super(option, dim);
 
-            this.button = new Rect2i(dim.getLimitX() - 16, dim.getCenterY() - 5, 10, 10);
+            this.button = new Dim2i(dim.getLimitX() - 16, dim.getCenterY() - 5, 10, 10);
         }
 
         @Override
         public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
             super.render(drawContext, mouseX, mouseY, delta);
 
-            final int x = this.button.getX();
-            final int y = this.button.getY();
-            final int w = x + this.button.getWidth();
-            final int h = y + this.button.getHeight();
+            final int x = this.button.x();
+            final int y = this.button.y();
+            final int w = x + this.button.width();
+            final int h = y + this.button.height();
 
             final boolean enabled = this.option.isAvailable();
             final boolean ticked = this.option.getValue();

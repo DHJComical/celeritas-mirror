@@ -1,10 +1,10 @@
 package org.embeddedt.embeddium.impl.gui.frame.components;
 
+import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
 import org.embeddedt.embeddium.impl.gui.framework.InteractionContext;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-import net.minecraft.util.Mth;
 
 import java.util.function.Consumer;
 
@@ -119,14 +119,14 @@ public class ScrollBarComponent extends AbstractWidget {
     }
 
     public void setOffset(int value) {
-        this.offset = Mth.clamp(value, 0, this.maxScrollBarOffset);
+        this.offset = MathUtil.clamp(value, 0, this.maxScrollBarOffset);
         this.updateThumbPosition();
         this.onSetOffset.accept(this.offset);
     }
 
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
-        return this.dim.containsCursor(mouseX, mouseY);
+        return this.dim.containsCursor(mouseX, mouseY) || this.extendedScrollArea.containsCursor(mouseX, mouseY);
     }
 
     public enum Mode {

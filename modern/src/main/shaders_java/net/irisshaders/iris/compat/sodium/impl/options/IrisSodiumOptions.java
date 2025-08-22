@@ -55,15 +55,15 @@ public class IrisSodiumOptions {
             ev.addPage(new OptionPage(StandardOptions.Pages.SHADERS, TextComponent.literal("Shaders"), ImmutableList.of(
                     OptionGroup.createBuilder()
                             .add(OptionImpl.createBuilder(boolean.class, irisOpts)
-                                    .setName(Component.literal("Enable Texture Material Fallback"))
-                                    .setTooltip(Component.literal("Uses textures to guess block.properties IDs if they are not set."))
+                                    .setName(TextComponent.literal("Enable Texture Material Fallback"))
+                                    .setTooltip(TextComponent.literal("Uses textures to guess block.properties IDs if they are not set."))
                                     .setControl(TickBoxControl::new)
                                     .setBinding(IrisConfig::setEnableTextureMaterialFallback, IrisConfig::isEnableTextureMaterialFallback)
                                     .setFlags(OptionFlag.REQUIRES_SHADER_PIPELINE_RELOAD)
                                     .build())
                             .add(OptionImpl.createBuilder(boolean.class, irisOpts)
-                                    .setName(Component.literal("Block Modded Core Shaders"))
-                                    .setTooltip(Component.literal("Prevents modded core shaders from being active with the Iris pipeline."))
+                                    .setName(TextComponent.literal("Block Modded Core Shaders"))
+                                    .setTooltip(TextComponent.literal("Prevents modded core shaders from being active with the Iris pipeline."))
                                     .setControl(TickBoxControl::new)
                                     .setBinding(IrisConfig::setBlockUnknownShaders, IrisConfig::isBlockUnknownShaders)
                                     .setFlags(OptionFlag.REQUIRES_SHADER_PIPELINE_RELOAD)
@@ -75,8 +75,8 @@ public class IrisSodiumOptions {
 
 	public static OptionImpl<IrisConfig, Integer> createMaxShadowDistanceSlider(OptionStorage<Options> vanillaOpts) {
 		return OptionImpl.createBuilder(int.class, irisOpts)
-			.setName(Component.translatable("options.iris.shadowDistance"))
-			.setTooltip(Component.translatable("options.iris.shadowDistance.sodium_tooltip"))
+			.setName(TextComponent.translatable("options.iris.shadowDistance"))
+			.setTooltip(TextComponent.translatable("options.iris.shadowDistance.sodium_tooltip"))
 			.setControl(option -> new SliderControl(option, 0, 32, 1, translateVariableOrDisabled("options.chunks", "Disabled")))
 			.setBinding((options, value) -> {
 					IrisVideoSettings.shadowDistance = value;
@@ -94,8 +94,8 @@ public class IrisSodiumOptions {
 
 	public static OptionImpl<Options, ColorSpace> createColorSpaceButton(OptionStorage<Options> vanillaOpts) {
 		OptionImpl<Options, ColorSpace> colorSpace = OptionImpl.createBuilder(ColorSpace.class, vanillaOpts)
-			.setName(Component.translatable("options.iris.colorSpace"))
-			.setTooltip(Component.translatable("options.iris.colorSpace.sodium_tooltip"))
+			.setName(TextComponent.translatable("options.iris.colorSpace"))
+			.setTooltip(TextComponent.translatable("options.iris.colorSpace.sodium_tooltip"))
 			.setControl(option -> new CyclingControl<>(option, ColorSpace.class,
 				new TextComponent[]{TextComponent.literal("sRGB"), TextComponent.literal("DCI_P3"), TextComponent.literal("Display P3"), TextComponent.literal("REC2020"), TextComponent.literal("Adobe RGB")}))
 			.setBinding((options, value) -> {

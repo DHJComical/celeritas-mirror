@@ -1,8 +1,8 @@
 package org.embeddedt.embeddium.api.options.structure;
 
 import org.embeddedt.embeddium.api.options.control.Control;
-import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -13,9 +13,9 @@ public interface Option<T> {
         return null;
     }
 
-    Component getName();
+    TextComponent getName();
 
-    Component getTooltip();
+    TextComponent getTooltip();
 
     OptionImpact getImpact();
 
