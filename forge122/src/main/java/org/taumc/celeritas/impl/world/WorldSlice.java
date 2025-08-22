@@ -173,7 +173,7 @@ public class WorldSlice implements CeleritasBlockAccess {
         this.sections = new ClonedChunkSection[SECTION_TABLE_ARRAY_SIZE];
         this.blockStatesArrays = new IBlockState[SECTION_TABLE_ARRAY_SIZE][];
         this.biomeCaches = new Biome[SECTION_TABLE_ARRAY_SIZE][16 * 16];
-        this.biomeColorCache = new BiomeColorCache(this, CeleritasVintage.options().quality.biomeBlendRadius);
+        this.biomeColorCache = new BiomeColorCache(this, CeleritasVintage.options().quality.legacyBiomeBlendRadius);
         if(!FluidloggedCompat.IS_LOADED) this.fluidStatesArrays = null;
         else this.fluidStatesArrays = new Object[SECTION_TABLE_ARRAY_SIZE][];
 

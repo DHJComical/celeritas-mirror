@@ -21,7 +21,7 @@ public interface DrawContext extends FontMetricsProvider {
 
     void popMatrix();
 
-    void enableScissor(int x, int y, int width, int height);
+    void enableScissor(int x1, int y1, int x2, int y2);
 
     void disableScissor();
 

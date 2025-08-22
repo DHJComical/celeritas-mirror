@@ -95,6 +95,8 @@ public class SodiumGameOptions implements OptionStorage<SodiumGameOptions> {
         public boolean useQuadNormalsForShading = true;
 
         public int chunkFadeInDuration = 0;
+
+        public int legacyBiomeBlendRadius = 0;
     }
 
     public static class NotificationSettings {
