@@ -7,6 +7,8 @@ import org.embeddedt.embeddium.api.options.structure.OptionImpact;
 import org.embeddedt.embeddium.api.options.structure.OptionPage;
 import org.embeddedt.embeddium.api.options.control.Control;
 import org.embeddedt.embeddium.api.options.control.ControlElement;
+import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.ChatFormatting;
@@ -105,18 +107,13 @@ public class OptionPageFrame extends AbstractFrame {
         super.buildFrame();
     }
 
-   public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        ControlElement<?> hoveredElement = this.controlElements.stream()
-                .filter(ControlElement::isHovered)
-                .findFirst()
-                .orElse(this.controlElements.stream()
-                        .filter(ControlElement::isFocused)
-                        .findFirst()
-                        .orElse(null));
+    @Override
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        ControlElement<?> hoveredElement = this.isMouseOver(mouseX, mouseY) ? this.controlElements.stream()
+                .filter(c -> c.isMouseOver(mouseX, mouseY))
+                .findFirst().orElse(null) : null;
         super.render(drawContext, mouseX, mouseY, delta);
-        if (hoveredElement != null && this.lastHoveredElement == hoveredElement &&
-                ((this.dim.containsCursor(mouseX, mouseY) && hoveredElement.isHovered() && hoveredElement.isMouseOver(mouseX, mouseY))
-                        || hoveredElement.isFocused())) {
+        if (hoveredElement != null && this.lastHoveredElement == hoveredElement) {
             if (this.lastTime == 0) {
                 this.lastTime = System.currentTimeMillis();
             }
@@ -138,7 +135,7 @@ public class OptionPageFrame extends AbstractFrame {
         }
     }
 
-    private void renderOptionTooltip(GuiGraphics drawContext, ControlElement<?> element) {
+    private void renderOptionTooltip(DrawContext drawContext, ControlElement<?> element) {
         if (this.lastTime + 500 > System.currentTimeMillis()) return;
 
         Dim2i dim = element.getDimensions();
@@ -153,7 +150,7 @@ public class OptionPageFrame extends AbstractFrame {
         int boxX = dim.x();
 
         Option<?> option = element.getOption();
-        var tooltip = new ArrayList<>(this.split(option.getTooltip(), boxWidth - (textPadding * 2)));
+        var tooltip = new ArrayList<>(Minecraft.getInstance().font.split(option.getTooltip(), boxWidth - (textPadding * 2)));
 
         OptionImpact impact = option.getImpact();
 
@@ -182,23 +179,19 @@ public class OptionPageFrame extends AbstractFrame {
             boxY = dim.getLimitY();
         }
 
-        drawContext.pose().pushPose();
-        drawContext.pose().translate(0, 0, 90);
-        this.drawRect(drawContext, boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xE0000000);
-        this.drawBorder(drawContext, boxX, boxY, boxX + boxWidth, boxY + boxHeight, DefaultColors.ELEMENT_ACTIVATED);
+        drawContext.pushMatrix();
+
+        drawContext.translate(0, 0, 90);
+
+        drawContext.fill(boxX, boxY, boxX + boxWidth, boxY + boxHeight, 0xE0000000);
+        drawContext.drawBorder(boxX, boxY, boxX + boxWidth, boxY + boxHeight, DefaultColors.ELEMENT_ACTIVATED);
 
         for (int i = 0; i < tooltip.size(); i++) {
-            drawContext.drawString(Minecraft.getInstance().font, tooltip.get(i), boxX + textPadding, boxY + textPadding + (i * 12), 0xFFFFFFFF, true);
+            drawContext.drawString(TextComponent.literal(tooltip.get(i).toString()), boxX + textPadding, boxY + textPadding + (i * 12), 0xFFFFFFFF, true);
         }
-        drawContext.pose().popPose();
-    }
 
-    //? if >=1.20 {
-    @Override
-    public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation) {
-        return super.nextFocusPath(navigation);
+        drawContext.popMatrix();
     }
-    //?}
 
     public static class Builder {
         private Dim2i dim;

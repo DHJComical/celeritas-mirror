@@ -1,25 +1,15 @@
 package org.embeddedt.embeddium.impl.gui.widgets;
 
+import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
+import org.embeddedt.embeddium.impl.gui.framework.InteractionContext;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-//? if >=1.20 {
-import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.navigation.CommonInputs;
-import net.minecraft.client.gui.navigation.FocusNavigationEvent;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
-//?} else {
-/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
-import org.embeddedt.embeddium.impl.gui.compat.Renderable;
-*///?}
-import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.impl.gui.theme.DefaultColors;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-public class FlatButtonWidget extends AbstractWidget implements Renderable {
+public class FlatButtonWidget extends AbstractWidget {
     protected final Dim2i dim;
     private final Runnable action;
 
@@ -30,15 +20,15 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
     private boolean visible = true;
     private boolean leftAligned;
 
-    private Component label;
+    private TextComponent label;
 
-    public FlatButtonWidget(Dim2i dim, Component label, Runnable action) {
+    public FlatButtonWidget(Dim2i dim, TextComponent label, Runnable action) {
         this.dim = dim;
         this.label = label;
         this.action = action;
     }
 
-    protected int getLeftAlignedTextOffset() {
+    protected int getLeftAlignedTextOffset(DrawContext drawContext) {
         return 10;
     }
 
@@ -47,35 +37,30 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         if (!this.visible) {
             return;
         }
 
-        this.hovered = this.isHovered(mouseX, mouseY);
+        boolean hovered = this.isHovered(mouseX, mouseY);
 
-        int backgroundColor = this.enabled ? (this.hovered ? this.style.bgHovered : this.style.bgDefault) : this.style.bgDisabled;
+        int backgroundColor = this.enabled ? (hovered ? this.style.bgHovered : this.style.bgDefault) : this.style.bgDisabled;
         int textColor = this.enabled ? this.style.textDefault : this.style.textDisabled;
 
-        int strWidth = this.getStringWidth(this.label);
+        int strWidth = drawContext.getStringWidth(this.label);
 
-        this.drawRect(drawContext, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), backgroundColor);
+        drawContext.fill(this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), backgroundColor);
         int textX;
         if (this.leftAligned) {
-            textX = this.dim.x() + this.getLeftAlignedTextOffset();
+            textX = this.dim.x() + this.getLeftAlignedTextOffset(drawContext);
         } else {
             textX = this.dim.getCenterX() - (strWidth / 2);
         }
-        this.drawString(drawContext, this.label, textX, this.dim.getCenterY() - 4, textColor);
+        drawContext.drawString(this.label, textX, this.dim.getCenterY() - 4, textColor);
 
         if (this.enabled && this.selected) {
-            this.drawRect(drawContext, this.dim.x(), this.leftAligned ? this.dim.y() : (this.dim.getLimitY() - 1), this.leftAligned ? (this.dim.x() + 1) : this.dim.getLimitX(), this.dim.getLimitY(), DefaultColors.ELEMENT_ACTIVATED);
+            drawContext.fill(this.dim.x(), this.leftAligned ? this.dim.y() : (this.dim.getLimitY() - 1), this.leftAligned ? (this.dim.x() + 1) : this.dim.getLimitX(), this.dim.getLimitY(), DefaultColors.ELEMENT_ACTIVATED);
         }
-        //? if >=1.20 {
-        if (this.enabled && this.isFocused()) {
-            this.drawBorder(drawContext, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), -1);
-        }
-        //?}
     }
 
     public void setStyle(@NotNull Style style) {
@@ -93,13 +78,13 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(InteractionContext context, double mouseX, double mouseY, int button) {
         if (!this.enabled || !this.visible) {
             return false;
         }
 
         if (button == 0 && this.dim.containsCursor(mouseX, mouseY)) {
-            doAction();
+            doAction(context);
 
             return true;
         }
@@ -107,24 +92,9 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
         return false;
     }
 
-    //? if >=1.20 {
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!this.isFocused())
-            return false;
-
-        if (CommonInputs.selected(keyCode)) {
-            doAction();
-            return true;
-        }
-
-        return false;
-    }
-    //?}
-
-    private void doAction() {
+    private void doAction(InteractionContext context) {
         this.action.run();
-        this.playClickSound();
+        context.playClickSound();
     }
 
     public void setEnabled(boolean enabled) {
@@ -135,30 +105,12 @@ public class FlatButtonWidget extends AbstractWidget implements Renderable {
         this.visible = visible;
     }
 
-    public void setLabel(Component text) {
+    public void setLabel(TextComponent text) {
         this.label = text;
     }
 
-    public Component getLabel() {
+    public TextComponent getLabel() {
         return this.label;
-    }
-
-    //? if >=1.20 {
-    @Override
-    public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation) {
-        if (!this.enabled || !this.visible)
-            return null;
-        return super.nextFocusPath(navigation);
-    }
-
-    @Override
-    public ScreenRectangle getRectangle() {
-        return new ScreenRectangle(this.dim.x(), this.dim.y(), this.dim.width(), this.dim.height());
-    }
-    //?}
-
-    public Dim2i getDimensions() {
-        return this.dim;
     }
 
     @Override

@@ -17,6 +17,7 @@ import org.embeddedt.embeddium.api.options.control.SliderControl;
 import org.embeddedt.embeddium.api.options.control.TickBoxControl;
 import org.embeddedt.embeddium.api.options.structure.*;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptionPages;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 
 import java.io.IOException;
 import java.util.Set;
@@ -51,7 +52,7 @@ public class IrisSodiumOptions {
             }
         });
         OptionGUIConstructionEvent.BUS.addListener(ev -> {
-            ev.addPage(new OptionPage(StandardOptions.Pages.SHADERS, Component.literal("Shaders"), ImmutableList.of(
+            ev.addPage(new OptionPage(StandardOptions.Pages.SHADERS, TextComponent.literal("Shaders"), ImmutableList.of(
                     OptionGroup.createBuilder()
                             .add(OptionImpl.createBuilder(boolean.class, irisOpts)
                                     .setName(Component.literal("Enable Texture Material Fallback"))
@@ -96,7 +97,7 @@ public class IrisSodiumOptions {
 			.setName(Component.translatable("options.iris.colorSpace"))
 			.setTooltip(Component.translatable("options.iris.colorSpace.sodium_tooltip"))
 			.setControl(option -> new CyclingControl<>(option, ColorSpace.class,
-				new Component[]{Component.literal("sRGB"), Component.literal("DCI_P3"), Component.literal("Display P3"), Component.literal("REC2020"), Component.literal("Adobe RGB")}))
+				new TextComponent[]{TextComponent.literal("sRGB"), TextComponent.literal("DCI_P3"), TextComponent.literal("Display P3"), TextComponent.literal("REC2020"), TextComponent.literal("Adobe RGB")}))
 			.setBinding((options, value) -> {
 					IrisVideoSettings.colorSpace = value;
 					try {
@@ -116,7 +117,7 @@ public class IrisSodiumOptions {
 
 	static ControlValueFormatter translateVariableOrDisabled(String key, String disabled) {
 		return (v) -> {
-			return v == 0 ? Component.literal(disabled) : (Component.translatable(key, v));
+			return v == 0 ? TextComponent.literal(disabled) : (TextComponent.translatable(key, v));
 		};
 	}
 }

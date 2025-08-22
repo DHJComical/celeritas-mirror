@@ -1,20 +1,13 @@
 package org.embeddedt.embeddium.api.options.control;
 
 import org.embeddedt.embeddium.api.options.structure.Option;
+import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import net.minecraft.ChatFormatting;
-//? if >=1.20 {
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.navigation.FocusNavigationEvent;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
-//?} else {
-/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
-*///?}
+
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class ControlElement<T> extends AbstractWidget implements OptionControlElement<T> {
     protected final Option<T> option;
@@ -29,11 +22,13 @@ public class ControlElement<T> extends AbstractWidget implements OptionControlEl
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         String name = this.option.getName().getString();
         String label;
 
-        if ((this.hovered || this.isFocused()) && this.font.width(name) > (this.dim.width() - this.option.getControl().getMaxWidth())) {
+        boolean hovered = this.isMouseOver(mouseX, mouseY);
+
+        if (hovered && drawContext.getStringWidth(name) > (this.dim.width() - this.option.getControl().getMaxWidth())) {
             name = name.substring(0, Math.min(name.length(), 10)) + "...";
         }
 
@@ -47,14 +42,8 @@ public class ControlElement<T> extends AbstractWidget implements OptionControlEl
             label = String.valueOf(ChatFormatting.GRAY) + ChatFormatting.STRIKETHROUGH + name;
         }
 
-        this.hovered = this.dim.containsCursor(mouseX, mouseY);
-
-        this.drawRect(drawContext, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), this.hovered ? style.bgHovered : style.bgDefault);
-        this.drawString(drawContext, label, this.dim.x() + 6, this.dim.getCenterY() - 4, style.textDefault);
-
-        if (this.isFocused()) {
-            this.drawBorder(drawContext, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), -1);
-        }
+        drawContext.fill(this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), hovered ? style.bgHovered : style.bgDefault);
+        drawContext.drawString(label, this.dim.x() + 6, this.dim.getCenterY() - 4, style.textDefault);
     }
 
     public Option<T> getOption() {
@@ -64,20 +53,6 @@ public class ControlElement<T> extends AbstractWidget implements OptionControlEl
     public Dim2i getDimensions() {
         return this.dim;
     }
-
-    //? if >=1.20 {
-    @Override
-    public @Nullable ComponentPath nextFocusPath(FocusNavigationEvent navigation) {
-        if (!this.option.isAvailable())
-            return null;
-        return super.nextFocusPath(navigation);
-    }
-
-    @Override
-    public ScreenRectangle getRectangle() {
-        return new ScreenRectangle(this.dim.x(), this.dim.y(), this.dim.width(), this.dim.height());
-    }
-    //?}
 
     @Override
     public boolean isMouseOver(double x, double y) {

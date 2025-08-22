@@ -7,6 +7,7 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.Celeritas;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.gui.options.TextProvider;
 //? if >=1.16
 import net.minecraft.client.GraphicsStatus;
@@ -95,14 +96,14 @@ public class SodiumGameOptions {
         FANCY("options.clouds.fancy"),
         FAST("options.clouds.fast");
 
-        private final Component name;
+        private final TextComponent name;
 
         GraphicsQuality(String name) {
-            this.name = ComponentUtil.translatable(name);
+            this.name = TextComponent.translatable(name);
         }
 
         @Override
-        public Component getLocalizedName() {
+        public TextComponent getLocalizedName() {
             return this.name;
         }
 

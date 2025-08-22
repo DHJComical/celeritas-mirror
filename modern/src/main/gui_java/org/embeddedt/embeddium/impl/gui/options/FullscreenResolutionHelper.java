@@ -7,8 +7,8 @@ import org.embeddedt.embeddium.impl.gui.SodiumGameOptionPages;
 import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
 import org.embeddedt.embeddium.api.options.control.SliderControl;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.api.options.structure.StandardOptions;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 import java.util.Optional;
@@ -32,11 +32,11 @@ public class FullscreenResolutionHelper {
         }
         ControlValueFormatter formatter = value -> {
             if (monitor == null) {
-                return ComponentUtil.translatable("options.fullscreen.unavailable");
+                return TextComponent.translatable("options.fullscreen.unavailable");
             } else if (value == -1) {
-                return ComponentUtil.translatable("options.fullscreen.current");
+                return TextComponent.translatable("options.fullscreen.current");
             } else {
-                return ComponentUtil.literal(monitor.getMode(value).toString());
+                return TextComponent.literal(monitor.getMode(value).toString());
             }
         };
         return OptionImpl.createBuilder(int.class, SodiumGameOptionPages.getVanillaOpts())

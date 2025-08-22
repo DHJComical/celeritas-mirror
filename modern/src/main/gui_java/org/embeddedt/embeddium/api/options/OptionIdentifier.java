@@ -36,14 +36,6 @@ public final class OptionIdentifier<T> {
         return this.clz;
     }
 
-    public static OptionIdentifier<Void> create(ResourceLocation location) {
-        return create(location, void.class);
-    }
-
-    public static <T> OptionIdentifier<T> create(ResourceLocation location, Class<T> clz) {
-        return create(location.getNamespace(), location.getPath(), clz);
-    }
-
     public static OptionIdentifier<Void> create(String modId, String path) {
         return create(modId, path, void.class);
     }

@@ -1,24 +1,23 @@
 package org.embeddedt.embeddium.api.options.structure;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
+import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
 import org.embeddedt.embeddium.impl.gui.options.TextProvider;
-import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 public enum OptionImpact implements TextProvider {
-    LOW(ChatFormatting.GREEN, "sodium.option_impact.low"),
-    MEDIUM(ChatFormatting.YELLOW, "sodium.option_impact.medium"),
-    HIGH(ChatFormatting.GOLD, "sodium.option_impact.high"),
-    VARIES(ChatFormatting.WHITE, "sodium.option_impact.varies");
+    LOW(TextFormattingStyle.GREEN, "sodium.option_impact.low"),
+    MEDIUM(TextFormattingStyle.YELLOW, "sodium.option_impact.medium"),
+    HIGH(TextFormattingStyle.GOLD, "sodium.option_impact.high"),
+    VARIES(TextFormattingStyle.WHITE, "sodium.option_impact.varies");
 
-    private final Component text;
+    private final TextComponent text;
 
-    OptionImpact(ChatFormatting color, String text) {
-        this.text = ComponentUtil.translatable(text).withStyle(color);
+    OptionImpact(TextFormattingStyle color, String text) {
+        this.text = TextComponent.translatable(text).withStyle(color);
     }
 
     @Override
-    public Component getLocalizedName() {
+    public TextComponent getLocalizedName() {
         return this.text;
     }
 }

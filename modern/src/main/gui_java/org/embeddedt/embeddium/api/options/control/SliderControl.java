@@ -1,12 +1,9 @@
 package org.embeddedt.embeddium.api.options.control;
 
 import org.embeddedt.embeddium.api.options.structure.Option;
+import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
+import org.embeddedt.embeddium.impl.gui.framework.InteractionContext;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-//$ guigfx
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import org.apache.commons.lang3.Validate;
 
 public class SliderControl implements Control<Integer> {
@@ -47,7 +44,7 @@ public class SliderControl implements Control<Integer> {
     private static class Button extends ControlElement<Integer> {
         private static final int THUMB_WIDTH = 2, TRACK_HEIGHT = 1;
 
-        private final Rect2i sliderBounds;
+        private final Dim2i sliderBounds;
         private final ControlValueFormatter formatter;
 
         private final int min;
@@ -69,54 +66,54 @@ public class SliderControl implements Control<Integer> {
             this.thumbPosition = this.getThumbPositionForValue(option.getValue());
             this.formatter = formatter;
 
-            this.sliderBounds = new Rect2i(dim.getLimitX() - 96, dim.getCenterY() - 5, 90, 10);
+            this.sliderBounds = new Dim2i(dim.getLimitX() - 96, dim.getCenterY() - 5, 90, 10);
             this.sliderHeld = false;
         }
 
         @Override
-        public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+        public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
             super.render(drawContext, mouseX, mouseY, delta);
 
-            if (this.option.isAvailable() && (this.hovered || this.isFocused())) {
+            if (this.option.isAvailable() && (this.isMouseOver(mouseX, mouseY))) {
                 this.renderSlider(drawContext);
             } else {
                 this.renderStandaloneValue(drawContext);
             }
         }
 
-        private void renderStandaloneValue(GuiGraphics drawContext) {
-            int sliderX = this.sliderBounds.getX();
-            int sliderY = this.sliderBounds.getY();
-            int sliderWidth = this.sliderBounds.getWidth();
-            int sliderHeight = this.sliderBounds.getHeight();
+        private void renderStandaloneValue(DrawContext drawContext) {
+            int sliderX = this.sliderBounds.x();
+            int sliderY = this.sliderBounds.y();
+            int sliderWidth = this.sliderBounds.width();
+            int sliderHeight = this.sliderBounds.height();
 
-            Component label = this.formatter.format(this.option.getValue());
-            int labelWidth = this.getStringWidth(label);
+            var label = this.formatter.format(this.option.getValue());
+            int labelWidth = drawContext.getStringWidth(label);
 
-            this.drawString(drawContext, label, sliderX + sliderWidth - labelWidth, sliderY + (sliderHeight / 2) - 4, 0xFFFFFFFF);
+            drawContext.drawString(label, sliderX + sliderWidth - labelWidth, sliderY + (sliderHeight / 2) - 4, 0xFFFFFFFF);
         }
 
-        private void renderSlider(GuiGraphics drawContext) {
-            int sliderX = this.sliderBounds.getX();
-            int sliderY = this.sliderBounds.getY();
-            int sliderWidth = this.sliderBounds.getWidth();
-            int sliderHeight = this.sliderBounds.getHeight();
+        private void renderSlider(DrawContext drawContext) {
+            int sliderX = this.sliderBounds.x();
+            int sliderY = this.sliderBounds.y();
+            int sliderWidth = this.sliderBounds.width();
+            int sliderHeight = this.sliderBounds.height();
 
             this.thumbPosition = this.getThumbPositionForValue(this.option.getValue());
 
-            double thumbOffset = Mth.clamp((double) (this.getIntValue() - this.min) / this.range * sliderWidth, 0, sliderWidth);
+            double thumbOffset = org.joml.Math.clamp((double) (this.getIntValue() - this.min) / this.range * sliderWidth, 0, sliderWidth);
 
             int thumbX = (int) (sliderX + thumbOffset - THUMB_WIDTH);
             int trackY = (int) (sliderY + (sliderHeight / 2f) - ((double) TRACK_HEIGHT / 2));
 
-            this.drawRect(drawContext, thumbX, sliderY, thumbX + (THUMB_WIDTH * 2), sliderY + sliderHeight, 0xFFFFFFFF);
-            this.drawRect(drawContext, sliderX, trackY, sliderX + sliderWidth, trackY + TRACK_HEIGHT, 0xFFFFFFFF);
+            drawContext.fill(thumbX, sliderY, thumbX + (THUMB_WIDTH * 2), sliderY + sliderHeight, 0xFFFFFFFF);
+            drawContext.fill(sliderX, trackY, sliderX + sliderWidth, trackY + TRACK_HEIGHT, 0xFFFFFFFF);
 
-            String label = this.formatter.format(this.getIntValue()).getString();
+            var label = this.formatter.format(this.getIntValue());
 
-            int labelWidth = this.font.width(label);
+            int labelWidth = drawContext.getStringWidth(label);
 
-            this.drawString(drawContext, label, sliderX - labelWidth - 6, sliderY + (sliderHeight / 2) - 4, 0xFFFFFFFF);
+            drawContext.drawString(label, sliderX - labelWidth - 6, sliderY + (sliderHeight / 2) - 4, 0xFFFFFFFF);
         }
 
         public int getIntValue() {
@@ -132,11 +129,11 @@ public class SliderControl implements Control<Integer> {
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        public boolean mouseClicked(InteractionContext context, double mouseX, double mouseY, int button) {
             this.sliderHeld = false;
 
             if (this.option.isAvailable() && button == 0 && this.dim.containsCursor(mouseX, mouseY)) {
-                if (this.sliderBounds.contains((int) mouseX, (int) mouseY)) {
+                if (this.sliderBounds.containsCursor((int) mouseX, (int) mouseY)) {
                     this.setValueFromMouse(mouseX);
                     this.sliderHeld = true;
                 }
@@ -148,11 +145,11 @@ public class SliderControl implements Control<Integer> {
         }
 
         private void setValueFromMouse(double d) {
-            this.setValue((d - (double) this.sliderBounds.getX()) / (double) this.sliderBounds.getWidth());
+            this.setValue((d - (double) this.sliderBounds.x()) / (double) this.sliderBounds.width());
         }
 
         public void setValue(double d) {
-            this.thumbPosition = Mth.clamp(d, 0.0D, 1.0D);
+            this.thumbPosition = org.joml.Math.clamp(d, 0.0D, 1.0D);
 
             int value = this.getIntValue();
 
@@ -162,22 +159,7 @@ public class SliderControl implements Control<Integer> {
         }
 
         @Override
-        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-            if (!isFocused()) return false;
-
-            if (keyCode == 263) { // left
-                this.option.setValue(Mth.clamp(this.option.getValue() - this.interval, this.min, this.max));
-                return true;
-            } else if (keyCode == 262) { // right
-                this.option.setValue(Mth.clamp(this.option.getValue() + this.interval, this.min, this.max));
-                return true;
-            }
-
-            return false;
-        }
-
-        @Override
-        public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        public boolean mouseDragged(InteractionContext context, double mouseX, double mouseY, int button, double deltaX, double deltaY) {
             if (this.option.isAvailable() && button == 0) {
                 if (this.sliderHeld) {
                     this.setValueFromMouse(mouseX);

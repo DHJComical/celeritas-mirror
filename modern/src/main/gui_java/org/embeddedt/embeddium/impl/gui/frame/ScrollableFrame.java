@@ -1,15 +1,12 @@
 package org.embeddedt.embeddium.impl.gui.frame;
 
-import org.embeddedt.embeddium.api.options.control.ControlElement;
+import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
+import org.embeddedt.embeddium.impl.gui.framework.Interactable;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-//? if >=1.20 {
-import net.minecraft.client.gui.GuiGraphics;
-//?} else {
-/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
-*///?}
 import org.embeddedt.embeddium.impl.gui.frame.components.ScrollBarComponent;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 public class ScrollableFrame extends AbstractFrame {
 
@@ -100,24 +97,6 @@ public class ScrollableFrame extends AbstractFrame {
         this.frame.buildFrame();
         this.children.add(this.frame);
         super.buildFrame();
-
-        // fixme: Ridiculous hack to snap to focused element
-        // for the meanwhile this works until a proper solution is implemented.
-        // this shouldn't be hardcoded into scrollable frame
-        this.frame.registerFocusListener(element -> {
-            if (element instanceof ControlElement<?> controlElement && this.canScrollVertical) {
-                Dim2i dim = controlElement.getDimensions();
-                int inputOffset = this.verticalScrollBar.getOffset();
-                int elementTop = dim.y() - inputOffset;
-                int elementBottom = dim.getLimitY() - inputOffset;
-                if (elementTop <= this.viewPortDimension.y()) {
-                    inputOffset += elementTop - this.viewPortDimension.y();
-                } else if (elementBottom >= this.viewPortDimension.getLimitY()) {
-                    inputOffset += elementBottom - this.viewPortDimension.getLimitY();
-                }
-                this.verticalScrollBar.setOffset(inputOffset);
-            }
-        });
     }
 
     /**
@@ -137,17 +116,17 @@ public class ScrollableFrame extends AbstractFrame {
 
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         if (this.canScrollHorizontal || this.canScrollVertical) {
             if (this.renderOutline) {
-                this.drawBorder(drawContext, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), 0xFFAAAAAA);
+                drawContext.drawBorder(this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), 0xFFAAAAAA);
             }
             boolean mouseInViewport = this.viewPortDimension.containsCursor(mouseX, mouseY);
             drawContext.enableScissor(this.viewPortDimension.x(), this.viewPortDimension.y(), this.viewPortDimension.getLimitX(), this.viewPortDimension.getLimitY());
-            drawContext.pose().pushPose();
-            drawContext.pose().translate(applyOffset(this.horizontalScrollBar, 0, true), applyOffset(this.verticalScrollBar, 0, true), 0);
+            drawContext.pushMatrix();
+            drawContext.translate(applyOffset(this.horizontalScrollBar, 0, true), applyOffset(this.verticalScrollBar, 0, true), 0);
             super.render(drawContext, mouseInViewport ? (int)applyOffset(this.horizontalScrollBar, mouseX, false) : -1, mouseInViewport ? (int)applyOffset(this.verticalScrollBar, mouseY, false) : -1, delta);
-            drawContext.pose().popPose();
+            drawContext.popMatrix();
             drawContext.disableScissor();
         } else {
             super.render(drawContext, mouseX, mouseY, delta);
@@ -163,23 +142,15 @@ public class ScrollableFrame extends AbstractFrame {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        return (this.canScrollHorizontal && this.horizontalScrollBar.mouseClicked(mouseX, mouseY, button)) || (this.canScrollVertical && this.verticalScrollBar.mouseClicked(mouseX, mouseY, button)) || super.mouseClicked(applyOffset(this.horizontalScrollBar, mouseX, false), applyOffset(this.verticalScrollBar, mouseY, false), button);
-    }
-
-    @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        return (this.canScrollHorizontal && this.horizontalScrollBar.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) || (this.canScrollVertical && this.verticalScrollBar.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) || super.mouseDragged(applyOffset(this.horizontalScrollBar, mouseX, false), applyOffset(this.verticalScrollBar, mouseY, false), button, deltaX, deltaY);
-    }
-
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        return (this.canScrollHorizontal && this.horizontalScrollBar.mouseReleased(mouseX, mouseY, button)) || (this.canScrollVertical && this.verticalScrollBar.mouseReleased(mouseX, mouseY, button)) || super.mouseReleased(applyOffset(this.horizontalScrollBar, mouseX, false), applyOffset(this.verticalScrollBar, mouseY, false), button);
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, /*? if >=1.20.2 {*/ /*double horizontalAmount, *//*?}*/ double verticalAmount) {
-        return (this.canScrollHorizontal && this.horizontalScrollBar.mouseScrolled(mouseX, mouseY, /*? if >=1.20.2 {*/ /*horizontalAmount, *//*?}*/ verticalAmount)) || (this.canScrollVertical && this.verticalScrollBar.mouseScrolled(mouseX, mouseY, /*? if >=1.20.2 {*/ /*horizontalAmount, *//*?}*/ verticalAmount)) || super.mouseScrolled(applyOffset(this.horizontalScrollBar, mouseX, false), applyOffset(this.verticalScrollBar, mouseY, false), /*? if >=1.20.2 {*/ /*horizontalAmount, *//*?}*/ verticalAmount);
+    public Stream<? extends Interactable> interactableChildren() {
+        var stream = super.interactableChildren();
+        if (this.canScrollVertical) {
+            stream = Stream.concat(Stream.of(this.verticalScrollBar), stream);
+        }
+        if (this.canScrollHorizontal) {
+            stream = Stream.concat(Stream.of(this.horizontalScrollBar), stream);
+        }
+        return stream;
     }
 
     public static class Builder {

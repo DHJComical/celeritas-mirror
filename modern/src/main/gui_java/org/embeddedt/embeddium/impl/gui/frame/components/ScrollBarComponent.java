@@ -1,20 +1,14 @@
 package org.embeddedt.embeddium.impl.gui.frame.components;
 
-import com.mojang.blaze3d.platform.InputConstants;
+import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
+import org.embeddedt.embeddium.impl.gui.framework.InteractionContext;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-//? if >=1.20 {
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
-//?} else {
-/*import org.embeddedt.embeddium.impl.gui.compat.GuiGraphics;
-*///?}
 import net.minecraft.util.Mth;
 
 import java.util.function.Consumer;
 
 public class ScrollBarComponent extends AbstractWidget {
-
     protected static final int SCROLL_OFFSET = 6;
 
     protected final Dim2i dim;
@@ -54,16 +48,13 @@ public class ScrollBarComponent extends AbstractWidget {
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
-        this.drawBorder(drawContext, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), 0xFFAAAAAA);
-        this.drawRect(drawContext, this.scrollThumb.x(), this.scrollThumb.y(), this.scrollThumb.getLimitX(), this.scrollThumb.getLimitY(), 0xFFAAAAAA);
-        if (this.isFocused()) {
-            this.drawBorder(drawContext, this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), -1);
-        }
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        drawContext.drawBorder(this.dim.x(), this.dim.y(), this.dim.getLimitX(), this.dim.getLimitY(), 0xFFAAAAAA);
+        drawContext.fill(this.scrollThumb.x(), this.scrollThumb.y(), this.scrollThumb.getLimitX(), this.scrollThumb.getLimitY(), 0xFFAAAAAA);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(InteractionContext context, double mouseX, double mouseY, int button) {
         if (this.dim.containsCursor(mouseX, mouseY)) {
             if (this.scrollThumb.containsCursor(mouseX, mouseY)) {
                 if (this.mode == Mode.VERTICAL) {
@@ -89,7 +80,7 @@ public class ScrollBarComponent extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(InteractionContext context, double mouseX, double mouseY, int button) {
         if (button == 0) {
             this.isDragging = false;
         }
@@ -97,7 +88,7 @@ public class ScrollBarComponent extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+    public boolean mouseDragged(InteractionContext context, double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (this.isDragging) {
             int value;
             if (this.mode == Mode.VERTICAL) {
@@ -112,7 +103,7 @@ public class ScrollBarComponent extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, /*? if >=1.20.2 {*/ /*double horizontalAmount, *//*?}*/ double verticalAmount) {
+    public boolean mouseScrolled(InteractionContext context, double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (this.dim.containsCursor(mouseX, mouseY) || this.extendedScrollArea != null && this.extendedScrollArea.containsCursor(mouseX, mouseY)) {
             if (this.offset <= this.maxScrollBarOffset && this.offset >= 0) {
                 int value = (int) (this.offset - verticalAmount * SCROLL_OFFSET); // todo: horizontal separation
@@ -133,37 +124,9 @@ public class ScrollBarComponent extends AbstractWidget {
         this.onSetOffset.accept(this.offset);
     }
 
-    //? if >=1.20 {
     @Override
-    public ScreenRectangle getRectangle() {
-        return new ScreenRectangle(this.dim.x(), this.dim.y(), this.dim.width(), this.dim.height());
-    }
-    //?}
-
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!this.isFocused())
-            return false;
-
-        if (this.mode == Mode.VERTICAL) {
-            if (keyCode == 265) { // up
-                this.setOffset(this.getOffset() - SCROLL_OFFSET);
-                return true;
-            } else if (keyCode == 264) { // down
-                this.setOffset(this.getOffset() + SCROLL_OFFSET);
-                return true;
-            }
-        } else {
-            if (keyCode == 263) { // left
-                this.setOffset(this.getOffset() - SCROLL_OFFSET);
-                return true;
-            } else if (keyCode == 262) { // right
-                this.setOffset(this.getOffset() + SCROLL_OFFSET);
-                return true;
-            }
-        }
-
-        return false;
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return this.dim.containsCursor(mouseX, mouseY);
     }
 
     public enum Mode {

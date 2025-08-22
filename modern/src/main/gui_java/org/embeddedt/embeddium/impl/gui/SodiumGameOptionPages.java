@@ -19,6 +19,8 @@ import org.embeddedt.embeddium.api.options.control.CyclingControl;
 import org.embeddedt.embeddium.api.options.control.SliderControl;
 import org.embeddedt.embeddium.api.options.control.TickBoxControl;
 import org.embeddedt.embeddium.api.options.storage.MinecraftOptionsStorage;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
+import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
 import org.embeddedt.embeddium.impl.gui.options.storage.SodiumOptionsStorage;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import net.minecraft.ChatFormatting;
@@ -171,7 +173,7 @@ public class SodiumGameOptionPages {
                         .setId(StandardOptions.Option.ATTACK_INDICATOR)
                         .setName(ComponentUtil.translatable("options.attackIndicator"))
                         .setTooltip(ComponentUtil.translatable("sodium.options.attack_indicator.tooltip"))
-                        .setControl(opts -> new CyclingControl<>(opts, AttackIndicatorStatus.class, new Component[] { ComponentUtil.translatable("options.off"), ComponentUtil.translatable("options.attack.crosshair"), ComponentUtil.translatable("options.attack.hotbar") }))
+                        .setControl(opts -> new CyclingControl<>(opts, AttackIndicatorStatus.class, new TextComponent[] { TextComponent.translatable("options.off"), TextComponent.translatable("options.attack.crosshair"), TextComponent.translatable("options.attack.hotbar") }))
                         .setBinding((opts, value) -> opts.attackIndicator/*? if >=1.19 {*/().set/*?} else {*//*=*//*?}*/(value), (opts) -> opts.attackIndicator/*? if >=1.19 {*/().get()/*?}*/)
                         .build())
                 //? if >=1.18 {
@@ -185,7 +187,7 @@ public class SodiumGameOptionPages {
                 //?}
                 .build());
 
-        return new OptionPage(ComponentUtil.translatable("stat.generalButton"), ImmutableList.copyOf(groups));
+        return new OptionPage(StandardOptions.Pages.GENERAL, TextComponent.translatable("stat.generalButton"), ImmutableList.copyOf(groups));
     }
 
     public static OptionPage quality() {
@@ -198,7 +200,7 @@ public class SodiumGameOptionPages {
                         .setName(ComponentUtil.translatable("options.graphics"))
                         .setTooltip(ComponentUtil.translatable("sodium.options.graphics_quality.tooltip"))
                         //? if >=1.16 {
-                        .setControl(option -> new CyclingControl<>(option, GraphicsStatus.class, new Component[] { ComponentUtil.translatable("options.graphics.fast"), ComponentUtil.translatable("options.graphics.fancy"), ComponentUtil.translatable("options.graphics.fabulous").withStyle(ChatFormatting.ITALIC) }))
+                        .setControl(option -> new CyclingControl<>(option, GraphicsStatus.class, new TextComponent[] { TextComponent.translatable("options.graphics.fast"), TextComponent.translatable("options.graphics.fancy"), TextComponent.translatable("options.graphics.fabulous").withStyle(TextFormattingStyle.ITALIC) }))
                         .setBinding(
                                 (opts, value) -> opts.graphicsMode/*? if >=1.19 {*/().set/*?} else {*//*=*//*?}*/(value),
                                 opts -> opts.graphicsMode/*? if >=1.19 {*/().get()/*?}*/)
@@ -217,7 +219,7 @@ public class SodiumGameOptionPages {
                         .setId(StandardOptions.Option.CLOUDS)
                         .setName(ComponentUtil.translatable("options.renderClouds"))
                         .setTooltip(ComponentUtil.translatable("sodium.options.clouds_quality.tooltip"))
-                        .setControl(option -> new CyclingControl<>(option, CloudStatus.class, new Component[] { ComponentUtil.translatable("options.off"), ComponentUtil.translatable("options.graphics.fast"), ComponentUtil.translatable("options.graphics.fancy") }))
+                        .setControl(option -> new CyclingControl<>(option, CloudStatus.class, new TextComponent[] { TextComponent.translatable("options.off"), TextComponent.translatable("options.graphics.fast"), TextComponent.translatable("options.graphics.fancy") }))
                         .setBinding((opts, value) -> {
                             //? if >=1.19 {
                             opts.cloudStatus().set(value);
@@ -263,7 +265,7 @@ public class SodiumGameOptionPages {
                         .setId(StandardOptions.Option.PARTICLES)
                         .setName(ComponentUtil.translatable("options.particles"))
                         .setTooltip(ComponentUtil.translatable("sodium.options.particle_quality.tooltip"))
-                        .setControl(option -> new CyclingControl<>(option, ParticleStatus.class, new Component[] { ComponentUtil.translatable("options.particles.all"), ComponentUtil.translatable("options.particles.decreased"), ComponentUtil.translatable("options.particles.minimal") }))
+                        .setControl(option -> new CyclingControl<>(option, ParticleStatus.class, new TextComponent[] { TextComponent.translatable("options.particles.all"), TextComponent.translatable("options.particles.decreased"), TextComponent.translatable("options.particles.minimal") }))
                         .setBinding((opts, value) -> opts.particles/*? if >=1.19 {*/().set/*?} else {*//*=*//*?}*/(value), (opts) -> opts.particles/*? if >=1.19 {*/().get()/*?}*/)
                         .setImpact(OptionImpact.MEDIUM)
                         .build())
@@ -369,7 +371,7 @@ public class SodiumGameOptionPages {
                         .build())
                 .build());
 
-        return new OptionPage(ComponentUtil.translatable("sodium.options.pages.quality"), ImmutableList.copyOf(groups));
+        return new OptionPage(StandardOptions.Pages.QUALITY, TextComponent.translatable("sodium.options.pages.quality"), ImmutableList.copyOf(groups));
     }
 
     public static OptionPage performance() {
@@ -400,7 +402,7 @@ public class SodiumGameOptionPages {
                         .setId(StandardOptions.Option.ASYNC_GRAPH_SEARCH)
                         .setName(ComponentUtil.translatable("celeritas.options.async_graph_search.name"))
                         .setTooltip(ComponentUtil.translatable("celeritas.options.async_graph_search.tooltip"))
-                        .setControl(o -> new CyclingControl<>(o, AsyncOcclusionMode.class, new Component[] { ComponentUtil.literal("Off"), ComponentUtil.literal("Only Shadows"), ComponentUtil.literal("Everything") }))
+                        .setControl(o -> new CyclingControl<>(o, AsyncOcclusionMode.class, new TextComponent[] { TextComponent.literal("Off"), TextComponent.literal("Only Shadows"), TextComponent.literal("Everything") }))
                         .setImpact(OptionImpact.MEDIUM)
                         .setBinding((opts, value) -> opts.performance.asyncOcclusionMode = value, opts -> opts.performance.asyncOcclusionMode)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
@@ -501,7 +503,7 @@ public class SodiumGameOptionPages {
                         .build())
                 .build());
 
-        return new OptionPage(ComponentUtil.translatable("sodium.options.pages.performance"), ImmutableList.copyOf(groups));
+        return new OptionPage(StandardOptions.Pages.PERFORMANCE, TextComponent.translatable("sodium.options.pages.performance"), ImmutableList.copyOf(groups));
     }
 
     private static boolean supportsNoErrorContext() {
@@ -539,7 +541,7 @@ public class SodiumGameOptionPages {
                 )
                 .build());
 
-        return new OptionPage(ComponentUtil.translatable("sodium.options.pages.advanced"), ImmutableList.copyOf(groups));
+        return new OptionPage(StandardOptions.Pages.ADVANCED, TextComponent.translatable("sodium.options.pages.advanced"), ImmutableList.copyOf(groups));
     }
 
     public static OptionStorage<Options> getVanillaOpts() {

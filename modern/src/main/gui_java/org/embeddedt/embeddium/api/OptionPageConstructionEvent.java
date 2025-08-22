@@ -1,10 +1,12 @@
 package org.embeddedt.embeddium.api;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.embeddedt.embeddium.api.options.structure.OptionGroup;
-import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
 import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,31 +15,21 @@ import java.util.List;
 /**
  * Fired when an option page is created, to allow adding additional {@link OptionGroup} entries at the end of the page.
  */
+@RequiredArgsConstructor
+@Getter
 public class OptionPageConstructionEvent extends EmbeddiumEvent {
     public static final EventHandlerRegistrar<OptionPageConstructionEvent> BUS = new EventHandlerRegistrar<>();
-
-    private final OptionIdentifier<Void> id;
-    private final Component name;
-    private final List<OptionGroup> additionalGroups = new ArrayList<>();
-
-    public OptionPageConstructionEvent(OptionIdentifier<Void> id, Component name) {
-        this.id = id;
-        this.name = name;
-    }
 
     /**
      * Returns the ID of the option group.
      */
-    public OptionIdentifier<Void> getId() {
-        return this.id;
-    }
-
+    private final OptionIdentifier<Void> id;
     /**
-     * Returns the translatable name of the option group.
+     * The translation key for the group's name.
      */
-    public Component getName() {
-        return this.name;
-    }
+    private final TextComponent translationKey;
+
+    private final List<OptionGroup> additionalGroups = new ArrayList<>();
 
     /**
      * Add a new option group to the end of this page. The group will be inserted at the end, after any

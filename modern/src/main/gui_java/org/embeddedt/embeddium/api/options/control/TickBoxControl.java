@@ -1,9 +1,9 @@
 package org.embeddedt.embeddium.api.options.control;
 
 import org.embeddedt.embeddium.api.options.structure.Option;
+import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
+import org.embeddedt.embeddium.impl.gui.framework.InteractionContext;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-//$ guigfx
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Rect2i;
 import org.embeddedt.embeddium.impl.gui.theme.DefaultColors;
 
@@ -39,7 +39,7 @@ public class TickBoxControl implements Control<Boolean> {
         }
 
         @Override
-        public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+        public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
             super.render(drawContext, mouseX, mouseY, delta);
 
             final int x = this.button.getX();
@@ -59,31 +59,17 @@ public class TickBoxControl implements Control<Boolean> {
             }
 
             if (ticked) {
-                this.drawRect(drawContext, x + 2, y + 2, w - 2, h - 2, color);
+                drawContext.fill(x + 2, y + 2, w - 2, h - 2, color);
             }
 
-            this.drawBorder(drawContext, x, y, w, h, color);
+            drawContext.drawBorder(x, y, w, h, color);
         }
 
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        public boolean mouseClicked(InteractionContext context, double mouseX, double mouseY, int button) {
             if (this.option.isAvailable() && button == 0 && this.dim.containsCursor(mouseX, mouseY)) {
                 toggleControl();
-                this.playClickSound();
-
-                return true;
-            }
-
-            return false;
-        }
-
-        @Override
-        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-            if (!isFocused()) return false;
-
-            if (keySelected(keyCode)) {
-                toggleControl();
-                this.playClickSound();
+                context.playClickSound();
 
                 return true;
             }

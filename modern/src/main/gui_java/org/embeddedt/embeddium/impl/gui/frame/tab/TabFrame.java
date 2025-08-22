@@ -3,12 +3,13 @@ package org.embeddedt.embeddium.impl.gui.frame.tab;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
+import org.embeddedt.embeddium.impl.gui.framework.FontMetricsProvider;
+import org.embeddedt.embeddium.impl.gui.framework.InteractionContext;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.gui.widgets.AbstractWidget;
 import org.embeddedt.embeddium.impl.gui.widgets.FlatButtonWidget;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-//$ guigfx
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.Validate;
 import org.embeddedt.embeddium.impl.gui.frame.AbstractFrame;
 import org.embeddedt.embeddium.impl.gui.frame.ScrollableFrame;
@@ -25,20 +26,20 @@ public class TabFrame extends AbstractFrame {
     private final Dim2i frameSection;
     private final Multimap<String, Tab<?>> tabs;
     private final Runnable onSetTab;
-    private final AtomicReference<Component> tabSectionSelectedTab;
+    private final AtomicReference<TextComponent> tabSectionSelectedTab;
     private final AtomicReference<Integer> tabSectionScrollBarOffset;
     private Tab<?> selectedTab;
     private AbstractFrame selectedFrame;
     private Dim2i tabSectionInner;
     private ScrollableFrame sidebarFrame;
 
-    public TabFrame(Dim2i dim, boolean renderOutline, Multimap<String, Tab<?>> tabs, Runnable onSetTab, AtomicReference<Component> tabSectionSelectedTab, AtomicReference<Integer> tabSectionScrollBarOffset) {
+    public TabFrame(FontMetricsProvider font, Dim2i dim, boolean renderOutline, Multimap<String, Tab<?>> tabs, Runnable onSetTab, AtomicReference<TextComponent> tabSectionSelectedTab, AtomicReference<Integer> tabSectionScrollBarOffset) {
         super(dim, renderOutline);
         this.tabs = ImmutableListMultimap.copyOf(tabs);
         int tabSectionY = (this.tabs.size() + this.tabs.keySet().size()) * 18;
         Optional<Integer> result = Stream.concat(
-                tabs.keys().stream().map(id -> this.getStringWidth(Tab.idComponent(id)) + 10),
-                tabs.values().stream().map(tab -> this.getStringWidth(tab.title()) + TAB_OPTION_INDENT)
+                tabs.keys().stream().map(id -> font.getStringWidth(Tab.idComponent(id)) + 10),
+                tabs.values().stream().map(tab -> font.getStringWidth(tab.title()) + TAB_OPTION_INDENT)
         ).max(Integer::compareTo);
 
         this.tabSection = new Dim2i(this.dim.x(), this.dim.y(), result.map(integer -> integer + (24)).orElseGet(() -> (int) (this.dim.width() * 0.35D)), this.dim.height());
@@ -50,13 +51,15 @@ public class TabFrame extends AbstractFrame {
         this.tabSectionScrollBarOffset = tabSectionScrollBarOffset;
 
         if (this.tabSectionSelectedTab.get() != null) {
-            this.selectedTab = this.tabs.values().stream().filter(tab -> tab.title().getString().equals(this.tabSectionSelectedTab.get().getString())).findAny().orElse(null);
+            this.selectedTab = this.tabs.values().stream().filter(tab -> tab.title().equals(this.tabSectionSelectedTab.get())).findAny().orElse(null);
         }
 
         this.buildFrame();
 
         // Let's build each frame, future note for anyone: do not move this line.
-        this.tabs.values().stream().filter(tab -> this.selectedTab != tab).forEach(tab -> tab.getFrameFunction().apply(this.frameSection));
+        this.tabs.values().stream().filter(tab -> this.selectedTab != tab).forEach(tab -> {
+            tab.createFrame(this.frameSection);
+        });
     }
 
     public static Builder createBuilder() {
@@ -106,13 +109,13 @@ public class TabFrame extends AbstractFrame {
                     Dim2i tabDim = new Dim2i(0, offsetY, width, height).withParentOffset(tabSection);
 
                     FlatButtonWidget button = new FlatButtonWidget(tabDim, tab.title(), () -> {
-                        if(tab.onSelectFunction().get()) {
+                        if(tab.onSelectFunction() == null || tab.onSelectFunction().get()) {
                             TabFrame.this.setTab(tab);
                         }
                     }) {
                         @Override
-                        protected int getLeftAlignedTextOffset() {
-                            return TAB_OPTION_INDENT + super.getLeftAlignedTextOffset();
+                        protected int getLeftAlignedTextOffset(DrawContext drawContext) {
+                            return TAB_OPTION_INDENT + super.getLeftAlignedTextOffset(drawContext);
                         }
                     };
 
@@ -154,7 +157,7 @@ public class TabFrame extends AbstractFrame {
 
     private void rebuildTabFrame() {
         if (this.selectedTab == null) return;
-        AbstractFrame frame = this.selectedTab.getFrameFunction().apply(this.frameSection);
+        AbstractFrame frame = this.selectedTab.createFrame(this.frameSection);
         if (frame != null) {
             this.selectedFrame = frame;
             frame.buildFrame();
@@ -163,7 +166,7 @@ public class TabFrame extends AbstractFrame {
     }
 
     @Override
-    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         for (AbstractWidget widget : this.children) {
             if (widget != this.selectedFrame) {
                 widget.render(drawContext, mouseX, mouseY, delta);
@@ -175,23 +178,8 @@ public class TabFrame extends AbstractFrame {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        return (this.dim.containsCursor(mouseX, mouseY) && super.mouseClicked(mouseX, mouseY, button));
-    }
-
-    @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
-    }
-
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        return super.mouseReleased(mouseX, mouseY, button);
-    }
-
-    @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, /*? if >=1.20.2 {*/ /*double horizontalAmount, *//*?}*/ double verticalAmount) {
-        return super.mouseScrolled(mouseX, mouseY, /*? if >=1.20.2 {*/ /*horizontalAmount, *//*?}*/ verticalAmount);
+    public boolean mouseClicked(InteractionContext context, double mouseX, double mouseY, int button) {
+        return (this.dim.containsCursor(mouseX, mouseY) && super.mouseClicked(context, mouseX, mouseY, button));
     }
 
     public static class Builder {
@@ -199,7 +187,7 @@ public class TabFrame extends AbstractFrame {
         private Dim2i dim;
         private boolean renderOutline;
         private Runnable onSetTab;
-        private AtomicReference<Component> tabSectionSelectedTab = new AtomicReference<>(null);
+        private AtomicReference<TextComponent> tabSectionSelectedTab = new AtomicReference<>(null);
         private AtomicReference<Integer> tabSectionScrollBarOffset = new AtomicReference<>(0);
 
         public Builder setDimension(Dim2i dim) {
@@ -222,7 +210,7 @@ public class TabFrame extends AbstractFrame {
             return this;
         }
 
-        public Builder setTabSectionSelectedTab(AtomicReference<Component> tabSectionSelectedTab) {
+        public Builder setTabSectionSelectedTab(AtomicReference<TextComponent> tabSectionSelectedTab) {
             this.tabSectionSelectedTab = tabSectionSelectedTab;
             return this;
         }
@@ -232,10 +220,10 @@ public class TabFrame extends AbstractFrame {
             return this;
         }
 
-        public TabFrame build() {
+        public TabFrame build(FontMetricsProvider font) {
             Validate.notNull(this.dim, "Dimension must be specified");
 
-            return new TabFrame(this.dim, this.renderOutline, this.functions, this.onSetTab, this.tabSectionSelectedTab, this.tabSectionScrollBarOffset);
+            return new TabFrame(font, this.dim, this.renderOutline, this.functions, this.onSetTab, this.tabSectionSelectedTab, this.tabSectionScrollBarOffset);
         }
     }
 }

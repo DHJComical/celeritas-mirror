@@ -39,7 +39,7 @@ public class OptionGroup {
         private OptionIdentifier<Void> id;
 
         public Builder setId(ResourceLocation id) {
-            this.id = OptionIdentifier.create(id);
+            this.id = OptionIdentifier.create(id.getNamespace(), id.getPath());
             return this;
         }
 

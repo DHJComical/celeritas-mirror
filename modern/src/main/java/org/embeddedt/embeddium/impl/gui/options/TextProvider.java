@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.gui.options;
 
-import net.minecraft.network.chat.Component;
+import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 
 public interface TextProvider {
-    Component getLocalizedName();
+    TextComponent getLocalizedName();
 }
