@@ -8,7 +8,6 @@ import net.irisshaders.iris.config.IrisConfig;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 import net.minecraft.client.Options;
-import net.minecraft.network.chat.Component;
 import org.embeddedt.embeddium.api.OptionGUIConstructionEvent;
 import org.embeddedt.embeddium.api.OptionGroupConstructionEvent;
 import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
@@ -16,7 +15,7 @@ import org.embeddedt.embeddium.api.options.control.CyclingControl;
 import org.embeddedt.embeddium.api.options.control.SliderControl;
 import org.embeddedt.embeddium.api.options.control.TickBoxControl;
 import org.embeddedt.embeddium.api.options.structure.*;
-import org.embeddedt.embeddium.impl.gui.SodiumGameOptionPages;
+import org.embeddedt.embeddium.impl.gui.modern.SodiumGameOptionPages;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 
 import java.io.IOException;

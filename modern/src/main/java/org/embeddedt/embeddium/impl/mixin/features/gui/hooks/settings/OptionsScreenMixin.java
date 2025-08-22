@@ -8,11 +8,10 @@ package org.embeddedt.embeddium.impl.mixin.features.gui.hooks.settings;
 import net.minecraft.client.gui.screens.OptionsScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.embeddedt.embeddium.impl.gui.EmbeddiumVideoOptionsScreen;
+import org.embeddedt.embeddium.impl.gui.modern.EmbeddiumVideoOptionsScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(OptionsScreen.class)
