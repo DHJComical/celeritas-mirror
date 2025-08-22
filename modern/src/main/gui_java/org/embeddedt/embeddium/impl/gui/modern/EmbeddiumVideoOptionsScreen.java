@@ -4,11 +4,13 @@ import com.google.common.collect.Multimap;
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
 import org.embeddedt.embeddium.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.api.options.structure.OptionFlag;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gui.CeleritasVideoOptionsController;
 import org.embeddedt.embeddium.impl.gui.frame.tab.Tab;
 import org.embeddedt.embeddium.impl.gui.modern.framework.ModernDrawContext;
 import org.embeddedt.embeddium.impl.gui.modern.framework.ModernInteractionContext;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
+import org.embeddedt.embeddium.impl.gui.options.CommonOptionPages;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import net.minecraft.client.Minecraft;
@@ -32,7 +34,7 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         this.controller = new CeleritasVideoOptionsController(this::onClose, List.of(
                 SodiumGameOptionPages.general(),
                 SodiumGameOptionPages.quality(),
-                SodiumGameOptionPages.performance(),
+                CommonOptionPages.performance(Celeritas.options()),
                 SodiumGameOptionPages.advanced()
         ), new ModernDrawContext(new GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource()), Minecraft.getInstance().font)) {
             @Override

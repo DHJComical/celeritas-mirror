@@ -5,28 +5,25 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.JsonSyntaxException;
-import net.minecraft.client.Minecraft;
-import org.embeddedt.embeddium.impl.Celeritas;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.embeddedt.embeddium.api.options.structure.OptionStorage;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.gui.options.TextProvider;
-//? if >=1.16
-import net.minecraft.client.GraphicsStatus;
-import net.minecraft.network.chat.Component;
-import org.embeddedt.embeddium.impl.config.ConfigMigrator;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
-import org.embeddedt.embeddium.impl.util.ComponentUtil;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-import static org.embeddedt.embeddium.impl.Celeritas.MODID;
+public class SodiumGameOptions implements OptionStorage<SodiumGameOptions> {
+    private static final Logger LOGGER = LogManager.getLogger();
 
-public class SodiumGameOptions {
-    private static final String DEFAULT_FILE_NAME = MODID + "-options.json";
+    private static final String DEFAULT_FILE_NAME = "embeddium-options.json";
 
     public final QualitySettings quality = new QualitySettings();
     public final AdvancedSettings advanced = new AdvancedSettings();
@@ -42,6 +39,22 @@ public class SodiumGameOptions {
         options.configPath = getConfigPath(DEFAULT_FILE_NAME);
 
         return options;
+    }
+
+    @Override
+    public SodiumGameOptions getData() {
+        return this;
+    }
+
+    @Override
+    public void save() {
+        try {
+            this.writeChanges();
+        } catch (IOException e) {
+            throw new RuntimeException("Couldn't save configuration changes", e);
+        }
+
+        LOGGER.info("Flushed changes to Embeddium configuration");
     }
 
     public static class PerformanceSettings {
@@ -107,25 +120,9 @@ public class SodiumGameOptions {
             return this.name;
         }
 
-        //? if >=1.16 {
-        public boolean isFancy(GraphicsStatus graphicsMode) {
-            return (this == FANCY) || (this == DEFAULT && (graphicsMode == GraphicsStatus.FANCY || graphicsMode == GraphicsStatus.FABULOUS));
-        }
-        //?} else {
-        /*public boolean isFancy(boolean fancyGraphics) {
+        public boolean isFancy(boolean fancyGraphics) {
             return (this == FANCY) || (this == DEFAULT && fancyGraphics);
         }
-        *///?}
-
-        //? if <1.16 {
-        /*public boolean isFancy() {
-            return isFancy(Minecraft.getInstance().options.fancyGraphics);
-        }
-        *///?} else {
-        public boolean isFancy() {
-            return isFancy(Minecraft.getInstance().options.graphicsMode/*? if >=1.19 {*/().get()/*?}*/);
-        }
-        //?}
     }
 
     private static final Gson GSON = new GsonBuilder()
@@ -149,7 +146,7 @@ public class SodiumGameOptions {
             } catch (IOException e) {
                 throw new RuntimeException("Could not parse config", e);
             } catch (JsonSyntaxException e) {
-                Celeritas.logger().error("Could not parse config, will fallback to default settings", e);
+                LOGGER.error("Could not parse config, will fallback to default settings", e);
                 config = new SodiumGameOptions();
                 resaveConfig = false;
             }
@@ -173,7 +170,7 @@ public class SodiumGameOptions {
     }
 
     private static Path getConfigPath(String name) {
-        return ConfigMigrator.handleConfigMigration(name);
+        return Paths.get("config", name);
     }
 
     @Deprecated

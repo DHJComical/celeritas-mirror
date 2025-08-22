@@ -16,7 +16,7 @@ public class LeavesBlockMixin extends Block {
 
     @Override
     public boolean skipRendering(BlockState state, BlockState stateFrom, Direction direction) {
-        if (Celeritas.options().quality.leavesQuality.isFancy()) {
+        if (Celeritas.options().quality.leavesQuality.isFancy(Celeritas.areGraphicsFancy())) {
             return super.skipRendering(state, stateFrom, direction);
         } else {
             return stateFrom.getBlock() instanceof LeavesBlock || super.skipRendering(state, stateFrom, direction);
