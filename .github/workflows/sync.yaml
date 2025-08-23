@@ -1,4 +1,4 @@
-name: Main Pipeline (Hash Comparison - Corrected)
+name: Main Pipeline
 
 on:
   schedule:
@@ -24,8 +24,6 @@ jobs:
     steps:
       - name: 1. Checkout repository to setup workspace
         uses: actions/checkout@v4
-        with:
-          ref: ${{ matrix.branch }}
 
       - name: 2. Get remote hash BEFORE sync
         id: get_before_hash
