@@ -1,4 +1,4 @@
-name: Stateful Build Pipeline
+name: Stateful Build Pipeline (Simple Single Job)
 
 on:
   workflow_dispatch:
@@ -6,85 +6,51 @@ on:
     - cron: "0 */12 * * *"
 
 jobs:
-  check:
-    name: Check ${{ matrix.branch }}
+  build-and-release:
+    name: Sync, Build & Release Stonecutter
     runs-on: ubuntu-latest
-    outputs:
-      should_run: ${{ steps.checker.outputs.should_run }}
-    strategy:
-      matrix:
-        branch: [stonecutter]
+    permissions:
+      contents: write
+
     steps:
-      - name: Checkout 'Sync-Action' branch to read previous hash
+      - name: Checkout 'Sync-Action' branch for state management
         uses: actions/checkout@v4
         with:
           ref: Sync-Action
+
       - name: Clone upstream repository (celeritas)
         run: git clone https://git.taumc.org/embeddedt/celeritas.git
-      - name: Get latest commit hash from upstream branch
+
+      - name: Get latest commit hash from upstream
         id: get_latest
         working-directory: ./celeritas
         run: |
-          git checkout ${{ matrix.branch }}
+          # 我们只关心 stonecutter 分支
+          git checkout stonecutter
           git pull
           echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
       - name: Get previous commit hash from storage file
         id: get_previous
         run: |
-          echo "commit_hash=$(cat ./latest_commit_${{ matrix.branch }} || echo 'first-run')" >> $GITHUB_OUTPUT
-      - name: Compare hashes to see if an update is needed
+          echo "commit_hash=$(cat ./latest_commit_stonecutter || echo 'first-run')" >> $GITHUB_OUTPUT
+
+      - name: Compare hashes and decide whether to run
         id: checker
         run: |
-          echo "Branch: ${{ matrix.branch }}"
           echo "Previous Hash: ${{ steps.get_previous.outputs.commit_hash }}"
           echo "Latest Hash:   ${{ steps.get_latest.outputs.commit_hash }}"
           if [[ "${{ steps.get_latest.outputs.commit_hash }}" == "${{ steps.get_previous.outputs.commit_hash }}" ]]; then
-            echo "✅ No new commits."
+            echo "✅ No new commits. Halting workflow."
             echo "should_run=false" >> $GITHUB_OUTPUT
           else
-            echo "🚀 New commits detected!"
+            echo "🚀 New commits detected! Proceeding to build and release."
             echo "should_run=true" >> $GITHUB_OUTPUT
           fi
 
-  prepare_build_matrix:
-    name: Prepare Build Matrix
-    runs-on: ubuntu-latest
-    needs: check
-    outputs:
-      matrix: ${{ steps.generate_matrix.outputs.matrix }}
-    steps:
-      - name: Generate matrix for changed branches
-        id: generate_matrix
-        run: |
-          JSON_MATRIX=$(echo '${{ toJSON(needs.check.outputs) }}' | jq '{include: [to_entries[] | select(.value.should_run == "true") | {branch: .key}]}')
-          echo "matrix=$JSON_MATRIX" >> $GITHUB_OUTPUT
 
-  build-and-release:
-    name: Build & Release ${{ matrix.branch }}
-    runs-on: ubuntu-latest
-    needs: prepare_build_matrix
-    if: needs.prepare_build_matrix.outputs.matrix != '{"include":[]}'
-    permissions:
-      contents: write
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.prepare_build_matrix.outputs.matrix) }}
-    steps:
-      - name: Checkout 'Sync-Action' branch for state update
-        uses: actions/checkout@v4
-        with:
-          ref: Sync-Action
-      - name: Clone upstream repository (celeritas) for build
-        run: git clone https://git.taumc.org/embeddedt/celeritas.git
-      - name: Setup branch and get hashes
-        id: setup
-        working-directory: ./celeritas
-        run: |
-          git checkout ${{ matrix.branch }}
-          git pull
-          echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-          echo "previous_hash=$(cat ../latest_commit_${{ matrix.branch }} || git rev-parse HEAD~1)" >> $GITHUB_OUTPUT
       - name: Set up JDK
+        if: steps.checker.outputs.should_run == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -92,41 +58,51 @@ jobs:
             8
             17
             21
+
       - name: Build all packaged jars
+        if: steps.checker.outputs.should_run == 'true'
         working-directory: ./celeritas
         continue-on-error: true
         run: |
           chmod +x gradlew
-          ./gradlew -Ptarget_versions=1.21.8 packageJar
-          ./gradlew -Ptarget_versions=1.21.1 packageJar
-          ./gradlew -Ptarget_versions=1.12.2 packageJar
-          ./gradlew -Ptarget_versions=1.7.10 packageJar
-          ./gradlew -Ptarget_versions=1.8.9 packageJar
-          ./gradlew -Ptarget_versions=1.2.5 packageJar
+          ./gradlew -Ptarget_versions=<1.21.8> packageJar
+          ./gradlew -Ptarget_versions=<1.21.1> packageJar
+          ./gradlew -Ptarget_versions=<1.12.2> packageJar
+          ./gradlew -Ptarget_versions=<1.7.10> packageJar
+          ./gradlew -Ptarget_versions=<1.8.9> packageJar
+          ./gradlew -Ptarget_versions=<1.2.5> packageJar
+
       - name: Create release body with changelog
+        if: steps.checker.outputs.should_run == 'true'
         id: changelog
         working-directory: ./celeritas
         run: |
-          echo "Automated release triggered by new commits on the **${{ matrix.branch }}** branch." > ../body.txt
-          echo "Built from commit: https://git.taumc.org/embeddedt/celeritas/commit/${{ steps.setup.outputs.commit_hash }}" >> ../body.txt
+          echo "Automated release triggered by new commits on the **stonecutter** branch." > ../body.txt
+          echo "Built from commit: https://git.taumc.org/embeddedt/celeritas/commit/${{ steps.get_latest.outputs.commit_hash }}" >> ../body.txt
           echo "" >> ../body.txt
           echo "### Commits since last release:" >> ../body.txt
-          git log --pretty=format:"* %h - %s (%an)" ${{ steps.setup.outputs.previous_hash }}..${{ steps.setup.outputs.commit_hash }} >> ../body.txt
+          git log --pretty=format:"* %h - %s (%an)" ${{ steps.get_previous.outputs.commit_hash }}..${{ steps.get_latest.outputs.commit_hash }} >> ../body.txt
+
       - name: Create GitHub Release
-        id: create_release
+        if: steps.checker.outputs.should_run == 'true'
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ matrix.branch }}-snapshot-$(date +%Y%m%d)-${{ github.run_number }}
-          name: "Automated Snapshot for ${{ matrix.branch }} on $(date +%Y-%m-%d)"
+          tag: stonecutter-snapshot-$(date +%Y%m%d)-${{ github.run_number }}
+          name: "Automated Snapshot for stonecutter on $(date +%Y-%m-%d)"
           bodyFile: "body.txt"
           artifacts: "celeritas/build/libs/*.jar"
           prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Update hash storage file
-        run: echo "${{ steps.setup.outputs.commit_hash }}" > ./latest_commit_${{ matrix.branch }}
+        if: steps.checker.outputs.should_run == 'true'
+        run: echo "${{ steps.get_latest.outputs.commit_hash }}" > ./latest_commit_stonecutter
+
       - name: Commit and push hash file update
+        if: steps.checker.outputs.should_run == 'true'
         uses: EndBug/add-and-commit@v9
         with:
-          add: 'latest_commit_${{ matrix.branch }}'
-          message: 'CI: Update latest commit hash for ${{ matrix.branch }}'
+          add: 'latest_commit_stonecutter'
+          message: 'CI: Update latest commit hash for stonecutter'
+          # 这会自动推送到当前已检出的 Sync-Action 分支
           push: true
