@@ -27,6 +27,7 @@ jobs:
         run: |
           git pull
           echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
       - name: Get previous commit hash from storage file
         id: get_previous
         run: |
@@ -35,6 +36,7 @@ jobs:
           else
             echo "commit_hash=first-run" >> $GITHUB_OUTPUT
           fi
+
       - name: Compare hashes and decide whether to run
         id: checker
         run: |
@@ -64,16 +66,26 @@ jobs:
         continue-on-error: true
         run: |
           chmod +x gradlew
-          ./gradlew -Ptarget_versions=1.21.8 packageJar
-          ./gradlew -Ptarget_versions=1.21.1 packageJar
-          ./gradlew -Ptarget_versions=1.12.2 packageJar
-          ./gradlew -Ptarget_versions=1.7.10 packageJar
-          ./gradlew -Ptarget_versions=1.8.9 packageJar
-          ./gradlew -Ptarget_versions=1.2.5 packageJar
+          ./gradlew -Ptarget_versions=<1.21.8> packageJar
+          ./gradlew -Ptarget_versions=<1.21.1> packageJar
+          ./gradlew -Ptarget_versions=<1.12.2> packageJar
+          ./gradlew -Ptarget_versions=<1.7.10> packageJar
+          ./gradlew -Ptarget_versions=<1.8.9> packageJar
+          ./gradlew -Ptarget_versions=<1.2.5> packageJar
 
       - name: Create release body with changelog
         if: steps.checker.outputs.should_run == 'true'
         working-directory: ./celeritas
+        run: |
+          START_COMMIT="${{ steps.get_previous.outputs.commit_hash }}"
+          if [[ "$START_COMMIT" == "first-run" ]]; then
+            START_COMMIT=$(git rev-parse HEAD~1)
+          fi
+          echo "Automated release triggered by new commits on the **stonecutter** branch." > ../body.txt
+          echo "Built from commit: https://git.taumc.org/embeddedt/celeritas/commit/${{ steps.get_latest.outputs.commit_hash }}" >> ../body.txt
+          echo "" >> ../body.txt
+          echo "### Commits since last release:" >> ../body.txt
+          git log --pretty=format:"* %h - %s (%an)" $START_COMMIT..${{ steps.get_latest.outputs.commit_hash }} >> ../body.txt
 
       - name: Generate tag and release name
         if: steps.checker.outputs.should_run == 'true'
