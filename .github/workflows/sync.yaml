@@ -1,76 +1,98 @@
-name: Main Pipeline
+name: Stateful Build Pipeline
 
 on:
-  schedule:
-    - cron: '0 */12 * * *'
   workflow_dispatch:
+  schedule:
+    - cron: "0 */12 * * *"
 
 jobs:
-  sync-build-release:
-    name: Sync & Build (${{ matrix.branch }})
+  check:
+    name: Check ${{ matrix.branch }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
+    outputs:
+      should_run: ${{ steps.checker.outputs.should_run }}
     strategy:
-      fail-fast: false
       matrix:
-        include:
-          - branch: stonecutter
-            do_release: true
-          - branch: sarder-refactor
-            do_release: false
+        branch: [stonecutter, sarder-refactor]
 
     steps:
-      - name: 1. Checkout default branch to setup workspace
+      - name: Checkout 'Sync-Action' branch to read previous hash
         uses: actions/checkout@v4
-
-      - name: 2. Get remote hash BEFORE sync
-        id: get_before_hash
-        run: |
-          HASH=$(git rev-parse HEAD)
-          echo "hash=${HASH}" >> $GITHUB_OUTPUT
-
-      - name: 3. Sync '${{ matrix.branch }}' from upstream
-        uses: repo-sync/github-sync@v2
         with:
-          source_repo: "https://git.taumc.org/embeddedt/celeritas.git"
-          source_branch: ${{ matrix.branch }}
-          destination_branch: ${{ matrix.branch }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          ref: Sync-Action
 
-      - name: 4. Get remote hash AFTER sync for '${{ matrix.branch }}'
-        id: get_after_hash
+      - name: Clone upstream repository (celeritas)
+        run: git clone https://git.taumc.org/embeddedt/celeritas.git
+
+      - name: Get latest commit hash from upstream branch
+        id: get_latest
+        working-directory: ./celeritas
         run: |
-          HASH=$(git ls-remote origin ${{ matrix.branch }} | awk '{print $1}')
-          echo "hash=${HASH}" >> $GITHUB_OUTPUT
+          git checkout ${{ matrix.branch }}
+          git pull
+          echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
-      - name: 5. Compare hashes and decide to continue
-        id: check_changes
+      - name: Get previous commit hash from storage file
+        id: get_previous
+        run: |
+          echo "commit_hash=$(cat ./latest_commit_${{ matrix.branch }} || echo 'first-run')" >> $GITHUB_OUTPUT
+
+      - name: Compare hashes to see if an update is needed
+        id: checker
         run: |
           echo "Branch: ${{ matrix.branch }}"
-          echo "Before Hash: ${{ steps.get_before_hash.outputs.hash }}"
-          echo "After Hash:  ${{ steps.get_after_hash.outputs.hash }}"
-          if [ "${{ steps.get_before_hash.outputs.hash }}" == "${{ steps.get_after_hash.outputs.hash }}" ]; then
-            echo "✅ No new commits. Skipping subsequent steps."
-            echo "continue=false" >> $GITHUB_OUTPUT
+          echo "Previous Hash: ${{ steps.get_previous.outputs.commit_hash }}"
+          echo "Latest Hash:   ${{ steps.get_latest.outputs.commit_hash }}"
+          if [[ "${{ steps.get_latest.outputs.commit_hash }}" == "${{ steps.get_previous.outputs.commit_hash }}" ]]; then
+            echo "✅ No new commits."
+            echo "should_run=false" >> $GITHUB_OUTPUT
           else
-            echo "🚀 New commits detected. Proceeding to build and release."
-            echo "continue=true" >> $GITHUB_OUTPUT
+            echo "🚀 New commits detected!"
+            echo "should_run=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Fix workspace permissions after sync
-        if: steps.check_changes.outputs.continue == 'true'
-        run: sudo chown -R $USER:$USER .
+  prepare_build_matrix:
+    name: Prepare Build Matrix
+    runs-on: ubuntu-latest
+    needs: check
+    outputs:
+      matrix: ${{ steps.generate_matrix.outputs.matrix }}
+    steps:
+      - name: Generate matrix for changed branches
+        id: generate_matrix
+        run: |
+          echo "matrix={\"include\":$(echo '${{ toJSON(needs.check.outputs) }}' | jq '[to_entries[] | select(.value.should_run == "true") | {branch: .key}]')}" >> $GITHUB_OUTPUT
 
-      - name: 6. Checkout latest code of '${{ matrix.branch }}' for build
-        if: steps.check_changes.outputs.continue == 'true'
+  build-and-release:
+    name: Build & Release ${{ matrix.branch }}
+    runs-on: ubuntu-latest
+    needs: prepare_build_matrix
+    if: needs.prepare_build_matrix.outputs.matrix != '{"include":[]}'
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare_build_matrix.outputs.matrix) }}
+
+    steps:
+      - name: Checkout 'Sync-Action' branch for state update
         uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.branch }}
-      
+          ref: Sync-Action
+
+      - name: Clone upstream repository (celeritas) for build
+        run: git clone https://git.taumc.org/embeddedt/celeritas.git
+
+      - name: Setup branch and get hashes
+        id: setup
+        working-directory: ./celeritas
+        run: |
+          git checkout ${{ matrix.branch }}
+          git pull
+          echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          echo "previous_hash=$(cat ../latest_commit_${{ matrix.branch }} || git rev-parse HEAD~1)" >> $GITHUB_OUTPUT
+
       - name: Set up JDK
-        if: steps.check_changes.outputs.continue == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -79,42 +101,45 @@ jobs:
             17
             21
 
-      - name: Initialize Gradle caches
-        if: steps.check_changes.outputs.continue == 'true'
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ matrix.branch }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-${{ runner.os }}-${{ matrix.branch }}-
-
       - name: Build all packaged jars
-        if: steps.check_changes.outputs.continue == 'true'
+        working-directory: ./celeritas
         continue-on-error: true
         run: |
           chmod +x gradlew
-          ./gradlew -Ptarget_versions=<1.21.8> packageJar
-          ./gradlew -Ptarget_versions=<1.21.1> packageJar
-          ./gradlew -Ptarget_versions=<1.12.2> packageJar
-          ./gradlew -Ptarget_versions=<1.7.10> packageJar
-          ./gradlew -Ptarget_versions=<1.8.9> packageJar
-          ./gradlew -Ptarget_versions=<1.2.5> packageJar
-          echo "Build process finished."
+          ./gradlew -Ptarget_versions=1.21.8 packageJar
+          ./gradlew -Ptarget_versions=1.21.1 packageJar
+          ./gradlew -Ptarget_versions=1.12.2 packageJar
+          ./gradlew -Ptarget_versions=1.7.10 packageJar
+          ./gradlew -Ptarget_versions=1.8.9 packageJar
+          ./gradlew -Ptarget_versions=1.2.5 packageJar
+
+      - name: Create release body with changelog
+        id: changelog
+        working-directory: ./celeritas
+        run: |
+          echo "Automated release triggered by new commits on the **${{ matrix.branch }}** branch." > ../body.txt
+          echo "Built from commit: https://git.taumc.org/embeddedt/celeritas/commit/${{ steps.setup.outputs.commit_hash }}" >> ../body.txt
+          echo "" >> ../body.txt
+          echo "### Commits since last release:" >> ../body.txt
+          git log --pretty=format:"* %h - %s (%an)" ${{ steps.setup.outputs.previous_hash }}..${{ steps.setup.outputs.commit_hash }} >> ../body.txt
 
       - name: Create GitHub Release
-        if: steps.check_changes.outputs.continue == 'true' && matrix.do_release == true
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: create_release
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ matrix.branch }}-snapshot-$(date +%Y%m%d)-${{ github.run_number }}
-          release_name: "Automated Snapshot for ${{ matrix.branch }} ${{ github.run_number }}"
-          body: |
-            Automated release triggered by new commits on the **${{ matrix.branch }}** branch.
-            - **Last Commit:** `${{ steps.get_after_hash.outputs.hash }}`
-            
-            These are development builds and may be unstable.
-          files: build/libs/*.jar
+          tag: ${{ matrix.branch }}-snapshot-$(date +%Y%m%d)-${{ github.run_number }}
+          name: "Automated Snapshot for ${{ matrix.branch }} on $(date +%Y-%m-%d)"
+          bodyFile: "body.txt"
+          artifacts: "celeritas/build/libs/*.jar"
           prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update hash storage file
+        run: echo "${{ steps.setup.outputs.commit_hash }}" > ./latest_commit_${{ matrix.branch }}
+
+      - name: Commit and push hash file update
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: 'latest_commit_${{ matrix.branch }}'
+          message: 'CI: Update latest commit hash for ${{ matrix.branch }}'
+          push: true
