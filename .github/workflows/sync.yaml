@@ -14,16 +14,13 @@ jobs:
     strategy:
       matrix:
         branch: [stonecutter]
-
     steps:
       - name: Checkout 'Sync-Action' branch to read previous hash
         uses: actions/checkout@v4
         with:
           ref: Sync-Action
-
       - name: Clone upstream repository (celeritas)
         run: git clone https://git.taumc.org/embeddedt/celeritas.git
-
       - name: Get latest commit hash from upstream branch
         id: get_latest
         working-directory: ./celeritas
@@ -31,12 +28,10 @@ jobs:
           git checkout ${{ matrix.branch }}
           git pull
           echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-
       - name: Get previous commit hash from storage file
         id: get_previous
         run: |
           echo "commit_hash=$(cat ./latest_commit_${{ matrix.branch }} || echo 'first-run')" >> $GITHUB_OUTPUT
-
       - name: Compare hashes to see if an update is needed
         id: checker
         run: |
@@ -61,7 +56,8 @@ jobs:
       - name: Generate matrix for changed branches
         id: generate_matrix
         run: |
-          echo "matrix={\"include\":$(echo '${{ toJSON(needs.check.outputs) }}' | jq '[to_entries[] | select(.value.should_run == "true") | {branch: .key}]')}" >> $GITHUB_OUTPUT
+          JSON_MATRIX=$(echo '${{ toJSON(needs.check.outputs) }}' | jq '{include: [to_entries[] | select(.value.should_run == "true") | {branch: .key}]}')
+          echo "matrix=$JSON_MATRIX" >> $GITHUB_OUTPUT
 
   build-and-release:
     name: Build & Release ${{ matrix.branch }}
@@ -73,16 +69,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.prepare_build_matrix.outputs.matrix) }}
-
     steps:
       - name: Checkout 'Sync-Action' branch for state update
         uses: actions/checkout@v4
         with:
           ref: Sync-Action
-
       - name: Clone upstream repository (celeritas) for build
         run: git clone https://git.taumc.org/embeddedt/celeritas.git
-
       - name: Setup branch and get hashes
         id: setup
         working-directory: ./celeritas
@@ -91,7 +84,6 @@ jobs:
           git pull
           echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           echo "previous_hash=$(cat ../latest_commit_${{ matrix.branch }} || git rev-parse HEAD~1)" >> $GITHUB_OUTPUT
-
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -100,7 +92,6 @@ jobs:
             8
             17
             21
-
       - name: Build all packaged jars
         working-directory: ./celeritas
         continue-on-error: true
@@ -112,7 +103,6 @@ jobs:
           ./gradlew -Ptarget_versions=1.7.10 packageJar
           ./gradlew -Ptarget_versions=1.8.9 packageJar
           ./gradlew -Ptarget_versions=1.2.5 packageJar
-
       - name: Create release body with changelog
         id: changelog
         working-directory: ./celeritas
@@ -122,7 +112,6 @@ jobs:
           echo "" >> ../body.txt
           echo "### Commits since last release:" >> ../body.txt
           git log --pretty=format:"* %h - %s (%an)" ${{ steps.setup.outputs.previous_hash }}..${{ steps.setup.outputs.commit_hash }} >> ../body.txt
-
       - name: Create GitHub Release
         id: create_release
         uses: ncipollo/release-action@v1
@@ -133,10 +122,8 @@ jobs:
           artifacts: "celeritas/build/libs/*.jar"
           prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Update hash storage file
         run: echo "${{ steps.setup.outputs.commit_hash }}" > ./latest_commit_${{ matrix.branch }}
-
       - name: Commit and push hash file update
         uses: EndBug/add-and-commit@v9
         with:
