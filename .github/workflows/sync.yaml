@@ -48,6 +48,18 @@ jobs:
             echo "should_run=true" >> $GITHUB_OUTPUT
           fi
 
+      - name: Force sync upstream to mirror's 'stonecutter' branch
+        if: steps.checker.outputs.should_run == 'true'
+        run: |
+          echo "Syncing remote upstream to local mirror..."
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://github-actions:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          
+          git fetch https://git.taumc.org/embeddedt/celeritas.git stonecutter
+          
+          git push --force origin FETCH_HEAD:refs/heads/stonecutter
+
       - name: Set up JDK
         if: steps.checker.outputs.should_run == 'true'
         uses: actions/setup-java@v4
