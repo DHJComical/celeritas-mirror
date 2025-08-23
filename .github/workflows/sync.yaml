@@ -25,7 +25,6 @@ jobs:
         id: get_latest
         working-directory: ./celeritas
         run: |
-          # 我们只关心 stonecutter 分支
           git checkout stonecutter
           git pull
           echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
@@ -48,7 +47,6 @@ jobs:
             echo "should_run=true" >> $GITHUB_OUTPUT
           fi
 
-
       - name: Set up JDK
         if: steps.checker.outputs.should_run == 'true'
         uses: actions/setup-java@v4
@@ -65,23 +63,31 @@ jobs:
         continue-on-error: true
         run: |
           chmod +x gradlew
-          ./gradlew -Ptarget_versions=<1.21.8> packageJar
-          ./gradlew -Ptarget_versions=<1.21.1> packageJar
-          ./gradlew -Ptarget_versions=<1.12.2> packageJar
-          ./gradlew -Ptarget_versions=<1.7.10> packageJar
-          ./gradlew -Ptarget_versions=<1.8.9> packageJar
-          ./gradlew -Ptarget_versions=<1.2.5> packageJar
+          ./gradlew -Ptarget_versions=1.21.8 packageJar
+          ./gradlew -Ptarget_versions=1.21.1 packageJar
+          ./gradlew -Ptarget_versions=1.12.2 packageJar
+          ./gradlew -Ptarget_versions=1.7.10 packageJar
+          ./gradlew -Ptarget_versions=1.8.9 packageJar
+          ./gradlew -Ptarget_versions=1.2.5 packageJar
 
       - name: Create release body with changelog
         if: steps.checker.outputs.should_run == 'true'
         id: changelog
         working-directory: ./celeritas
         run: |
+          START_COMMIT="${{ steps.get_previous.outputs.commit_hash }}"
+          
+          if [[ "$START_COMMIT" == "first-run" ]]; then
+            echo "First run detected. Generating changelog from HEAD~1."
+            START_COMMIT=$(git rev-parse HEAD~1)
+          fi
+          
           echo "Automated release triggered by new commits on the **stonecutter** branch." > ../body.txt
           echo "Built from commit: https://git.taumc.org/embeddedt/celeritas/commit/${{ steps.get_latest.outputs.commit_hash }}" >> ../body.txt
           echo "" >> ../body.txt
           echo "### Commits since last release:" >> ../body.txt
-          git log --pretty=format:"* %h - %s (%an)" ${{ steps.get_previous.outputs.commit_hash }}..${{ steps.get_latest.outputs.commit_hash }} >> ../body.txt
+          
+          git log --pretty=format:"* %h - %s (%an)" $START_COMMIT..${{ steps.get_latest.outputs.commit_hash }} >> ../body.txt
 
       - name: Create GitHub Release
         if: steps.checker.outputs.should_run == 'true'
@@ -104,5 +110,4 @@ jobs:
         with:
           add: 'latest_commit_stonecutter'
           message: 'CI: Update latest commit hash for stonecutter'
-          # 这会自动推送到当前已检出的 Sync-Action 分支
           push: true
