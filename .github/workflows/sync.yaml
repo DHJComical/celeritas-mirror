@@ -1,4 +1,4 @@
-name: Stateful Build Pipeline (Final Production Version)
+name: Stateful Build Pipeline
 
 on:
   workflow_dispatch:
@@ -87,14 +87,23 @@ jobs:
           echo "### Commits since last release:" >> ../body.txt
           git log --pretty=format:"* %h - %s (%an)" $START_COMMIT..${{ steps.get_latest.outputs.commit_hash }} >> ../body.txt
 
+      - name: Generate tag and release name
+        if: steps.checker.outputs.should_run == 'true'
+        id: generate_release_info
+        run: |
+          TAG_NAME="stonecutter-snapshot-$(date +%Y%m%d)-${{ github.run_number }}"
+          RELEASE_NAME="Automated Snapshot: ${TAG_NAME}"
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+          echo "release_name=${RELEASE_NAME}" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         if: steps.checker.outputs.should_run == 'true'
         uses: ncipollo/release-action@v1
         with:
-          tag: stonecutter-snapshot-$(date +%Y%m%d)-${{ github.run_number }}
-          name: "Automated Snapshot for stonecutter on $(date +%Y-%m-%d)"
+          tag: ${{ steps.generate_release_info.outputs.tag_name }}
+          name: ${{ steps.generate_release_info.outputs.release_name }}
           bodyFile: "body.txt"
-          artifacts: "celeritas/build/libs/*.jar" # artifacts 路径指向子目录
+          artifacts: "celeritas/build/libs/*.jar"
           prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -107,9 +116,7 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
           git add ./latest_commit_stonecutter
-          
           if [[ -z $(git status --porcelain) ]]; then
             echo "No changes to commit. The hash file is already up-to-date."
           else
