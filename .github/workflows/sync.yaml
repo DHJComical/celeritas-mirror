@@ -66,12 +66,12 @@ jobs:
         continue-on-error: true
         run: |
           chmod +x gradlew
-          ./gradlew -Ptarget_versions=<1.21.8> packageJar
-          ./gradlew -Ptarget_versions=<1.21.1> packageJar
-          ./gradlew -Ptarget_versions=<1.12.2> packageJar
-          ./gradlew -Ptarget_versions=<1.7.10> packageJar
-          ./gradlew -Ptarget_versions=<1.8.9> packageJar
-          ./gradlew -Ptarget_versions=<1.2.5> packageJar
+          ./gradlew -Ptarget_versions=1.21.8 packageJar
+          ./gradlew -Ptarget_versions=1.21.1 packageJar
+          ./gradlew -Ptarget_versions=1.12.2 packageJar
+          ./gradlew -Ptarget_versions=1.7.10 packageJar
+          ./gradlew -Ptarget_versions=1.8.9 packageJar
+          ./gradlew -Ptarget_versions=1.2.5 packageJar
 
       - name: Create release body with changelog
         if: steps.checker.outputs.should_run == 'true'
