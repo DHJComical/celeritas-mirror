@@ -13,7 +13,7 @@ jobs:
       should_run: ${{ steps.checker.outputs.should_run }}
     strategy:
       matrix:
-        branch: [stonecutter, sarder-refactor]
+        branch: [stonecutter]
 
     steps:
       - name: Checkout 'Sync-Action' branch to read previous hash
