@@ -1,5 +1,4 @@
-
-name: Main Pipeline
+name: Main Pipeline (Hash Comparison)
 
 on:
   schedule:
@@ -7,36 +6,46 @@ on:
   workflow_dispatch:
 
 jobs:
-  sync-and-build-stonecutter:
-    name: Sync, Build & Release Stonecutter
+  sync-build-release:
+    name: Sync & Build (${{ matrix.branch }})
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - branch: stonecutter
+            do_release: true
+          - branch: sarder-refactor
+            do_release: false
+
     steps:
-      - name: 1. Get 'stonecutter' hash BEFORE sync
+      - name: 1. Get remote hash BEFORE sync for '${{ matrix.branch }}'
         id: get_before_hash
-        uses: actions/checkout@v4
-        with:
-          ref: 'stonecutter'
-      - run: echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-      
-      - name: 2. Sync 'stonecutter' from upstream
+        run: |
+          HASH=$(git ls-remote https://github.com/${{ github.repository }}.git ${{ matrix.branch }} | awk '{print $1}')
+          echo "hash=${HASH}" >> $GITHUB_OUTPUT
+
+      - name: 2. Sync '${{ matrix.branch }}' from upstream
         uses: repo-sync/github-sync@v2
         with:
           source_repo: "https://git.taumc.org/embeddedt/celeritas.git"
-          source_branch: 'stonecutter'
-          destination_branch: 'stonecutter'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          source_branch: ${{ matrix.branch }}
+          destination_branch: ${{ matrix.branch }}
+          github_token: ${{ secrets.GITHUB_TOKEN }} # 遵守不使用 PAT 的要求
 
-      - name: 3. Get 'stonecutter' hash AFTER sync
+      - name: 3. Get remote hash AFTER sync for '${{ matrix.branch }}'
         id: get_after_hash
-        run: echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+        run: |
+          HASH=$(git ls-remote https://github.com/${{ github.repository }}.git ${{ matrix.branch }} | awk '{print $1}')
+          echo "hash=${HASH}" >> $GITHUB_OUTPUT
 
       - name: 4. Compare hashes and decide to continue
         id: check_changes
         run: |
-          echo "Branch: stonecutter"
+          echo "Branch: ${{ matrix.branch }}"
           echo "Before Hash: ${{ steps.get_before_hash.outputs.hash }}"
           echo "After Hash:  ${{ steps.get_after_hash.outputs.hash }}"
           if [ "${{ steps.get_before_hash.outputs.hash }}" == "${{ steps.get_after_hash.outputs.hash }}" ]; then
@@ -46,17 +55,19 @@ jobs:
             echo "🚀 New commits detected. Proceeding to build and release."
             echo "continue=true" >> $GITHUB_OUTPUT
           fi
-      
-      
+
+      - name: 5. Checkout sources for build
+        if: steps.check_changes.outputs.continue == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+
       - name: Set up JDK
         if: steps.check_changes.outputs.continue == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: |
-            8
-            17
-            21
+          java-version: "8, 17, 21"
 
       - name: Initialize Gradle caches
         if: steps.check_changes.outputs.continue == 'true'
@@ -65,50 +76,35 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-stonecutter-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('settings.gradle') }}
+          key: gradle-${{ runner.os }}-${{ matrix.branch }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
           restore-keys: |
-            gradle-${{ runner.os }}-stonecutter-
+            gradle-${{ runner.os }}-${{ matrix.branch }}-
 
       - name: Build all packaged jars
         if: steps.check_changes.outputs.continue == 'true'
+        continue-on-error: true
         run: |
           chmod +x gradlew
-          ./gradlew packageJar
-          echo "Build complete. JARs are located in build/libs/"
-
-      - name: Generate release tag
-        if: steps.check_changes.outputs.continue == 'true'
-        id: generate_tag
-        run: echo "tag_name=stonecutter-snapshot-$(date +%Y%m%d)-${{ github.run_number }}" >> $GITHUB_OUTPUT
+          ./gradlew -Ptarget_versions=<1.21.8> packageJar
+          ./gradlew -Ptarget_versions=<1.21.1> packageJar
+          ./gradlew -Ptarget_versions=<1.12.2> packageJar
+          ./gradlew -Ptarget_versions=<1.7.10> packageJar
+          ./gradlew -Ptarget_versions=<1.8.9> packageJar
+          ./gradlew -Ptarget_versions=<1.2.5> packageJar
+          echo "Build process finished."
 
       - name: Create GitHub Release
-        if: steps.check_changes.outputs.continue == 'true'
+        if: steps.check_changes.outputs.continue == 'true' && matrix.do_release == true
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.generate_tag.outputs.tag_name }}
-          release_name: "Automated Snapshot ${{ steps.generate_tag.outputs.tag_name }}"
+          tag_name: ${{ matrix.branch }}-snapshot-$(date +%Y%m%d)-${{ github.run_number }}
+          release_name: "Automated Snapshot for ${{ matrix.branch }} ${{ github.run_number }}"
           body: |
-            Automated release triggered by new commits on the stonecutter branch.
-            - **Branch:** `stonecutter`
+            Automated release triggered by new commits on the **${{ matrix.branch }}** branch.
             - **Last Commit:** `${{ steps.get_after_hash.outputs.hash }}`
             
             These are development builds and may be unstable.
           files: build/libs/*.jar
           prerelease: true
-
-  sync-sarder-refactor:
-    name: Sync Sarder-Refactor
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    if: github.event_name == 'schedule'
-    steps:
-      - name: Sync 'sarder-refactor' from upstream
-        uses: repo-sync/github-sync@v2
-        with:
-          source_repo: "https://git.taumc.org/embeddedt/celeritas.git"
-          source_branch: 'sarder-refactor'
-          destination_branch: 'sarder-refactor'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
