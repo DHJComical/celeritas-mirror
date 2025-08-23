@@ -27,7 +27,6 @@ jobs:
         run: |
           git pull
           echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-
       - name: Get previous commit hash from storage file
         id: get_previous
         run: |
@@ -36,7 +35,6 @@ jobs:
           else
             echo "commit_hash=first-run" >> $GITHUB_OUTPUT
           fi
-
       - name: Compare hashes and decide whether to run
         id: checker
         run: |
@@ -76,16 +74,6 @@ jobs:
       - name: Create release body with changelog
         if: steps.checker.outputs.should_run == 'true'
         working-directory: ./celeritas
-        run: |
-          START_COMMIT="${{ steps.get_previous.outputs.commit_hash }}"
-          if [[ "$START_COMMIT" == "first-run" ]]; then
-            START_COMMIT=$(git rev-parse HEAD~1)
-          fi
-          echo "Automated release triggered by new commits on the **stonecutter** branch." > ../body.txt
-          echo "Built from commit: https://git.taumc.org/embeddedt/celeritas/commit/${{ steps.get_latest.outputs.commit_hash }}" >> ../body.txt
-          echo "" >> ../body.txt
-          echo "### Commits since last release:" >> ../body.txt
-          git log --pretty=format:"* %h - %s (%an)" $START_COMMIT..${{ steps.get_latest.outputs.commit_hash }} >> ../body.txt
 
       - name: Generate tag and release name
         if: steps.checker.outputs.should_run == 'true'
@@ -96,6 +84,12 @@ jobs:
           echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
           echo "release_name=${RELEASE_NAME}" >> $GITHUB_OUTPUT
 
+      - name: List build artifacts in main build/libs for debugging
+        if: steps.checker.outputs.should_run == 'true'
+        run: |
+          echo "Listing contents of ./celeritas/build/libs/ ..."
+          ls -l ./celeritas/build/libs/
+
       - name: Create GitHub Release
         if: steps.checker.outputs.should_run == 'true'
         uses: ncipollo/release-action@v1
@@ -104,7 +98,7 @@ jobs:
           name: ${{ steps.generate_release_info.outputs.release_name }}
           bodyFile: "body.txt"
           artifacts: "celeritas/build/libs/*.jar"
-          prerelease: true
+          prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update hash storage file
