@@ -22,12 +22,9 @@ jobs:
             do_release: false
 
     steps:
-      - name: Force fix workspace permissions
-        run: sudo chown -R $USER:$USER .
-
       - name: 1. Checkout default branch to setup workspace
         uses: actions/checkout@v4
-        
+
       - name: 2. Get remote hash BEFORE sync
         id: get_before_hash
         run: |
@@ -42,11 +39,10 @@ jobs:
           destination_branch: ${{ matrix.branch }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 4. Get remote hash AFTER sync
+      - name: 4. Get remote hash AFTER sync for '${{ matrix.branch }}'
         id: get_after_hash
         run: |
-          git fetch origin ${{ matrix.branch }}
-          HASH=$(git rev-parse origin/${{ matrix.branch }})
+          HASH=$(git ls-remote origin ${{ matrix.branch }} | awk '{print $1}')
           echo "hash=${HASH}" >> $GITHUB_OUTPUT
 
       - name: 5. Compare hashes and decide to continue
@@ -56,14 +52,18 @@ jobs:
           echo "Before Hash: ${{ steps.get_before_hash.outputs.hash }}"
           echo "After Hash:  ${{ steps.get_after_hash.outputs.hash }}"
           if [ "${{ steps.get_before_hash.outputs.hash }}" == "${{ steps.get_after_hash.outputs.hash }}" ]; then
-            echo "✅ No new commits. Skipping build and release."
+            echo "✅ No new commits. Skipping subsequent steps."
             echo "continue=false" >> $GITHUB_OUTPUT
           else
             echo "🚀 New commits detected. Proceeding to build and release."
             echo "continue=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: 6. Checkout latest code for build
+      - name: Fix workspace permissions after sync
+        if: steps.check_changes.outputs.continue == 'true'
+        run: sudo chown -R $USER:$USER .
+
+      - name: 6. Checkout latest code of '${{ matrix.branch }}' for build
         if: steps.check_changes.outputs.continue == 'true'
         uses: actions/checkout@v4
         with:
