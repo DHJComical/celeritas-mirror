@@ -1,4 +1,4 @@
-name: Stateful Build Pipeline (Simple Single Job)
+name: Stateful Build Pipeline (Final Production Version)
 
 on:
   workflow_dispatch:
@@ -18,21 +18,24 @@ jobs:
         with:
           ref: Sync-Action
 
-      - name: Clone upstream repository (celeritas)
-        run: git clone https://git.taumc.org/embeddedt/celeritas.git
+      - name: Clone upstream 'stonecutter' branch into a sub-directory
+        run: git clone --branch stonecutter https://git.taumc.org/embeddedt/celeritas.git ./celeritas
 
       - name: Get latest commit hash from upstream
         id: get_latest
         working-directory: ./celeritas
         run: |
-          git checkout stonecutter
           git pull
           echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Get previous commit hash from storage file
         id: get_previous
         run: |
-          echo "commit_hash=$(cat ./latest_commit_stonecutter || echo 'first-run')" >> $GITHUB_OUTPUT
+          if [[ -f ./latest_commit_stonecutter ]]; then
+            echo "commit_hash=$(cat ./latest_commit_stonecutter)" >> $GITHUB_OUTPUT
+          else
+            echo "commit_hash=first-run" >> $GITHUB_OUTPUT
+          fi
 
       - name: Compare hashes and decide whether to run
         id: checker
@@ -72,21 +75,16 @@ jobs:
 
       - name: Create release body with changelog
         if: steps.checker.outputs.should_run == 'true'
-        id: changelog
         working-directory: ./celeritas
         run: |
           START_COMMIT="${{ steps.get_previous.outputs.commit_hash }}"
-          
           if [[ "$START_COMMIT" == "first-run" ]]; then
-            echo "First run detected. Generating changelog from HEAD~1."
             START_COMMIT=$(git rev-parse HEAD~1)
           fi
-          
           echo "Automated release triggered by new commits on the **stonecutter** branch." > ../body.txt
           echo "Built from commit: https://git.taumc.org/embeddedt/celeritas/commit/${{ steps.get_latest.outputs.commit_hash }}" >> ../body.txt
           echo "" >> ../body.txt
           echo "### Commits since last release:" >> ../body.txt
-          
           git log --pretty=format:"* %h - %s (%an)" $START_COMMIT..${{ steps.get_latest.outputs.commit_hash }} >> ../body.txt
 
       - name: Create GitHub Release
@@ -96,7 +94,7 @@ jobs:
           tag: stonecutter-snapshot-$(date +%Y%m%d)-${{ github.run_number }}
           name: "Automated Snapshot for stonecutter on $(date +%Y-%m-%d)"
           bodyFile: "body.txt"
-          artifacts: "celeritas/build/libs/*.jar"
+          artifacts: "celeritas/build/libs/*.jar" # artifacts 路径指向子目录
           prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -104,10 +102,18 @@ jobs:
         if: steps.checker.outputs.should_run == 'true'
         run: echo "${{ steps.get_latest.outputs.commit_hash }}" > ./latest_commit_stonecutter
 
-      - name: Commit and push hash file update
+      - name: Commit and push hash file update to 'Sync-Action' branch
         if: steps.checker.outputs.should_run == 'true'
-        uses: EndBug/add-and-commit@v9
-        with:
-          add: 'latest_commit_stonecutter'
-          message: 'CI: Update latest commit hash for stonecutter'
-          push: true
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          git add ./latest_commit_stonecutter
+          
+          if [[ -z $(git status --porcelain) ]]; then
+            echo "No changes to commit. The hash file is already up-to-date."
+          else
+            echo "Changes detected. Committing and pushing to Sync-Action branch..."
+            git commit -m "CI: Update latest commit hash for stonecutter"
+            git push origin Sync-Action
+          fi
