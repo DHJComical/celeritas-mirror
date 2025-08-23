@@ -22,9 +22,10 @@ jobs:
             do_release: false
 
     steps:
-      - name: 1. Checkout repository to setup workspace
+      - name: 1. Checkout default branch to setup workspace
         uses: actions/checkout@v4
-
+        with:
+          clean: false
       - name: 2. Get remote hash BEFORE sync
         id: get_before_hash
         run: |
