@@ -122,6 +122,8 @@ public class CeleritasVideoOptionsController implements Renderable {
         for (OptionStorage<?> storage : dirtyStorages) {
             storage.save(flags);
         }
+
+        applyFlagSideEffects(Collections.unmodifiableSet(flags));
     }
 
     protected void applyFlagSideEffects(Set<OptionFlag> flags) {
