@@ -5,9 +5,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.asm.AnnotationProcessingEngine;
 import org.embeddedt.embeddium.impl.asm.ClientLevelLambdaRemover;
-import org.embeddedt.embeddium.impl.config.ConfigMigrator;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.embeddedt.embeddium.impl.util.MixinClassValidator;
+import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -38,7 +38,7 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
         if (!hasLoaded) {
             hasLoaded = true;
             try {
-                config = MixinConfig.load(ConfigMigrator.handleConfigMigration("embeddium-mixins.properties").toFile());
+                config = MixinConfig.load(PlatformUtil.getConfigDir().resolve("embeddium-mixins.properties").toFile());
             } catch (Exception e) {
                 throw new RuntimeException("Could not load configuration file for " + MODNAME, e);
             }
