@@ -95,7 +95,13 @@ public class VintageDrawContext implements DrawContext {
 
     @Override
     public int drawString(TextComponent str, int x, int y, int color, boolean shadow) {
-        return font.drawString(compile(str).getFormattedText(), x, y, color, shadow);
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(
+                GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO
+        );
+        int len = font.drawString(compile(str).getFormattedText(), x, y, color, shadow);
+        GlStateManager.disableBlend();
+        return len;
     }
 
     @Override
