@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.api.eventbus;
+package org.taumc.celeritas.api.eventbus;
 
 /**
  * The base class which all Embeddium-posted events are derived from.

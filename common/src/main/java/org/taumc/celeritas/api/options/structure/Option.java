@@ -1,7 +1,7 @@
-package org.embeddedt.embeddium.api.options.structure;
+package org.taumc.celeritas.api.options.structure;
 
-import org.embeddedt.embeddium.api.options.control.Control;
-import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.taumc.celeritas.api.options.control.Control;
+import org.taumc.celeritas.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.jetbrains.annotations.Nullable;
 

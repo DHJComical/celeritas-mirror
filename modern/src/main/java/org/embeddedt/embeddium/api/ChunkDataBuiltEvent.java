@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.api;
 
-import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
-import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;
+import org.taumc.celeritas.api.eventbus.EmbeddiumEvent;
+import org.taumc.celeritas.api.eventbus.EventHandlerRegistrar;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
 
 /**

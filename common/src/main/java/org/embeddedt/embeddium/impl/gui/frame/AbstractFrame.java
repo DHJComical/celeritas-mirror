@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.gui.frame;
 
-import org.embeddedt.embeddium.api.options.control.ControlElement;
+import org.taumc.celeritas.api.options.control.ControlElement;
 import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
 import org.embeddedt.embeddium.impl.gui.framework.Interactable;
 import org.embeddedt.embeddium.impl.gui.framework.InteractableContainer;

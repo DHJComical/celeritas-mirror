@@ -1,9 +1,9 @@
-package org.embeddedt.embeddium.api;
+package org.taumc.celeritas.api;
 
-import org.embeddedt.embeddium.api.options.structure.Option;
-import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
-import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;
-import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.taumc.celeritas.api.options.structure.Option;
+import org.taumc.celeritas.api.eventbus.EmbeddiumEvent;
+import org.taumc.celeritas.api.eventbus.EventHandlerRegistrar;
+import org.taumc.celeritas.api.options.OptionIdentifier;
 
 import java.util.List;
 

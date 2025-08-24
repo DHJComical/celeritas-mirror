@@ -3,8 +3,8 @@ package org.taumc.celeritas.impl.gui;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
-import org.embeddedt.embeddium.api.options.structure.OptionFlag;
-import org.embeddedt.embeddium.api.options.structure.OptionStorage;
+import org.taumc.celeritas.api.options.structure.OptionFlag;
+import org.taumc.celeritas.api.options.structure.OptionStorage;
 import org.taumc.celeritas.CeleritasVintage;
 
 public class MinecraftOptionsStorage implements OptionStorage<GameSettings> {

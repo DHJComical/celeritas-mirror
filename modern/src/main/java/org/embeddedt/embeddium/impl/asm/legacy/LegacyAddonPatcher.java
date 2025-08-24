@@ -57,11 +57,11 @@ public class LegacyAddonPatcher {
         }
 
         private static final ImmutableMap<Predicate<String>, Function<String, String>> MAPPINGS = ImmutableMap.<Predicate<String>, Function<String, String>>builder()
-                .put(prefixReplacement("me/jellysquid/mods/sodium/client/gui/options/binding/", "org/embeddedt/embeddium/api/options/binding/"))
-                .put(prefixReplacement("me/jellysquid/mods/sodium/client/gui/options/control/", "org/embeddedt/embeddium/api/options/control/"))
-                .put(exactReplacement("me/jellysquid/mods/sodium/client/gui/options/storage/OptionStorage", "org/embeddedt/embeddium/api/options/structure/OptionStorage"))
-                .put(exactReplacement("org/embeddedt/embeddium/client/gui/options/OptionIdentifier", "org/embeddedt/embeddium/api/options/OptionIdentifier"))
-                .put(prefixReplacement("me/jellysquid/mods/sodium/client/gui/options/", "org/embeddedt/embeddium/api/options/structure/"))
+                .put(prefixReplacement("me/jellysquid/mods/sodium/client/gui/options/binding/", "org/taumc/celeritas/api/options/binding/"))
+                .put(prefixReplacement("me/jellysquid/mods/sodium/client/gui/options/control/", "org/taumc/celeritas/api/options/control/"))
+                .put(exactReplacement("me/jellysquid/mods/sodium/client/gui/options/storage/OptionStorage", "org/taumc/celeritas/api/options/structure/OptionStorage"))
+                .put(exactReplacement("org/embeddedt/embeddium/client/gui/options/OptionIdentifier", "org/taumc/celeritas/api/options/OptionIdentifier"))
+                .put(prefixReplacement("me/jellysquid/mods/sodium/client/gui/options/", "org/taumc/celeritas/api/options/structure/"))
                 .build();
 
         @Override

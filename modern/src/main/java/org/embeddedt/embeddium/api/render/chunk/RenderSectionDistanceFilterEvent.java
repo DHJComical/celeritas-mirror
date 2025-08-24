@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.api.render.chunk;
 
-import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
-import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;
+import org.taumc.celeritas.api.eventbus.EmbeddiumEvent;
+import org.taumc.celeritas.api.eventbus.EventHandlerRegistrar;
 
 /**
  * Fired to allow mods to adjust the function used for culling sections outside of render distance.

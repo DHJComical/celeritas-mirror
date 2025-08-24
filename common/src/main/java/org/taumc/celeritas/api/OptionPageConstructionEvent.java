@@ -1,11 +1,11 @@
-package org.embeddedt.embeddium.api;
+package org.taumc.celeritas.api;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.embeddedt.embeddium.api.options.structure.OptionGroup;
-import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
-import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;
-import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.taumc.celeritas.api.options.structure.OptionGroup;
+import org.taumc.celeritas.api.eventbus.EmbeddiumEvent;
+import org.taumc.celeritas.api.eventbus.EventHandlerRegistrar;
+import org.taumc.celeritas.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 
 import java.util.ArrayList;

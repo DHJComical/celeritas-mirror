@@ -2,8 +2,8 @@ package org.embeddedt.embeddium.api;
 
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.Level;
-import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
-import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;
+import org.taumc.celeritas.api.eventbus.EmbeddiumEvent;
+import org.taumc.celeritas.api.eventbus.EventHandlerRegistrar;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.ArrayList;

@@ -14,7 +14,6 @@ import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
 import org.embeddedt.embeddium.api.options.control.CyclingControl;
 import org.embeddedt.embeddium.api.options.control.SliderControl;
 import org.embeddedt.embeddium.api.options.control.TickBoxControl;
-import org.embeddedt.embeddium.api.options.structure.*;
 import org.embeddedt.embeddium.impl.gui.modern.SodiumGameOptionPages;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 

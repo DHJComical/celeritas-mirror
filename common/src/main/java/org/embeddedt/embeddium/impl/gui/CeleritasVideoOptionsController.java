@@ -1,11 +1,11 @@
 package org.embeddedt.embeddium.impl.gui;
 
 import lombok.Getter;
-import org.embeddedt.embeddium.api.OptionGUIConstructionEvent;
-import org.embeddedt.embeddium.api.options.structure.Option;
-import org.embeddedt.embeddium.api.options.structure.OptionFlag;
-import org.embeddedt.embeddium.api.options.structure.OptionPage;
-import org.embeddedt.embeddium.api.options.structure.OptionStorage;
+import org.taumc.celeritas.api.OptionGUIConstructionEvent;
+import org.taumc.celeritas.api.options.structure.Option;
+import org.taumc.celeritas.api.options.structure.OptionFlag;
+import org.taumc.celeritas.api.options.structure.OptionPage;
+import org.taumc.celeritas.api.options.structure.OptionStorage;
 import org.embeddedt.embeddium.impl.gui.frame.AbstractFrame;
 import org.embeddedt.embeddium.impl.gui.frame.BasicFrame;
 import org.embeddedt.embeddium.impl.gui.frame.tab.Tab;

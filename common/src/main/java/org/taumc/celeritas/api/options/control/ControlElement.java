@@ -1,6 +1,6 @@
-package org.embeddedt.embeddium.api.options.control;
+package org.taumc.celeritas.api.options.control;
 
-import org.embeddedt.embeddium.api.options.structure.Option;
+import org.taumc.celeritas.api.options.structure.Option;
 import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;

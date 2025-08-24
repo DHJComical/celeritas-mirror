@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.api.options;
+package org.taumc.celeritas.api.options;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.jetbrains.annotations.Nullable;

@@ -7,7 +7,7 @@ import com.google.gson.annotations.SerializedName;
 import com.google.gson.JsonSyntaxException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.embeddedt.embeddium.api.options.structure.OptionStorage;
+import org.taumc.celeritas.api.options.structure.OptionStorage;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.gui.options.TextProvider;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;

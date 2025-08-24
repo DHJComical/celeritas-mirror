@@ -1,7 +1,7 @@
-package org.embeddedt.embeddium.api.options.structure;
+package org.taumc.celeritas.api.options.structure;
 
-import org.embeddedt.embeddium.api.OptionGroupConstructionEvent;
-import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.taumc.celeritas.api.OptionGroupConstructionEvent;
+import org.taumc.celeritas.api.options.OptionIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;

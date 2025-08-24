@@ -7,29 +7,26 @@ import com.mojang.blaze3d.platform.Window;
 import net.minecraftforge.common.ForgeConfig;
 //? if <1.19
 /*import net.minecraft.client.Option;*/
-import org.embeddedt.embeddium.api.options.structure.*;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.compat.modernui.MuiGuiScaleHook;
 //? if >=1.18
 import org.embeddedt.embeddium.impl.compatibility.workarounds.Workarounds;
 import org.embeddedt.embeddium.impl.gl.arena.staging.MappedStagingBuffer;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
-import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
-import org.embeddedt.embeddium.api.options.control.CyclingControl;
-import org.embeddedt.embeddium.api.options.control.SliderControl;
-import org.embeddedt.embeddium.api.options.control.TickBoxControl;
+import org.taumc.celeritas.api.options.control.ControlValueFormatter;
+import org.taumc.celeritas.api.options.control.CyclingControl;
+import org.taumc.celeritas.api.options.control.SliderControl;
+import org.taumc.celeritas.api.options.control.TickBoxControl;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
 import org.embeddedt.embeddium.impl.gui.options.CommonOptionPages;
-import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import net.minecraft.client.*;
 //? if >=1.21.2
 /*import net.minecraft.server.level.ParticleStatus;*/
-import org.embeddedt.embeddium.impl.render.ShaderModBridge;
-import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
+import org.taumc.celeritas.api.options.structure.*;
 
 import java.util.ArrayList;
 import java.util.List;

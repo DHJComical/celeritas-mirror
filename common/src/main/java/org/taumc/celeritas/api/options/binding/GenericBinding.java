@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.api.options.binding;
+package org.taumc.celeritas.api.options.binding;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;

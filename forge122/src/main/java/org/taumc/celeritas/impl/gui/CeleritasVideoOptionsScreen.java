@@ -2,8 +2,8 @@ package org.taumc.celeritas.impl.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import org.embeddedt.embeddium.api.options.OptionIdentifier;
-import org.embeddedt.embeddium.api.options.structure.OptionFlag;
+import org.taumc.celeritas.api.options.OptionIdentifier;
+import org.taumc.celeritas.api.options.structure.OptionFlag;
 import org.embeddedt.embeddium.impl.gui.CeleritasVideoOptionsController;
 import org.embeddedt.embeddium.impl.gui.frame.tab.Tab;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;

@@ -1,7 +1,7 @@
 package org.taumc.celeritas.impl.gui;
 
 import net.minecraft.client.settings.GameSettings;
-import org.embeddedt.embeddium.api.options.binding.OptionBinding;
+import org.taumc.celeritas.api.options.binding.OptionBinding;
 
 public class VanillaBooleanOptionBinding implements OptionBinding<GameSettings, Boolean> {
     private final GameSettings.Options option;

@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.gui.modern;
 
-import org.embeddedt.embeddium.api.options.binding.OptionBinding;
+import org.taumc.celeritas.api.options.binding.OptionBinding;
 import net.minecraft.client.Options;
 
 //? if >=1.19 {

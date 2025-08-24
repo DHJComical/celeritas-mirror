@@ -1,12 +1,12 @@
 package org.embeddedt.embeddium.impl.gui.frame.tab;
 
 import lombok.Builder;
-import org.embeddedt.embeddium.api.options.structure.Option;
-import org.embeddedt.embeddium.api.options.structure.OptionPage;
+import org.taumc.celeritas.api.options.structure.Option;
+import org.taumc.celeritas.api.options.structure.OptionPage;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.taumc.celeritas.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.frame.AbstractFrame;
 import org.embeddedt.embeddium.impl.gui.frame.OptionPageFrame;
 import org.embeddedt.embeddium.impl.gui.frame.ScrollableFrame;

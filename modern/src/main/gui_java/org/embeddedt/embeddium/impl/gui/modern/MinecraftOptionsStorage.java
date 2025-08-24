@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.gui.modern;
 
-import org.embeddedt.embeddium.api.options.structure.OptionFlag;
-import org.embeddedt.embeddium.api.options.structure.OptionStorage;
+import org.taumc.celeritas.api.options.structure.OptionFlag;
+import org.taumc.celeritas.api.options.structure.OptionStorage;
 import org.embeddedt.embeddium.impl.Celeritas;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;

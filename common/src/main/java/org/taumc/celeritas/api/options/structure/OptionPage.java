@@ -1,7 +1,7 @@
-package org.embeddedt.embeddium.api.options.structure;
+package org.taumc.celeritas.api.options.structure;
 
-import org.embeddedt.embeddium.api.OptionPageConstructionEvent;
-import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.taumc.celeritas.api.OptionPageConstructionEvent;
+import org.taumc.celeritas.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 
 import java.util.List;

@@ -1,8 +1,8 @@
 package org.embeddedt.embeddium.api.render.clouds;
 
 import net.minecraft.client.Options;
-import org.embeddedt.embeddium.api.eventbus.EmbeddiumEvent;
-import org.embeddedt.embeddium.api.eventbus.EventHandlerRegistrar;
+import org.taumc.celeritas.api.eventbus.EmbeddiumEvent;
+import org.taumc.celeritas.api.eventbus.EventHandlerRegistrar;
 import org.jetbrains.annotations.ApiStatus;
 
 /**

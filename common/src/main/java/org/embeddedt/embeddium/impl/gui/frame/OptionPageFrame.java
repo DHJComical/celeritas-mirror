@@ -1,16 +1,16 @@
 package org.embeddedt.embeddium.impl.gui.frame;
 
-import org.embeddedt.embeddium.api.options.structure.Option;
-import org.embeddedt.embeddium.api.options.structure.OptionGroup;
-import org.embeddedt.embeddium.api.options.structure.OptionImpact;
-import org.embeddedt.embeddium.api.options.structure.OptionPage;
-import org.embeddedt.embeddium.api.options.control.Control;
-import org.embeddedt.embeddium.api.options.control.ControlElement;
+import org.taumc.celeritas.api.options.structure.Option;
+import org.taumc.celeritas.api.options.structure.OptionGroup;
+import org.taumc.celeritas.api.options.structure.OptionImpact;
+import org.taumc.celeritas.api.options.structure.OptionPage;
+import org.taumc.celeritas.api.options.control.Control;
+import org.taumc.celeritas.api.options.control.ControlElement;
 import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
 import org.embeddedt.embeddium.impl.util.Dim2i;
-import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.taumc.celeritas.api.options.OptionIdentifier;
 import org.embeddedt.embeddium.impl.gui.theme.DefaultColors;
 import org.jetbrains.annotations.Nullable;
 

@@ -2,11 +2,11 @@ package org.embeddedt.embeddium.impl.gui.modern;
 
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.Window;
-import org.embeddedt.embeddium.api.options.structure.OptionImpl;
-import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
-import org.embeddedt.embeddium.api.options.control.SliderControl;
+import org.taumc.celeritas.api.options.structure.OptionImpl;
+import org.taumc.celeritas.api.options.control.ControlValueFormatter;
+import org.taumc.celeritas.api.options.control.SliderControl;
 import net.minecraft.client.Minecraft;
-import org.embeddedt.embeddium.api.options.structure.StandardOptions;
+import org.taumc.celeritas.api.options.structure.StandardOptions;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 
 import java.util.Optional;

@@ -1,9 +1,8 @@
 package org.embeddedt.embeddium.impl.gui.modern;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
-import org.embeddedt.embeddium.api.options.OptionIdentifier;
-import org.embeddedt.embeddium.api.options.structure.OptionFlag;
+import org.taumc.celeritas.api.options.OptionIdentifier;
+import org.taumc.celeritas.api.options.structure.OptionFlag;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gui.CeleritasVideoOptionsController;
 import org.embeddedt.embeddium.impl.gui.frame.tab.Tab;

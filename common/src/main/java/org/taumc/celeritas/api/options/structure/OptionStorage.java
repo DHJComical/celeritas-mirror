@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.api.options.structure;
+package org.taumc.celeritas.api.options.structure;
 
 import java.util.Set;
 

@@ -1,6 +1,6 @@
-package org.embeddedt.embeddium.api.options.structure;
+package org.taumc.celeritas.api.options.structure;
 
-import org.embeddedt.embeddium.api.options.OptionIdentifier;
+import org.taumc.celeritas.api.options.OptionIdentifier;
 
 public final class StandardOptions {
     private static final String EMBEDDIUM_MOD_ID = "embeddium";

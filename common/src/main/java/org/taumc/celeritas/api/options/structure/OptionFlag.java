@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.api.options.structure;
+package org.taumc.celeritas.api.options.structure;
 
 public enum OptionFlag {
     REQUIRES_RENDERER_RELOAD,

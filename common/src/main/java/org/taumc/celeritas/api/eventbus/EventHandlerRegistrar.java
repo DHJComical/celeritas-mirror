@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.api.eventbus;
+package org.taumc.celeritas.api.eventbus;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

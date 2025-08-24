@@ -1,15 +1,15 @@
 package org.embeddedt.embeddium.impl.gui.options;
 
-import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
-import org.embeddedt.embeddium.api.options.control.CyclingControl;
-import org.embeddedt.embeddium.api.options.control.SliderControl;
-import org.embeddedt.embeddium.api.options.control.TickBoxControl;
-import org.embeddedt.embeddium.api.options.structure.*;
+import org.taumc.celeritas.api.options.control.ControlValueFormatter;
+import org.taumc.celeritas.api.options.control.CyclingControl;
+import org.taumc.celeritas.api.options.control.SliderControl;
+import org.taumc.celeritas.api.options.control.TickBoxControl;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
+import org.taumc.celeritas.api.options.structure.*;
 
 import java.util.ArrayList;
 import java.util.List;
