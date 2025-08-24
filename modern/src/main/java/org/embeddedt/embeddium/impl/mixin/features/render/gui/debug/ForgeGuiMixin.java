@@ -16,7 +16,7 @@ import net.minecraftforge.client.gui.overlay.ForgeGui;
 //? if >=1.19
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 //? if <1.20
-/*import org.embeddedt.embeddium.impl.gui.BatchedF3Renderer;*/
+/*import org.embeddedt.embeddium.impl.gui.modern.BatchedF3Renderer;*/
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl;
 
+import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 
 //? if forge && >=1.18 {
@@ -193,5 +194,9 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
 
     public static boolean canApplyTranslucencySorting() {
         return Celeritas.options().performance.useTranslucentFaceSorting && !ShaderModBridge.isNvidiumEnabled();
+    }
+
+    public static boolean areGraphicsFancy() {
+        return Minecraft.getInstance().options.graphicsMode/*? if >=1.19 {*/().get()/*?}*/ != GraphicsStatus.FAST;
     }
 }

@@ -1,0 +1,28 @@
+package org.taumc.celeritas.impl.gui;
+
+import java.util.Set;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.settings.GameSettings;
+import org.embeddedt.embeddium.api.options.structure.OptionFlag;
+import org.embeddedt.embeddium.api.options.structure.OptionStorage;
+import org.taumc.celeritas.CeleritasVintage;
+
+public class MinecraftOptionsStorage implements OptionStorage<GameSettings> {
+    private final Minecraft client;
+
+    public MinecraftOptionsStorage() {
+        this.client = Minecraft.getMinecraft();
+    }
+
+    @Override
+    public GameSettings getData() {
+        return this.client.gameSettings;
+    }
+
+    @Override
+    public void save(Set<OptionFlag> flags) {
+        this.getData().saveOptions();
+
+        CeleritasVintage.logger().info("Flushed changes to Minecraft configuration");
+    }
+}

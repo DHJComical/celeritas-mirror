@@ -22,7 +22,7 @@ public class BiomeColorHelperMixin {
             return ((CeleritasBlockAccess)blockAccess).getBlockTint(pos, colorResolver);
         }
 
-        int radius = CeleritasVintage.options().quality.biomeBlendRadius;
+        int radius = CeleritasVintage.options().quality.legacyBiomeBlendRadius;
         if (radius == 0) {
             return colorResolver.getColorAtPos(blockAccess.getBiome(pos), pos);
         } else {

@@ -8,14 +8,19 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.embeddedt.embeddium.api.ChunkDataBuiltEvent;
 import org.embeddedt.embeddium.impl.Celeritas;
 
-@Mod.EventBusSubscriber(modid = Celeritas.MODID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = Celeritas.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class FlywheelCompat {
     private static final boolean flywheelLoaded = ModList.get().isLoaded("flywheel");
 
     @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        ChunkDataBuiltEvent.BUS.addListener(FlywheelCompat::onChunkDataBuilt);
+    }
+
     public static void onChunkDataBuilt(ChunkDataBuiltEvent event) {
         if(flywheelLoaded) {
             event.getDataBuilder().removeBlockEntitiesIf(InstancedRenderRegistry/^? if <=1.16.5 {^//^.getInstance()^//^?}^/::shouldSkipRender);

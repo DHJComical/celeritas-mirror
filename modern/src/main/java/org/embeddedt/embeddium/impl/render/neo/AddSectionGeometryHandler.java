@@ -5,16 +5,21 @@ package org.embeddedt.embeddium.impl.render.neo;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.AddSectionGeometryEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import org.embeddedt.embeddium.api.ChunkMeshEvent;
 import org.embeddedt.embeddium.impl.Celeritas;
 
-@EventBusSubscriber(modid = Celeritas.MODID, value = Dist.CLIENT/^? if <1.21.5 {^/, bus = EventBusSubscriber.Bus.GAME/^?}^/)
+@EventBusSubscriber(modid = Celeritas.MODID, value = Dist.CLIENT/^? if <1.21.5 {^/, bus = EventBusSubscriber.Bus.MOD/^?}^/)
 public class AddSectionGeometryHandler {
     private static final ThreadLocal<PoseStack> DUMMY_POSE_STACK = ThreadLocal.withInitial(PoseStack::new);
 
     @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent e) {
+        ChunkMeshEvent.BUS.addListener(AddSectionGeometryHandler::onChunkMesh);
+    }
+
     public static void onChunkMesh(ChunkMeshEvent meshEvent) {
         AddSectionGeometryEvent geometryEvent = new AddSectionGeometryEvent(meshEvent.getSectionOrigin().origin(), meshEvent.getWorld());
         NeoForge.EVENT_BUS.post(geometryEvent);

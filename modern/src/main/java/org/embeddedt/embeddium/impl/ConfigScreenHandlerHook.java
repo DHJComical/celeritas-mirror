@@ -11,7 +11,7 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
-import org.embeddedt.embeddium.impl.gui.EmbeddiumVideoOptionsScreen;
+import org.embeddedt.embeddium.impl.gui.modern.EmbeddiumVideoOptionsScreen;
 
 @Mod.EventBusSubscriber(modid = EmbeddiumConstants.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ConfigScreenHandlerHook {

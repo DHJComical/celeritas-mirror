@@ -23,8 +23,8 @@ import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.gl.device.GLRenderDevice;
+import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 import org.taumc.celeritas.impl.command.TogglePassCommand;
-import org.taumc.celeritas.impl.gui.SodiumGameOptions;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 
 @Mod(modid = CeleritasVintage.MODID, useMetadata = true)
