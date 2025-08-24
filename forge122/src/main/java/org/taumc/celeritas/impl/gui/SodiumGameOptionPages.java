@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
-import net.minecraft.util.text.ITextComponent;
 import org.embeddedt.embeddium.api.options.control.ControlValueFormatter;
 import org.embeddedt.embeddium.api.options.control.CyclingControl;
 import org.embeddedt.embeddium.api.options.control.SliderControl;
@@ -12,16 +11,15 @@ import org.embeddedt.embeddium.api.options.control.TickBoxControl;
 import org.embeddedt.embeddium.api.options.structure.*;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
-import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
-import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.lwjgl.opengl.Display;
+import org.taumc.celeritas.CeleritasVintage;
 import org.taumc.celeritas.impl.compat.modernui.MuiGuiScaleHook;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SodiumGameOptionPages {
-    private static final SodiumGameOptions sodiumOpts = new SodiumGameOptions();
+    private static final SodiumGameOptions sodiumOpts = CeleritasVintage.options();
     private static final MinecraftOptionsStorage vanillaOpts = new MinecraftOptionsStorage();
 
     private static int computeMaxRangeForRenderDistance(@SuppressWarnings("SameParameterValue") int injectedRenderDistance) {
