@@ -165,7 +165,7 @@ public class SliderControl implements Control<Integer> {
 
         @Override
         public boolean mouseDragged(InteractionContext context, double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-            if (this.option.isAvailable() && button == 0) {
+            if (this.option.isAvailable() && button == 0 && this.sliderBounds.containsCursor(mouseX, mouseY)) {
                 if (this.sliderHeld) {
                     this.setValueFromMouse(mouseX);
                 }
