@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.gui.frame;
 
 import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
 import org.embeddedt.embeddium.impl.gui.framework.Interactable;
+import org.embeddedt.embeddium.impl.gui.framework.InteractionContext;
 import org.embeddedt.embeddium.impl.util.Dim2i;
 import org.embeddedt.embeddium.impl.gui.frame.components.ScrollBarComponent;
 
@@ -142,15 +143,31 @@ public class ScrollableFrame extends AbstractFrame {
     }
 
     @Override
-    public Stream<? extends Interactable> interactableChildren() {
-        var stream = super.interactableChildren();
-        if (this.canScrollVertical) {
-            stream = Stream.concat(Stream.of(this.verticalScrollBar), stream);
-        }
-        if (this.canScrollHorizontal) {
-            stream = Stream.concat(Stream.of(this.horizontalScrollBar), stream);
-        }
-        return stream;
+    public boolean mouseClicked(InteractionContext context, double mouseX, double mouseY, int button) {
+        return (this.canScrollHorizontal && this.horizontalScrollBar.mouseClicked(context, mouseX, mouseY, button)) ||
+                (this.canScrollVertical && this.verticalScrollBar.mouseClicked(context, mouseX, mouseY, button)) ||
+                super.mouseClicked(context, applyOffset(this.horizontalScrollBar, mouseX, false), applyOffset(this.verticalScrollBar, mouseY, false), button);
+    }
+
+    @Override
+    public boolean mouseDragged(InteractionContext context, double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        return (this.canScrollHorizontal && this.horizontalScrollBar.mouseDragged(context, mouseX, mouseY, button, deltaX, deltaY)) ||
+                (this.canScrollVertical && this.verticalScrollBar.mouseDragged(context, mouseX, mouseY, button, deltaX, deltaY)) ||
+                super.mouseDragged(context, applyOffset(this.horizontalScrollBar, mouseX, false), applyOffset(this.verticalScrollBar, mouseY, false), button, deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseReleased(InteractionContext context, double mouseX, double mouseY, int button) {
+        return (this.canScrollHorizontal && this.horizontalScrollBar.mouseReleased(context, mouseX, mouseY, button))
+                || (this.canScrollVertical && this.verticalScrollBar.mouseReleased(context, mouseX, mouseY, button))
+                || super.mouseReleased(context, applyOffset(this.horizontalScrollBar, mouseX, false), applyOffset(this.verticalScrollBar, mouseY, false), button);
+    }
+
+    @Override
+    public boolean mouseScrolled(InteractionContext context, double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        return (this.canScrollHorizontal && this.horizontalScrollBar.mouseScrolled(context, mouseX, mouseY, horizontalAmount, verticalAmount))
+                || (this.canScrollVertical && this.verticalScrollBar.mouseScrolled(context, mouseX, mouseY, horizontalAmount, verticalAmount))
+                || super.mouseScrolled(context, applyOffset(this.horizontalScrollBar, mouseX, false), applyOffset(this.verticalScrollBar, mouseY, false), horizontalAmount, verticalAmount);
     }
 
     public static class Builder {
