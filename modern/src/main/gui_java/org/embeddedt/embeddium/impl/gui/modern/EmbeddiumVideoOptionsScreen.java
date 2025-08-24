@@ -47,7 +47,7 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
                             .setTitle(TextComponent.translatable("options.iris.shaderPackSelection"))
                             .setId(OptionIdentifier.create(EmbeddiumConstants.MODID, "shader_packs"))
                             .setOnSelectFunction(() -> {
-                                if(ShaderModBridge.openShaderScreen(this) instanceof Screen screen) {
+                                if(ShaderModBridge.openShaderScreen(EmbeddiumVideoOptionsScreen.this) instanceof Screen screen) {
                                     Minecraft.getInstance().setScreen(screen);
                                 }
                                 return false;
