@@ -6,17 +6,14 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
-import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.ClassInheritanceMultiMap;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.chunk.Chunk;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
@@ -28,10 +25,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.taumc.celeritas.impl.render.entity.EntityGatherer;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 
 import java.util.*;
-import java.util.function.Consumer;
 
 @Mixin(RenderGlobal.class)
 public abstract class RenderGlobalMixin implements SimpleWorldRenderer.Provider<CeleritasWorldRenderer> {
@@ -200,39 +197,7 @@ public abstract class RenderGlobalMixin implements SimpleWorldRenderer.Provider<
         return this.renderer.getChunksDebugString();
     }
 
-    private List<Entity>[] getLoadedEntityList() {
-        int numPasses = 2;
-        List<Entity>[] passesArray = new List[numPasses];
-        for (int i = 0; i < numPasses; i++) {
-            passesArray[i] = new ArrayList<>();
-        }
-        Consumer<Entity> addEntity = entity -> {
-            for (int i = 0; i < numPasses; i++) {
-                if (entity.shouldRenderInPass(i)) {
-                    passesArray[i].add(entity);
-                }
-            }
-        };
-        // Iterate directly over chunk entity lists where possible - mods may create multipart entities that are not
-        // added to the main loadedEntityList.
-        if (this.world.getChunkProvider() instanceof ChunkProviderClientAccessor provider) {
-            var loadedChunks = provider.celeritas$getLoadedChunks();
-            List<Entity> allEntities = new ArrayList<>(this.world.loadedEntityList.size());
-            for (Chunk chunk : loadedChunks.values()) {
-                if (!((ChunkAccessor)chunk).celeritas$getHasEntities()) {
-                    continue;
-                }
-                ClassInheritanceMultiMap<Entity>[] entityMaps = chunk.getEntityLists();
-                for (ClassInheritanceMultiMap<Entity> map : entityMaps) {
-                    map.forEach(addEntity);
-                }
-            }
-        } else {
-            // Best we can do is the loaded entity list - this will miss some multipart entities
-            this.world.loadedEntityList.forEach(addEntity);
-        }
-        return passesArray;
-    }
+    private final EntityGatherer celeritas$entityGatherer = new EntityGatherer();
 
     private List<Entity>[] celeritas$collectedEntities;
 
@@ -249,7 +214,8 @@ public abstract class RenderGlobalMixin implements SimpleWorldRenderer.Provider<
                                 @Local(ordinal = 2) double renderViewZ) {
         int pass = net.minecraftforge.client.MinecraftForgeClient.getRenderPass();
         if (pass == 0 || celeritas$collectedEntities == null) {
-            celeritas$collectedEntities = getLoadedEntityList();
+            celeritas$entityGatherer.clear();
+            celeritas$collectedEntities = celeritas$entityGatherer.getLoadedEntityList(world);
         }
         EntityPlayerSP player = this.mc.player;
         BlockPos.MutableBlockPos entityBlockPos = new BlockPos.MutableBlockPos();
