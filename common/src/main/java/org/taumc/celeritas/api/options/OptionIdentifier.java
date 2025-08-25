@@ -41,6 +41,9 @@ public final class OptionIdentifier<T> {
 
     @SuppressWarnings("unchecked")
     public static synchronized <T> OptionIdentifier<T> create(String modId, String path, Class<T> clz) {
+        if (modId.equals("embeddium")) {
+            modId = "celeritas";
+        }
         OptionIdentifier<T> ourIdentifier = new OptionIdentifier<>(modId, path, clz);
         OptionIdentifier<T> oldIdentifier = (OptionIdentifier<T>)IDENTIFIERS.addOrGet(ourIdentifier);
         if(oldIdentifier != null && oldIdentifier.clz != ourIdentifier.clz) {

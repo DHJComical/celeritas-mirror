@@ -5,17 +5,27 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.fml.client.FMLClientHandler;
+import net.minecraftforge.fml.common.Loader;
 import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20C;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +34,8 @@ import java.util.Set;
 public class VintageDrawContext implements DrawContext {
     private final FontRenderer font = Minecraft.getMinecraft().fontRenderer;
     private final Map<TextComponent, ITextComponent> componentCache;
+
+    private static final Map<String, String> MOD_LOGOS = new HashMap<>();
 
     public VintageDrawContext() {
         this.componentCache = new HashMap<>();
@@ -164,5 +176,49 @@ public class VintageDrawContext implements DrawContext {
     @Override
     public int lineHeight() {
         return font.FONT_HEIGHT;
+    }
+
+    @Override
+    public TextComponent getFriendlyModName(String modId) {
+        var container = Loader.instance().getIndexedModList().get(modId);
+        if (container == null) {
+            return DrawContext.super.getFriendlyModName(modId);
+        }
+        return TextComponent.literal(container.getName());
+    }
+
+    @Override
+    public @Nullable String getModLogoPath(String modId) {
+        return MOD_LOGOS.computeIfAbsent(modId, id -> {
+            var container = Loader.instance().getIndexedModList().get(id);
+            if (container == null) {
+                return null;
+            }
+            String file = container.getMetadata().logoFile;
+            if (file == null || file.isEmpty()) {
+                return null;
+            }
+            TextureManager tm = Minecraft.getMinecraft().getTextureManager();
+            IResourcePack pack = FMLClientHandler.instance().getResourcePackFor(container.getModId());
+
+            BufferedImage logo = null;
+            try {
+                if (pack != null) {
+                    logo = pack.getPackImage();
+                } else {
+                    InputStream logoResource = this.getClass().getResourceAsStream(file);
+                    if (logoResource != null) {
+                        logo = TextureUtil.readBufferedImage(logoResource);
+                    }
+                }
+            } catch (IOException ignored) {
+            }
+
+            if (logo == null) {
+                return null;
+            }
+
+            return tm.getDynamicTextureLocation("modlogo", new DynamicTexture(logo)).toString();
+        });
     }
 }

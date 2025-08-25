@@ -1,5 +1,8 @@
 package org.embeddedt.embeddium.impl.gui.framework;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 public interface DrawContext extends FontMetricsProvider {
     void fill(int x1, int y1, int x2, int y2, int color);
 
@@ -13,7 +16,7 @@ public interface DrawContext extends FontMetricsProvider {
 
     int drawString(TextComponent str, int x, int y, int color, boolean shadow);
 
-    void blitWholeImage(String icon, int x, int y, int width, int height);
+    void blitWholeImage(@NotNull String icon, int x, int y, int width, int height);
 
     void pushMatrix();
 
@@ -34,5 +37,13 @@ public interface DrawContext extends FontMetricsProvider {
         fill(x1, y2 - 1, x2, y2, color);
         fill(x1, y1, x1 + 1, y2, color);
         fill(x2 - 1, y1, x2, y2, color);
+    }
+
+    default @Nullable String getModLogoPath(String modId) {
+        return null;
+    }
+
+    default TextComponent getFriendlyModName(String modId) {
+        return TextComponent.literal(modId);
     }
 }

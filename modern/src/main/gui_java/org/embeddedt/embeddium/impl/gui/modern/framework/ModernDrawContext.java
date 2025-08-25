@@ -12,12 +12,17 @@ import net.minecraft.client.gui.Font;
 /*import net.minecraft.client.gui.Gui;*/
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
+import org.embeddedt.embeddium.impl.loader.common.ModLogoUtil;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
+import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +37,8 @@ public class ModernDrawContext implements DrawContext {
     /*private final PoseStack pose;*/
     private final Font font;
     private final Map<TextComponent, Component> componentCache = new HashMap<>();
+
+    private static final Map<String, String> MOD_LOGOS = new HashMap<>();
 
     private record FormattedWrapper(FormattedCharSequence sequence) implements TextComponent {}
 
@@ -117,13 +124,32 @@ public class ModernDrawContext implements DrawContext {
     }
 
     @Override
-    public void blitWholeImage(String icon, int x, int y, int width, int height) {
+    public void blitWholeImage(@NotNull String icon, int x, int y, int width, int height) {
         //? if >=1.20 {
         gui.blit(ResourceLocationUtil.make(icon), x, y, 0.0f, 0.0f, width, height, width, height);
         //?} else {
         /*RenderSystem.setShaderTexture(0, ResourceLocationUtil.make(icon));
         Gui.blit(pose, x, y, 0.0f, 0.0f, width, height, width, height);
         *///?}
+    }
+
+    @Override
+    public @Nullable String getModLogoPath(String modId) {
+        if (modId.equals("celeritas")) {
+            modId = "embeddium";
+        }
+        return MOD_LOGOS.computeIfAbsent(modId, id -> {
+            var loc = ModLogoUtil.registerLogo(id);
+            return loc != null ? loc.toString() : null;
+        });
+    }
+
+    @Override
+    public TextComponent getFriendlyModName(String modId) {
+        if (modId.equals("celeritas")) {
+            modId = "embeddium";
+        }
+        return TextComponent.literal(PlatformUtil.getModName(modId));
     }
 
     @Override

@@ -43,9 +43,10 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
             @Override
             protected void createExtraTabs(Map<String, List<Tab<?>>> tabs) {
                 if(ShaderModBridge.isShaderModPresent()) {
-                    tabs.computeIfAbsent(EmbeddiumConstants.MODID, $ -> new ArrayList<>()).add(Tab.createBuilder()
+                    var id = OptionIdentifier.create(EmbeddiumConstants.MODID, "shader_packs");
+                    tabs.computeIfAbsent(id.getModId(), $ -> new ArrayList<>()).add(Tab.createBuilder()
                             .setTitle(TextComponent.translatable("options.iris.shaderPackSelection"))
-                            .setId(OptionIdentifier.create(EmbeddiumConstants.MODID, "shader_packs"))
+                            .setId(id)
                             .setOnSelectFunction(() -> {
                                 if(ShaderModBridge.openShaderScreen(EmbeddiumVideoOptionsScreen.this) instanceof Screen screen) {
                                     Minecraft.getInstance().setScreen(screen);

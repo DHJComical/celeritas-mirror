@@ -18,12 +18,6 @@ import java.util.function.Supplier;
 
 @Builder(builderClassName = "Builder", setterPrefix = "set")
 public record Tab<T extends AbstractFrame>(OptionIdentifier<Void> id, TextComponent title, Supplier<Boolean> onSelectFunction, Function<Dim2i, T> frameFunction) {
-
-    static TextComponent idComponent(String namespace) {
-        return TextComponent.literal(namespace)
-                .withStyle(TextFormattingStyle.UNDERLINE);
-    }
-
     public static Tab.Builder<?> createBuilder() {
         return new Tab.Builder<>();
     }

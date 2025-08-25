@@ -28,7 +28,7 @@ public class CeleritasVideoOptionsController implements Renderable {
 
     private final List<OptionPage> pages = new ArrayList<>();
     private final Runnable onClose;
-    private final FontMetricsProvider font;
+    private final DrawContext font;
 
     @Getter
     private AbstractFrame frame;
@@ -41,7 +41,7 @@ public class CeleritasVideoOptionsController implements Renderable {
 
     private int width, height;
 
-    public CeleritasVideoOptionsController(Runnable onClose, List<OptionPage> pages, FontMetricsProvider font) {
+    public CeleritasVideoOptionsController(Runnable onClose, List<OptionPage> pages, DrawContext font) {
         this.onClose = onClose;
         this.pages.addAll(pages);
 

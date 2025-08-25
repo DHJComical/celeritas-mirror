@@ -30,13 +30,13 @@ public class TabFrame extends AbstractFrame {
     private Dim2i tabSectionInner;
     private ScrollableFrame sidebarFrame;
 
-    public TabFrame(FontMetricsProvider font, Dim2i dim, boolean renderOutline, Map<String, List<Tab<?>>> tabs, Runnable onSetTab, AtomicReference<TextComponent> tabSectionSelectedTab, AtomicReference<Integer> tabSectionScrollBarOffset) {
+    public TabFrame(DrawContext drawContext, Dim2i dim, boolean renderOutline, Map<String, List<Tab<?>>> tabs, Runnable onSetTab, AtomicReference<TextComponent> tabSectionSelectedTab, AtomicReference<Integer> tabSectionScrollBarOffset) {
         super(dim, renderOutline);
         this.tabs = Collections.unmodifiableMap(tabs.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> List.copyOf(e.getValue()), (a, b) -> a, LinkedHashMap::new)));
         int tabSectionY = ((int)tabStream().count() + this.tabs.size()) * 18;
         Optional<Integer> result = Stream.concat(
-                tabs.keySet().stream().map(id -> font.getStringWidth(Tab.idComponent(id)) + 10),
-                tabStream().map(tab -> font.getStringWidth(tab.title()) + TAB_OPTION_INDENT)
+                tabs.keySet().stream().map(id -> drawContext.getStringWidth(drawContext.getFriendlyModName(id)) + 10),
+                tabStream().map(tab -> drawContext.getStringWidth(tab.title()) + TAB_OPTION_INDENT)
         ).max(Integer::compareTo);
 
         this.tabSection = new Dim2i(this.dim.x(), this.dim.y(), result.map(integer -> integer + (24)).orElseGet(() -> (int) (this.dim.width() * 0.35D)), this.dim.height());
@@ -221,7 +221,7 @@ public class TabFrame extends AbstractFrame {
             return this;
         }
 
-        public TabFrame build(FontMetricsProvider font) {
+        public TabFrame build(DrawContext font) {
             Objects.requireNonNull(this.dim, "Dimension must be specified");
 
             return new TabFrame(font, this.dim, this.renderOutline, this.functions, this.onSetTab, this.tabSectionSelectedTab, this.tabSectionScrollBarOffset);
