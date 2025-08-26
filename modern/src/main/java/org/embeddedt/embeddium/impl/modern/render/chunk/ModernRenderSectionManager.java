@@ -122,9 +122,9 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     }
 
     @Override
-    protected void scheduleSectionForRebuild(int x, int y, int z, boolean important) {
-        this.sectionCache.invalidate(x, y, z);
-        super.scheduleSectionForRebuild(x, y, z, important);
+    protected void invalidateCachedSectionData(RenderSection section) {
+        super.invalidateCachedSectionData(section);
+        this.sectionCache.invalidate(section.getChunkX(), section.getChunkY(), section.getChunkZ());
     }
 
     @Override

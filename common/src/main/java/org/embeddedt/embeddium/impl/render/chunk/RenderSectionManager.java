@@ -50,6 +50,12 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public abstract class RenderSectionManager {
+    /**
+     * When true, the section manager will continuously mark all sections as needing to be remeshed whenever the
+     * update queue empties.
+     */
+    protected static final boolean CONTINUOUSLY_REMESH_WORLD = false;
+
     private final ChunkBuilder builder;
 
     private final Thread renderThread = Thread.currentThread();
@@ -298,6 +304,8 @@ public abstract class RenderSectionManager {
             this.shadowRenderListManager.attachRenderSection(renderSection);
         }
 
+        this.invalidateCachedSectionData(renderSection);
+
         if (this.isSectionVisuallyEmpty(x, y, z)) {
             this.updateSectionInfo(renderSection, RenderSection.EMPTY_DATA);
         } else {
@@ -320,6 +328,8 @@ public abstract class RenderSectionManager {
         if (region != null) {
             region.removeSection(section);
         }
+
+        this.invalidateCachedSectionData(section);
 
         this.updateSectionInfo(section, null);
 
@@ -394,6 +404,9 @@ public abstract class RenderSectionManager {
         this.sectionsRequestingUpdate.clear();
 
         if (!rebuildListHasUpdates()) {
+            if (CONTINUOUSLY_REMESH_WORLD && !this.getCurrentRenderListManager().getRebuildLists().hasAdditionalUpdates()) {
+                this.scheduleRebuildAll();
+            }
             return;
         }
 
@@ -669,10 +682,16 @@ public abstract class RenderSectionManager {
         this.scheduleSectionForRebuild(x, y, z, important);
     }
 
+    protected void invalidateCachedSectionData(RenderSection section) {
+
+    }
+
     protected void scheduleSectionForRebuild(int x, int y, int z, boolean important) {
         RenderSection section = this.sectionByPosition.get(PositionUtil.packSection(x, y, z));
 
         if (section != null) {
+            this.invalidateCachedSectionData(section);
+
             ChunkUpdateType pendingUpdate;
 
             if (allowImportantRebuilds() && (important || this.shouldPrioritizeRebuild(section))) {
@@ -689,6 +708,16 @@ public abstract class RenderSectionManager {
                 }
             }
         }
+    }
+
+    public void scheduleRebuildAll() {
+        for (var section : this.sectionByPosition.values()) {
+            if (!this.isSectionVisuallyEmpty(section.getChunkX(), section.getChunkY(), section.getChunkZ())) {
+                this.invalidateCachedSectionData(section);
+                section.requestUpdate(ChunkUpdateType.REBUILD);
+            }
+        }
+        this.markGraphDirty();
     }
 
     private static final float NEARBY_REBUILD_DISTANCE = MathUtil.square(16.0f);
