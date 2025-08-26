@@ -22,6 +22,8 @@ import java.util.*;
 
 public class RenderRegionManager {
     private final Long2ReferenceOpenHashMap<RenderRegion> regions = new Long2ReferenceOpenHashMap<>();
+    private final BitSet regionIds = new BitSet();
+    private int nextFreeId = 0;
 
     private final StagingBuffer stagingBuffer;
 
@@ -47,6 +49,9 @@ public class RenderRegionManager {
                     region.delete(commandList);
 
                     it.remove();
+
+                    this.regionIds.clear(region.getId());
+                    this.nextFreeId = Math.min(this.nextFreeId, region.getId());
                 }
             }
         }
@@ -207,16 +212,27 @@ public class RenderRegionManager {
                 chunkZ >> RenderRegion.REGION_LENGTH_SH);
     }
 
+    private int getNextId() {
+        int id = this.nextFreeId;
+        this.nextFreeId = this.regionIds.nextClearBit(id + 1);
+        this.regionIds.set(id);
+        return id;
+    }
+
     @NotNull
     private RenderRegion create(int x, int y, int z) {
         var key = RenderRegion.key(x, y, z);
         var instance = this.regions.get(key);
 
         if (instance == null) {
-            this.regions.put(key, instance = new RenderRegion(x, y, z, this.stagingBuffer));
+            this.regions.put(key, instance = new RenderRegion(x, y, z, this.getNextId(), this.stagingBuffer));
         }
 
         return instance;
+    }
+
+    public int getRegionIdsLength() {
+        return this.regionIds.length();
     }
 
     private interface PendingSectionUpload {

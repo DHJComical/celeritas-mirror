@@ -19,7 +19,7 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
     private final ObjectArrayList<ChunkRenderList> sortedRenderLists;
     private final EnumMap<ChunkUpdateType, ArrayDeque<RenderSection>> sortedRebuildLists;
     private final int[] rebuildQueueOverflowCounts;
-    private final Reference2ReferenceOpenHashMap<RenderRegion, ChunkRenderList> renderListsByRegion;
+    private final ChunkRenderList[] renderListsByRegion;
 
     private final int frame;
 
@@ -27,14 +27,14 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
 
     private boolean hasAdditionalUpdates;
 
-    public VisibleChunkCollector(int frame, boolean ignoreQueueSizeLimit) {
+    public VisibleChunkCollector(int frame, int regionIdsLength, boolean ignoreQueueSizeLimit) {
         this.frame = frame;
 
         this.sortedRenderLists = new ObjectArrayList<>();
         this.sortedRebuildLists = new EnumMap<>(ChunkUpdateType.class);
         this.rebuildQueueOverflowCounts = new int[ChunkUpdateType.values().length];
         this.ignoreQueueSizeLimit = ignoreQueueSizeLimit;
-        this.renderListsByRegion = new Reference2ReferenceOpenHashMap<>();
+        this.renderListsByRegion = new ChunkRenderList[regionIdsLength];
 
         for (var type : ChunkUpdateType.values()) {
             this.sortedRebuildLists.put(type, new ArrayDeque<>());
@@ -44,7 +44,7 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
     private ChunkRenderList createRenderList(RenderRegion region) {
         ChunkRenderList renderList = new ChunkRenderList(region);
         this.sortedRenderLists.add(renderList);
-        this.renderListsByRegion.put(region, renderList);
+        this.renderListsByRegion[region.getId()] = renderList;
         return renderList;
     }
 
@@ -54,11 +54,11 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
 
         // Note: even if a section does not have render objects, we must ensure the render list is initialized and put
         // into the sorted queue of lists, so that we maintain the correct order of draw calls.
-        RenderRegion region = section.getRegion();
-        ChunkRenderList renderList = this.renderListsByRegion.get(region);
+        int regionId = node.getRenderRegionId();
+        ChunkRenderList renderList = this.renderListsByRegion[regionId];
 
         if (renderList == null) {
-            renderList = this.createRenderList(region);
+            renderList = this.createRenderList(section.getRegion());
         }
 
         if (visible && section.hasAnythingToRender()) {

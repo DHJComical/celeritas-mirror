@@ -94,12 +94,12 @@ public class RenderListManager {
         this.rebuildLists = ChunkRebuildLists.EMPTY;
     }
 
-    public void startGraphUpdate(Viewport viewport, int frame, float searchDistance, boolean useOcclusionCulling, boolean allowInfiniteUpdateTasks) {
+    public void startGraphUpdate(Viewport viewport, int frame, int regionIdsLength, float searchDistance, boolean useOcclusionCulling, boolean allowInfiniteUpdateTasks) {
         if (this.currentOcclusionFuture != null) {
             throw new IllegalStateException("Occlusion work in progress while trying to submit next task");
         }
 
-        var visitor = new VisibleChunkCollector(frame, allowInfiniteUpdateTasks);
+        var visitor = new VisibleChunkCollector(frame, regionIdsLength, allowInfiniteUpdateTasks);
 
         Supplier<VisibleChunkCollector> occlusionTask = () -> {
             this.occlusionCuller.findVisible(visitor, viewport, searchDistance, useOcclusionCulling, frame);

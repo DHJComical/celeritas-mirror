@@ -26,10 +26,13 @@ public class OcclusionNode extends AbstractSection {
     private long visibilityData = VisibilityEncoding.NULL;
 
     private final RenderSection section;
+    @Getter
+    private final int renderRegionId;
 
     public OcclusionNode(RenderSection section) {
         super(section.getChunkX(), section.getChunkY(), section.getChunkZ());
         this.section = section;
+        this.renderRegionId = section.getRegion().getId();
     }
 
     public OcclusionNode getAdjacent(int direction) {

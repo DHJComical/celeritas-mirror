@@ -43,6 +43,9 @@ public class RenderRegion {
     private final StagingBuffer stagingBuffer;
     private final int x, y, z;
 
+    @Getter
+    private final int id;
+
     private final RenderSection[] sections = new RenderSection[RenderRegion.REGION_SIZE];
     @Getter
     private final long[] sectionLoadTimes = new long[RenderRegion.REGION_SIZE];
@@ -56,11 +59,12 @@ public class RenderRegion {
     @Unmodifiable
     private List<DeviceResources> allDeviceResources = List.of();
 
-    public RenderRegion(int x, int y, int z, StagingBuffer stagingBuffer) {
+    RenderRegion(int x, int y, int z, int id, StagingBuffer stagingBuffer) {
         this.x = x;
         this.y = y;
         this.z = z;
 
+        this.id = id;
         this.stagingBuffer = stagingBuffer;
     }
 

@@ -253,7 +253,8 @@ public abstract class RenderSectionManager {
         final var searchDistance = this.getSearchDistance();
         final var useOcclusionCulling = this.shouldUseOcclusionCulling(viewport, spectator);
 
-        this.getCurrentRenderListManager().startGraphUpdate(viewport, frame, searchDistance, useOcclusionCulling, !this.shouldRespectUpdateTaskQueueSizeLimit());
+        this.getCurrentRenderListManager().startGraphUpdate(viewport, frame, this.regions.getRegionIdsLength(),
+                searchDistance, useOcclusionCulling, !this.shouldRespectUpdateTaskQueueSizeLimit());
     }
 
     protected abstract boolean useFogOcclusion();
