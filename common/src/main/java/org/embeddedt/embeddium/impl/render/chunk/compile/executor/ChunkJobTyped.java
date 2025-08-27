@@ -40,6 +40,8 @@ public class ChunkJobTyped<TASK extends ChunkBuilderTask<OUTPUT>, OUTPUT>
 
         ChunkJobResult<OUTPUT> result;
 
+        long startTime = System.nanoTime();
+
         try {
             var output = this.task.execute(context, this);
 
@@ -48,9 +50,9 @@ public class ChunkJobTyped<TASK extends ChunkBuilderTask<OUTPUT>, OUTPUT>
                 return;
             }
 
-            result = ChunkJobResult.successfully(output);
+            result = new ChunkJobResult.Success<>(output, System.nanoTime() - startTime);
         } catch (Throwable throwable) {
-            result = ChunkJobResult.exceptionally(throwable);
+            result = new ChunkJobResult.Failure<>(throwable);
             ChunkBuilder.LOGGER.error("Chunk build failed", throwable);
         }
 

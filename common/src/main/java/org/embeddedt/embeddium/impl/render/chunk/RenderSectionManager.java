@@ -12,6 +12,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkTaskOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkBuilder;
+import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobMetricsTracker;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobResult;
 import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobCollector;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderSortTask;
@@ -23,6 +24,7 @@ import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.RenderListManager;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
+import org.embeddedt.embeddium.impl.render.chunk.metrics.RenderSectionMetricsTracker;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
@@ -54,7 +56,7 @@ public abstract class RenderSectionManager {
      * When true, the section manager will continuously mark all sections as needing to be remeshed whenever the
      * update queue empties.
      */
-    protected static final boolean CONTINUOUSLY_REMESH_WORLD = false;
+    protected static final boolean CONTINUOUSLY_REMESH_WORLD = true;
 
     private final ChunkBuilder builder;
 
@@ -91,6 +93,12 @@ public abstract class RenderSectionManager {
     private final Object2ObjectOpenHashMap<TerrainRenderPass, TimerQueryManager> renderPassDrawTimers = new Object2ObjectOpenHashMap<>();
 
     protected final ReferenceSet<RenderSection> sectionsRequestingUpdate = new ReferenceOpenHashSet<>();
+
+    @Getter
+    protected final ChunkJobMetricsTracker jobMetricsTracker = new ChunkJobMetricsTracker();
+
+    @Getter
+    protected final RenderSectionMetricsTracker sectionMetricsTracker = new RenderSectionMetricsTracker();
 
     @Deprecated
     public RenderSectionManager(RenderPassConfiguration<?> configuration, Supplier<ChunkBuildContext> contextSupplier,
@@ -441,7 +449,7 @@ public abstract class RenderSectionManager {
         this.processChunkBuildResults(results);
 
         for (var result : results) {
-            result.delete();
+            result.output().delete();
         }
 
         // Forcefully mark the graph as needing updates if the previous render list detected an overflow of the
@@ -455,12 +463,13 @@ public abstract class RenderSectionManager {
         this.getCurrentRenderListManager().tickVisibleRenders();
     }
 
-    private void processChunkBuildResults(ArrayList<? extends ChunkTaskOutput> results) {
+    private void processChunkBuildResults(ArrayList<ChunkJobResult.Success<? extends ChunkTaskOutput>> results) {
         var filtered = filterChunkBuildResults(results);
 
         this.regions.uploadMeshes(RenderDevice.INSTANCE.createCommandList(), filtered);
 
-        for (var result : filtered) {
+        for (var holder : filtered) {
+            var result = holder.output();
             if (result instanceof ChunkBuildOutput buildResult) {
                 boolean changed = this.updateSectionInfo(result.render, buildResult.info);
 
@@ -482,6 +491,7 @@ public abstract class RenderSectionManager {
             }
 
             result.render.setLastBuiltFrame(result.buildTime);
+            this.sectionMetricsTracker.updateSectionBuildDuration(result.render, holder.executionTimeNanos());
         }
     }
 
@@ -516,31 +526,39 @@ public abstract class RenderSectionManager {
         return changed;
     }
 
-    private static List<? extends ChunkTaskOutput> filterChunkBuildResults(ArrayList<? extends ChunkTaskOutput> outputs) {
-        var map = new Reference2ReferenceLinkedOpenHashMap<RenderSection, ChunkTaskOutput>();
+    private static List<ChunkJobResult.Success<? extends ChunkTaskOutput>> filterChunkBuildResults(ArrayList<ChunkJobResult.Success<? extends ChunkTaskOutput>> outputs) {
+        var map = new Reference2ReferenceLinkedOpenHashMap<RenderSection, ChunkJobResult.Success<? extends ChunkTaskOutput>>();
 
-        for (var output : outputs) {
+        for (var holder : outputs) {
+            var output = holder.output();
             if (output.render.isDisposed() || output.render.getLastBuiltFrame() > output.buildTime) {
                 continue;
             }
 
             var render = output.render;
-            var previous = map.get(render);
+            var previousHolder = map.get(render);
 
-            if (previous == null || previous.buildTime < output.buildTime) {
-                map.put(render, output);
+            if (previousHolder == null || previousHolder.output().buildTime < output.buildTime) {
+                map.put(render, holder);
             }
         }
 
         return new ArrayList<>(map.values());
     }
 
-    private ArrayList<? extends ChunkTaskOutput> collectChunkBuildResults() {
-        ArrayList<ChunkTaskOutput> results = new ArrayList<>();
+    private ArrayList<ChunkJobResult.Success<? extends ChunkTaskOutput>> collectChunkBuildResults() {
+        ArrayList<ChunkJobResult.Success<? extends ChunkTaskOutput>> results = new ArrayList<>();
         ChunkJobResult<? extends ChunkTaskOutput> result;
 
         while ((result = this.buildResults.poll()) != null) {
-            results.add(result.unwrap());
+            if (result instanceof ChunkJobResult.Success<? extends ChunkTaskOutput> successfulResult) {
+                this.jobMetricsTracker.collectMetrics(successfulResult);
+                results.add(successfulResult);
+            } else if (result instanceof ChunkJobResult.Failure<? extends ChunkTaskOutput> failure) {
+                failure.abort();
+            } else {
+                throw new AssertionError();
+            }
         }
 
         return results;
@@ -583,7 +601,7 @@ public abstract class RenderSectionManager {
                     section.setNeedsDynamicTranslucencySorting(false);
                 }
             } else {
-                var result = ChunkJobResult.successfully(new ChunkBuildOutput(section, RenderSection.EMPTY_DATA, Reference2ReferenceMaps.emptyMap(), frame));
+                var result = new ChunkJobResult.Success<>(new ChunkBuildOutput(section, RenderSection.EMPTY_DATA, Reference2ReferenceMaps.emptyMap(), frame), -1);
                 this.buildResults.add(result);
 
                 section.setBuildCancellationToken(null);
@@ -630,7 +648,7 @@ public abstract class RenderSectionManager {
         this.builder.shutdown(); // stop all the workers, and cancel any tasks
 
         for (var result : this.collectChunkBuildResults()) {
-            result.delete(); // delete resources for any pending tasks (including those that were cancelled)
+            result.output().delete(); // delete resources for any pending tasks (including those that were cancelled)
         }
 
         this.renderListManager.destroy();

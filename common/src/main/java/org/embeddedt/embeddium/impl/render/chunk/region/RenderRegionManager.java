@@ -14,6 +14,7 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkSortOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkTaskOutput;
+import org.embeddedt.embeddium.impl.render.chunk.compile.executor.ChunkJobResult;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.jetbrains.annotations.NotNull;
@@ -57,7 +58,7 @@ public class RenderRegionManager {
         }
     }
 
-    public void uploadMeshes(CommandList commandList, Collection<? extends ChunkTaskOutput> results) {
+    public void uploadMeshes(CommandList commandList, Collection<ChunkJobResult.Success<? extends ChunkTaskOutput>> results) {
         for (var entry : this.createMeshUploadQueues(results)) {
             new MeshUploader(commandList, entry.getKey()).processResults(entry.getValue());
         }
@@ -178,10 +179,11 @@ public class RenderRegionManager {
         }
     }
 
-    private <T extends ChunkTaskOutput> Reference2ReferenceMap.FastEntrySet<RenderRegion, List<T>> createMeshUploadQueues(Collection<T> results) {
-        var map = new Reference2ReferenceOpenHashMap<RenderRegion, List<T>>();
+    private Reference2ReferenceMap.FastEntrySet<RenderRegion, List<ChunkTaskOutput>> createMeshUploadQueues(Collection<ChunkJobResult.Success<? extends ChunkTaskOutput>> results) {
+        var map = new Reference2ReferenceOpenHashMap<RenderRegion, List<ChunkTaskOutput>>();
 
-        for (var result : results) {
+        for (var holder : results) {
+            var result = holder.output();
             var queue = map.computeIfAbsent(result.render.getRegion(), k -> new ArrayList<>());
             queue.add(result);
         }
