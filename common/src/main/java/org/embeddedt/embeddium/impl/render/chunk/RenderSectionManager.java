@@ -56,7 +56,7 @@ public abstract class RenderSectionManager {
      * When true, the section manager will continuously mark all sections as needing to be remeshed whenever the
      * update queue empties.
      */
-    protected static final boolean CONTINUOUSLY_REMESH_WORLD = true;
+    protected static final boolean CONTINUOUSLY_REMESH_WORLD = false;
 
     private final ChunkBuilder builder;
 
