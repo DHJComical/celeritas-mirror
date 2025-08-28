@@ -346,6 +346,8 @@ public abstract class RenderSectionManager {
             this.shadowRenderListManager.detachRenderSection(section);
         }
 
+        this.sectionMetricsTracker.removeSection(section);
+
         section.delete();
 
         this.markGraphDirty();

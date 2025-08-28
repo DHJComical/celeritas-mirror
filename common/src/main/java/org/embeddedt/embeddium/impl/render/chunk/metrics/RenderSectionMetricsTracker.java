@@ -19,10 +19,14 @@ public class RenderSectionMetricsTracker {
         sectionsInHeap.add(section);
     }
 
-    public void updateSectionBuildDuration(RenderSection section, long duration) {
+    public void removeSection(RenderSection section) {
         if (sectionsInHeap.remove(section)) {
             slowestSections.remove(section);
         }
+    }
+
+    public void updateSectionBuildDuration(RenderSection section, long duration) {
+        removeSection(section);
 
         section.setLastBuildDurationNanos(duration);
 
