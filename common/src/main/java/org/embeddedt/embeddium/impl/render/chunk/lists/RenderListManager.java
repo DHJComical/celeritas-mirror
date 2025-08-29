@@ -270,6 +270,13 @@ public class RenderListManager {
         return this.debugStatistics;
     }
 
+    public String getTickerDebugString() {
+        if (this.sectionTicker == null) {
+            return "";
+        }
+        return this.sectionTicker.getDebugString();
+    }
+
     private RenderListDebugStatistics computeDebugStatistics() {
         Object2IntOpenHashMap<TerrainRenderPass> renderPassCounts = new Object2IntOpenHashMap<>();
 

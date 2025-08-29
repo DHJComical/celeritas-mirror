@@ -635,8 +635,7 @@ public class CeleritasWorldRenderer {
 
     public String getChunksDebugString() {
         // C: visible/total D: distance
-        // TODO: add dirty and queued counts
-        return String.format("C: %d/%d D: %d", this.renderSectionManager.getVisibleChunkCount(), this.renderSectionManager.getTotalSections(), this.renderDistance);
+        return String.format("C: %d/%d D: %d %s", this.renderSectionManager.getVisibleChunkCount(), this.renderSectionManager.getTotalSections(), this.renderDistance, this.renderSectionManager.getTickerDebugString());
     }
 
     public RenderPassConfiguration<?> getRenderPassConfiguration() {

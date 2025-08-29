@@ -928,4 +928,8 @@ public abstract class RenderSectionManager {
     public final Collection<RenderSection> getSectionsWithGlobalEntities() {
         return ReferenceSets.unmodifiable(this.sectionsWithGlobalEntities);
     }
+
+    public String getTickerDebugString() {
+        return this.getCurrentRenderListManager().getTickerDebugString();
+    }
 }

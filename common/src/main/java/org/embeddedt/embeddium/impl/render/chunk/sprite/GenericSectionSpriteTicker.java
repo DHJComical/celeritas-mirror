@@ -23,6 +23,11 @@ public class GenericSectionSpriteTicker<T> implements SectionTicker {
     }
 
     @Override
+    public String getDebugString() {
+        return "A: " + this.sprites.size();
+    }
+
+    @Override
     public void onRenderListUpdated(List<ChunkRenderList> renderLists) {
         var spriteSet = new ReferenceOpenHashSet<T>(this.sprites.size());
 
