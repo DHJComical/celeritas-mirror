@@ -141,7 +141,8 @@ public abstract class RenderGlobalMixin implements SimpleWorldRenderer.Provider<
         RenderDevice.enterManagedCode();
 
         try {
-            this.renderer.setupTerrain(((ViewportProvider)camera).sodium$createViewport(), (float)tick, frame, spectator, false);
+            this.renderer.setupTerrain(((ViewportProvider)camera).sodium$createViewport(), CeleritasWorldRenderer.captureCameraState(tick),
+                    frame, spectator, false);
         } finally {
             RenderDevice.exitManagedCode();
         }

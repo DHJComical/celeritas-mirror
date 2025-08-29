@@ -67,8 +67,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
         GlStateManager.resetColor();
     }
 
-    @Override
-    protected CameraState captureCameraState(float ticks) {
+    public static CameraState captureCameraState(double ticks) {
         Entity viewEntity = Objects.requireNonNull(Minecraft.getMinecraft().getRenderViewEntity(), "Client must have view entity");
 
         double x = viewEntity.lastTickPosX + (viewEntity.posX - viewEntity.lastTickPosX) * ticks;
@@ -105,11 +104,12 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
     }
 
     @Override
-    public void renderBlockEntities(TileEntityRenderContext tileEntityRenderContext) {
+    public int renderBlockEntities(TileEntityRenderContext tileEntityRenderContext) {
         int pass = MinecraftForgeClient.getRenderPass();
         TileEntityRendererDispatcher.instance.preDrawBatch();
-        super.renderBlockEntities(tileEntityRenderContext);
+        int count = super.renderBlockEntities(tileEntityRenderContext);
         TileEntityRendererDispatcher.instance.drawBatch(pass);
+        return count;
     }
 
     /**
