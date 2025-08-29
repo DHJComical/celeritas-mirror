@@ -55,8 +55,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<World, Primitive
         super.loadWorld(world);
     }
 
-    @Override
-    protected CameraState captureCameraState(float ticks) {
+    public static CameraState captureCameraState(double ticks) {
         //? if <1.8 {
         Entity viewEntity = MinecraftAccessor.celeritas$getInstance().camera;
         //?} else

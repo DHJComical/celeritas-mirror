@@ -132,7 +132,9 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
         RenderDevice.enterManagedCode();
 
         try {
-            this.renderer.setupTerrain(((ViewportProvider)camera).sodium$createViewport(), tick, this.frame++, this.minecraft.player.noClip, false);
+            this.renderer.setupTerrain(((ViewportProvider)camera).sodium$createViewport(),
+                    CeleritasWorldRenderer.captureCameraState(tick),
+                    this.frame++, this.minecraft.player.noClip, false);
         } finally {
             RenderDevice.exitManagedCode();
         }
