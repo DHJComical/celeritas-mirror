@@ -132,7 +132,7 @@ public class CloudRenderer {
         double cloudCenterX = (cameraX + cloudTime);
         double cloudCenterZ = (cameraZ) + 3.96D;
 
-        int renderDistance = CeleritasWorldRenderer.getEffectiveRenderDistance();
+        int renderDistance = CeleritasWorldRenderer.instance().getEffectiveRenderDistance();
         // This insanity (as opposed to just wrapping the call) is necessary to preserve the original assignment for mixin compat
         renderDistance = fireModifyCloudRenderDistanceEvent(renderDistance);
         int cloudDistance = Math.max(this.cloudDistanceMinimum, (renderDistance * this.cloudDistanceMaximum) + 9);

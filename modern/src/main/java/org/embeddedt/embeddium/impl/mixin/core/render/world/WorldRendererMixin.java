@@ -13,10 +13,13 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 *///?}
+import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ChunkRenderMatricesBuilder;
 import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
+import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
+import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
 import net.minecraft.client.Camera;
@@ -127,7 +130,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         RenderDevice.enterManagedCode();
 
         try {
-            this.renderer.setWorldWithoutReload(world);
+            this.renderer.setWorld(world);
         } finally {
             RenderDevice.exitManagedCode();
         }
@@ -172,7 +175,8 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         *///?}
 
         try {
-            this.renderer.drawChunkLayer(renderLayer, pose, x, y, z);
+            this.renderer.setCurrentChunkRenderPose(pose);
+            this.renderer.drawChunkLayer(renderLayer, x, y, z);
         } finally {
             RenderDevice.exitManagedCode();
         }
@@ -232,8 +236,18 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
 
         RenderDevice.enterManagedCode();
 
+        Vec3 pos = camera.getPosition();
+        float pitch = camera.getXRot();
+        float yaw = camera.getYRot();
+        float fogDistance = ChunkShaderFogComponent.FOG_SERVICE.getFogCutoff();
+
+        var cameraState = new SimpleWorldRenderer.CameraState(
+                pos.x, pos.y, pos.z,
+                pitch, yaw, fogDistance
+        );
+
         try {
-            this.renderer.setupTerrain(camera, viewport, this.frame++, spectator, FlawlessFrames.isActive());
+            this.renderer.setupTerrain(viewport, cameraState, this.frame++, spectator, FlawlessFrames.isActive());
         } finally {
             RenderDevice.exitManagedCode();
         }
@@ -322,7 +336,12 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         //? if >=1.20.6
         /*PoseStack matrices = new PoseStack();*/
 
-        this.renderer.renderBlockEntities(matrices, this.renderBuffers, this.destructionProgress, camera, tickDelta, null);
+        var cameraPos = camera.getPosition();
+
+        this.renderer.renderBlockEntities(new CeleritasWorldRenderer.BlockEntityRenderContext(
+                matrices, this.renderBuffers, cameraPos.x, cameraPos.y, cameraPos.z,
+                this.destructionProgress, tickDelta, null
+        ));
     }
     //?} else {
     /*@Overwrite

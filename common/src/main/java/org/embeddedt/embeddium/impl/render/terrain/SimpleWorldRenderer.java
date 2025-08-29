@@ -96,15 +96,13 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
         return this.renderSectionManager.getBuilder().isBuildQueueEmpty();
     }
 
-    protected abstract CameraState captureCameraState(float ticks);
-
     public abstract int getEffectiveRenderDistance();
 
     /**
      * Called prior to any chunk rendering in order to update necessary state.
      */
     public void setupTerrain(Viewport viewport,
-                             float ticks,
+                             CameraState cameraState,
                              @Deprecated(forRemoval = true) int frame,
                              boolean spectator,
                              boolean updateChunksImmediately) {
@@ -114,31 +112,37 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
             this.renderSectionManager.finishAllGraphUpdates();
         }
 
-        this.processChunkEvents();
+        boolean isShadowPass = this.renderSectionManager.isInShadowPass();
 
-        if (getEffectiveRenderDistance() != this.renderDistance) {
-            this.reload();
+        if (!isShadowPass) {
+            this.processChunkEvents();
+
+            this.renderSectionManager.runAsyncTasks();
+
+            if (getEffectiveRenderDistance() != this.renderDistance) {
+                this.reload();
+            }
         }
-
-        var cameraState = captureCameraState(ticks);
 
         boolean dirty = this.lastCameraState == null || !this.lastCameraState.equals(cameraState);
 
         if (dirty) {
             this.renderSectionManager.markGraphDirty();
+            this.lastCameraState = cameraState;
         }
 
         this.currentViewport = viewport;
-
-        this.lastCameraState = cameraState;
 
         this.renderSectionManager.runAsyncTasks();
 
         this.renderSectionManager.updateChunks(updateChunksImmediately);
 
-        this.renderSectionManager.uploadChunks();
+        // We don't need to upload chunks during shadow, they will be uploaded on the next real frame.
+        if (!isShadowPass) {
+            this.renderSectionManager.uploadChunks();
+        }
 
-        if (this.renderSectionManager.needsUpdate()) {
+        if (this.renderSectionManager.needsUpdate() || isShadowPass) {
             this.renderSectionManager.update(viewport, frame, spectator);
         }
 
@@ -189,7 +193,7 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
 
     protected abstract SECTIONMANAGER createRenderSectionManager(CommandList commandList);
 
-    private void initRenderer(CommandList commandList) {
+    protected void initRenderer(CommandList commandList) {
         if (this.renderSectionManager != null) {
             this.renderSectionManager.destroy();
             this.renderSectionManager = null;
@@ -220,7 +224,8 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
 
     protected abstract void renderBlockEntityList(List<BLOCKENTITY> list, BLOCKENTITY_RENDER_CONTEXT context);
 
-    private void renderCulledBlockEntities(BLOCKENTITY_RENDER_CONTEXT renderContext) {
+    private int renderCulledBlockEntities(BLOCKENTITY_RENDER_CONTEXT renderContext) {
+        int count = 0;
         SortedRenderLists renderLists = this.renderSectionManager.getRenderLists();
         Iterator<ChunkRenderList> renderListIterator = renderLists.iterator();
 
@@ -254,12 +259,17 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
                     continue;
                 }
 
+                count += blockEntities.size();
+
                 this.renderBlockEntityList(blockEntities, renderContext);
             }
         }
+
+        return count;
     }
 
-    private void renderGlobalBlockEntities(BLOCKENTITY_RENDER_CONTEXT renderContext) {
+    private int renderGlobalBlockEntities(BLOCKENTITY_RENDER_CONTEXT renderContext) {
+        int count = 0;
         for (var renderSection : this.renderSectionManager.getSectionsWithGlobalEntities()) {
             var context = renderSection.getBuiltContext();
 
@@ -273,17 +283,23 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
                 continue;
             }
 
+            count += blockEntities.size();
+
             this.renderBlockEntityList(blockEntities, renderContext);
         }
+
+        return count;
     }
 
-    public void renderBlockEntities(BLOCKENTITY_RENDER_CONTEXT renderContext) {
-        this.renderCulledBlockEntities(renderContext);
-        this.renderGlobalBlockEntities(renderContext);
+    public int renderBlockEntities(BLOCKENTITY_RENDER_CONTEXT renderContext) {
+        int count = 0;
+        count += this.renderCulledBlockEntities(renderContext);
+        count += this.renderGlobalBlockEntities(renderContext);
+        return count;
     }
 
     // the volume of a section multiplied by the number of sections to be checked at most
-    private static final double MAX_ENTITY_CHECK_VOLUME = 16 * 16 * 16 * 15;
+    public static final double MAX_ENTITY_CHECK_VOLUME = 16 * 16 * 16 * 15;
 
     public boolean isBoxVisible(double x1, double y1, double z1, double x2, double y2, double z2) {
         // Boxes outside the valid world height will never map to a rendered chunk
@@ -320,8 +336,9 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
 
     public String getChunksDebugString() {
         // C: visible/total D: distance
-        // TODO: add dirty and queued counts
-        return String.format("C: %d/%d D: %d", this.renderSectionManager.getVisibleChunkCount(), this.renderSectionManager.getTotalSections(), this.renderDistance);
+        return String.format("C: %d/%d D: %d %s", this.renderSectionManager.getVisibleChunkCount(),
+                this.renderSectionManager.getTotalSections(), this.renderDistance,
+                this.renderSectionManager.getTickerDebugString());
     }
 
     public RenderPassConfiguration<?> getRenderPassConfiguration() {
