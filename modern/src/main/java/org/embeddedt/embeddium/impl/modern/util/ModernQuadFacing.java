@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.model.quad;
+package org.embeddedt.embeddium.impl.modern.util;
 
 import net.minecraft.core.Direction;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;

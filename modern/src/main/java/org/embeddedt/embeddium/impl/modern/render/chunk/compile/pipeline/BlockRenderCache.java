@@ -13,8 +13,8 @@ import org.embeddedt.embeddium.impl.model.light.data.ArrayLightDataCache;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 *///?}
-import org.embeddedt.embeddium.impl.model.quad.ModernQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
+import org.embeddedt.embeddium.impl.modern.util.ModernQuadFacing;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
