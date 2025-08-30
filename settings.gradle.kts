@@ -1,4 +1,4 @@
-import dev.kikugie.stonecutter.data.tree.TreeBuilder
+import dev.kikugie.stonecutter.data.tree.builder.TreeBuilder
 
 pluginManagement {
     repositories {

@@ -1,6 +1,7 @@
 plugins {
     `kotlin-dsl`
     `java-library`
+    kotlin("jvm") version "2.2.0"
     id("java-gradle-plugin") // so we can assign and ID to our plugin
 }
 
@@ -12,7 +13,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.apache.commons:commons-compress:1.26.0")
     implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.0")
-    implementation("dev.kikugie:stonecutter:0.7-beta.2")
+    implementation("dev.kikugie:stonecutter:0.7.8")
 }
 
 repositories {
