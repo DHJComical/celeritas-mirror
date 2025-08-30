@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
-import org.embeddedt.embeddium.impl.model.quad.blender.BlendedColorProvider;
+import org.embeddedt.embeddium.impl.model.color.BlendedColorProvider;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ChunkRenderMatricesBuilder;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ModernRenderSectionManager;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;

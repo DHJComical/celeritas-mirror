@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.impl.model.color;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
-import org.embeddedt.embeddium.impl.model.quad.blender.BlendedColorProvider;
 import org.embeddedt.embeddium.api.util.ColorARGB;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.core.BlockPos;

@@ -1,8 +1,7 @@
-package org.embeddedt.embeddium.impl.model.quad.blender;
+package org.embeddedt.embeddium.impl.model.color;
 
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
-import org.embeddedt.embeddium.impl.model.color.ColorProvider;
 import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.api.util.ColorMixer;
 import net.minecraft.client.Minecraft;
