@@ -1,10 +1,11 @@
-package org.embeddedt.embeddium.impl.model.light.data;
+package org.embeddedt.embeddium.impl.model.quad;
 
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
+import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import net.minecraft.world.level.BlockAndTintGetter;

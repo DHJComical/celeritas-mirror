@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.model.light;
 
-import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.embeddedt.embeddium.impl.model.light.flat.FlatLightPipeline;
 import org.embeddedt.embeddium.impl.model.light.smooth.SmoothLightPipeline;
@@ -17,15 +16,10 @@ public class LightPipelineProvider {
     private final EnumMap<LightMode, LightPipeline> lighters = new EnumMap<>(LightMode.class);
     private final LightDataAccess lightData;
 
-    public LightPipelineProvider(LightDataAccess cache, DiffuseProvider diffuseProvider) {
+    public LightPipelineProvider(LightDataAccess cache, DiffuseProvider diffuseProvider, boolean useQuadNormalsForShading) {
         this.lightData = cache;
-        if (LoaderServices.INSTANCE.hasCustomLightPipeline()) {
-            this.lighters.put(LightMode.SMOOTH, LoaderServices.INSTANCE.createCustomLightPipeline(LightMode.SMOOTH, cache));
-            this.lighters.put(LightMode.FLAT, LoaderServices.INSTANCE.createCustomLightPipeline(LightMode.FLAT, cache));
-        } else {
-            this.lighters.put(LightMode.SMOOTH, new SmoothLightPipeline(cache, diffuseProvider));
-            this.lighters.put(LightMode.FLAT, new FlatLightPipeline(cache, diffuseProvider));
-        }
+        this.lighters.put(LightMode.SMOOTH, new SmoothLightPipeline(cache, diffuseProvider, useQuadNormalsForShading));
+        this.lighters.put(LightMode.FLAT, new FlatLightPipeline(cache, diffuseProvider, useQuadNormalsForShading));
     }
 
     public LightPipeline getLighter(LightMode type) {

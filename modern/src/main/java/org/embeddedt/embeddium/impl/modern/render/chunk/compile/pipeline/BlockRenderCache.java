@@ -4,15 +4,16 @@ import lombok.Getter;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
 import org.embeddedt.embeddium.impl.model.light.DiffuseProvider;
 import org.embeddedt.embeddium.impl.model.light.LightPipelineProvider;
-import org.embeddedt.embeddium.impl.model.light.data.ArrayLightDataCache;
 //? if forgelike && <1.19 {
 /*import org.embeddedt.embeddium.impl.render.EmbeddiumRenderLayerCache;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 *///?}
+import org.embeddedt.embeddium.impl.model.quad.ArrayLightDataCache;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.modern.util.ModernQuadFacing;
 import org.embeddedt.embeddium.impl.util.WorldUtil;
@@ -67,7 +68,8 @@ public class BlockRenderCache {
                     public float getDiffuse(ModelQuadFacing lightFace, boolean shade) {
                         return WorldUtil.getShade(world, ModernQuadFacing.toDirection(lightFace), shade);
                     }
-                });
+                },
+                Celeritas.options().quality.useQuadNormalsForShading);
 
         var colorRegistry = new ColorProviderRegistry(client.getBlockColors());
 

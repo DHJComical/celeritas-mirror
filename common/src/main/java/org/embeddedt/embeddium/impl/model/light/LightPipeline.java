@@ -2,8 +2,6 @@ package org.embeddedt.embeddium.impl.model.light;
 
 import org.embeddedt.embeddium.impl.model.light.data.QuadLightData;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.jetbrains.annotations.NotNull;
 

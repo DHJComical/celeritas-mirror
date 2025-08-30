@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.model.light.flat;
 
-import org.embeddedt.embeddium.impl.Celeritas;
+import lombok.RequiredArgsConstructor;
 import org.embeddedt.embeddium.impl.model.light.DiffuseProvider;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
@@ -18,6 +18,7 @@ import static org.embeddedt.embeddium.impl.model.light.data.LightDataAccess.*;
  * A light pipeline which implements "classic-style" lighting through simply using the light value of the adjacent
  * block to a face.
  */
+@RequiredArgsConstructor
 public class FlatLightPipeline implements LightPipeline {
     /**
      * The cache which light data will be accessed from.
@@ -25,20 +26,14 @@ public class FlatLightPipeline implements LightPipeline {
     private final LightDataAccess lightCache;
 
     /**
-     * Whether or not to even attempt to shade quads using their normals rather than light face.
-     */
-    private final boolean useQuadNormalsForShading;
-
-    /**
      * Used to retrieve the directional shading value for quads.
      */
     private final DiffuseProvider diffuseProvider;
 
-    public FlatLightPipeline(LightDataAccess lightCache, DiffuseProvider diffuseProvider) {
-        this.lightCache = lightCache;
-        this.diffuseProvider = diffuseProvider;
-        this.useQuadNormalsForShading = Celeritas.options().quality.useQuadNormalsForShading;
-    }
+    /**
+     * Whether or not to even attempt to shade quads using their normals rather than light face.
+     */
+    private final boolean useQuadNormalsForShading;
 
     @Override
     public void calculate(ModelQuadView quad, int x, int y, int z, QuadLightData out, ModelQuadFacing cullFace, ModelQuadFacing lightFace, boolean shade) {

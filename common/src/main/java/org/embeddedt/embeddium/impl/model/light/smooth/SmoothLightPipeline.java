@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.model.light.smooth;
 
-import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.model.light.DiffuseProvider;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
@@ -68,14 +67,14 @@ public class SmoothLightPipeline implements LightPipeline {
      */
     private final DiffuseProvider diffuseProvider;
 
-    public SmoothLightPipeline(LightDataAccess cache, DiffuseProvider diffuseProvider) {
+    public SmoothLightPipeline(LightDataAccess cache, DiffuseProvider diffuseProvider, boolean useQuadNormalsForShading) {
         this.lightCache = cache;
 
         for (int i = 0; i < this.cachedFaceData.length; i++) {
             this.cachedFaceData[i] = new AoFaceData();
         }
 
-        this.useQuadNormalsForShading = Celeritas.options().quality.useQuadNormalsForShading;
+        this.useQuadNormalsForShading = useQuadNormalsForShading;
         this.diffuseProvider = diffuseProvider;
     }
 

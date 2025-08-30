@@ -1,12 +1,9 @@
 package org.embeddedt.embeddium.impl.model.light.smooth;
 
 import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 
-import static org.embeddedt.embeddium.impl.model.light.data.ArrayLightDataCache.*;
+import static org.embeddedt.embeddium.impl.model.light.data.LightDataAccess.*;
 
 class AoFaceData {
     public final int[] lm = new int[4];
