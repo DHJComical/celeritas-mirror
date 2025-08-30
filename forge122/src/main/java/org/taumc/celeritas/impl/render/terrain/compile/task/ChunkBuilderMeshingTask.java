@@ -1,6 +1,5 @@
 package org.taumc.celeritas.impl.render.terrain.compile.task;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -13,6 +12,7 @@ import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
+import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.math.BlockPos;
@@ -40,6 +40,7 @@ import org.taumc.celeritas.impl.world.cloned.ChunkRenderContext;
 import java.util.*;
 
 public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> {
+    private static final boolean USE_NEW_BLOCK_RENDERER = Boolean.getBoolean("celeritas.useVintageFastBlockRenderer");
     private static final ProxyClassGenerator<WorldSlice, CeleritasBlockAccess> WORLD_SLICE_LOCAL_GENERATOR = new ProxyClassGenerator<>(WorldSlice.class, "WorldSliceLocal", CeleritasBlockAccess.class);
     private final RenderSection render;
     private final int buildTime;
@@ -113,7 +114,11 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             if (block.canRenderInLayer(blockState, layer)) {
                                 ForgeHooksClient.setRenderLayer(layer);
                                 var buffer = buildContext.getBufferForLayer(layer);
-                                dispatcher.renderBlock(blockState, blockPos, slice, buffer);
+                                if (blockState.getRenderType() == EnumBlockRenderType.MODEL && USE_NEW_BLOCK_RENDERER) {
+                                    buildContext.getBlockRenderer().renderBlock(blockState, blockPos, slice, layer);
+                                } else {
+                                    dispatcher.renderBlock(blockState, blockPos, slice, buffer);
+                                }
                             }
                         }
 

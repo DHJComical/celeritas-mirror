@@ -23,6 +23,8 @@ import org.lwjgl.system.MemoryUtil;
 import org.taumc.celeritas.CeleritasVintage;
 import org.taumc.celeritas.impl.extensions.SpriteExtension;
 import org.taumc.celeritas.impl.extensions.TextureMapExtension;
+import org.taumc.celeritas.impl.render.terrain.compile.light.LightDataCache;
+import org.taumc.celeritas.impl.render.terrain.compile.pipeline.VintageBlockRenderer;
 import org.taumc.celeritas.impl.world.WorldSlice;
 
 import java.nio.ByteBuffer;
@@ -34,21 +36,29 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
     private final TextureMapExtension textureAtlas;
     private final net.minecraft.client.renderer.BufferBuilder[] worldRenderers = new net.minecraft.client.renderer.BufferBuilder[LAYERS.length];
     private final boolean[] usedWorldRenderers = new boolean[LAYERS.length];
+    @Getter
     private int offX, offY, offZ;
     @Getter
     private final WorldSlice worldSlice;
+    @Getter
+    private final VintageBlockRenderer blockRenderer;
     private final RenderPassConfiguration<?> renderPassConfiguration;
+    private final LightDataCache lightDataCache;
     private final boolean useRenderPassOptimization;
 
     public VintageChunkBuildContext(WorldClient world, RenderPassConfiguration renderPassConfiguration) {
         super(renderPassConfiguration);
         this.renderPassConfiguration = renderPassConfiguration;
         this.worldSlice = new WorldSlice(world);
+        this.lightDataCache = new LightDataCache(this.worldSlice);
+        this.blockRenderer = new VintageBlockRenderer(this, lightDataCache);
         this.textureAtlas = (TextureMapExtension) Minecraft.getMinecraft().getTextureMapBlocks();
         this.useRenderPassOptimization = CeleritasVintage.options().performance.useRenderPassOptimization;
     }
 
     public void setupTranslation(int x, int y, int z) {
+        this.lightDataCache.reset(x, y, z);
+
         this.offX = x;
         this.offY = y;
         this.offZ = z;

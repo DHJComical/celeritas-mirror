@@ -152,6 +152,14 @@ public abstract class LightDataAccess {
         return block << 4 | sky << 20;
     }
 
+    public static int unpackBlock(int packed) {
+        return (packed & 0xFFFF) >> 4;
+    }
+
+    public static int unpackSky(int packed) {
+        return (packed >> 20) & 0xFFFF;
+    }
+
     /**
      * Computes the combined lightmap using block light, sky light, and luminance values.
      *
