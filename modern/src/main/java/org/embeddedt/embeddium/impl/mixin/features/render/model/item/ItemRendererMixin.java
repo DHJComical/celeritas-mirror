@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.model.item;
 
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.render.immediate.model.BakedModelEncoder;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
@@ -148,7 +149,7 @@ public class ItemRendererMixin {
 
             BakedModelEncoder.writeQuadVertices(writer, matrices, quad, color, light, overlay, shouldReadExistingColor);
 
-            SpriteUtil.markSpriteActive(quad.getSprite());
+            SpriteUtil.markSpriteActive((TextureAtlasSprite)quad.celeritas$getSprite());
         }
     }
 }

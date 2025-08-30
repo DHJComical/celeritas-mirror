@@ -5,6 +5,7 @@ import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import org.embeddedt.embeddium.impl.model.color.ColorProviderRegistry;
+import org.embeddedt.embeddium.impl.model.light.DiffuseProvider;
 import org.embeddedt.embeddium.impl.model.light.LightPipelineProvider;
 import org.embeddedt.embeddium.impl.model.light.data.ArrayLightDataCache;
 //? if forgelike && <1.19 {
@@ -12,6 +13,9 @@ import org.embeddedt.embeddium.impl.model.light.data.ArrayLightDataCache;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 *///?}
+import org.embeddedt.embeddium.impl.model.quad.ModernQuadFacing;
+import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
 import net.minecraft.client.Minecraft;
@@ -46,7 +50,24 @@ public class BlockRenderCache {
         this.worldSlice = new WorldSlice(world);
         this.lightDataCache = new ArrayLightDataCache(this.worldSlice);
 
-        LightPipelineProvider lightPipelineProvider = new LightPipelineProvider(this.lightDataCache, !WorldRenderingSettings.INSTANCE.shouldDisableDirectionalShading());
+        LightPipelineProvider lightPipelineProvider = new LightPipelineProvider(this.lightDataCache,
+                WorldRenderingSettings.INSTANCE.shouldDisableDirectionalShading() ? DiffuseProvider.NONE : new DiffuseProvider() {
+                    @Override
+                    public float getDiffuse(float normalX, float normalY, float normalZ, boolean shade) {
+                        //? if forgelike && >=1.19 {
+                        return world.getShade(normalX, normalY, normalZ, shade);
+                        //?} else if forgelike && <1.19 {
+                        /*return net.minecraftforge.client.model.pipeline.LightUtil.diffuseLight(normalX, normalY, normalZ, shade);
+                        *///?} else {
+                        /*throw new IllegalStateException();
+                        *///?}
+                    }
+
+                    @Override
+                    public float getDiffuse(ModelQuadFacing lightFace, boolean shade) {
+                        return WorldUtil.getShade(world, ModernQuadFacing.toDirection(lightFace), shade);
+                    }
+                });
 
         var colorRegistry = new ColorProviderRegistry(client.getBlockColors());
 
@@ -79,7 +100,7 @@ public class BlockRenderCache {
      * Initialize the render cache for a new chunk.
      */
     public void init(ChunkRenderContext context) {
-        this.lightDataCache.reset(context.getOrigin());
+        this.lightDataCache.reset(context.getOrigin().minBlockX(), context.getOrigin().minBlockY(), context.getOrigin().minBlockZ());
         this.lightPipelineProvider.reset();
         this.worldSlice.copyData(context);
     }

@@ -51,6 +51,10 @@ public enum ModelQuadFacing {
         };
     }
 
+    public boolean isDirection() {
+        return this != UNASSIGNED;
+    }
+
     public enum Axis {
         X,
         Y,

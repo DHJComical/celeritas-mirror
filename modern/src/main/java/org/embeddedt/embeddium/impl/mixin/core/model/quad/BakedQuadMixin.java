@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.core.model.quad;
 
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
+import org.embeddedt.embeddium.impl.model.quad.ModernQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
 import org.embeddedt.embeddium.impl.modern.render.chunk.sprite.SpriteTransparencyLevelHolder;
@@ -83,7 +84,7 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     }
 
     @Override
-    public TextureAtlasSprite getSprite() {
+    public Object celeritas$getSprite() {
         return this.sprite;
     }
 
@@ -111,7 +112,7 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     public int getFlags() {
         int f = this.flags;
         if ((f & ModelQuadFlags.IS_POPULATED) == 0) {
-            this.flags = f = ModelQuadFlags.getQuadFlags(this, direction, f);
+            this.flags = f = ModelQuadFlags.getQuadFlags(this, getLightFace(), f);
         }
         return f;
     }
@@ -154,8 +155,8 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     }
 
     @Override
-    public Direction getLightFace() {
-        return this.direction;
+    public ModelQuadFacing getLightFace() {
+        return ModernQuadFacing.fromDirection(this.direction);
     }
 
     @Override

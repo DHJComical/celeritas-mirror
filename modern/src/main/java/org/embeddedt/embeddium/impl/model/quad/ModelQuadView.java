@@ -1,8 +1,7 @@
 package org.embeddedt.embeddium.impl.model.quad;
 
+import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.core.Direction;
 
 /**
  * Provides a read-only view of a model quad. For mutable access to a model quad, see {@link ModelQuadViewMutable}.
@@ -57,12 +56,12 @@ public interface ModelQuadView {
     /**
      * @return The sprite texture used by this quad, or null if none is attached
      */
-    TextureAtlasSprite getSprite();
+    Object celeritas$getSprite();
 
     /**
      * @return The face used by this quad for lighting effects
      */
-    Direction getLightFace();
+    ModelQuadFacing getLightFace();
 
     int getForgeNormal(int idx);
 

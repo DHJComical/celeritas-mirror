@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.model.quad;
 
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
 
@@ -17,7 +16,7 @@ public interface BakedQuadView extends ModelQuadView {
 
     @Nullable SpriteTransparencyLevel getTransparencyLevel();
 
-    static BakedQuadView of(BakedQuad quad) {
-        return (BakedQuadView)(Object)quad;
+    static BakedQuadView of(Object o) {
+        return (BakedQuadView)o;
     }
 }

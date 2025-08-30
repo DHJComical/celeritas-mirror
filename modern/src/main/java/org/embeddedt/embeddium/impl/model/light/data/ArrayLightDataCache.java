@@ -1,9 +1,13 @@
 package org.embeddedt.embeddium.impl.model.light.data;
 
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.state.BlockState;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
-import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.BlockAndTintGetter;
-import java.util.Arrays;
 
 /**
  * A light data cache which uses a flat-array to store the light data for the blocks in a given chunk and its direct
@@ -11,44 +15,53 @@ import java.util.Arrays;
  * can be re-used by {@link WorldSlice} to avoid allocations.
  */
 public class ArrayLightDataCache extends LightDataAccess {
-    private static final int NEIGHBOR_BLOCK_RADIUS = 2;
-    private static final int BLOCK_LENGTH = 16 + (NEIGHBOR_BLOCK_RADIUS * 2);
-
-    private final int[] light;
-
-    private int xOffset, yOffset, zOffset;
+    private final BlockAndTintGetter world;
+    private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
     public ArrayLightDataCache(BlockAndTintGetter world) {
         this.world = world;
-        this.light = new int[BLOCK_LENGTH * BLOCK_LENGTH * BLOCK_LENGTH];
     }
 
-    public void reset(SectionPos origin) {
-        this.xOffset = origin.minBlockX() - NEIGHBOR_BLOCK_RADIUS;
-        this.yOffset = origin.minBlockY() - NEIGHBOR_BLOCK_RADIUS;
-        this.zOffset = origin.minBlockZ() - NEIGHBOR_BLOCK_RADIUS;
+    protected int compute(int x, int y, int z) {
+        BlockPos pos = this.pos.set(x, y, z);
+        BlockAndTintGetter world = this.world;
 
-        Arrays.fill(this.light, 0);
-    }
+        BlockState state = world.getBlockState(pos);
 
-    private int index(int x, int y, int z) {
-        int x2 = x - this.xOffset;
-        int y2 = y - this.yOffset;
-        int z2 = z - this.zOffset;
+        boolean em = state.emissiveRendering(/*? if >=1.16 {*/world, pos/*?}*/);
+        boolean op = state.isViewBlocking(world, pos) && state.getLightBlock(/*? if <1.21.2 {*/world, pos/*?}*/) != 0;
+        boolean fo = state.isSolidRender(/*? if <1.21.2 {*/world, pos/*?}*/);
+        boolean fc = state.isCollisionShapeFullBlock(world, pos);
 
-        return (z2 * BLOCK_LENGTH * BLOCK_LENGTH) + (y2 * BLOCK_LENGTH) + x2;
-    }
+        int lu = WorldUtil.getLightEmission(state, world, pos);
 
-    @Override
-    public int get(int x, int y, int z) {
-        int l = this.index(x, y, z);
-
-        int word = this.light[l];
-
-        if (word != 0) {
-            return word;
+        // OPTIMIZE: Do not calculate light data if the block is full and opaque and does not emit light.
+        int bl;
+        int sl;
+        if (fo && lu == 0) {
+            bl = 0;
+            sl = 0;
+        } else {
+            // calculate light data using custom approach for emissive blocks, and vanilla otherwise
+            if (em) {
+                bl = world.getBrightness(LightLayer.BLOCK, pos);
+                sl = world.getBrightness(LightLayer.SKY, pos);
+            } else {
+                // call the vanilla method so mods using custom lightmap logic work correctly
+                int packedCoords = LevelRenderer.getLightColor(/*? if >=1.21.5 {*//*LevelRenderer.BrightnessGetter.DEFAULT,*//*?}*/ world, state, pos);
+                bl = LightTexture.block(packedCoords);
+                sl = LightTexture.sky(packedCoords);
+            }
         }
 
-        return this.light[l] = this.compute(x, y, z);
+        // FIX: Do not apply AO from blocks that emit light
+        float ao;
+        if (lu == 0) {
+            ao = state.getShadeBrightness(world, pos);
+        } else {
+            ao = 1.0f;
+        }
+
+        return packFC(fc) | packFO(fo) | packOP(op) | packEM(em) | packAO(ao) | packLU(lu) | packSL(sl) | packBL(bl);
     }
 }

@@ -54,13 +54,13 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
         return new AoCalculator(blockInfo) {
             @Override
             public int light(BlockPos pos, BlockState state) {
-                int data = lightDataAccess.get(pos);
+                int data = lightDataAccess.get(pos.getX(), pos.getY(), pos.getZ());
                 return LightDataAccess.getLightmap(data);
             }
 
             @Override
             public float ao(BlockPos pos, BlockState state) {
-                return LightDataAccess.unpackAO(lightDataAccess.get(pos));
+                return LightDataAccess.unpackAO(lightDataAccess.get(pos.getX(), pos.getY(), pos.getZ()));
             }
         };
     }

@@ -3,8 +3,6 @@ package org.embeddedt.embeddium.impl.model.quad.properties;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
 import org.embeddedt.embeddium.api.util.ColorABGR;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.core.Direction;
 
 public class ModelQuadFlags {
     /**
@@ -48,7 +46,7 @@ public class ModelQuadFlags {
         return (flags & mask) != 0;
     }
 
-    public static int getQuadFlags(ModelQuadView quad, Direction face) {
+    public static int getQuadFlags(ModelQuadView quad, ModelQuadFacing face) {
         return getQuadFlags(quad, face, 0);
     }
 
@@ -56,7 +54,7 @@ public class ModelQuadFlags {
      * Calculates the properties of the given quad. This data is used later by the light pipeline in order to make
      * certain optimizations.
      */
-    public static int getQuadFlags(ModelQuadView quad, Direction face, int existingFlags) {
+    public static int getQuadFlags(ModelQuadView quad, ModelQuadFacing face, int existingFlags) {
         float minX = 32.0F;
         float minY = 32.0F;
         float minZ = 32.0F;
@@ -111,12 +109,13 @@ public class ModelQuadFlags {
         };
 
         boolean aligned = parallel && switch (face) {
-            case DOWN -> minY < 0.0001f;
-            case UP -> maxY > 0.9999F;
-            case NORTH -> minZ < 0.0001f;
-            case SOUTH -> maxZ > 0.9999F;
-            case WEST -> minX < 0.0001f;
-            case EAST -> maxX > 0.9999F;
+            case NEG_Y -> minY < 0.0001f;
+            case POS_Y -> maxY > 0.9999F;
+            case NEG_Z -> minZ < 0.0001f;
+            case POS_Z -> maxZ > 0.9999F;
+            case NEG_X -> minX < 0.0001f;
+            case POS_X -> maxX > 0.9999F;
+            case UNASSIGNED -> throw new IllegalArgumentException();
         };
 
         int flags = existingFlags & ~(IS_PARTIAL | IS_PARALLEL | IS_ALIGNED);

@@ -2,9 +2,8 @@ package org.embeddedt.embeddium.impl.model.quad;
 
 import static org.embeddedt.embeddium.impl.util.ModelQuadUtil.*;
 
+import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.core.Direction;
 
 /**
  * A simple implementation of the {@link ModelQuadViewMutable} interface which can provide an on-heap scratch area
@@ -14,9 +13,9 @@ public class ModelQuad implements ModelQuadViewMutable {
     private final int[] data = new int[VERTEX_SIZE * 4];
     private int flags;
 
-    private TextureAtlasSprite sprite;
+    private Object sprite;
     private int colorIdx;
-    private Direction direction;
+    private ModelQuadFacing direction;
 
     private boolean hasAmbientOcclusion = true;
 
@@ -61,7 +60,7 @@ public class ModelQuad implements ModelQuadViewMutable {
     }
 
     @Override
-    public void setSprite(TextureAtlasSprite sprite) {
+    public void setSprite(Object sprite) {
         this.sprite = sprite;
     }
 
@@ -71,7 +70,10 @@ public class ModelQuad implements ModelQuadViewMutable {
     }
 
     @Override
-    public void setLightFace(Direction face) {
+    public void setLightFace(ModelQuadFacing face) {
+        if (!face.isDirection()) {
+            throw new IllegalArgumentException();
+        }
         this.direction = face;
     }
 
@@ -136,12 +138,12 @@ public class ModelQuad implements ModelQuadViewMutable {
     }
 
     @Override
-    public TextureAtlasSprite getSprite() {
+    public Object celeritas$getSprite() {
         return this.sprite;
     }
 
     @Override
-    public Direction getLightFace() {
+    public ModelQuadFacing getLightFace() {
         return this.direction;
     }
 

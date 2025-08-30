@@ -4,6 +4,7 @@ package org.embeddedt.embeddium.api.math;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.api.util.NormI8;
 import net.minecraft.core.Direction;
+import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.joml.Math;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -198,6 +199,70 @@ public class MatrixHelper {
             y = -matrix.m01;
             z = -matrix.m02;
         } else if (direction == Direction.EAST) {
+            x = matrix.m00;
+            y = matrix.m01;
+            z = matrix.m02;
+        } else {
+            throw new IllegalArgumentException("An incorrect direction enum was provided..");
+        }
+
+        if (!trustNormals) {
+            float scalar = Math.invsqrt(Math.fma(x, x, Math.fma(y, y, z * z)));
+
+            x *= scalar;
+            y *= scalar;
+            z *= scalar;
+        }
+
+        return NormI8.pack(x, y, z);
+    }
+
+    /**
+     * Returns the transformed normal vector for a given unit vector (direction). This is significantly faster
+     * than transforming the vector directly (i.e. with {@link Matrix3f#transform(Vector3f)}), as it can simply
+     * extract the values from the provided matrix (rather than transforming the vertices.)
+     *
+     * @param matrix The transformation matrix
+     * @param direction The unit vector (direction) to use
+     * @return A transformed normal in packed format
+     */
+    public static int transformNormal(Matrix3f matrix, ModelQuadFacing direction) {
+        return transformNormal(matrix, true, direction);
+    }
+
+    /**
+     * Returns the transformed normal vector for a given unit vector (direction). This is significantly faster
+     * than transforming the vector directly (i.e. with {@link Matrix3f#transform(Vector3f)}), as it can simply
+     * extract the values from the provided matrix (rather than transforming the vertices.)
+     *
+     * @param matrix The transformation matrix
+     * @param trustNormals Whether the calculated vector should be assumed to be normalized
+     * @param direction The unit vector (direction) to use
+     * @return A transformed normal in packed format
+     */
+    public static int transformNormal(Matrix3f matrix, boolean trustNormals, ModelQuadFacing direction) {
+        float x, y, z;
+        if (direction == ModelQuadFacing.NEG_Y) {
+            x = -matrix.m10;
+            y = -matrix.m11;
+            z = -matrix.m12;
+        } else if (direction == ModelQuadFacing.POS_Y) {
+            x = matrix.m10;
+            y = matrix.m11;
+            z = matrix.m12;
+        } else if (direction == ModelQuadFacing.NEG_Z) {
+            x = -matrix.m20;
+            y = -matrix.m21;
+            z = -matrix.m22;
+        } else if (direction == ModelQuadFacing.POS_Z) {
+            x = matrix.m20;
+            y = matrix.m21;
+            z = matrix.m22;
+        } else if (direction == ModelQuadFacing.NEG_X) {
+            x = -matrix.m00;
+            y = -matrix.m01;
+            z = -matrix.m02;
+        } else if (direction == ModelQuadFacing.POS_X) {
             x = matrix.m00;
             y = matrix.m01;
             z = matrix.m02;

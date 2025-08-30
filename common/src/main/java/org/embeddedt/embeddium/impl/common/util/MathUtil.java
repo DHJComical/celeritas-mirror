@@ -33,4 +33,8 @@ public class MathUtil {
     public static int clamp(int value, int min, int max) {
         return Math.min(Math.max(value, min), max);
     }
+
+    public static boolean roughlyEqual(float a, float b) {
+        return Math.abs(b - a) < 0.00001f;
+    }
 }

@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.features.textures.animations.tracking;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
@@ -19,6 +20,6 @@ public class BlockModelRendererMixin {
      */
     @Inject(method = "putQuadData", at = @At("HEAD"))
     private void preRenderQuad(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) BakedQuad quad) {
-        SpriteUtil.markSpriteActive(BakedQuadView.of(quad).getSprite());
+        SpriteUtil.markSpriteActive((TextureAtlasSprite)BakedQuadView.of(quad).celeritas$getSprite());
     }
 }

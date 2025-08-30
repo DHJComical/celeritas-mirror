@@ -113,7 +113,7 @@ public class FluidRenderer {
     private final TextureAtlasSprite[] waterSprites;
 
     public FluidRenderer(ColorProviderRegistry colorProviderRegistry, LightPipelineProvider lighters) {
-        this.quad.setLightFace(Direction.UP);
+        this.quad.setLightFace(ModelQuadFacing.POS_Y);
 
         this.lighters = lighters;
         this.colorProviderRegistry = colorProviderRegistry;
@@ -447,7 +447,7 @@ public class FluidRenderer {
                 setVertex(quad, 3, 1.0F, northEastHeight, 0.0f, u4, v4);
             }
 
-            this.updateQuad(quad, world, blockPos, lighter, Direction.UP, 1.0F, colorProvider, fluidState);
+            this.updateQuad(quad, world, blockPos, lighter, ModelQuadFacing.POS_Y, 1.0F, colorProvider, fluidState);
             this.writeQuad(meshBuilder, material, offset, quad, facing, false, ctx);
 
             if (fluidState.shouldRenderBackwardUpFace(world, this.scratchPos.set(posX, posY + 1, posZ))) {
@@ -474,7 +474,7 @@ public class FluidRenderer {
 
             quad.setFlags(ModelQuadFlags.IS_VANILLA_SHADED | ModelQuadFlags.IS_PARALLEL);
 
-            this.updateQuad(quad, world, blockPos, lighter, Direction.DOWN, 1.0F, colorProvider, fluidState);
+            this.updateQuad(quad, world, blockPos, lighter, ModelQuadFacing.NEG_Y, 1.0F, colorProvider, fluidState);
             this.writeQuad(meshBuilder, material, offset, quad, ModelQuadFacing.NEG_Y, false, ctx);
 
         }
@@ -590,7 +590,7 @@ public class FluidRenderer {
 
                 ModelQuadFacing facing = ModernQuadFacing.fromDirection(dir);
 
-                this.updateQuad(quad, world, blockPos, lighter, dir, br, colorProvider, fluidState);
+                this.updateQuad(quad, world, blockPos, lighter, facing, br, colorProvider, fluidState);
                 this.writeQuad(meshBuilder, material, offset, quad, facing, false, ctx);
 
                 if (!isOverlay) {
@@ -615,10 +615,10 @@ public class FluidRenderer {
         return DefaultColorProviders.getFluidProvider();
     }
 
-    private void updateQuad(ModelQuadView quad, EmbeddiumBlockAndTintGetter world, BlockPos pos, LightPipeline lighter, Direction dir, float brightness,
+    private void updateQuad(ModelQuadView quad, EmbeddiumBlockAndTintGetter world, BlockPos pos, LightPipeline lighter, ModelQuadFacing dir, float brightness,
                             ColorProvider<FluidState> colorProvider, FluidState fluidState) {
         QuadLightData light = this.quadLightData;
-        lighter.calculate(quad, pos, light, null, dir, false);
+        lighter.calculate(quad, pos.getX(), pos.getY(), pos.getZ(), light, ModelQuadFacing.UNASSIGNED, dir, false);
 
         colorProvider.getColors(world, pos, fluidState, quad, this.quadColors);
 
@@ -652,7 +652,7 @@ public class FluidRenderer {
             out.trueNormal = trueNormal;
         }
 
-        TextureAtlasSprite sprite = quad.getSprite();
+        TextureAtlasSprite sprite = (TextureAtlasSprite)quad.celeritas$getSprite();
 
         if (SpriteUtil.hasAnimation(sprite) && builder.getSectionContextBundle() instanceof MinecraftBuiltRenderSectionData<?,?> mcData) {
             //noinspection unchecked

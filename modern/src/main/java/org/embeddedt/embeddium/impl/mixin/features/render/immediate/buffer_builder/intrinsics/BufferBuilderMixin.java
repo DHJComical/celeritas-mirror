@@ -5,6 +5,8 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.render.immediate.model.BakedModelEncoder;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
@@ -35,7 +37,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
         float a = 1.0f;
     //?}
 
-        BakedQuadView quad = BakedQuadView.of(bakedQuad);
+        BakedQuadView quad = (BakedQuadView)(Object)bakedQuad;
 
         if (!this.fastFormat) {
             //? if <1.20.6
@@ -47,7 +49,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
             //? if >=1.21 && !neoforge
             /*VertexConsumer.super.putBulkData(matrices, bakedQuad, r, g, b, a, light, overlay);*/
 
-            SpriteUtil.markSpriteActive(quad.getSprite());
+            SpriteUtil.markSpriteActive((TextureAtlasSprite)quad.celeritas$getSprite());
 
             return;
         }
@@ -68,7 +70,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
         int color = ColorABGR.pack(r, g, b, a);
         BakedModelEncoder.writeQuadVertices(writer, matrices, quad, color, light, overlay, colorize);
 
-        SpriteUtil.markSpriteActive(quad.getSprite());
+        SpriteUtil.markSpriteActive((TextureAtlasSprite)quad.celeritas$getSprite());
     }
 
     @Override
@@ -76,14 +78,14 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
         //? if <1.20.6
         float a = 1.0f;
 
-        BakedQuadView quad = BakedQuadView.of(bakedQuad);
+        BakedQuadView quad = (BakedQuadView)(Object)bakedQuad;
 
         if (!this.fastFormat) {
             //? if >=1.21
             /*VertexConsumer.*/
             super.putBulkData(matrices, bakedQuad, brightnessTable, r, g, b, /*? if >=1.20.6 {*/ /*a, *//*?}*/ light, overlay, colorize);
 
-            SpriteUtil.markSpriteActive(quad.getSprite());
+            SpriteUtil.markSpriteActive((TextureAtlasSprite)quad.celeritas$getSprite());
 
             return;
         }
@@ -102,6 +104,6 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
 
         BakedModelEncoder.writeQuadVertices(writer, matrices, quad, r, g, b, a, brightnessTable, colorize, light, overlay);
 
-        SpriteUtil.markSpriteActive(quad.getSprite());
+        SpriteUtil.markSpriteActive((TextureAtlasSprite)quad.celeritas$getSprite());
     }
 }

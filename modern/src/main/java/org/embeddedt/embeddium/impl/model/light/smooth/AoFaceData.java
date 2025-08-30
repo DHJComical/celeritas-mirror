@@ -4,6 +4,7 @@ import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 
 import static org.embeddedt.embeddium.impl.model.light.data.ArrayLightDataCache.*;
 
@@ -16,11 +17,7 @@ class AoFaceData {
 
     private int flags;
 
-    public void initLightData(LightDataAccess cache, BlockPos pos, Direction direction, boolean offset) {
-        final int x = pos.getX();
-        final int y = pos.getY();
-        final int z = pos.getZ();
-
+    public void initLightData(LightDataAccess cache, int x, int y, int z, ModelQuadFacing direction, boolean offset) {
         final int adjX;
         final int adjY;
         final int adjZ;
@@ -51,7 +48,7 @@ class AoFaceData {
 
         final float caao = unpackAO(adjWord);
 
-        Direction[] faces = AoNeighborInfo.get(direction).faces;
+        ModelQuadFacing[] faces = AoNeighborInfo.get(direction).faces;
 
         final int e0 = cache.get(adjX, adjY, adjZ, faces[0]);
         final int e0lm = getLightmap(e0);

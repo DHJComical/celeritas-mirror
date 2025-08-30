@@ -15,6 +15,7 @@ import org.embeddedt.embeddium.impl.model.light.LightPipeline;
 import org.embeddedt.embeddium.impl.model.light.LightPipelineProvider;
 import org.embeddedt.embeddium.impl.model.light.data.QuadLightData;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
+import org.embeddedt.embeddium.impl.model.quad.ModernQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadOrientation;
@@ -248,11 +249,11 @@ public class BlockRenderer {
     }
 
     private SpriteTransparencyLevel getQuadTransparencyLevel(BakedQuadView quad) {
-        if ((quad.getFlags() & ModelQuadFlags.IS_PASS_OPTIMIZABLE) == 0 || quad.getSprite() == null) {
+        if ((quad.getFlags() & ModelQuadFlags.IS_PASS_OPTIMIZABLE) == 0 || quad.celeritas$getSprite() == null) {
             return SpriteTransparencyLevel.TRANSLUCENT;
         }
 
-        return SpriteTransparencyLevelHolder.getTransparencyLevel(quad.getSprite());
+        return SpriteTransparencyLevelHolder.getTransparencyLevel((TextureAtlasSprite)quad.celeritas$getSprite());
     }
 
     private void scanQuadsAndConfigureForRendering(List<BakedQuad> quads) {
@@ -295,12 +296,12 @@ public class BlockRenderer {
     }
 
     private Material chooseOptimalMaterial(Material defaultMaterial, RenderPassConfiguration<?> renderPassConfiguration, BakedQuadView quad) {
-        if (defaultMaterial == renderPassConfiguration.defaultSolidMaterial() || (this.quadRenderingFlags & USE_RENDER_PASS_OPTIMIZATION) == 0 || (quad.getFlags() & ModelQuadFlags.IS_PASS_OPTIMIZABLE) == 0 || quad.getSprite() == null) {
+        if (defaultMaterial == renderPassConfiguration.defaultSolidMaterial() || (this.quadRenderingFlags & USE_RENDER_PASS_OPTIMIZATION) == 0 || (quad.getFlags() & ModelQuadFlags.IS_PASS_OPTIMIZABLE) == 0 || quad.celeritas$getSprite() == null) {
             // No improvement possible
             return defaultMaterial;
         }
 
-        SpriteTransparencyLevel level = SpriteTransparencyLevelHolder.getTransparencyLevel(quad.getSprite());
+        SpriteTransparencyLevel level = SpriteTransparencyLevelHolder.getTransparencyLevel((TextureAtlasSprite)quad.celeritas$getSprite());
 
         if (level == SpriteTransparencyLevel.OPAQUE) {
             // Can use solid with no visual difference
@@ -334,7 +335,7 @@ public class BlockRenderer {
 
             this.writeGeometry(ctx, builder, offset, quadMaterial, quad, vertexColors, lightData);
 
-            TextureAtlasSprite sprite = quad.getSprite();
+            TextureAtlasSprite sprite = (TextureAtlasSprite)quad.celeritas$getSprite();
 
             if (SpriteUtil.hasAnimation(sprite) && builder.getSectionContextBundle() instanceof MinecraftBuiltRenderSectionData<?,?> mcData) {
                 //noinspection unchecked
@@ -345,7 +346,8 @@ public class BlockRenderer {
 
     private QuadLightData getVertexLight(BlockRenderContext ctx, LightPipeline lighter, Direction cullFace, BakedQuadView quad) {
         QuadLightData light = this.quadLightData;
-        lighter.calculate(quad, ctx.pos(), light, cullFace, quad.getLightFace(), quad.hasShade());
+        var pos = ctx.pos();
+        lighter.calculate(quad, pos.getX(), pos.getY(), pos.getZ(), light, ModernQuadFacing.fromDirectionOrUnassigned(cullFace), quad.getLightFace(), quad.hasShade());
 
         return light;
     }

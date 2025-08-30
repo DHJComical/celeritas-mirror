@@ -1,13 +1,9 @@
 package org.embeddedt.embeddium.impl.model.light.data;
 
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.level.block.state.BlockState;
-import org.embeddedt.embeddium.impl.util.WorldUtil;
+import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
+import org.embeddedt.embeddium.impl.util.position.SectionPos;
+
+import java.util.Arrays;
 
 /**
  * The light data cache is used to make accessing the light data and occlusion properties of blocks cheaper. The data
@@ -29,76 +25,61 @@ import org.embeddedt.embeddium.impl.util.WorldUtil;
  * You can use the various static pack/unpack methods to extract these values in a usable format.
  */
 public abstract class LightDataAccess {
-    private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-    protected BlockAndTintGetter world;
+    private static final int NEIGHBOR_BLOCK_RADIUS = 2;
+    private static final int BLOCK_LENGTH = 16 + (NEIGHBOR_BLOCK_RADIUS * 2);
 
-    public int get(int x, int y, int z, Direction d1, Direction d2) {
-        return this.get(x + d1.getStepX() + d2.getStepX(),
-                y + d1.getStepY() + d2.getStepY(),
-                z + d1.getStepZ() + d2.getStepZ());
+    private final int[] light;
+
+    private int xOffset, yOffset, zOffset;
+
+    public LightDataAccess() {
+        this.light = new int[BLOCK_LENGTH * BLOCK_LENGTH * BLOCK_LENGTH];
     }
 
-    public int get(int x, int y, int z, Direction dir) {
-        return this.get(x + dir.getStepX(),
-                y + dir.getStepY(),
-                z + dir.getStepZ());
+    public void reset(int minBlockX, int minBlockY, int minBlockZ) {
+        this.xOffset = minBlockX - NEIGHBOR_BLOCK_RADIUS;
+        this.yOffset = minBlockY - NEIGHBOR_BLOCK_RADIUS;
+        this.zOffset = minBlockZ - NEIGHBOR_BLOCK_RADIUS;
+
+        Arrays.fill(this.light, 0);
     }
 
-    public int get(BlockPos pos, Direction dir) {
-        return this.get(pos.getX(), pos.getY(), pos.getZ(), dir);
+    private int index(int x, int y, int z) {
+        int x2 = x - this.xOffset;
+        int y2 = y - this.yOffset;
+        int z2 = z - this.zOffset;
+
+        return (z2 * BLOCK_LENGTH * BLOCK_LENGTH) + (y2 * BLOCK_LENGTH) + x2;
     }
 
-    public int get(BlockPos pos) {
-        return this.get(pos.getX(), pos.getY(), pos.getZ());
-    }
+    protected abstract int compute(int x, int y, int z);
 
     /**
      * Returns the light data for the block at the given position. The property fields can then be accessed using
      * the various unpack methods below.
      */
-    public abstract int get(int x, int y, int z);
+    public int get(int x, int y, int z) {
+        int l = this.index(x, y, z);
 
-    protected int compute(int x, int y, int z) {
-        BlockPos pos = this.pos.set(x, y, z);
-        BlockAndTintGetter world = this.world;
+        int word = this.light[l];
 
-        BlockState state = world.getBlockState(pos);
-
-        boolean em = state.emissiveRendering(/*? if >=1.16 {*/world, pos/*?}*/);
-        boolean op = state.isViewBlocking(world, pos) && state.getLightBlock(/*? if <1.21.2 {*/world, pos/*?}*/) != 0;
-        boolean fo = state.isSolidRender(/*? if <1.21.2 {*/world, pos/*?}*/);
-        boolean fc = state.isCollisionShapeFullBlock(world, pos);
-
-        int lu = WorldUtil.getLightEmission(state, world, pos);
-
-        // OPTIMIZE: Do not calculate light data if the block is full and opaque and does not emit light.
-        int bl;
-        int sl;
-        if (fo && lu == 0) {
-            bl = 0;
-            sl = 0;
-        } else {
-            // calculate light data using custom approach for emissive blocks, and vanilla otherwise
-            if (em) {
-                bl = world.getBrightness(LightLayer.BLOCK, pos);
-                sl = world.getBrightness(LightLayer.SKY, pos);
-            } else {
-                // call the vanilla method so mods using custom lightmap logic work correctly
-                int packedCoords = LevelRenderer.getLightColor(/*? if >=1.21.5 {*//*LevelRenderer.BrightnessGetter.DEFAULT,*//*?}*/ world, state, pos);
-                bl = LightTexture.block(packedCoords);
-                sl = LightTexture.sky(packedCoords);
-            }
+        if (word != 0) {
+            return word;
         }
 
-        // FIX: Do not apply AO from blocks that emit light
-        float ao;
-        if (lu == 0) {
-            ao = state.getShadeBrightness(world, pos);
-        } else {
-            ao = 1.0f;
-        }
+        return this.light[l] = this.compute(x, y, z);
+    }
 
-        return packFC(fc) | packFO(fo) | packOP(op) | packEM(em) | packAO(ao) | packLU(lu) | packSL(sl) | packBL(bl);
+    public int get(int x, int y, int z, ModelQuadFacing d1, ModelQuadFacing d2) {
+        return this.get(x + d1.getStepX() + d2.getStepX(),
+                y + d1.getStepY() + d2.getStepY(),
+                z + d1.getStepZ() + d2.getStepZ());
+    }
+
+    public int get(int x, int y, int z, ModelQuadFacing dir) {
+        return this.get(x + dir.getStepX(),
+                y + dir.getStepY(),
+                z + dir.getStepZ());
     }
 
     public static int packBL(int blockLight) {
@@ -167,6 +148,10 @@ public abstract class LightDataAccess {
         return ((word >>> 31) & 0b1) != 0;
     }
 
+    public static int pack(int block, int sky) {
+        return block << 4 | sky << 20;
+    }
+
     /**
      * Computes the combined lightmap using block light, sky light, and luminance values.
      *
@@ -175,10 +160,10 @@ public abstract class LightDataAccess {
      * emissive check.
      */
     public static int getLightmap(int word) {
-        return LightTexture.pack(Math.max(unpackBL(word), unpackLU(word)), unpackSL(word));
+        return pack(Math.max(unpackBL(word), unpackLU(word)), unpackSL(word));
     }
 
-    public static final int FULL_BRIGHT = LightTexture.pack(15, 15);
+    public static final int FULL_BRIGHT = pack(15, 15);
 
     /**
      * Like {@link #getLightmap(int)}, but checks {@link #unpackEM(int)} first and returns
@@ -193,9 +178,5 @@ public abstract class LightDataAccess {
         } else {
             return getLightmap(word);
         }
-    }
-
-    public BlockAndTintGetter getWorld() {
-        return this.world;
     }
 }

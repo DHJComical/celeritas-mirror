@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.model.light.smooth;
 
-import net.minecraft.core.Direction;
+import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 
 /**
  * The neighbor information for each face of a block, used when performing smooth lighting in order to calculate
@@ -8,11 +8,11 @@ import net.minecraft.core.Direction;
  */
 @SuppressWarnings("UnnecessaryLocalVariable")
 enum AoNeighborInfo {
-    DOWN(new Direction[] { Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH }, 0.5F) {
+    POS_X(new ModelQuadFacing[] { ModelQuadFacing.NEG_Y, ModelQuadFacing.POS_Y, ModelQuadFacing.NEG_Z, ModelQuadFacing.POS_Z }, 0.6F) {
         @Override
         public void calculateCornerWeights(float x, float y, float z, float[] out) {
             final float u = z;
-            final float v = 1.0f - x;
+            final float v = 1.0f - y;
 
             out[0] = v * u;
             out[1] = v * (1.0f - u);
@@ -22,23 +22,23 @@ enum AoNeighborInfo {
 
         @Override
         public void mapCorners(int[] lm0, float[] ao0, int[] lm1, float[] ao1) {
-            lm1[0] = lm0[0];
-            lm1[1] = lm0[1];
-            lm1[2] = lm0[2];
-            lm1[3] = lm0[3];
+            lm1[1] = lm0[0];
+            lm1[2] = lm0[1];
+            lm1[3] = lm0[2];
+            lm1[0] = lm0[3];
 
-            ao1[0] = ao0[0];
-            ao1[1] = ao0[1];
-            ao1[2] = ao0[2];
-            ao1[3] = ao0[3];
+            ao1[1] = ao0[0];
+            ao1[2] = ao0[1];
+            ao1[3] = ao0[2];
+            ao1[0] = ao0[3];
         }
 
         @Override
         public float getDepth(float x, float y, float z) {
-            return y;
+            return 1.0f - x;
         }
     },
-    UP(new Direction[] { Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH }, 1.0F) {
+    POS_Y(new ModelQuadFacing[] { ModelQuadFacing.POS_X, ModelQuadFacing.NEG_X, ModelQuadFacing.NEG_Z, ModelQuadFacing.POS_Z }, 1.0F) {
         @Override
         public void calculateCornerWeights(float x, float y, float z, float[] out) {
             final float u = z;
@@ -68,37 +68,7 @@ enum AoNeighborInfo {
             return 1.0f - y;
         }
     },
-    NORTH(new Direction[] { Direction.UP, Direction.DOWN, Direction.EAST, Direction.WEST }, 0.8F) {
-        @Override
-        public void calculateCornerWeights(float x, float y, float z, float[] out) {
-            final float u = 1.0f - x;
-            final float v = y;
-
-            out[0] = v * u;
-            out[1] = v * (1.0f - u);
-            out[2] = (1.0f - v) * (1.0f - u);
-            out[3] = (1.0f - v) * u;
-        }
-
-        @Override
-        public void mapCorners(int[] lm0, float[] ao0, int[] lm1, float[] ao1) {
-            lm1[3] = lm0[0];
-            lm1[0] = lm0[1];
-            lm1[1] = lm0[2];
-            lm1[2] = lm0[3];
-
-            ao1[3] = ao0[0];
-            ao1[0] = ao0[1];
-            ao1[1] = ao0[2];
-            ao1[2] = ao0[3];
-        }
-
-        @Override
-        public float getDepth(float x, float y, float z) {
-            return z;
-        }
-    },
-    SOUTH(new Direction[] { Direction.WEST, Direction.EAST, Direction.DOWN, Direction.UP }, 0.8F) {
+    POS_Z(new ModelQuadFacing[] { ModelQuadFacing.NEG_X, ModelQuadFacing.POS_X, ModelQuadFacing.NEG_Y, ModelQuadFacing.POS_Y }, 0.8F) {
         @Override
         public void calculateCornerWeights(float x, float y, float z, float[] out) {
             final float u = y;
@@ -128,7 +98,7 @@ enum AoNeighborInfo {
             return 1.0f - z;
         }
     },
-    WEST(new Direction[] { Direction.UP, Direction.DOWN, Direction.NORTH, Direction.SOUTH }, 0.6F) {
+    NEG_X(new ModelQuadFacing[] { ModelQuadFacing.POS_Y, ModelQuadFacing.NEG_Y, ModelQuadFacing.NEG_Z, ModelQuadFacing.POS_Z }, 0.6F) {
         @Override
         public void calculateCornerWeights(float x, float y, float z, float[] out) {
             final float u = z;
@@ -158,11 +128,11 @@ enum AoNeighborInfo {
             return x;
         }
     },
-    EAST(new Direction[] { Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH }, 0.6F) {
+    NEG_Y(new ModelQuadFacing[] { ModelQuadFacing.NEG_X, ModelQuadFacing.POS_X, ModelQuadFacing.NEG_Z, ModelQuadFacing.POS_Z }, 0.5F) {
         @Override
         public void calculateCornerWeights(float x, float y, float z, float[] out) {
             final float u = z;
-            final float v = 1.0f - y;
+            final float v = 1.0f - x;
 
             out[0] = v * u;
             out[1] = v * (1.0f - u);
@@ -172,38 +142,79 @@ enum AoNeighborInfo {
 
         @Override
         public void mapCorners(int[] lm0, float[] ao0, int[] lm1, float[] ao1) {
-            lm1[1] = lm0[0];
-            lm1[2] = lm0[1];
-            lm1[3] = lm0[2];
-            lm1[0] = lm0[3];
+            lm1[0] = lm0[0];
+            lm1[1] = lm0[1];
+            lm1[2] = lm0[2];
+            lm1[3] = lm0[3];
 
-            ao1[1] = ao0[0];
-            ao1[2] = ao0[1];
-            ao1[3] = ao0[2];
-            ao1[0] = ao0[3];
+            ao1[0] = ao0[0];
+            ao1[1] = ao0[1];
+            ao1[2] = ao0[2];
+            ao1[3] = ao0[3];
         }
 
         @Override
         public float getDepth(float x, float y, float z) {
-            return 1.0f - x;
+            return y;
+        }
+    },
+    NEG_Z(new ModelQuadFacing[] { ModelQuadFacing.POS_Y, ModelQuadFacing.NEG_Y, ModelQuadFacing.POS_X, ModelQuadFacing.NEG_X }, 0.8F) {
+        @Override
+        public void calculateCornerWeights(float x, float y, float z, float[] out) {
+            final float u = 1.0f - x;
+            final float v = y;
+
+            out[0] = v * u;
+            out[1] = v * (1.0f - u);
+            out[2] = (1.0f - v) * (1.0f - u);
+            out[3] = (1.0f - v) * u;
+        }
+
+        @Override
+        public void mapCorners(int[] lm0, float[] ao0, int[] lm1, float[] ao1) {
+            lm1[3] = lm0[0];
+            lm1[0] = lm0[1];
+            lm1[1] = lm0[2];
+            lm1[2] = lm0[3];
+
+            ao1[3] = ao0[0];
+            ao1[0] = ao0[1];
+            ao1[1] = ao0[2];
+            ao1[2] = ao0[3];
+        }
+
+        @Override
+        public float getDepth(float x, float y, float z) {
+            return z;
         }
     };
 
+
+    private static final AoNeighborInfo[] VALUES = AoNeighborInfo.values();
     /**
      * The direction of each corner block from this face, which can be retrieved by offsetting the position of the origin
      * block by the direction vector.
      */
-    public final Direction[] faces;
-
+    public final ModelQuadFacing[] faces;
     /**
      * The constant brightness modifier for this face. This data exists to emulate the results of the OpenGL lighting
      * model which gives a faux directional light appearance to blocks in the game. Not currently used.
      */
     public final float strength;
 
-    AoNeighborInfo(Direction[] directions, float strength) {
+    AoNeighborInfo(ModelQuadFacing[] directions, float strength) {
         this.faces = directions;
         this.strength = strength;
+    }
+
+    /**
+     * @return Returns the {@link AoNeighborInfo} which corresponds with the specified direction
+     */
+    public static AoNeighborInfo get(ModelQuadFacing direction) {
+        if (!direction.isDirection()) {
+            throw new IllegalArgumentException();
+        }
+        return VALUES[direction.ordinal()];
     }
 
     /**
@@ -238,13 +249,4 @@ enum AoNeighborInfo {
      * @return The depth of the vertex into this face
      */
     public abstract float getDepth(float x, float y, float z);
-
-    private static final AoNeighborInfo[] VALUES = AoNeighborInfo.values();
-
-    /**
-     * @return Returns the {@link AoNeighborInfo} which corresponds with the specified direction
-     */
-    public static AoNeighborInfo get(Direction direction) {
-        return VALUES[direction.get3DDataValue()];
-    }
 }
