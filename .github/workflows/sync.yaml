@@ -70,18 +70,46 @@ jobs:
             17
             21
 
-      - name: Build all packaged jars
+      - name: Grant execute permission to gradlew
+        if: steps.checker.outputs.should_run == 'true'
+        working-directory: ./celeritas
+        run: chmod +x gradlew
+
+      - name: Build for 1.21.8
         if: steps.checker.outputs.should_run == 'true'
         working-directory: ./celeritas
         continue-on-error: true
-        run: |
-          chmod +x gradlew
-          ./gradlew -Ptarget_versions=1.21.8 packageJar
-          ./gradlew -Ptarget_versions=1.21.1 packageJar
-          ./gradlew -Ptarget_versions=1.12.2 packageJar
-          ./gradlew -Ptarget_versions=1.7.10 packageJar
-          ./gradlew -Ptarget_versions=1.8.9 packageJar
-          ./gradlew -Ptarget_versions=1.2.5 packageJar
+        run: ./gradlew -Ptarget_versions=1.21.8 packageJar
+
+      - name: Build for 1.21.1
+        if: steps.checker.outputs.should_run == 'true'
+        working-directory: ./celeritas
+        continue-on-error: true
+        run: ./gradlew -Ptarget_versions=1.21.1 packageJar
+
+      - name: Build for 1.12.2
+        if: steps.checker.outputs.should_run == 'true'
+        working-directory: ./celeritas
+        continue-on-error: true
+        run: ./gradlew -Ptarget_versions=1.12.2 packageJar
+
+      - name: Build for 1.7.10
+        if: steps.checker.outputs.should_run == 'true'
+        working-directory: ./celeritas
+        continue-on-error: true
+        run: ./gradlew -Ptarget_versions=1.7.10 packageJar
+
+      - name: Build for 1.8.9
+        if: steps.checker.outputs.should_run == 'true'
+        working-directory: ./celeritas
+        continue-on-error: true
+        run: ./gradlew -Ptarget_versions=1.8.9 packageJar
+
+      - name: Build for 1.2.5
+        if: steps.checker.outputs.should_run == 'true'
+        working-directory: ./celeritas
+        continue-on-error: true
+        run: ./gradlew -Ptarget_versions=1.2.5 packageJar
 
       - name: Create release body with changelog
         if: steps.checker.outputs.should_run == 'true'
