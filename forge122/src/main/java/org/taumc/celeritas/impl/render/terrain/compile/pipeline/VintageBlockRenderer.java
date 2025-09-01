@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.BlockModelShapes;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -131,8 +132,8 @@ public class VintageBlockRenderer {
         for (int i = 0, quadsSize = quads.size(); i < quadsSize; i++) {
             var quad = quads.get(i);
             var format = quad.getFormat();
-            if (!format.equals(DefaultVertexFormats.ITEM) && !format.equals(DefaultVertexFormats.BLOCK)) {
-                throw new IllegalStateException("Unexpected vertex format: " + format);
+            if (format != DefaultVertexFormats.ITEM && format != DefaultVertexFormats.BLOCK && format.getElement(0).getUsage() != VertexFormatElement.EnumUsage.POSITION) {
+                throw new IllegalStateException("Vertex format does not have POSITION as first element: " + format);
             }
 
             BakedQuadView quadView = (BakedQuadView)quad;

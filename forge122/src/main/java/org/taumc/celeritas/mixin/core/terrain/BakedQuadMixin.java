@@ -86,35 +86,30 @@ public abstract class BakedQuadMixin implements BakedQuadView {
         return null;
     }
 
-    private static final int BLOCK_VERTEX_SIZE = DefaultVertexFormats.BLOCK.getIntegerSize();
-    private static final int POSITION_INDEX = 0;
-    private static final int COLOR_INDEX = 3;
-    private static final int TEXTURE_INDEX = 4;
-    private static final int LIGHT_INDEX = 6;
-
-    private static int vertexOffset(int idx) {
-        return idx * BLOCK_VERTEX_SIZE;
-    }
-
-
     @Override
     public float getX(int idx) {
-        return Float.intBitsToFloat(this.getVertexData()[vertexOffset(idx) + POSITION_INDEX]);
+        return Float.intBitsToFloat(this.getVertexData()[idx * getFormat().getIntegerSize()]);
     }
 
     @Override
     public float getY(int idx) {
-        return Float.intBitsToFloat(this.getVertexData()[vertexOffset(idx) + POSITION_INDEX + 1]);
+        return Float.intBitsToFloat(this.getVertexData()[idx * getFormat().getIntegerSize() + 1]);
     }
 
     @Override
     public float getZ(int idx) {
-        return Float.intBitsToFloat(this.getVertexData()[vertexOffset(idx) + POSITION_INDEX + 2]);
+        return Float.intBitsToFloat(this.getVertexData()[idx * getFormat().getIntegerSize() + 2]);
     }
 
     @Override
     public int getColor(int idx) {
-        return this.getVertexData()[vertexOffset(idx) + COLOR_INDEX];
+        var format = getFormat();
+        int offset = format.getColorOffset();
+        if (offset >= 0) {
+            return this.getVertexData()[idx * format.getIntegerSize() + (offset / 4)];
+        } else {
+            return 0;
+        }
     }
 
     @Override
@@ -124,18 +119,24 @@ public abstract class BakedQuadMixin implements BakedQuadView {
 
     @Override
     public float getTexU(int idx) {
-        return Float.intBitsToFloat(this.getVertexData()[vertexOffset(idx) + TEXTURE_INDEX]);
+        var format = getFormat();
+        int offset = format.getUvOffsetById(0);
+        return Float.intBitsToFloat(this.getVertexData()[idx * format.getIntegerSize() + (offset / 4)]);
     }
 
     @Override
     public float getTexV(int idx) {
-        return Float.intBitsToFloat(this.getVertexData()[vertexOffset(idx) + TEXTURE_INDEX + 1]);
+        var format = getFormat();
+        int offset = format.getUvOffsetById(0);
+        return Float.intBitsToFloat(this.getVertexData()[idx * format.getIntegerSize() + (offset / 4) + 1]);
     }
 
     @Override
     public int getLight(int idx) {
-        if (this.getFormat() == DefaultVertexFormats.BLOCK) {
-            return this.getVertexData()[vertexOffset(idx) + LIGHT_INDEX];
+        var format = getFormat();
+        if (format.hasUvOffset(1)) {
+            int offset = format.getUvOffsetById(1);
+            return this.getVertexData()[idx * format.getIntegerSize() + (offset / 4)];
         } else {
             return 0;
         }
@@ -143,8 +144,10 @@ public abstract class BakedQuadMixin implements BakedQuadView {
 
     @Override
     public int getForgeNormal(int idx) {
-        if (this.getFormat() == DefaultVertexFormats.ITEM) {
-            return this.getVertexData()[vertexOffset(idx) + LIGHT_INDEX];
+        var format = getFormat();
+        int offset = format.getNormalOffset();
+        if (offset >= 0) {
+            return this.getVertexData()[idx * format.getIntegerSize() + (offset / 4)];
         } else {
             return 0;
         }
