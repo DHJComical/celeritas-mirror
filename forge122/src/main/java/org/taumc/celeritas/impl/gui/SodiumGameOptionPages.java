@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
+import org.taumc.celeritas.api.options.OptionIdentifier;
 import org.taumc.celeritas.api.options.control.ControlValueFormatter;
 import org.taumc.celeritas.api.options.control.CyclingControl;
 import org.taumc.celeritas.api.options.control.SliderControl;
@@ -20,6 +21,7 @@ import org.taumc.celeritas.api.options.structure.OptionPage;
 import org.taumc.celeritas.api.options.structure.OptionStorage;
 import org.taumc.celeritas.api.options.structure.StandardOptions;
 import org.taumc.celeritas.impl.compat.modernui.MuiGuiScaleHook;
+import org.taumc.celeritas.impl.render.terrain.compile.task.ChunkBuilderMeshingTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -262,6 +264,15 @@ public class SodiumGameOptionPages {
                         .setControl(TickBoxControl::new)
                         .setImpact(OptionImpact.VARIES)
                         .setBinding((opts, value) -> opts.performance.useTranslucentFaceSorting = value, opts -> opts.performance.useTranslucentFaceSorting)
+                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
+                        .build())
+                .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
+                        .setId(OptionIdentifier.create("celeritas", "fast_block_renderer", boolean.class))
+                        .setName(TextComponent.literal("Use Fast Block Renderer"))
+                        .setTooltip(TextComponent.literal("Enables the backported faster block renderer from modern Celeritas versions, which has better performance but may look slightly different."))
+                        .setControl(TickBoxControl::new)
+                        .setImpact(OptionImpact.MEDIUM)
+                        .setBinding((opts, value) -> ChunkBuilderMeshingTask.USE_NEW_BLOCK_RENDERER = value, opts -> ChunkBuilderMeshingTask.USE_NEW_BLOCK_RENDERER)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
                 .build());
