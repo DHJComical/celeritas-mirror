@@ -1,0 +1,18 @@
+package org.taumc.celeritas.mixin.core.terrain;
+
+import net.minecraft.client.renderer.block.model.SimpleBakedModel;
+import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
+import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
+
+@Mixin(SimpleBakedModel.Builder.class)
+public class SimpleBakedModelBuilderMixin {
+    @ModifyArg(method = { "addFaceQuad", "addGeneralQuad" }, at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z", remap = false), require = 0)
+    private Object setVanillaShadingFlag(Object quad) {
+        BakedQuadView view = (BakedQuadView)quad;
+        view.addFlags(ModelQuadFlags.IS_VANILLA_SHADED);
+        return quad;
+    }
+}
