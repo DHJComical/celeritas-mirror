@@ -58,7 +58,8 @@ public class BlockRenderCache {
                         //? if forgelike && >=1.19 {
                         return world.getShade(normalX, normalY, normalZ, shade);
                         //?} else if forgelike && <1.19 {
-                        /*return net.minecraftforge.client.model.pipeline.LightUtil.diffuseLight(normalX, normalY, normalZ, shade);
+                        /*if (!shade) return world.effects().constantAmbientLight() ? 0.9f : 1.0f;
+                        return net.minecraftforge.client.model.pipeline.LightUtil.diffuseLight(normalX, normalY, normalZ);
                         *///?} else {
                         /*throw new IllegalStateException();
                         *///?}

@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import org.embeddedt.embeddium.api.math.Matrix3fExtended;
 import org.embeddedt.embeddium.api.util.NormI8;
+import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -285,6 +286,20 @@ public class Matrix3fMixin implements Matrix3fExtended {
             case SOUTH -> NormI8.pack( matrix.m02,  matrix.m12,  matrix.m22);
             case WEST  -> NormI8.pack(-matrix.m00, -matrix.m10, -matrix.m20);
             case EAST  -> NormI8.pack( matrix.m00,  matrix.m10,  matrix.m20);
+        };
+    }
+
+    @Override
+    public int transformNormal(ModelQuadFacing direction) {
+        var matrix = this;
+        return switch (direction) {
+            case NEG_Y -> NormI8.pack(-matrix.m01, -matrix.m11, -matrix.m21);
+            case POS_Y -> NormI8.pack( matrix.m01,  matrix.m11,  matrix.m21);
+            case NEG_Z -> NormI8.pack(-matrix.m02, -matrix.m12, -matrix.m22);
+            case POS_Z -> NormI8.pack( matrix.m02,  matrix.m12,  matrix.m22);
+            case NEG_X -> NormI8.pack(-matrix.m00, -matrix.m10, -matrix.m20);
+            case POS_X -> NormI8.pack( matrix.m00,  matrix.m10,  matrix.m20);
+            case UNASSIGNED -> throw new IllegalArgumentException();
         };
     }
 }

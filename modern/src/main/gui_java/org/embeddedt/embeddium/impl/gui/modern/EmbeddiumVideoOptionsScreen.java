@@ -38,7 +38,7 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
                 //? if >=1.20 {
                 new net.minecraft.client.gui.GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource()),
                 //?} else
-                /*new PoseStack(),*/
+                /*new com.mojang.blaze3d.vertex.PoseStack(),*/
                 Minecraft.getInstance().font)) {
             @Override
             protected void createExtraTabs(Map<String, List<Tab<?>>> tabs) {

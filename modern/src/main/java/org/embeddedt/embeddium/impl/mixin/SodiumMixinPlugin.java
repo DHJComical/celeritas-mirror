@@ -162,6 +162,6 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
         if (mixinClassName.equals("net.irisshaders.iris.mixin.MixinGameRenderer")) {
             org.embeddedt.embeddium.impl.asm.ShaderOverridePatcher.patchGameRenderer(targetClass);
         }
-        //? }
+        //?}
     }
 }

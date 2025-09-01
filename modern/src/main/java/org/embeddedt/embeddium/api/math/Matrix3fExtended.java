@@ -5,6 +5,7 @@ package org.embeddedt.embeddium.api.math;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import net.minecraft.core.Direction;
+import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.jetbrains.annotations.Contract;
 
 public interface Matrix3fExtended {
@@ -54,6 +55,8 @@ public interface Matrix3fExtended {
     float getA22();
 
     int transformNormal(Direction direction);
+
+    int transformNormal(ModelQuadFacing direction);
 
     @Contract(pure = true)
     static Matrix3fExtended get(Matrix3f matrix) {
