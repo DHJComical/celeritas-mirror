@@ -3,6 +3,9 @@ package org.embeddedt.embeddium.impl.model.quad.properties;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
 import org.embeddedt.embeddium.api.util.ColorABGR;
+import org.joml.Vector3f;
+
+import java.util.ArrayList;
 
 public class ModelQuadFlags {
     /**
@@ -68,9 +71,9 @@ public class ModelQuadFlags {
             numVertices = Math.min(numVertices, bakedQuad.getVerticesCount());
         }
 
-        float lX = Float.NaN, lY = Float.NaN, lZ = Float.NaN;
         boolean degenerate = false, nonOpaqueColor = false;
 
+        ArrayList<Vector3f> seenVertices = new ArrayList<>(numVertices);
         for (int i = 0; i < numVertices; ++i) {
             float x = quad.getX(i);
             float y = quad.getY(i);
@@ -83,12 +86,17 @@ public class ModelQuadFlags {
             maxY = Math.max(maxY, y);
             maxZ = Math.max(maxZ, z);
 
-            if(x == lX && y == lY && z == lZ) {
-                degenerate = true;
-            } else {
-                lX = x;
-                lY = y;
-                lZ = z;
+            Vector3f vertex = new Vector3f(x, y, z);
+
+            for (var otherVertex : seenVertices) {
+                if (otherVertex.equals(vertex, 0.001f)) {
+                    degenerate = true;
+                    break;
+                }
+            }
+
+            if (!degenerate) {
+                seenVertices.add(vertex);
             }
 
             if(ColorABGR.unpackAlpha(quad.getColor(i)) != 255) {
