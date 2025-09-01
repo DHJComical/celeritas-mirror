@@ -618,7 +618,7 @@ public class FluidRenderer {
     private void updateQuad(ModelQuadView quad, EmbeddiumBlockAndTintGetter world, BlockPos pos, LightPipeline lighter, ModelQuadFacing dir, float brightness,
                             ColorProvider<FluidState> colorProvider, FluidState fluidState) {
         QuadLightData light = this.quadLightData;
-        lighter.calculate(quad, pos.getX(), pos.getY(), pos.getZ(), light, ModelQuadFacing.UNASSIGNED, dir, false);
+        lighter.calculate(quad, pos.getX(), pos.getY(), pos.getZ(), light, ModelQuadFacing.UNASSIGNED, dir, false, true);
 
         colorProvider.getColors(world, pos, fluidState, quad, this.quadColors);
 

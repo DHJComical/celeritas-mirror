@@ -20,8 +20,11 @@ public interface LightPipeline {
      * @param cullFace The cull face of the quad, may be {@link ModelQuadFacing#UNASSIGNED} if there is none
      * @param lightFace The light face of the quad, must not be {@link ModelQuadFacing#UNASSIGNED}
      * @param shade True if the block is shaded by ambient occlusion
+     * @param applyAoDepthBlending True if AO for partially inset quads should be computed via blending the results
+     *                             for fully inset and non-inset quads, rather than assuming fully inset like vanilla
      */
-    void calculate(ModelQuadView quad, int x, int y, int z, QuadLightData out, @NotNull ModelQuadFacing cullFace, @NotNull ModelQuadFacing lightFace, boolean shade);
+    void calculate(ModelQuadView quad, int x, int y, int z, QuadLightData out, @NotNull ModelQuadFacing cullFace,
+                   @NotNull ModelQuadFacing lightFace, boolean shade, boolean applyAoDepthBlending);
 
     /**
      * Reset any cached data for this pipeline.

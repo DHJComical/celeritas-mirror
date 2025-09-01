@@ -36,7 +36,7 @@ public class FlatLightPipeline implements LightPipeline {
     private final boolean useQuadNormalsForShading;
 
     @Override
-    public void calculate(ModelQuadView quad, int x, int y, int z, QuadLightData out, ModelQuadFacing cullFace, ModelQuadFacing lightFace, boolean shade) {
+    public void calculate(ModelQuadView quad, int x, int y, int z, QuadLightData out, ModelQuadFacing cullFace, ModelQuadFacing lightFace, boolean shade, boolean applyAoDepthBlending) {
         int lightmap;
 
         if (!lightFace.isDirection()) {

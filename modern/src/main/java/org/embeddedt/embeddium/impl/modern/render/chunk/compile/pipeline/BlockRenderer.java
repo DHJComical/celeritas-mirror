@@ -347,7 +347,7 @@ public class BlockRenderer {
     private QuadLightData getVertexLight(BlockRenderContext ctx, LightPipeline lighter, Direction cullFace, BakedQuadView quad) {
         QuadLightData light = this.quadLightData;
         var pos = ctx.pos();
-        lighter.calculate(quad, pos.getX(), pos.getY(), pos.getZ(), light, ModernQuadFacing.fromDirectionOrUnassigned(cullFace), quad.getLightFace(), quad.hasShade());
+        lighter.calculate(quad, pos.getX(), pos.getY(), pos.getZ(), light, ModernQuadFacing.fromDirectionOrUnassigned(cullFace), quad.getLightFace(), quad.hasShade(), false);
 
         return light;
     }
