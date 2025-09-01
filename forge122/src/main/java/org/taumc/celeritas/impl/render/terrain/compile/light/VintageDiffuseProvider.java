@@ -12,6 +12,9 @@ public enum VintageDiffuseProvider implements DiffuseProvider {
 
     @Override
     public float getDiffuse(float normalX, float normalY, float normalZ, boolean shade) {
+        if (!shade) {
+            return 1.0f;
+        }
         return LightUtil.diffuseLight(normalX, normalY, normalZ);
     }
 
@@ -47,6 +50,9 @@ public enum VintageDiffuseProvider implements DiffuseProvider {
 
     @Override
     public float getDiffuse(ModelQuadFacing lightFace, boolean shade) {
+        if (!shade) {
+            return 1.0f;
+        }
         return LightUtil.diffuseLight(toEnumFacing(lightFace));
     }
 }
