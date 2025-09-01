@@ -131,7 +131,7 @@ public class VintageBlockRenderer {
         for (int i = 0, quadsSize = quads.size(); i < quadsSize; i++) {
             var quad = quads.get(i);
             var format = quad.getFormat();
-            if (format != DefaultVertexFormats.BLOCK && format != DefaultVertexFormats.ITEM) {
+            if (!format.equals(DefaultVertexFormats.ITEM) && !format.equals(DefaultVertexFormats.BLOCK)) {
                 throw new IllegalStateException("Unexpected vertex format: " + format);
             }
 
