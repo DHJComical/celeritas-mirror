@@ -13,6 +13,8 @@ public class ModelQuad implements ModelQuadViewMutable {
     private final int[] data = new int[VERTEX_SIZE * 4];
     private int flags;
 
+    private int normal;
+
     private Object sprite;
     private int colorIdx;
     private ModelQuadFacing direction;
@@ -22,16 +24,19 @@ public class ModelQuad implements ModelQuadViewMutable {
     @Override
     public void setX(int idx, float x) {
         this.data[vertexOffset(idx) + POSITION_INDEX] = Float.floatToRawIntBits(x);
+        this.normal = 0;
     }
 
     @Override
     public void setY(int idx, float y) {
         this.data[vertexOffset(idx) + POSITION_INDEX + 1] = Float.floatToRawIntBits(y);
+        this.normal = 0;
     }
 
     @Override
     public void setZ(int idx, float z) {
         this.data[vertexOffset(idx) + POSITION_INDEX + 2] = Float.floatToRawIntBits(z);
+        this.normal = 0;
     }
 
     @Override
@@ -129,7 +134,16 @@ public class ModelQuad implements ModelQuadViewMutable {
 
     @Override
     public int getComputedFaceNormal() {
-        return ModelQuadUtil.calculateNormal(this);
+        int n = this.normal;
+        if (n == 0) {
+            this.normal = n = ModelQuadUtil.calculateNormal(this);
+        }
+        return n;
+    }
+
+    @Override
+    public ModelQuadFacing getNormalFace() {
+        return ModelQuadUtil.findNormalFace(getComputedFaceNormal());
     }
 
     @Override

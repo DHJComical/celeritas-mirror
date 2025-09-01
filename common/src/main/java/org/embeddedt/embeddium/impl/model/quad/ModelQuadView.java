@@ -63,6 +63,11 @@ public interface ModelQuadView {
      */
     ModelQuadFacing getLightFace();
 
+    /**
+     * @return The direction in which this quad is pointing, based on its geometry
+     */
+    ModelQuadFacing getNormalFace();
+
     int getForgeNormal(int idx);
 
     int getComputedFaceNormal();
