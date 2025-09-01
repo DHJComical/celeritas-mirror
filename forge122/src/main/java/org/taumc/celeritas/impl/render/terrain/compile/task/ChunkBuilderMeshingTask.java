@@ -111,13 +111,15 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             }
                         }
 
+                        buildContext.getBlockRenderer().resetSharedState();
+
                         for (BlockRenderLayer layer : VintageChunkBuildContext.LAYERS) {
                             if (block.canRenderInLayer(blockState, layer)) {
                                 ForgeHooksClient.setRenderLayer(layer);
-                                var buffer = buildContext.getBufferForLayer(layer);
                                 if (blockState.getRenderType() == EnumBlockRenderType.MODEL && USE_NEW_BLOCK_RENDERER) {
                                     buildContext.getBlockRenderer().renderBlock(blockState, blockPos, slice, layer);
                                 } else {
+                                    var buffer = buildContext.getBufferForLayer(layer);
                                     dispatcher.renderBlock(blockState, blockPos, slice, buffer);
                                 }
                             }

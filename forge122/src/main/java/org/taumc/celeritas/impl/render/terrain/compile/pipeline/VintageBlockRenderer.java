@@ -50,9 +50,11 @@ public class VintageBlockRenderer {
     private final QuadLightData quadLightData = new QuadLightData();
     private final int[] quadColors = new int[4];
     private final ChunkVertexEncoder.Vertex[] vertices = ChunkVertexEncoder.Vertex.uninitializedQuad();
+    private final ModelQuadOrientation[] currentOrientations = new ModelQuadOrientation[EnumFacing.VALUES.length];
 
     private IBlockState currentState;
     private CeleritasBlockAccess currentBlockAccess;
+
 
     public VintageBlockRenderer(VintageChunkBuildContext context, LightDataCache cache) {
         this.shapes = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes();
@@ -60,6 +62,10 @@ public class VintageBlockRenderer {
         this.context = context;
         this.lighters = new LightPipelineProvider(cache, VintageDiffuseProvider.INSTANCE, true);
         this.blockColors = ((BlockColorsAccessor)Minecraft.getMinecraft().getBlockColors()).getBlockColorMap();
+    }
+
+    public void resetSharedState() {
+        Arrays.fill(this.currentOrientations, null);
     }
 
     public void renderBlock(IBlockState state, BlockPos pos, CeleritasBlockAccess blockAccess, BlockRenderLayer layer) {
@@ -141,9 +147,15 @@ public class VintageBlockRenderer {
             // Run through our light pipeline
             var light = this.getVertexLight(lighter, pos, cullFace, quadView);
             var colors = this.getVertexColors(pos, colorProvider, quadView);
+
+            ModelQuadOrientation orientation = cullFace != null ? this.currentOrientations[cullFace.ordinal()] : ModelQuadOrientation.NORMAL;
+            if (orientation == null) {
+                this.currentOrientations[cullFace.ordinal()] = orientation = ModelQuadOrientation.orientByBrightness(light.br, light.lm);
+            }
+
             this.writeGeometry(localX, localY, localZ, defaultBuffer, offset,
                     buffers.getRenderPassConfiguration().getMaterialForRenderType(layer),
-                    quadView, colors, light);
+                    quadView, colors, light, orientation);
         }
     }
 
@@ -152,9 +164,9 @@ public class VintageBlockRenderer {
                                Material material,
                                BakedQuadView quad,
                                int[] colors,
-                               QuadLightData light)
+                               QuadLightData light,
+                               ModelQuadOrientation orientation)
     {
-        ModelQuadOrientation orientation = ModelQuadOrientation.orientByBrightness(light.br, light.lm);
         var vertices = this.vertices;
 
         ModelQuadFacing normalFace = quad.getNormalFace();
