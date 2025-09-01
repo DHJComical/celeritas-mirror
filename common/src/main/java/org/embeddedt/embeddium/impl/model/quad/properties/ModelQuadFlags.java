@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.model.quad.properties;
 
+import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
 import org.embeddedt.embeddium.api.util.ColorABGR;
@@ -54,6 +55,63 @@ public class ModelQuadFlags {
     }
 
     /**
+     * Checks whether a quad's vertex ordering matches Minecraft's canonical baked order
+     * for the given face.
+     * <p>
+     * Minecraft allows four different permutations of a quad's vertices that will
+     * render identically. However, the baked model pipeline (e.g. ambient occlusion,
+     * lighting interpolation, and back-face culling) assumes a specific ordering
+     * that is hardcoded in the model baking logic. This method verifies
+     * that a quad's vertices are listed in that exact canonical order.
+     * <p>
+     * The canonical order is:
+     * <ul>
+     *   <li>Vertices are arranged counter-clockwise (CCW) as seen from outside the block face.</li>
+     *   <li>Each face (±X, ±Y, ±Z) starts at a specific corner and proceeds CCW around the face.</li>
+     *   <li>For example, the -Y face (DOWN) starts at {@code (minX, minY, maxZ)} and proceeds
+     *       through {@code (minX, minY, minZ)}, {@code (maxX, minY, minZ)}, {@code (maxX, minY, maxZ)}.</li>
+     * </ul>
+     * <p>
+     * This method avoids allocations by comparing directly against the expected coordinates
+     * for each vertex index based on the given {@code face} and bounding box.
+     *
+     * @param face the face direction of the quad; determines which axis is fixed and
+     *             which two axes form the quad plane
+     * @return {@code true} if the quad's vertices match Minecraft's canonical baked order
+     *         for the given face, {@code false} otherwise
+     */
+    private static boolean canonicalVertexOrder(ModelQuadView quad, ModelQuadFacing face, float minX, float minY, float minZ,
+                                                float maxX, float maxY, float maxZ) {
+        return switch (face) {
+            case NEG_Y -> MathUtil.roughlyEqual(quad.getX(0), minX) && MathUtil.roughlyEqual(quad.getY(0), minY) && MathUtil.roughlyEqual(quad.getZ(0), maxZ)
+                    && MathUtil.roughlyEqual(quad.getX(1), minX) && MathUtil.roughlyEqual(quad.getY(1), minY) && MathUtil.roughlyEqual(quad.getZ(1), minZ)
+                    && MathUtil.roughlyEqual(quad.getX(2), maxX) && MathUtil.roughlyEqual(quad.getY(2), minY) && MathUtil.roughlyEqual(quad.getZ(2), minZ)
+                    && MathUtil.roughlyEqual(quad.getX(3), maxX) && MathUtil.roughlyEqual(quad.getY(3), minY) && MathUtil.roughlyEqual(quad.getZ(3), maxZ);
+            case POS_Y -> MathUtil.roughlyEqual(quad.getX(0), minX) && MathUtil.roughlyEqual(quad.getY(0), maxY) && MathUtil.roughlyEqual(quad.getZ(0), minZ)
+                    && MathUtil.roughlyEqual(quad.getX(1), minX) && MathUtil.roughlyEqual(quad.getY(1), maxY) && MathUtil.roughlyEqual(quad.getZ(1), maxZ)
+                    && MathUtil.roughlyEqual(quad.getX(2), maxX) && MathUtil.roughlyEqual(quad.getY(2), maxY) && MathUtil.roughlyEqual(quad.getZ(2), maxZ)
+                    && MathUtil.roughlyEqual(quad.getX(3), maxX) && MathUtil.roughlyEqual(quad.getY(3), maxY) && MathUtil.roughlyEqual(quad.getZ(3), minZ);
+            case NEG_Z -> MathUtil.roughlyEqual(quad.getX(0), maxX) && MathUtil.roughlyEqual(quad.getY(0), maxY) && MathUtil.roughlyEqual(quad.getZ(0), minZ)
+                    && MathUtil.roughlyEqual(quad.getX(1), maxX) && MathUtil.roughlyEqual(quad.getY(1), minY) && MathUtil.roughlyEqual(quad.getZ(1), minZ)
+                    && MathUtil.roughlyEqual(quad.getX(2), minX) && MathUtil.roughlyEqual(quad.getY(2), minY) && MathUtil.roughlyEqual(quad.getZ(2), minZ)
+                    && MathUtil.roughlyEqual(quad.getX(3), minX) && MathUtil.roughlyEqual(quad.getY(3), maxY) && MathUtil.roughlyEqual(quad.getZ(3), minZ);
+            case POS_Z -> MathUtil.roughlyEqual(quad.getX(0), minX) && MathUtil.roughlyEqual(quad.getY(0), maxY) && MathUtil.roughlyEqual(quad.getZ(0), maxZ)
+                    && MathUtil.roughlyEqual(quad.getX(1), minX) && MathUtil.roughlyEqual(quad.getY(1), minY) && MathUtil.roughlyEqual(quad.getZ(1), maxZ)
+                    && MathUtil.roughlyEqual(quad.getX(2), maxX) && MathUtil.roughlyEqual(quad.getY(2), minY) && MathUtil.roughlyEqual(quad.getZ(2), maxZ)
+                    && MathUtil.roughlyEqual(quad.getX(3), maxX) && MathUtil.roughlyEqual(quad.getY(3), maxY) && MathUtil.roughlyEqual(quad.getZ(3), maxZ);
+            case NEG_X -> MathUtil.roughlyEqual(quad.getX(0), minX) && MathUtil.roughlyEqual(quad.getY(0), maxY) && MathUtil.roughlyEqual(quad.getZ(0), minZ)
+                    && MathUtil.roughlyEqual(quad.getX(1), minX) && MathUtil.roughlyEqual(quad.getY(1), minY) && MathUtil.roughlyEqual(quad.getZ(1), minZ)
+                    && MathUtil.roughlyEqual(quad.getX(2), minX) && MathUtil.roughlyEqual(quad.getY(2), minY) && MathUtil.roughlyEqual(quad.getZ(2), maxZ)
+                    && MathUtil.roughlyEqual(quad.getX(3), minX) && MathUtil.roughlyEqual(quad.getY(3), maxY) && MathUtil.roughlyEqual(quad.getZ(3), maxZ);
+            case POS_X -> MathUtil.roughlyEqual(quad.getX(0), maxX) && MathUtil.roughlyEqual(quad.getY(0), maxY) && MathUtil.roughlyEqual(quad.getZ(0), maxZ)
+                    && MathUtil.roughlyEqual(quad.getX(1), maxX) && MathUtil.roughlyEqual(quad.getY(1), minY) && MathUtil.roughlyEqual(quad.getZ(1), maxZ)
+                    && MathUtil.roughlyEqual(quad.getX(2), maxX) && MathUtil.roughlyEqual(quad.getY(2), minY) && MathUtil.roughlyEqual(quad.getZ(2), minZ)
+                    && MathUtil.roughlyEqual(quad.getX(3), maxX) && MathUtil.roughlyEqual(quad.getY(3), maxY) && MathUtil.roughlyEqual(quad.getZ(3), minZ);
+            case UNASSIGNED -> false;
+        };
+    }
+
+    /**
      * Calculates the properties of the given quad. This data is used later by the light pipeline in order to make
      * certain optimizations.
      */
@@ -104,11 +162,13 @@ public class ModelQuadFlags {
             }
         }
 
+        // Do not set the partial flag if the vertices are not listed in the expected order. The optimization assumes
+        // it can map directly onto corners in specific locations.
         boolean partial = degenerate || (switch (face.getAxis()) {
             case X -> minY >= 0.0001f || minZ >= 0.0001f || maxY <= 0.9999F || maxZ <= 0.9999F;
             case Y -> minX >= 0.0001f || minZ >= 0.0001f || maxX <= 0.9999F || maxZ <= 0.9999F;
             case Z -> minX >= 0.0001f || minY >= 0.0001f || maxX <= 0.9999F || maxY <= 0.9999F;
-        });
+        }) || !canonicalVertexOrder(quad, face, minX, minY, minZ, maxX, maxY, maxZ);
 
         boolean parallel = switch(face.getAxis()) {
             case X -> minX == maxX;
