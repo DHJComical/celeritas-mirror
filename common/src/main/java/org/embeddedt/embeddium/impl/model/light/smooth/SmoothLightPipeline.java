@@ -17,8 +17,6 @@ import org.embeddedt.embeddium.impl.util.PositionUtil;
  *
  * - Corner blocks are now selected from the correct set of neighbors above block faces (fixes MC-148689 and MC-12558)
  * - Shading issues caused by anisotropy are fixed by re-orientating quads to a consistent ordering (fixes MC-138211)
- * - Inset block faces are correctly shaded by their neighbors, fixing a number of problems with non-full blocks such as
- *   grass paths (fixes MC-11783 and MC-108621)
  * - Blocks next to emissive blocks are too bright (MC-260989)
  * - Synchronization issues between the main render thread's light engine and chunk build worker threads are corrected
  *   by copying light data alongside block states, fixing a number of inconsistencies in baked chunks (no open issue)
@@ -96,10 +94,14 @@ public class SmoothLightPipeline implements LightPipeline {
             } else {
                 this.applyAlignedPartialFace(neighborInfo, quad, x, y, z, lightFace, out);
             }
-        } else if ((flags & ModelQuadFlags.IS_PARALLEL) != 0) {
-            this.applyParallelFace(neighborInfo, quad, x, y, z, lightFace, out);
         } else {
-            this.applyNonParallelFace(neighborInfo, quad, x, y, z, lightFace, out);
+            if ((flags & ModelQuadFlags.IS_VANILLA_SHADED) == 0 && quad.getNormalFace() == ModelQuadFacing.UNASSIGNED) {
+                // Normal has multiple nonzero components
+                this.applyIrregularFace(quad, x, y, z, out);
+            } else {
+                // Normal has a single nonzero component
+                this.applyNonParallelFace(neighborInfo, quad, x, y, z, lightFace, out);
+            }
         }
 
         if((flags & ModelQuadFlags.IS_VANILLA_SHADED) != 0 || !this.useQuadNormalsForShading) {
@@ -143,37 +145,6 @@ public class SmoothLightPipeline implements LightPipeline {
     }
 
     /**
-     * This method is the same as {@link #applyNonParallelFace(AoNeighborInfo, ModelQuadView, int, int, int, ModelQuadFacing,
-     * QuadLightData)} but with the check for a depth of approximately 0 removed. If the quad is parallel but not
-     * aligned, all of its vertices will have the same depth and this depth must be approximately greater than 0,
-     * meaning the check for 0 will always return false.
-     * Flags: !IS_ALIGNED, IS_PARALLEL
-     */
-    private void applyParallelFace(AoNeighborInfo neighborInfo, ModelQuadView quad, int x, int y, int z, ModelQuadFacing dir, QuadLightData out) {
-        for (int i = 0; i < 4; i++) {
-            // Clamp the vertex positions to the block's boundaries to prevent weird errors in lighting
-            float cx = clamp(quad.getX(i));
-            float cy = clamp(quad.getY(i));
-            float cz = clamp(quad.getZ(i));
-
-            float[] weights = this.weights;
-            neighborInfo.calculateCornerWeights(cx, cy, cz, weights);
-
-            float depth = neighborInfo.getDepth(cx, cy, cz);
-
-            // If the quad is approximately grid-aligned (not inset) to the other side of the block, avoid unnecessary
-            // computation by treating it is as aligned
-            if (MathUtil.roughlyEqual(depth, 1.0F)) {
-                this.applyAlignedPartialFaceVertex(x, y, z, dir, weights, i, out, false);
-            } else {
-                // Blend the occlusion factor between the blocks directly beside this face and the blocks above it
-                // based on how inset the face is. This fixes a few issues with blocks such as farmland and paths.
-                this.applyInsetPartialFaceVertex(x, y, z, dir, depth, 1.0f - depth, weights, i, out);
-            }
-        }
-    }
-
-    /**
      * Flags: !IS_ALIGNED, !IS_PARALLEL
      */
     private void applyNonParallelFace(AoNeighborInfo neighborInfo, ModelQuadView quad, int x, int y, int z, ModelQuadFacing dir, QuadLightData out) {
@@ -188,16 +159,70 @@ public class SmoothLightPipeline implements LightPipeline {
 
             float depth = neighborInfo.getDepth(cx, cy, cz);
 
-            // If the quad is approximately grid-aligned (not inset), avoid unnecessary computation by treating it is as aligned
-            if (MathUtil.roughlyEqual(depth, 0.0F)) {
-                this.applyAlignedPartialFaceVertex(x, y, z, dir, weights, i, out, true);
-            } else if (MathUtil.roughlyEqual(depth, 1.0F)) {
-                this.applyAlignedPartialFaceVertex(x, y, z, dir, weights, i, out, false);
-            } else {
-                // Blend the occlusion factor between the blocks directly beside this face and the blocks above it
-                // based on how inset the face is. This fixes a few issues with blocks such as farmland and paths.
-                this.applyInsetPartialFaceVertex(x, y, z, dir, depth, 1.0f - depth, weights, i, out);
+            this.applyAlignedPartialFaceVertex(x, y, z, dir, weights, i, out, MathUtil.roughlyEqual(depth, 0.0F));
+        }
+    }
+
+    private static final float BLENDED_WEIGHT = 0.75f;
+    private static final float MAX_WEIGHT = 1f - BLENDED_WEIGHT;
+
+    private void applyIrregularFace(ModelQuadView quad, int x, int y, int z, QuadLightData out) {
+        for (int i = 0; i < 4; i++) {
+            // Clamp the vertex positions to the block's boundaries to prevent weird errors in lighting
+            float cx = clamp(quad.getX(i));
+            float cy = clamp(quad.getY(i));
+            float cz = clamp(quad.getZ(i));
+
+            int normal = quad.getForgeNormal(i);
+            if (normal == 0) {
+                normal = quad.getComputedFaceNormal();
             }
+
+            float weightedAo = 0, weightedBl = 0, weightedSl = 0;
+            float maxAo = 0, maxBl = 0, maxSl = 0;
+
+            // Compute the values that each axis would contribute, then combine them
+            for (int axis = 0; axis < 3; axis++) {
+                // Unpack the desired normal component
+                float projectedNormal = NormI8.unpackX(normal >> (axis * 8));
+
+                // Skip any components that are zero (they will never contribute anything)
+                if (projectedNormal == 0) {
+                    continue;
+                }
+
+                var dir = ModelQuadFacing.AXES[axis].getFacing(projectedNormal > 0);
+
+                var neighborInfo = AoNeighborInfo.get(dir);
+
+                float[] weights = this.weights;
+                neighborInfo.calculateCornerWeights(cx, cy, cz, weights);
+
+                float depth = neighborInfo.getDepth(cx, cy, cz);
+
+                AoFaceData faceData = this.getCachedFaceData(x, y, z, dir, MathUtil.roughlyEqual(depth, 0.0F));
+
+                if (!faceData.hasUnpackedLightData()) {
+                    faceData.unpackLightData();
+                }
+
+                float sl = faceData.getBlendedSkyLight(weights);
+                float bl = faceData.getBlendedBlockLight(weights);
+                float ao = faceData.getBlendedShade(weights);
+
+                float combineWeight = projectedNormal * projectedNormal;
+
+                weightedAo += ao * combineWeight;
+                weightedBl += bl * combineWeight;
+                weightedSl += sl * combineWeight;
+
+                maxAo = Math.max(ao, maxAo);
+                maxSl = Math.max(sl, maxSl);
+                maxBl = Math.max(bl, maxBl);
+            }
+
+            out.br[i] = clamp(weightedAo * BLENDED_WEIGHT + maxAo * MAX_WEIGHT);
+            out.lm[i] = getLightMapCoord(weightedSl * BLENDED_WEIGHT + maxSl * MAX_WEIGHT, weightedBl * BLENDED_WEIGHT + maxBl * MAX_WEIGHT);
         }
     }
 
@@ -211,28 +236,6 @@ public class SmoothLightPipeline implements LightPipeline {
         float sl = faceData.getBlendedSkyLight(w);
         float bl = faceData.getBlendedBlockLight(w);
         float ao = faceData.getBlendedShade(w);
-
-        out.br[i] = ao;
-        out.lm[i] = getLightMapCoord(sl, bl);
-    }
-
-    private void applyInsetPartialFaceVertex(int x, int y, int z, ModelQuadFacing dir, float n1d, float n2d, float[] w, int i, QuadLightData out) {
-        AoFaceData n1 = this.getCachedFaceData(x, y, z, dir, false);
-
-        if (!n1.hasUnpackedLightData()) {
-            n1.unpackLightData();
-        }
-
-        AoFaceData n2 = this.getCachedFaceData(x, y, z, dir, true);
-
-        if (!n2.hasUnpackedLightData()) {
-            n2.unpackLightData();
-        }
-
-        // Blend between the direct neighbors and above based on the passed weights
-        float ao = (n1.getBlendedShade(w) * n1d) + (n2.getBlendedShade(w) * n2d);
-        float sl = (n1.getBlendedSkyLight(w) * n1d) + (n2.getBlendedSkyLight(w) * n2d);
-        float bl = (n1.getBlendedBlockLight(w) * n1d) + (n2.getBlendedBlockLight(w) * n2d);
 
         out.br[i] = ao;
         out.lm[i] = getLightMapCoord(sl, bl);
