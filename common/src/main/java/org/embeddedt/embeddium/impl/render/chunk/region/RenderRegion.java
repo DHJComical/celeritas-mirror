@@ -59,6 +59,12 @@ public class RenderRegion {
     @Unmodifiable
     private List<DeviceResources> allDeviceResources = List.of();
 
+    /**
+     * Incremented each time the set of render passes in the region is changed.
+     */
+    @Getter
+    private int passSetUpdateCount = 0;
+
     RenderRegion(int x, int y, int z, int id, StagingBuffer stagingBuffer) {
         this.x = x;
         this.y = y;
@@ -135,6 +141,7 @@ public class RenderRegion {
 
         if (storage == null) {
             this.sectionRenderData.put(pass, storage = new SectionRenderDataStorage(renderPassConfiguration.getPrimitiveTypeForPass(pass)));
+            this.passSetUpdateCount++;
         }
 
         return storage;
@@ -145,7 +152,7 @@ public class RenderRegion {
             return;
         }
 
-        this.sectionRenderData.values().removeIf(s -> {
+        boolean anyRemoved = this.sectionRenderData.values().removeIf(s -> {
             if (s.isEmpty()) {
                 s.delete();
                 return true;
@@ -153,6 +160,10 @@ public class RenderRegion {
                 return false;
             }
         });
+
+        if (anyRemoved) {
+            this.passSetUpdateCount++;
+        }
     }
 
     public void removeMeshes(int sectionIndex) {

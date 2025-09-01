@@ -58,9 +58,9 @@ public class RenderRegionManager {
         }
     }
 
-    public void uploadMeshes(CommandList commandList, Collection<ChunkJobResult.Success<? extends ChunkTaskOutput>> results) {
+    public void uploadMeshes(CommandList commandList, Collection<ChunkJobResult.Success<? extends ChunkTaskOutput>> results, Runnable graphUpdateTrigger) {
         for (var entry : this.createMeshUploadQueues(results)) {
-            new MeshUploader(commandList, entry.getKey()).processResults(entry.getValue());
+            new MeshUploader(commandList, entry.getKey(), graphUpdateTrigger).processResults(entry.getValue());
         }
     }
 
@@ -74,12 +74,14 @@ public class RenderRegionManager {
         private final Map<GlVertexFormat, ArrayList<PendingSectionUpload>> uploadsByFormat = new Object2ObjectOpenHashMap<>(2);
         private final CommandList commandList;
         private final RenderRegion region;
+        private final Runnable graphUpdateTrigger;
 
         private boolean needIndexBuffer;
 
-        private MeshUploader(CommandList commandList, RenderRegion region) {
+        private MeshUploader(CommandList commandList, RenderRegion region, Runnable graphUpdateTrigger) {
             this.commandList = commandList;
             this.region = region;
+            this.graphUpdateTrigger = graphUpdateTrigger;
         }
 
         private ArrayList<PendingSectionUpload> getUploadQueue(TerrainRenderPass pass) {
@@ -157,6 +159,8 @@ public class RenderRegionManager {
                 region.refresh(commandList);
             }
 
+            int previousPassCookie = region.getPassSetUpdateCount();
+
             // Collect the upload results
             for (var uploads : uploadsByFormat.values()) {
                 for (PendingSectionUpload upload : uploads) {
@@ -176,6 +180,10 @@ public class RenderRegionManager {
             }
 
             region.removeEmptyStorages();
+
+            if (region.getPassSetUpdateCount() != previousPassCookie) {
+                graphUpdateTrigger.run();
+            }
         }
     }
 

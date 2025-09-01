@@ -468,7 +468,7 @@ public abstract class RenderSectionManager {
     private void processChunkBuildResults(ArrayList<ChunkJobResult.Success<? extends ChunkTaskOutput>> results) {
         var filtered = filterChunkBuildResults(results);
 
-        this.regions.uploadMeshes(RenderDevice.INSTANCE.createCommandList(), filtered);
+        this.regions.uploadMeshes(RenderDevice.INSTANCE.createCommandList(), filtered, this::markGraphDirty);
 
         for (var holder : filtered) {
             var result = holder.output();
