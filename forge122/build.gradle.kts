@@ -33,6 +33,8 @@ base.archivesName = "celeritas-forge-mc${project.name.replace("^1\\.".toRegex(),
 
 val modCompileOnly by configurations.creating
 configurations.compileOnly.get().extendsFrom(modCompileOnly)
+val modRuntimeOnly by configurations.creating
+configurations.runtimeOnly.get().extendsFrom(modRuntimeOnly)
 
 if (stonecutter.eval(minecraftVersion, "<=1.10.2")) {
     configurations {
@@ -77,9 +79,9 @@ unimined.minecraft {
     }
 
     mods {
-        remap(modCompileOnly) {
-            // no additional configuration
-        }
+        // no additional configuration
+        remap(modCompileOnly) {}
+        remap(modRuntimeOnly) {}
     }
 }
 
@@ -89,6 +91,10 @@ dependencies {
     implementation("zone.rong:mixinbooter:10.5")
     compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.7") {
         exclude(group = "org.apache.logging.log4j")
+    }
+    if (minecraftVersion == "1.12.2") {
+        "modRuntimeOnly"("curse.maven:ae2-223794:2747063")
+        "modRuntimeOnly"("curse.maven:extrautils-225561:2678374")
     }
     modCompileOnly("maven.modrinth:fluidlogged-api:3.0.6")
 }
