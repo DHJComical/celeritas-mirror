@@ -16,6 +16,7 @@ public enum ModelQuadFacing {
 
     public static final ModelQuadFacing[] VALUES = ModelQuadFacing.values();
     public static final ModelQuadFacing[] DIRECTIONS = Arrays.stream(VALUES).filter(facing -> facing != UNASSIGNED).toArray(ModelQuadFacing[]::new);
+    public static final Axis[] AXES = ModelQuadFacing.Axis.values();
 
     public static final int COUNT = VALUES.length;
 
@@ -58,6 +59,14 @@ public enum ModelQuadFacing {
     public enum Axis {
         X,
         Y,
-        Z
+        Z;
+
+        public ModelQuadFacing getFacing(boolean positive) {
+            return switch (this) {
+                case X -> positive ? POS_X : NEG_X;
+                case Y -> positive ? POS_Y : NEG_Y;
+                case Z -> positive ? POS_Z : NEG_Z;
+            };
+        }
     };
 }
