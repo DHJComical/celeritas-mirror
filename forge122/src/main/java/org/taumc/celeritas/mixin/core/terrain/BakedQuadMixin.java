@@ -152,7 +152,9 @@ public abstract class BakedQuadMixin implements BakedQuadView {
 
     @Override
     public ModelQuadFacing getLightFace() {
-        return VintageDiffuseProvider.fromEnumFacing(this.face);
+        // Handle mods not supplying a light face
+        var face = this.face;
+        return face == null ? ModelQuadFacing.POS_Y : VintageDiffuseProvider.fromEnumFacing(face);
     }
 
     @Override
