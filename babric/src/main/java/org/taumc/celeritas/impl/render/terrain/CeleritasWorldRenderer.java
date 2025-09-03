@@ -88,6 +88,16 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<World, Primitive
     }
 
     @Override
+    public int getMinimumBuildHeight() {
+        return 0;
+    }
+
+    @Override
+    public int getMaximumBuildHeight() {
+        return this.world.getHeight();
+    }
+
+    @Override
     protected ChunkRenderMatrices createChunkRenderMatrices() {
         return PrimitiveChunkMatrixGetter.getMatrices();
     }

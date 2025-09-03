@@ -44,6 +44,16 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
     }
 
     @Override
+    public int getMinimumBuildHeight() {
+        return 0;
+    }
+
+    @Override
+    public int getMaximumBuildHeight() {
+        return this.world.getHeight();
+    }
+
+    @Override
     public int getEffectiveRenderDistance() {
         return Minecraft.getMinecraft().gameSettings.renderDistanceChunks;
     }

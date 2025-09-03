@@ -32,6 +32,7 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.ClientUtil;
+import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -82,6 +83,16 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel, Mod
         }
 
         return null;
+    }
+
+    @Override
+    public int getMinimumBuildHeight() {
+        return WorldUtil.getMinBuildHeight(this.world);
+    }
+
+    @Override
+    public int getMaximumBuildHeight() {
+        return WorldUtil.getMaxBuildHeight(this.world);
     }
 
     @Override

@@ -301,10 +301,25 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
     // the volume of a section multiplied by the number of sections to be checked at most
     public static final double MAX_ENTITY_CHECK_VOLUME = 16 * 16 * 16 * 15;
 
+    public abstract int getMinimumBuildHeight();
+    public abstract int getMaximumBuildHeight();
+
+    public boolean isPointVisible(double x, double y, double z) {
+        if (y < getMinimumBuildHeight() + 0.5D || y > getMaximumBuildHeight() - 0.5D) {
+            return true;
+        }
+
+        return this.renderSectionManager.isSectionVisible(
+                PositionUtil.posToSectionCoord(x),
+                PositionUtil.posToSectionCoord(y),
+                PositionUtil.posToSectionCoord(z)
+        );
+    }
+
     public boolean isBoxVisible(double x1, double y1, double z1, double x2, double y2, double z2) {
         // Boxes outside the valid world height will never map to a rendered chunk
         // Always render these boxes or they'll be culled incorrectly!
-        if (y2 < 0.5D || y1 > 255 - 0.5D) {
+        if (y2 < getMinimumBuildHeight() + 0.5D || y1 > getMaximumBuildHeight() - 0.5D) {
             return true;
         }
 
