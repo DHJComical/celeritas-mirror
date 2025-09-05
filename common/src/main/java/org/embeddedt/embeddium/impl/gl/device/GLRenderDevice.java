@@ -249,7 +249,7 @@ public class GLRenderDevice implements RenderDevice {
             GlImmutableBuffer buffer = new GlImmutableBuffer(flags);
 
             this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, buffer);
-            GLRenderDevice.this.functions.getBufferStorageFunctions()
+            GLRenderDevice.this.functions.bufferStorageFunctions()
                     .createBufferStorage(GlBufferTarget.ARRAY_BUFFER, bufferSize, flags);
 
             return buffer;
@@ -263,7 +263,7 @@ public class GLRenderDevice implements RenderDevice {
 
         @Override
         public void multiDrawElementsBaseVertex(MultiDrawBatch batch, GlPrimitiveType primitiveType, GlIndexType indexType) {
-            GL32C.nglMultiDrawElementsBaseVertex(primitiveType.getId(),
+            GLRenderDevice.this.functions.multidrawFunctions().multiDrawElementsBaseVertex(primitiveType.getId(),
                     batch.pElementCount,
                     indexType.getFormatId(),
                     batch.pElementPointer,
