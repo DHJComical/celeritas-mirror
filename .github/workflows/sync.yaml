@@ -87,6 +87,30 @@ jobs:
         continue-on-error: true
         run: ./gradlew -Ptarget_versions=1.21.1 packageJar
 
+      - name: Build for 1.20.1
+        if: steps.checker.outputs.should_run == 'true'
+        working-directory: ./celeritas
+        continue-on-error: true
+        run: ./gradlew -Ptarget_versions=1.20.1 packageJar
+
+      - name: Build for 1.19.2
+        if: steps.checker.outputs.should_run == 'true'
+        working-directory: ./celeritas
+        continue-on-error: true
+        run: ./gradlew -Ptarget_versions=1.19.2 packageJar
+
+      - name: Build for 1.18.2
+        if: steps.checker.outputs.should_run == 'true'
+        working-directory: ./celeritas
+        continue-on-error: true
+        run: ./gradlew -Ptarget_versions=1.18.2 packageJar
+
+      - name: Build for 1.16.5
+        if: steps.checker.outputs.should_run == 'true'
+        working-directory: ./celeritas
+        continue-on-error: true
+        run: ./gradlew -Ptarget_versions=1.16.5 packageJar
+
       - name: Build for 1.12.2
         if: steps.checker.outputs.should_run == 'true'
         working-directory: ./celeritas
