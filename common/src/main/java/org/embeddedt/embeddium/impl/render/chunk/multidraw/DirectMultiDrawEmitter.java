@@ -8,12 +8,11 @@ import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataUnsafe;
-import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.lwjgl.system.MemoryUtil;
 
 public record DirectMultiDrawEmitter(MultiDrawBatch batch) implements MultiDrawEmitter {
     public DirectMultiDrawEmitter() {
-        this(new MultiDrawBatch((ModelQuadFacing.COUNT * RenderRegion.REGION_SIZE) + 1));
+        this(new MultiDrawBatch(MAX_COMMAND_COUNT));
     }
 
     @Override

@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.gl.state;
 import org.embeddedt.embeddium.impl.gl.array.GlVertexArray;
 import org.embeddedt.embeddium.impl.gl.buffer.GlBuffer;
 import org.embeddedt.embeddium.impl.gl.buffer.GlBufferTarget;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
@@ -30,11 +31,13 @@ public class GlStateTracker {
         }
     }
 
-    public boolean makeBufferActive(GlBufferTarget target, GlBuffer buffer) {
-        boolean changed = this.bufferState[target.ordinal()] != buffer.handle();
+    public boolean makeBufferActive(GlBufferTarget target, @Nullable GlBuffer buffer) {
+        int handle = buffer == null ? UNASSIGNED_HANDLE : buffer.handle();
+
+        boolean changed = this.bufferState[target.ordinal()] != handle;
 
         if (changed) {
-            this.bufferState[target.ordinal()] = buffer.handle();
+            this.bufferState[target.ordinal()] = handle;
         }
 
         return changed;

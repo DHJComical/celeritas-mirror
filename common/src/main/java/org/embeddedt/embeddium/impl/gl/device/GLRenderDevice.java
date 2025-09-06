@@ -7,6 +7,7 @@ import org.embeddedt.embeddium.impl.gl.state.GlStateTracker;
 import org.embeddedt.embeddium.impl.gl.sync.GlFence;
 import org.embeddedt.embeddium.impl.gl.tessellation.*;
 import org.embeddedt.embeddium.impl.gl.util.EnumBitField;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.*;
 import java.nio.ByteBuffer;
 
@@ -98,6 +99,14 @@ public class GLRenderDevice implements RenderDevice {
         }
 
         @Override
+        public void uploadData(GlMutableBuffer glBuffer, long ptr, long bytes, GlBufferUsage usage) {
+            this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, glBuffer);
+
+            GL20C.nglBufferData(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), bytes, ptr, usage.getId());
+            glBuffer.setSize(bytes);
+        }
+
+        @Override
         public void copyBufferSubData(GlBuffer src, GlBuffer dst, long readOffset, long writeOffset, long bytes) {
             this.bindBuffer(GlBufferTarget.COPY_READ_BUFFER, src);
             this.bindBuffer(GlBufferTarget.COPY_WRITE_BUFFER, dst);
@@ -106,9 +115,9 @@ public class GLRenderDevice implements RenderDevice {
         }
 
         @Override
-        public void bindBuffer(GlBufferTarget target, GlBuffer buffer) {
+        public void bindBuffer(GlBufferTarget target, @Nullable GlBuffer buffer) {
             if (this.stateTracker.makeBufferActive(target, buffer)) {
-                GL20C.glBindBuffer(target.getTargetParameter(), buffer.handle());
+                GL20C.glBindBuffer(target.getTargetParameter(), buffer != null ? buffer.handle() : 0);
             }
         }
 
@@ -269,6 +278,11 @@ public class GLRenderDevice implements RenderDevice {
                     batch.pElementPointer,
                     batch.size(),
                     batch.pBaseVertex);
+        }
+
+        @Override
+        public void multiDrawElementsIndirect(GlBuffer indirectBuffer, int count, GlPrimitiveType primitiveType, GlIndexType indexType) {
+            GL43C.glMultiDrawElementsIndirect(primitiveType.getId(), indexType.getFormatId(), 0, count, 0);
         }
 
         @Override
