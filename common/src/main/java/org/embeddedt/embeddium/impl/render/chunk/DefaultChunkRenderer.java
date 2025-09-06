@@ -7,8 +7,6 @@ import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeBinding;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
-import org.embeddedt.embeddium.impl.gl.device.DrawCommandList;
-import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatch;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.tessellation.*;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
@@ -17,17 +15,17 @@ import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataUnsafe;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderListIterable;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
+import org.embeddedt.embeddium.impl.render.chunk.multidraw.DirectMultiDrawEmitter;
+import org.embeddedt.embeddium.impl.render.chunk.multidraw.MultiDrawEmitter;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.util.BitwiseMath;
-import org.lwjgl.system.MemoryUtil;
 import java.util.Iterator;
 
 public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
-    private final MultiDrawBatch batch;
+    private final MultiDrawEmitter emitter;
 
     private final Reference2ReferenceMap<ChunkPrimitiveType, SharedQuadIndexBuffer> sharedIndexBuffers;
 
@@ -37,7 +35,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
     public DefaultChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
         super(device, renderPassConfiguration);
 
-        this.batch = new MultiDrawBatch((ModelQuadFacing.COUNT * RenderRegion.REGION_SIZE) + 1);
+        this.emitter = new DirectMultiDrawEmitter();
         this.sharedIndexBuffers = new Reference2ReferenceOpenHashMap<>();
     }
 
@@ -100,21 +98,21 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
                     continue;
                 }
 
-                fillCommandBuffer(this.batch, region, storage, renderList, occlusionCamera, renderPass, useBlockFaceCulling && !renderPass.isSorted());
+                fillCommandBuffer(this.emitter, region, storage, renderList, occlusionCamera, renderPass, useBlockFaceCulling && !renderPass.isSorted());
 
-                if (this.batch.isEmpty()) {
+                if (this.emitter.isEmpty()) {
                     continue;
                 }
 
                 if (!renderPass.isSorted()) {
-                   getSharedIndexBuffer(renderPassConfiguration.getPrimitiveTypeForPass(renderPass), commandList).ensureCapacity(commandList, this.batch.getIndexBufferSize());
+                   getSharedIndexBuffer(renderPassConfiguration.getPrimitiveTypeForPass(renderPass), commandList).ensureCapacity(commandList, this.emitter.getIndexBufferSize());
                 }
 
                 var tessellation = this.prepareTessellation(commandList, region);
 
                 setModelMatrixUniforms(shader, region, camera);
                 shader.setSectionAges(timestamp, region.getSectionLoadTimes());
-                executeDrawBatch(commandList, tessellation, primitiveType, this.batch);
+                this.emitter.executeBatch(commandList, tessellation, primitiveType);
             }
 
             this.currentVertexFormat = null;
@@ -126,14 +124,14 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         this.end(renderPass);
     }
 
-    private static void fillCommandBuffer(MultiDrawBatch batch,
+    private static void fillCommandBuffer(MultiDrawEmitter emitter,
                                           RenderRegion renderRegion,
                                           SectionRenderDataStorage renderDataStorage,
                                           ChunkRenderList renderList,
                                           CameraTransform camera,
                                           TerrainRenderPass pass,
                                           boolean useBlockFaceCulling) {
-        batch.clear();
+        emitter.clear();
 
         var iterator = renderList.sectionsWithGeometryIterator(pass.isReverseOrder());
 
@@ -167,28 +165,9 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             slices &= SectionRenderDataUnsafe.getSliceMask(pMeshData);
 
             if (slices != 0) {
-                addDrawCommands(batch, pMeshData, slices, indexPointerMask);
+                emitter.addDrawCommands(pMeshData, slices, indexPointerMask);
             }
         }
-    }
-
-    @SuppressWarnings("IntegerMultiplicationImplicitCastToLong")
-    private static void addDrawCommands(MultiDrawBatch batch, long pMeshData, int mask, int indexPointerMask) {
-        final var pBaseVertex = batch.pBaseVertex;
-        final var pElementCount = batch.pElementCount;
-        final var pElementPointer = batch.pElementPointer;
-
-        int size = batch.size;
-
-        for (int facing = 0; facing < ModelQuadFacing.COUNT; facing++) {
-            MemoryUtil.memPutInt(pBaseVertex + (size << 2), SectionRenderDataUnsafe.getVertexOffset(pMeshData, facing));
-            MemoryUtil.memPutInt(pElementCount + (size << 2), SectionRenderDataUnsafe.getElementCount(pMeshData, facing));
-            MemoryUtil.memPutAddress(pElementPointer + (size << 3), SectionRenderDataUnsafe.getIndexOffset(pMeshData, facing) & indexPointerMask);
-
-            size += (mask >> facing) & 1;
-        }
-
-        batch.size = size;
     }
 
     private static final int MODEL_UNASSIGNED = ModelQuadFacing.UNASSIGNED.ordinal();
@@ -313,17 +292,11 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         return tessellation;
     }
 
-    private static void executeDrawBatch(CommandList commandList, GlTessellation tessellation, GlPrimitiveType primitiveType, MultiDrawBatch batch) {
-        try (DrawCommandList drawCommandList = commandList.beginTessellating(tessellation)) {
-            drawCommandList.multiDrawElementsBaseVertex(batch, primitiveType, GlIndexType.UNSIGNED_INT);
-        }
-    }
-
     @Override
     public void delete(CommandList commandList) {
         super.delete(commandList);
 
         this.sharedIndexBuffers.values().forEach(buffer -> buffer.delete(commandList));
-        this.batch.delete();
+        this.emitter.delete();
     }
 }
