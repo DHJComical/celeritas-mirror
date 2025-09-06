@@ -33,9 +33,13 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
     private GlVertexFormat currentVertexFormat;
 
     public DefaultChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
+        this(device, renderPassConfiguration, new DirectMultiDrawEmitter());
+    }
+
+    public DefaultChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration, MultiDrawEmitter emitter) {
         super(device, renderPassConfiguration);
 
-        this.emitter = new DirectMultiDrawEmitter();
+        this.emitter = emitter;
         this.sharedIndexBuffers = new Reference2ReferenceOpenHashMap<>();
     }
 
