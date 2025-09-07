@@ -1,10 +1,15 @@
 import bs.ModLoader
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.embeddedt.embeddium.gradle.build.extensions.versionedProperty
 import org.embeddedt.embeddium.gradle.stonecutter.ModDependencyCollector
+import org.embeddedt.embeddium.gradle.unimined.ProductionJarHelper
+import org.gradle.kotlin.dsl.named
 
 plugins {
     id("xyz.wagyourtail.unimined") version "1.3.15-SNAPSHOT"
     id("celeritas.platform-conventions")
+    id("celeritas-unimined-plugin")
+    id("xyz.wagyourtail.jvmdowngrader") version "1.1.3"
 }
 
 group = "org.embeddedt"
@@ -13,6 +18,8 @@ version = rootProject.version
 // Mod loader is always Forge <1.17
 
 val minecraftVersion = ModLoader.getMinecraftVersion(project)!!
+
+base.archivesName = "celeritas-forge-mc${minecraftVersion.replace("^1\\.".toRegex(), "")}"
 
 val modCompileOnly = configurations.create("modCompileOnly")
 configurations.compileClasspath.get().extendsFrom(modCompileOnly)
@@ -31,6 +38,8 @@ configurations.all {
         }
     }
 }
+
+val generatedATPath = layout.buildDirectory.file("generated/accesstransformer.cfg").get().asFile
 
 unimined.minecraft {
     combineWith(
@@ -56,7 +65,6 @@ unimined.minecraft {
     }
 
     val embeddiumAccessWidener = rootProject.file("modern/src/main/resources/embeddium.accesswidener")
-    val generatedATPath = layout.buildDirectory.file("generated/accesstransformer.cfg").get().asFile
     minecraftForge {
         loader(versionedProperty("forge")!!.split("-")[1])
         mixinConfig(project.extra.get("celeritasMixinConfigs") as List<String>)
@@ -83,11 +91,42 @@ dependencies {
     shadow(jomlDep)
 
     val mixinExtrasVersion = rootProject.property("mixinextras").toString()
-    implementation("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
+    implementation("io.github.llamalad7:mixinextras-common:${mixinExtrasVersion}")
+    shadow("io.github.llamalad7:mixinextras-common:${mixinExtrasVersion}")
 
     compileOnly("net.fabricmc:fabric-loader:${rootProject.property("fabricloader")}")
 
     ModDependencyCollector.obtainDeps(project) { cfg, dep ->
         dependencies.add(cfg, dep)
     }
+}
+
+ProductionJarHelper.configureProcessedResources(project)
+ProductionJarHelper.createShadowRemapJar(project)
+
+tasks.named<ProcessResources>("processResources") {
+    from(generatedATPath) {
+        into("META-INF/")
+    }
+}
+
+tasks.named<ShadowJar>("shadowRemapJar") {
+    archiveClassifier.set("pre-downgrade")
+    relocate("com.llamalad7.mixinextras", "org.embeddedt.embeddium.impl.shadow.mixinextras")
+    relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml")
+}
+
+val customDowngrade = tasks.register<xyz.wagyourtail.jvmdg.gradle.task.DowngradeJar>("downgradeShadowRemapJar") {
+    inputFile.set(tasks.named<ShadowJar>("shadowRemapJar").get().archiveFile)
+    archiveClassifier.set("post-downgrade")
+}
+
+tasks.register<xyz.wagyourtail.jvmdg.gradle.task.ShadeJar>("shadeDowngradedShadowRemapJar") {
+    inputFile.set(customDowngrade.flatMap { it.archiveFile })
+    archiveClassifier.set("")
+}
+
+tasks.register("packageJar", Copy::class) {
+    from(tasks.named<xyz.wagyourtail.jvmdg.gradle.task.ShadeJar>("shadeDowngradedShadowRemapJar").get().archiveFile)
+    into("${rootProject.layout.buildDirectory.get()}/libs/${project.version}")
 }
