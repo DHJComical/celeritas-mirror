@@ -169,7 +169,10 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel, Mod
     protected void renderBlockEntityList(List<BlockEntity> list, BlockEntityRenderContext blockEntityRenderContext) {
         var blockEntityFilter = blockEntityRenderContext.blockEntityFilter();
         var viewport = this.currentViewport;
+        //? if >=1.18 {
         var dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
+        //?} else
+        /*var dispatcher = BlockEntityRenderDispatcher.instance;*/
 
         for (var blockEntity : list) {
             if (blockEntityFilter != null && !blockEntityFilter.test(blockEntity)) {

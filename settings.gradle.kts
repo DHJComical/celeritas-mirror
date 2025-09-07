@@ -131,7 +131,7 @@ data class CeleritasTarget(val friendlyName: String, val loaders: List<String>, 
 
 createStonecutterProject("modern", listOf(
         CeleritasTarget("1.20.1", listOf("forge", "fabric")),
-        //CeleritasTarget("1.16.5", listOf("forge")),
+        CeleritasTarget("1.16.5", listOf("forge")),
         CeleritasTarget("1.18.2", listOf("forge")),
         //CeleritasTarget("1.20.4", listOf("neoforge")),
         CeleritasTarget("1.21.1", listOf("fabric", "neoforge")),

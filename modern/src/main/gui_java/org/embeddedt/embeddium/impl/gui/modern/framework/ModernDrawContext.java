@@ -52,7 +52,7 @@ public class ModernDrawContext implements DrawContext {
                     vanillaStyle = vanillaStyle.withColor(ChatFormatting.getById(style.ordinal()));
                 } else {
                     vanillaStyle = switch (style) {
-                        case STRIKETHROUGH -> vanillaStyle.withStrikethrough(true);
+                        case STRIKETHROUGH -> vanillaStyle.applyFormat(ChatFormatting.STRIKETHROUGH);
                         case UNDERLINE -> vanillaStyle.withUnderlined(true);
                         case ITALIC -> vanillaStyle.withItalic(true);
                         default -> throw new IllegalArgumentException("Unknown TextFormattingStyle: " + style.name());
@@ -128,7 +128,10 @@ public class ModernDrawContext implements DrawContext {
         //? if >=1.20 {
         gui.blit(ResourceLocationUtil.make(icon), x, y, 0.0f, 0.0f, width, height, width, height);
         //?} else {
-        /*RenderSystem.setShaderTexture(0, ResourceLocationUtil.make(icon));
+        /*//? if >=1.17 {
+        RenderSystem.setShaderTexture(0, ResourceLocationUtil.make(icon));
+        //?} else
+        /^Minecraft.getInstance().getTextureManager().bind(ResourceLocationUtil.make(icon));^/
         Gui.blit(pose, x, y, 0.0f, 0.0f, width, height, width, height);
         *///?}
     }
