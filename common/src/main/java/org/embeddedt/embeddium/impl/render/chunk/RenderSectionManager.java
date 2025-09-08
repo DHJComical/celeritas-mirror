@@ -404,6 +404,7 @@ public abstract class RenderSectionManager {
 
     public void updateChunks(boolean updateImmediately) {
         this.regions.update();
+        this.jobMetricsTracker.tick();
 
         // Promotion of the interim rebuild list is not required if a graph update is requested, as the graph
         // generates a new rebuild list anyway

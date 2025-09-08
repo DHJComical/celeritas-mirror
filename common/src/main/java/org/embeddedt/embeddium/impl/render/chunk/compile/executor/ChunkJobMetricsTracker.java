@@ -7,9 +7,12 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceMaps;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkTaskOutput;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.LongFunction;
 
 public class ChunkJobMetricsTracker {
+    public static final long OBSERVATION_COUNT_TIME = TimeUnit.SECONDS.toNanos(1);
+
     public record MetricStats(long avg, long max, long min) {
         public String toString(LongFunction<String> observationStringifier) {
             return "avg = " + observationStringifier.apply(avg)
@@ -29,6 +32,9 @@ public class ChunkJobMetricsTracker {
         private final LongArrayList observations = new LongArrayList(MAX_OBSERVATIONS);
         private int nextInsertPoint = 0;
 
+        private int observationsInLastTimeInterval;
+        private int observationsInCurrentTimeInterval;
+
         public void collect(long observation) {
             if (observations.size() < MAX_OBSERVATIONS) {
                 observations.add(observation);
@@ -38,6 +44,11 @@ public class ChunkJobMetricsTracker {
                     nextInsertPoint = 0;
                 }
             }
+            observationsInCurrentTimeInterval++;
+        }
+
+        public int getObservationsInLastTimeInterval() {
+            return this.observationsInLastTimeInterval;
         }
 
         public MetricStats getStats() {
@@ -60,6 +71,19 @@ public class ChunkJobMetricsTracker {
     }
 
     private final Reference2ReferenceMap<Class<? extends ChunkTaskOutput>, MetricsData> metricsByTask = new Reference2ReferenceArrayMap<>(2);
+
+    private long lastTimeIntervalFlip = System.nanoTime();
+
+    public void tick() {
+        long time = System.nanoTime();
+        if ((time - lastTimeIntervalFlip) >= OBSERVATION_COUNT_TIME) {
+            for (var data : metricsByTask.values()) {
+                data.observationsInLastTimeInterval = data.observationsInCurrentTimeInterval;
+                data.observationsInCurrentTimeInterval = 0;
+            }
+            lastTimeIntervalFlip = time;
+        }
+    }
 
     public void collectMetrics(ChunkJobResult.Success<? extends ChunkTaskOutput> successfulResult) {
         if (successfulResult.executionTimeNanos() < 0) {
