@@ -40,6 +40,7 @@ configurations.all {
 }
 
 val generatedATPath = layout.buildDirectory.file("generated/accesstransformer.cfg").get().asFile
+generatedATPath.parentFile.mkdirs()
 
 unimined.minecraft {
     combineWith(
