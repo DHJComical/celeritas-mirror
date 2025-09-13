@@ -686,8 +686,13 @@ public abstract class RenderSectionManager {
         return sections;
     }
 
-    public void scheduleAsyncTask(Runnable runnable) {
-        asyncSubmittedTasks.add(runnable);
+    public final void scheduleAsyncTask(Runnable runnable) {
+        if (Thread.currentThread() == this.renderThread) {
+            // Run immediately, otherwise the thread may deadlock waiting for itself
+            runnable.run();
+        } else {
+            asyncSubmittedTasks.add(runnable);
+        }
     }
 
     private void scheduleRebuildOffThread(int x, int y, int z, boolean important) {
