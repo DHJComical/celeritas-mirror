@@ -15,7 +15,7 @@ import org.taumc.celeritas.impl.extensions.SpriteExtension;
 import java.util.List;
 
 @Mixin(TextureAtlasSprite.class)
-public abstract class TextureAtlasSpriteMixin implements SpriteExtension {
+public abstract class TextureAtlasSpriteMixin implements SpriteExtension, SpriteTransparencyLevel.Holder {
     @Shadow
     protected List<int[][]> framesTextureData;
 
@@ -102,7 +102,7 @@ public abstract class TextureAtlasSpriteMixin implements SpriteExtension {
     }
 
     @Override
-    public SpriteTransparencyLevel celeritas$getTransparencyLevel() {
+    public SpriteTransparencyLevel embeddium$getTransparencyLevel() {
         return this.embeddium$transparencyLevel;
     }
 }

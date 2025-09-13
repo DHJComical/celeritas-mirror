@@ -11,7 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.resources.ResourceLocation;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
-import org.embeddedt.embeddium.impl.modern.render.chunk.sprite.SpriteTransparencyLevelHolder;
 import org.lwjgl.system.MemoryUtil;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
@@ -29,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(SpriteContents.class)
 //?} else
 /*@Mixin(TextureAtlasSprite.class)*/
-public class SpriteContentsMixin implements SpriteTransparencyLevelHolder {
+public class SpriteContentsMixin implements SpriteTransparencyLevel.Holder {
     //? if >=1.20 {
     @Mutable
     @Shadow

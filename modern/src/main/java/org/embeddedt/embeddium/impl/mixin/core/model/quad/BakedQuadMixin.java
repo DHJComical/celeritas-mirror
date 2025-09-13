@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.impl.mixin.core.model.quad;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFlags;
-import org.embeddedt.embeddium.impl.modern.render.chunk.sprite.SpriteTransparencyLevelHolder;
 import org.embeddedt.embeddium.impl.modern.util.ModernQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
 import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
@@ -125,7 +124,7 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     @Override
     public @Nullable SpriteTransparencyLevel getTransparencyLevel() {
         if (this.sprite != null && (this.flags & ModelQuadFlags.IS_TRUSTED_SPRITE) != 0) {
-            return SpriteTransparencyLevelHolder.getTransparencyLevel(this.sprite);
+            return SpriteTransparencyLevel.Holder.getTransparencyLevel(this.sprite);
         } else {
             return null;
         }

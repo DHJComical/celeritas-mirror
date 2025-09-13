@@ -108,7 +108,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
 
     private Material selectMaterial(Material material, TextureAtlasSprite sprite) {
         if (sprite != null && sprite.getClass() == TextureAtlasSprite.class && !sprite.hasAnimationMetadata() && this.useRenderPassOptimization) {
-            var transparencyLevel = ((SpriteExtension)sprite).celeritas$getTransparencyLevel();
+            var transparencyLevel = ((SpriteTransparencyLevel.Holder)sprite).embeddium$getTransparencyLevel();
             if (transparencyLevel == SpriteTransparencyLevel.OPAQUE) {
                 // Downgrade to solid
                 return this.renderPassConfiguration.defaultSolidMaterial();

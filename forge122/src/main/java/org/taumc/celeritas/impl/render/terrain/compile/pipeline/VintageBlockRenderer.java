@@ -27,9 +27,11 @@ import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadOrientation;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
+import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BakedQuadGroupAnalyzer;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
+import org.taumc.celeritas.CeleritasVintage;
 import org.taumc.celeritas.impl.render.terrain.compile.VintageChunkBuildContext;
 import org.taumc.celeritas.impl.render.terrain.compile.light.LightDataCache;
 import org.taumc.celeritas.impl.render.terrain.compile.light.VintageDiffuseProvider;
@@ -51,9 +53,14 @@ public class VintageBlockRenderer {
     private final int[] quadColors = new int[4];
     private final ChunkVertexEncoder.Vertex[] vertices = ChunkVertexEncoder.Vertex.uninitializedQuad();
     private final ModelQuadOrientation[] currentOrientations = new ModelQuadOrientation[EnumFacing.VALUES.length];
+    private final boolean useRenderPassOptimization;
 
     private IBlockState currentState;
     private CeleritasBlockAccess currentBlockAccess;
+
+    private final BakedQuadGroupAnalyzer analyzer = new BakedQuadGroupAnalyzer();
+
+    private int currentQuadRenderingFlags;
 
 
     public VintageBlockRenderer(VintageChunkBuildContext context, LightDataCache cache) {
@@ -62,6 +69,7 @@ public class VintageBlockRenderer {
         this.context = context;
         this.lighters = new LightPipelineProvider(cache, VintageDiffuseProvider.INSTANCE, true);
         this.blockColors = ((BlockColorsAccessor)Minecraft.getMinecraft().getBlockColors()).getBlockColorMap();
+        this.useRenderPassOptimization = CeleritasVintage.options().performance.useRenderPassOptimization;
     }
 
     public void resetSharedState() {
@@ -69,6 +77,12 @@ public class VintageBlockRenderer {
     }
 
     public void renderBlock(IBlockState state, BlockPos pos, CeleritasBlockAccess blockAccess, BlockRenderLayer layer) {
+        int defaultFlags = BakedQuadGroupAnalyzer.USE_ALL_THINGS;
+        if (!useRenderPassOptimization) {
+            defaultFlags &= ~BakedQuadGroupAnalyzer.USE_RENDER_PASS_OPTIMIZATION;
+        }
+        this.analyzer.setDefaultRenderingFlags(defaultFlags);
+
         if (blockAccess.getWorldType() != WorldType.DEBUG_ALL_BLOCK_STATES) {
             state = state.getActualState(blockAccess, pos);
         }
@@ -78,7 +92,8 @@ public class VintageBlockRenderer {
         this.currentBlockAccess = blockAccess;
 
         var buffers = this.context.buffers;
-        var buffer = buffers.get(buffers.getRenderPassConfiguration().getMaterialForRenderType(layer));
+        var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(layer);
+        var buffer = buffers.get(material);
 
         long rand = MathHelper.getPositionRandom(pos);
 
@@ -97,13 +112,15 @@ public class VintageBlockRenderer {
                 continue;
             }
 
-            renderQuadList(buffer, buffers, layer, pos, dir, lighter, colorProvider, offset, quads);
+            this.currentQuadRenderingFlags = this.analyzer.getFlagsForRendering(VintageDiffuseProvider.fromEnumFacing(dir), BakedQuadView.ofList(quads));
+            renderQuadList(buffer, buffers, material, pos, dir, lighter, colorProvider, offset, quads);
         }
 
         var quads = model.getQuads(state, null, rand);
 
         if (!quads.isEmpty()) {
-            renderQuadList(buffer, buffers, layer, pos, null, lighter, colorProvider, offset, quads);
+            this.currentQuadRenderingFlags = this.analyzer.getFlagsForRendering(ModelQuadFacing.UNASSIGNED, BakedQuadView.ofList(quads));
+            renderQuadList(buffer, buffers, material, pos, null, lighter, colorProvider, offset, quads);
         }
 
         this.currentBlockAccess = null;
@@ -130,10 +147,11 @@ public class VintageBlockRenderer {
     }
 
     private void renderQuadList(ChunkModelBuilder defaultBuffer, ChunkBuildBuffers buffers,
-                                BlockRenderLayer layer, BlockPos pos, EnumFacing cullFace,
+                                Material material, BlockPos pos, EnumFacing cullFace,
                                 LightPipeline lighter, IBlockColor colorProvider, Vec3d offset,
                                 List<BakedQuad> quads) {
         int localX = pos.getX() & 15, localY = pos.getY() & 15, localZ = pos.getZ() & 15;
+        var config = buffers.getRenderPassConfiguration();
         //noinspection ForLoopReplaceableByForEach
         for (int i = 0, quadsSize = quads.size(); i < quadsSize; i++) {
             var quad = quads.get(i);
@@ -153,8 +171,10 @@ public class VintageBlockRenderer {
                 this.currentOrientations[cullFace.ordinal()] = orientation = ModelQuadOrientation.orientByBrightness(light.br, light.lm);
             }
 
-            this.writeGeometry(localX, localY, localZ, defaultBuffer, offset,
-                    buffers.getRenderPassConfiguration().getMaterialForRenderType(layer),
+            var quadMaterial = BakedQuadGroupAnalyzer.chooseOptimalMaterial(material, config, BakedQuadView.of(quad));
+            ChunkModelBuilder buffer = (quadMaterial == material) ? defaultBuffer : buffers.get(quadMaterial);
+
+            this.writeGeometry(localX, localY, localZ, buffer, offset, quadMaterial,
                     quadView, colors, light, orientation);
         }
     }
