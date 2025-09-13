@@ -96,8 +96,9 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
         double d4 = viewEntity.prevTickY + (viewEntity.y - viewEntity.prevTickY) * ticks;
         double d5 = viewEntity.prevTickZ + (viewEntity.z - viewEntity.prevTickZ) * ticks;
 
-        //? if >=1.0.0-beta.8
+        //? if >=1.0.0-beta.8 {
         this.minecraft.gameRenderer.enableLightMap(/*? if <1.8 {*/ticks/*?}*/);
+        //?}
 
         try {
             this.renderer.drawChunkLayer(layer, d3, d4, d5);
@@ -105,8 +106,9 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
             RenderDevice.exitManagedCode();
         }
 
-        //? if >=1.0.0-beta.8
+        //? if >=1.0.0-beta.8 {
         this.minecraft.gameRenderer.disableLightMap(/*? if <1.8 {*/ticks/*?}*/);
+        //?}
 
         return 1;
     }
@@ -202,10 +204,8 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
      ^/
     @Overwrite
     public void onAmbientDarknessChanged() {
-        for (var section : this.renderer.getRenderSectionManager().getAllRenderSections()) {
-            if (section.getBuiltContext() instanceof PrimitiveBuiltRenderSectionData data && data.hasSkyLight) {
-                this.renderer.scheduleRebuildForChunk(section.getChunkX(), section.getChunkY(), section.getChunkZ(), false);
-            }
+        for (var section : this.renderer.getRenderSectionManager().getSectionsWithSkyLight()) {
+            this.renderer.scheduleRebuildForChunk(section.getChunkX(), section.getChunkY(), section.getChunkZ(), false);
         }
     }
     *///?}

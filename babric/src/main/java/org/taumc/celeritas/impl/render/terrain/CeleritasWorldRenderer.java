@@ -94,7 +94,15 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<World, Primitive
 
     @Override
     public int getMaximumBuildHeight() {
+        //? if >=1.2 {
         return this.world.getHeight();
+        //?} else
+        /*return 128;*/
+    }
+
+    @Override
+    public String getChunksDebugString() {
+        return super.getChunksDebugString() + "S: " + this.renderSectionManager.getSectionsWithSkyLight().size();
     }
 
     @Override
