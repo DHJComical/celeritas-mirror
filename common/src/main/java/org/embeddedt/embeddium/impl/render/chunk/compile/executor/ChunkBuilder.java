@@ -198,6 +198,10 @@ public class ChunkBuilder {
         return this.threads.size();
     }
 
+    public void managedBlock(BooleanSupplier isDone) {
+        this.managedBlocker.managedBlock(isDone);
+    }
+
     public static final class WorkerThread extends Thread implements GlobalChunkBuildContext.Holder {
         private final ChunkBuildContext context;
 
