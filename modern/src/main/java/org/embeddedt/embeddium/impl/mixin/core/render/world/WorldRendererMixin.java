@@ -208,7 +208,8 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         try {
             var pos = camera.getPosition();
             for (var layer : group.layers()) {
-                this.renderer.drawChunkLayer(layer, pose, pos.x(), pos.y(), pos.z());
+                this.renderer.setCurrentChunkRenderPose(pose);
+                this.renderer.drawChunkLayer(layer, pos.x(), pos.y(), pos.z());
             }
         } finally {
             RenderDevice.exitManagedCode();
@@ -346,7 +347,9 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     //?} else {
     /*@Overwrite
     private void renderBlockEntities(PoseStack stack, MultiBufferSource.BufferSource bufferSource, MultiBufferSource.BufferSource bufferSource2, Camera camera, float partialTick) {
-        this.renderer.renderBlockEntities(new PoseStack(), this.renderBuffers, this.destructionProgress, camera, partialTick, null);
+        this.renderer.renderBlockEntities(new CeleritasWorldRenderer.BlockEntityRenderContext(
+                new PoseStack(), this.renderBuffers, this.destructionProgress, camera, partialTick, null
+        ));
     }
     *///?}
 

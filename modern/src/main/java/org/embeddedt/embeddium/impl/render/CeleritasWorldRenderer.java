@@ -12,7 +12,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
@@ -42,7 +41,12 @@ import java.util.Objects;
 import java.util.SortedSet;
 import java.util.function.Predicate;
 
-public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel, ModernRenderSectionManager, RenderType, BlockEntity, CeleritasWorldRenderer.BlockEntityRenderContext> {
+public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel, ModernRenderSectionManager,
+        //? if <1.21.6 {
+        net.minecraft.client.renderer.RenderType,
+        //?} else
+        /*net.minecraft.client.renderer.chunk.ChunkSectionLayer,*/
+        BlockEntity, CeleritasWorldRenderer.BlockEntityRenderContext> {
     private final Minecraft client;
 
     // We track whether a block entity uses custom block outline rendering, so that the outline postprocessing
