@@ -94,7 +94,6 @@ dependencies {
     }
     if (minecraftVersion == "1.12.2") {
         "modRuntimeOnly"("curse.maven:ae2-223794:2747063")
-        "modRuntimeOnly"("curse.maven:extrautils-225561:2678374")
     }
     modCompileOnly("maven.modrinth:fluidlogged-api:3.0.6")
 }
