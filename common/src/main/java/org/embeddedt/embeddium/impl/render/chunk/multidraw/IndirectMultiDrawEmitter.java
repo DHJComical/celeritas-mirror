@@ -106,7 +106,7 @@ public class IndirectMultiDrawEmitter implements MultiDrawEmitter {
 
     @Override
     public void delete() {
-        MemoryUtil.nmemFree(this.indirectBuffer);
+        MemoryUtil.nmemAlignedFree(this.indirectBuffer);
         this.indirectBufferGpu.delete();
     }
 }
