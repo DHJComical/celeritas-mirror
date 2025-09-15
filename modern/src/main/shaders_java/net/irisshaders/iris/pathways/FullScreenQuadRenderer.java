@@ -6,7 +6,6 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.irisshaders.iris.gl.IrisRenderSystem;
-import net.irisshaders.iris.helpers.VertexBufferHelper;
 import org.embeddedt.embeddium.api.vertex.format.common.TexturedVertex;
 import org.lwjgl.system.MemoryStack;
 
@@ -40,7 +39,7 @@ public class FullScreenQuadRenderer {
 	}
 
 	public void begin() {
-		((VertexBufferHelper) quad).saveBinding();
+        VertexBuffer.unbind();
 		RenderSystem.disableDepthTest();
 		BufferUploader.reset();
 		quad.bind();
@@ -60,6 +59,6 @@ public class FullScreenQuadRenderer {
 		// https://github.com/IrisShaders/Iris/issues/1214
 
 		RenderSystem.enableDepthTest();
-		((VertexBufferHelper) quad).restoreBinding();
+        VertexBuffer.unbind();
 	}
 }
