@@ -9,13 +9,6 @@ public class GbufferPrograms {
 	private static boolean entities;
 	private static boolean blockEntities;
 	private static boolean outline;
-	private static Runnable phaseChangeListener;
-	private static Runnable fallbackEntityListener;
-
-	static {
-		StateUpdateNotifiers.phaseChangeNotifier = listener -> phaseChangeListener = listener;
-		StateUpdateNotifiers.fallbackEntityNotifier = listener -> fallbackEntityListener = listener;
-	}
 
 	private static void checkReentrancy() {
 		if (entities || blockEntities || outline) {
@@ -92,18 +85,6 @@ public class GbufferPrograms {
 
 		if (pipeline != null) {
 			pipeline.setOverridePhase(phase);
-		}
-	}
-
-	public static void runPhaseChangeNotifier() {
-		if (phaseChangeListener != null) {
-			phaseChangeListener.run();
-		}
-	}
-
-	public static void runFallbackEntityListener() {
-		if (fallbackEntityListener != null) {
-			fallbackEntityListener.run();
 		}
 	}
 

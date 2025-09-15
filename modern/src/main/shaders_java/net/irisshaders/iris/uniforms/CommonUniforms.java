@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.StateUpdateNotifiers;
+import net.irisshaders.iris.gl.state.ValueUpdateNotifier;
 import net.irisshaders.iris.gl.uniform.DynamicUniformHolder;
 import net.irisshaders.iris.gl.uniform.UniformHolder;
 import net.irisshaders.iris.helpers.JomlConversions;
@@ -65,7 +66,7 @@ public final class CommonUniforms {
 		IrisInternalUniforms.addFogUniforms(uniforms, fogMode);
 
 		// This is a fallback for when entityId via attributes cannot be used. (lightning)
-		uniforms.uniform1i("entityId", CapturedRenderingState.INSTANCE::getCurrentRenderedEntity, StateUpdateNotifiers.fallbackEntityNotifier);
+		uniforms.uniform1i("entityId", CapturedRenderingState.INSTANCE::getCurrentRenderedEntity, ValueUpdateNotifier.NONE);
 
 		// TODO: OptiFine doesn't think that atlasSize is a "dynamic" uniform,
 		//       but we do. How will custom uniforms depending on atlasSize work?
@@ -91,8 +92,7 @@ public final class CommonUniforms {
 
 			TextureInfo info = TextureInfoCache.INSTANCE.getInfo(glId);
 			return new Vector2i(info.getWidth(), info.getHeight());
-
-		}, StateUpdateNotifiers.bindTextureNotifier);
+		}, ValueUpdateNotifier.NONE);
 
 		uniforms.uniform4i("blendFunc", () -> {
 			GlStateManager.BlendState blend = GlStateManagerAccessor.getBLEND();
@@ -102,9 +102,9 @@ public final class CommonUniforms {
 			} else {
 				return ZERO_VECTOR_4i;
 			}
-		}, StateUpdateNotifiers.blendFuncNotifier);
+		}, ValueUpdateNotifier.NONE);
 
-		uniforms.uniform1i("renderStage", () -> GbufferPrograms.getCurrentPhase().ordinal(), StateUpdateNotifiers.phaseChangeNotifier);
+		uniforms.uniform1i("renderStage", () -> GbufferPrograms.getCurrentPhase().ordinal(), ValueUpdateNotifier.NONE);
 	}
 
 	public static void addCommonUniforms(DynamicUniformHolder uniforms, IdMap idMap, PackDirectives directives, FrameUpdateNotifier updateNotifier, FogMode fogMode) {

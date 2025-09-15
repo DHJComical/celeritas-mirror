@@ -13,12 +13,6 @@ import org.jetbrains.annotations.Nullable;
 public class TextureTracker {
 	public static final TextureTracker INSTANCE = new TextureTracker();
 
-	private static Runnable bindTextureListener;
-
-	static {
-		StateUpdateNotifiers.bindTextureNotifier = listener -> bindTextureListener = listener;
-	}
-
 	private final Int2ObjectMap<AbstractTexture> textures = new Int2ObjectOpenHashMap<>();
 
 	private boolean lockBindCallback;
@@ -41,9 +35,6 @@ public class TextureTracker {
 		}
 		if (unit == 0) {
 			lockBindCallback = true;
-			if (bindTextureListener != null) {
-				bindTextureListener.run();
-			}
 			WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
 			if (pipeline != null) {
 				pipeline.onSetShaderTexture(id);

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.shaders.FogShape;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.StateUpdateNotifiers;
+import net.irisshaders.iris.gl.state.ValueUpdateNotifier;
 import net.irisshaders.iris.gl.uniform.DynamicUniformHolder;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
 import org.joml.Vector3f;
@@ -42,9 +43,8 @@ public class FogUniforms {
 		}, notifier -> {
 		});
 
-		uniforms.uniform1f("fogStart", RenderSystem::getShaderFogStart, listener -> StateUpdateNotifiers.fogStartNotifier.setListener(listener));
-
-		uniforms.uniform1f("fogEnd", RenderSystem::getShaderFogEnd, listener -> StateUpdateNotifiers.fogEndNotifier.setListener(listener));
+		uniforms.uniform1f("fogStart", RenderSystem::getShaderFogStart, ValueUpdateNotifier.NONE);
+		uniforms.uniform1f("fogEnd", RenderSystem::getShaderFogEnd, ValueUpdateNotifier.NONE);
 
 		uniforms
 			// TODO: Update frequency of continuous?
