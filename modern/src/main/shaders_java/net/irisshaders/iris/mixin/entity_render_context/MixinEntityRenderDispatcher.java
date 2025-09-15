@@ -51,7 +51,7 @@ public class MixinEntityRenderDispatcher {
 		CapturedRenderingState.INSTANCE.setCurrentEntity(intId);
 
 		return type ->
-			bufferSource.getBuffer(OuterWrappedRenderType.wrapExactlyOnce("iris:is_entity", type, EntityRenderStateShard.INSTANCE));
+			bufferSource.getBuffer(OuterWrappedRenderType.wrapExactlyOnce("iris:is_entity", type, EntityRenderStateShard.of(intId)));
 	}
 
 	// Inject before MatrixStack#pop so that our wrapper stack management operations naturally line up
