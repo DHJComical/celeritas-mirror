@@ -155,11 +155,18 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
 
                             //? if >=1.21.5 {
-                            /*vanillaModel.collectParts(context.localSlice(), blockPos, blockState, context.random(), renderedParts);
+
+                            /*//? if !neoforge
+                            var renderType = ItemBlockRenderTypes.getChunkRenderType(blockState);
+
+                            vanillaModel.collectParts(/^? if neoforge {^//^context.localSlice(), blockPos, blockState, ^//^?}^/ context.random(), renderedParts);
                             //noinspection ForLoopReplaceableByForEach
                             for (int i = 0; i < renderedParts.size(); i++) {
                                 context.model(renderedParts.get(i));
-                                context.renderLayer(context.model().getRenderType(blockState));
+                                //? if neoforge {
+                                /^context.renderLayer(context.model().getRenderType(blockState));
+                                ^///?} else
+                                context.renderLayer(renderType);
                                 cache.getBlockRenderer().renderModel(context, buffers);
                             }
                             renderedParts.clear();
@@ -205,7 +212,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
                             if (entity != null) {
                                 //? if >=1.17 {
-                                BlockEntityRenderer<BlockEntity> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(entity);
+                                BlockEntityRenderer<BlockEntity/*? if >=1.21.9-beta.1 {*//*, ? *//*?}*/> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(entity);
                                 //?} else
                                 /*BlockEntityRenderer<BlockEntity> renderer = net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher.instance.getRenderer(entity);*/
 

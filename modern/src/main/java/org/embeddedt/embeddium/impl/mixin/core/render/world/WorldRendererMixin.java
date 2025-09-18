@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.*;
 /*import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
+import net.minecraft.client.renderer.state.LevelRenderState;
 *///?}
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.api.math.JomlHelper;
@@ -90,7 +91,13 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
 
     @Shadow public abstract boolean shouldShowEntityOutlines();
 
-    //? if >=1.18 {
+    //? if >=1.21.9-beta.1 {
+    /*@Shadow
+    @Final
+    private LevelRenderState levelRenderState;
+    *///?}
+
+    //? if >=1.18 && <1.21.5 {
     @Shadow
     @Nullable
     private Frustum capturedFrustum;
@@ -201,12 +208,11 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         *///?}
     }
     //?} else {
-    /*@Redirect(method = "lambda$addMainPass$3", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;)V"))
-    private void renderChunkLayer(ChunkSectionsToRender renderObject, ChunkSectionLayerGroup group, @Local(ordinal = 0) Matrix4f pose, @Local(ordinal = 0) Camera camera) {
+    /*@Redirect(method = "lambda$addMainPass$1", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;)V"))
+    private void renderChunkLayer(ChunkSectionsToRender renderObject, ChunkSectionLayerGroup group, @Local(ordinal = 0) Matrix4f pose, @Local(ordinal = 0) Vec3 pos) {
         RenderDevice.enterManagedCode();
 
         try {
-            var pos = camera.getPosition();
             for (var layer : group.layers()) {
                 this.renderer.setCurrentChunkRenderPose(pose);
                 this.renderer.drawChunkLayer(layer, pos.x(), pos.y(), pos.z());
@@ -222,7 +228,11 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      * @author JellySquid
      */
     @Overwrite
+    //? if <1.21.9-beta.1 {
     private void setupRender(Camera camera, Frustum frustum, boolean hasForcedFrustum, /*? if <1.18 {*/ /*int frame, *//*?}*/ boolean spectator) {
+    //?} else {
+    /*private void cullTerrain(Camera camera, Frustum frustum, boolean spectator) {
+    *///?}
         var viewport = ((ViewportProvider) frustum).sodium$createViewport();
 
         // Detect mods setting the vanilla update flags themselves
@@ -346,9 +356,18 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     }
     //?} else {
     /*@Overwrite
+    //? if <1.21.9-beta.1 {
     private void renderBlockEntities(PoseStack stack, MultiBufferSource.BufferSource bufferSource, MultiBufferSource.BufferSource bufferSource2, Camera camera, float partialTick) {
+    //?} else {
+    /^private void extractVisibleBlockEntities(Camera camera, float partialTick, LevelRenderState levelRenderState) {
+    ^///?}
+        var pos = camera.getPosition();
         this.renderer.renderBlockEntities(new CeleritasWorldRenderer.BlockEntityRenderContext(
-                new PoseStack(), this.renderBuffers, this.destructionProgress, camera, partialTick, null
+                new PoseStack(), this.renderBuffers, pos.x, pos.y, pos.z, this.destructionProgress, partialTick,
+                null
+                //? if >=1.21.9-beta.1 {
+                /^, levelRenderState
+                ^///?}
         ));
     }
     *///?}

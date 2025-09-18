@@ -535,8 +535,9 @@ public class ShadowRenderer {
         }
 
         if (shouldRenderLightBlockEntities || shouldRenderBlockEntities) {
+            var pos = playerCamera.getPosition();
             renderedShadowBlockEntities = celeritasRenderer.renderBlockEntities(new CeleritasWorldRenderer.BlockEntityRenderContext(
-                    modelView, buffers, Long2ObjectMaps.emptyMap(), playerCamera, tickDelta, blockEntityFilter
+                    modelView, buffers, pos.x, pos.y, pos.z, Long2ObjectMaps.emptyMap(), tickDelta, blockEntityFilter
             ));
         }
 

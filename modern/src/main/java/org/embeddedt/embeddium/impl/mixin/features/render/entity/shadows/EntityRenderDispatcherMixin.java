@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.entity.shadows;
 
-import org.embeddedt.embeddium.api.math.Matrix4fExtended;
+//? if <1.21.9-beta.1 {
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import org.embeddedt.embeddium.api.vertex.format.common.ModelVertex;
 import net.minecraft.client.renderer.LightTexture;
@@ -159,3 +159,4 @@ public class EntityRenderDispatcherMixin {
         ModelVertex.write(ptr, xt, yt, zt, color, u, v, LightDataAccess.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, normal);
     }
 }
+//?}

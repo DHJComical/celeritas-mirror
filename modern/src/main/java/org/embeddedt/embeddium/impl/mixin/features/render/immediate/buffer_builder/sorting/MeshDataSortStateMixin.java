@@ -14,7 +14,10 @@ import org.spongepowered.asm.mixin.*;
 public class MeshDataSortStateMixin {
     @Shadow
     @Final
+    //? if <1.21.9-beta.1 {
     private Vector3f[] centroids;
+    //?} else
+    /^private com.mojang.blaze3d.vertex.CompactVectorArray centroids;^/
 
     @Shadow
     @Final

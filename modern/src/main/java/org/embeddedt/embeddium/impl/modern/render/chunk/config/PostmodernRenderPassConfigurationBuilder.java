@@ -5,6 +5,7 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.config;
 /*import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.opengl.GlTextureView;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTextureView;
@@ -75,7 +76,15 @@ public class PostmodernRenderPassConfigurationBuilder {
                 throw new IllegalStateException("In previous render pass");
             }
             var encoder = RenderSystem.getDevice().createCommandEncoder();
-            var rendertarget = layer.outputTarget();
+            var mainTarget = Minecraft.getInstance().getMainRenderTarget();
+            RenderTarget rendertarget = switch (layer) {
+                case TRANSLUCENT -> Minecraft.getInstance().levelRenderer.getTranslucentTarget();
+                case TRIPWIRE -> Minecraft.getInstance().levelRenderer.getWeatherTarget();
+                default -> Minecraft.getInstance().getMainRenderTarget();
+            };
+            if (rendertarget == null) {
+                rendertarget = mainTarget;
+            }
             currentChunkRenderPass = encoder
                     .createRenderPass(
                             () -> "Section layers for " + layer.name(),

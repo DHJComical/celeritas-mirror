@@ -112,6 +112,14 @@ public class FluidRenderer {
     private final TextureAtlasSprite[] lavaSprites;
     private final TextureAtlasSprite[] waterSprites;
 
+    private static TextureAtlasSprite spriteFromMaterial(net.minecraft.client.resources.model.Material material) {
+        //? if <1.21.9-beta.1 {
+        return material.sprite();
+        //?} else {
+        /*return Minecraft.getInstance().getAtlasManager().get(material);
+        *///?}
+    }
+
     public FluidRenderer(ColorProviderRegistry colorProviderRegistry, LightPipelineProvider lighters) {
         this.quad.setLightFace(ModelQuadFacing.POS_Y);
 
@@ -121,12 +129,12 @@ public class FluidRenderer {
         this.lavaSprites = new TextureAtlasSprite[2];
         this.lavaSprites[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState())
                 /*? if >=1.21.5-alpha.25.7.a {*//*.particleIcon()*//*?} else {*/.getParticleIcon()/*?}*/;
-        this.lavaSprites[1] = ModelBakery.LAVA_FLOW.sprite();
+        this.lavaSprites[1] = spriteFromMaterial(ModelBakery.LAVA_FLOW);
         this.waterSprites = new TextureAtlasSprite[3];
         this.waterSprites[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState())
                 /*? if >=1.21.5-alpha.25.7.a {*//*.particleIcon()*//*?} else {*/.getParticleIcon()/*?}*/;
-        this.waterSprites[1] = ModelBakery.WATER_FLOW.sprite();
-        this.waterSprites[2] = ModelBakery.WATER_OVERLAY.sprite();
+        this.waterSprites[1] = spriteFromMaterial(ModelBakery.WATER_FLOW);
+        this.waterSprites[2] = spriteFromMaterial(ModelBakery.WATER_OVERLAY);
 
         //? if >=1.20 {
         this.doVanillaRenderedFluidsExist = net.minecraft.core.registries.BuiltInRegistries.FLUID.getTagOrEmpty(EmbeddiumTags.RENDERS_WITH_VANILLA).iterator().hasNext();

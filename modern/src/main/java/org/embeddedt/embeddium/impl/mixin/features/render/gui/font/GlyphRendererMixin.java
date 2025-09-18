@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.gui.font;
 
+//? if <1.21.9-beta.1 {
 import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.api.vertex.format.common.GlyphVertex;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
@@ -136,3 +137,4 @@ public class GlyphRendererMixin {
     }
 
 }
+//?}

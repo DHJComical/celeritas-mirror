@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.textures.mipmaps;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -68,14 +69,8 @@ public class SpriteContentsMixin implements SpriteTransparencyLevel.Holder {
     // can remain minimal. Being less dependent on specific details of Fabric is good, since it means we can be more
     // cross-platform.
     //? if >=1.20 {
-    @Redirect(method = "<init>(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/client/resources/metadata/animation/FrameSize;Lcom/mojang/blaze3d/platform/NativeImage;" +
-            /*? if <1.20.2 {*/
-            "Lnet/minecraft/client/resources/metadata/animation/AnimationMetadataSection;"
-            /*?} else {*/
-            /*"Lnet/minecraft/server/packs/resources/ResourceMetadata;"
-            *//*?}*/
-            + /*? if forge {*/"Lnet/minecraftforge/client/textures/ForgeTextureMetadata;"+ /*?}*/ ")V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/texture/SpriteContents;originalImage:Lcom/mojang/blaze3d/platform/NativeImage;", opcode = Opcodes.PUTFIELD))
-    private void sodium$beforeGenerateMipLevels(SpriteContents instance, NativeImage nativeImage, ResourceLocation identifier) {
+    @Redirect(method = "/<init>/", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/texture/SpriteContents;originalImage:Lcom/mojang/blaze3d/platform/NativeImage;", opcode = Opcodes.PUTFIELD))
+    private void sodium$beforeGenerateMipLevels(SpriteContents instance, NativeImage nativeImage, @Local(ordinal = 0, argsOnly = true) ResourceLocation identifier) {
         // Only fill in transparent colors if mipmaps are on and the texture name does not contain "leaves".
         // We're injecting after the "name" field has been set, so this is safe even though we're in a constructor.
         embeddium$processTransparentImages(nativeImage, getMipmapLevels() > 0 && this.name.getPath().startsWith("block/") && !this.name.getPath().contains("leaves"));

@@ -13,6 +13,10 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+//? if >=1.21.8 {
+/*import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.LevelRenderState;
+*///?}
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.BlockDestructionProgress;
@@ -215,6 +219,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel, Mod
         MultiBufferSource consumer = immediate;
         SortedSet<BlockDestructionProgress> breakingInfo = context.blockBreakingProgressions().get(pos.asLong());
 
+        //? if <1.21.9-beta.1 {
         if (breakingInfo != null && !breakingInfo.isEmpty()) {
             int stage = breakingInfo.last().getProgress();
 
@@ -236,9 +241,24 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel, Mod
                 consumer = (layer) -> layer.affectsCrumbling() ? VertexMultiConsumer.create(transformer, immediate.getBuffer(layer)) : immediate.getBuffer(layer);
             }
         }
+        //?} else {
+        /*ModelFeatureRenderer.CrumblingOverlay crumblingOverlay;
+        if (breakingInfo != null && !breakingInfo.isEmpty()) {
+            crumblingOverlay = new ModelFeatureRenderer.CrumblingOverlay(breakingInfo.last().getProgress(), matrices.last());
+        } else {
+            crumblingOverlay = null;
+        }
+        *///?}
 
         try {
+            //? if <1.21.9-beta.1 {
             dispatcher.render(entity, context.tickDelta(), matrices, consumer);
+            //?} else {
+            /*var state = dispatcher.tryExtractRenderState(entity, context.tickDelta(), crumblingOverlay);
+            if (state != null) {
+                context.levelRenderState().blockEntityRenderStates.add(state);
+            }
+            *///?}
         } catch(RuntimeException e) {
             // We catch errors from removed block entities here, because we often end up being faster
             // than vanilla, and rendering them when they wouldn't be rendered by vanilla, which can
@@ -291,12 +311,10 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel, Mod
             Long2ObjectMap<SortedSet<BlockDestructionProgress>> blockBreakingProgressions,
             float tickDelta,
             @Nullable Predicate<BlockEntity> blockEntityFilter
+            //? if >=1.21.9-beta.1 {
+            /*, LevelRenderState levelRenderState
+            *///?}
     ) {
-        public BlockEntityRenderContext(PoseStack pose, RenderBuffers buffers,
-                                        Long2ObjectMap<SortedSet<BlockDestructionProgress>> progressions, Camera camera,
-                                        float tickDelta, Predicate<BlockEntity> blockEntityFilter) {
-            this(pose, buffers, camera.getPosition().x, camera.getPosition().y, camera.getPosition().z,
-                    progressions, tickDelta, blockEntityFilter);
-        }
+
     }
 }

@@ -64,12 +64,6 @@ public class ClonedChunkSection {
     private static final DataLayer DEFAULT_BLOCK_LIGHT_ARRAY = new DataLayer();
     *///?}
 
-    //? if >=1.18 {
-    private static final PalettedContainer<BlockState> DEFAULT_STATE_CONTAINER = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
-    //?} else {
-    /*private static final GlobalPalette<BlockState> GLOBAL_STATE_PALETTE = new GlobalPalette(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState());
-    private static final PalettedContainer<BlockState> DEFAULT_STATE_CONTAINER = new PalettedContainer<>(GLOBAL_STATE_PALETTE, Block.BLOCK_STATE_REGISTRY, NbtUtils::readBlockState, NbtUtils::writeBlockState, Blocks.AIR.defaultBlockState());
-    *///?}
     private static final boolean HAS_FABRIC_RENDER_DATA;
 
     private final SectionPos pos;
@@ -127,7 +121,7 @@ public class ClonedChunkSection {
                 if (!WorldUtil.isDebug(world)) {
                     blockData = ReadableContainerExtended.clone(section.getStates());
                 } else {
-                    blockData = constructDebugWorldContainer(pos);
+                    blockData = constructDebugWorldContainer(world, pos);
                 }
                 blockEntityMap = copyBlockEntities(chunk, pos);
 
@@ -158,14 +152,15 @@ public class ClonedChunkSection {
      * Construct a fake PalettedContainer whose contents match those of the debug world. This is needed to
      * match vanilla's odd approach of short-circuiting getBlockState calls inside its render region class.
      */
-    @NotNull
-    private static PalettedContainer<BlockState> constructDebugWorldContainer(SectionPos pos) {
+    private static PalettedContainer<BlockState> constructDebugWorldContainer(Level level, SectionPos pos) {
         // Fast path for sections which are guaranteed to be empty
         if (pos.getY() != 3 && pos.getY() != 4)
-            return DEFAULT_STATE_CONTAINER;
+            return null;
 
         // We use swapUnsafe in the loops to avoid acquiring/releasing the lock on each iteration
-        //? if >=1.18 {
+        //? if >=1.21.9-beta.1 {
+        /*var container = level.palettedContainerFactory().createForBlockStates();
+        *///?} else if >=1.18 {
         var container = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
         //?} else
         /*var container = new PalettedContainer<>(GLOBAL_STATE_PALETTE, Block.BLOCK_STATE_REGISTRY, NbtUtils::readBlockState, NbtUtils::writeBlockState, Blocks.AIR.defaultBlockState());*/

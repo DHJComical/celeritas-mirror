@@ -328,7 +328,12 @@ public class BlockRenderer {
         var model = ctx.model();
         var state = ctx.state();
         if (this.useAmbientOcclusion && modelUsesAO(ctx)
-                && (((EmbeddiumBakedModelExtension)model).useAmbientOcclusionWithLightEmission(state, ctx.renderLayer()) || ctx.lightEmission() == 0)) {
+                && (
+                        //? if <1.21.5 {
+                        ((EmbeddiumBakedModelExtension)model).useAmbientOcclusionWithLightEmission(state, ctx.renderLayer())
+                        //?} else
+                        /*false*/
+                   || ctx.lightEmission() == 0)) {
             return LightMode.SMOOTH;
         } else {
             return LightMode.FLAT;
