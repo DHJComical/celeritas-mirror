@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.particle;
 
-//? if forgelike {
+//? if forgelike && <1.21.9-beta.1 {
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
