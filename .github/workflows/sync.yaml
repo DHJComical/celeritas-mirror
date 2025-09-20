@@ -79,7 +79,7 @@ jobs:
         if: steps.checker.outputs.should_run == 'true'
         working-directory: ./celeritas
         continue-on-error: true
-        run: ./gradlew -Ptarget_versions=1.21.9-pre1 packageJar
+        run: ./gradlew -Ptarget_versions=1.21.9 packageJar
 
 #      - name: Build for 1.21.8
 #        if: steps.checker.outputs.should_run == 'true'
