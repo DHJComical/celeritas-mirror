@@ -38,6 +38,10 @@ or `./gradlew :forge1710:packageJar`, but this will configure other subprojects 
 
 To build for every Minecraft version at once, execute `./gradlew packageJar`.
 
+## Version Archive
+Some versions that are now removed from buildable versions
+- [1.21.8[NeoForge]](https://github.com/DHJComical/celeritas-mirror/releases/tag/stonecutter-snapshot-20250916-119)
+
 ## How to use
 
 Celeritas generally requires a "modernized" environment on older Minecraft versions, and will not run out-of-the-box
