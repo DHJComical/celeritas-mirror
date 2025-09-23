@@ -27,7 +27,7 @@ import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 import org.taumc.celeritas.impl.command.TogglePassCommand;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 
-@Mod(modid = CeleritasVintage.MODID, useMetadata = true, clientSideOnly = true)
+@Mod(modid = CeleritasVintage.MODID, useMetadata = true, clientSideOnly = true, acceptableRemoteVersions = "*")
 public class CeleritasVintage {
     public static final String MODID = "celeritas";
     private static final Logger LOGGER = LogManager.getLogger("Celeritas");
