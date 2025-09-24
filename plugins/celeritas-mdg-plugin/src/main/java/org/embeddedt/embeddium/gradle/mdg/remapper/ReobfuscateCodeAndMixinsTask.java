@@ -50,6 +50,13 @@ public abstract class ReobfuscateCodeAndMixinsTask extends Jar {
                 .withMappings(mappings)
                 .build();
 
+        // Delete the output jar, otherwise we will just update the changed entries and not remove deleted entries.
+        if (outputJar.exists()) {
+            if (!outputJar.delete()) {
+                getLogger().warn("Failed to delete jar {}", outputJar.getAbsolutePath());
+            }
+        }
+
         // Create output consumer
         try (OutputConsumerPath outputConsumer = new OutputConsumerPath.Builder(outputJar.toPath()).assumeArchive(true).build()) {
             outputConsumer.addNonClassFiles(inputJar.toPath()); // optional: copy resources
