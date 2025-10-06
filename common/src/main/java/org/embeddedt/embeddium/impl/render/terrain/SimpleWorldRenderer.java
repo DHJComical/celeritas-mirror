@@ -388,7 +388,13 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
     }
 
     public Collection<String> getDebugStrings() {
-        return this.renderSectionManager.getDebugStrings();
+        var debugStrings = new ArrayList<String>();
+        if (this.currentViewport != null) {
+            var transform = this.currentViewport.getTransform();
+            debugStrings.add("Viewport: %.02f %.02f %.02f".formatted(transform.x, transform.y, transform.z));
+        }
+        debugStrings.addAll(this.renderSectionManager.getDebugStrings());
+        return debugStrings;
     }
 
     public boolean isSectionReady(int x, int y, int z) {
