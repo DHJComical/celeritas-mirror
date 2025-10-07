@@ -133,6 +133,11 @@ public class ModelQuad implements ModelQuadViewMutable {
     }
 
     @Override
+    public void setForgeNormal(int idx, int normal) {
+        this.data[vertexOffset(idx) + NORMAL_INDEX] = normal;
+    }
+
+    @Override
     public int getComputedFaceNormal() {
         int n = this.normal;
         if (n == 0) {

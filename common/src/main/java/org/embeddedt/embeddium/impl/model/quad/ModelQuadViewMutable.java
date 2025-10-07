@@ -63,4 +63,9 @@ public interface ModelQuadViewMutable extends ModelQuadView {
     void setLightFace(ModelQuadFacing face);
 
     void setHasAmbientOcclusion(boolean hasAmbientOcclusion);
+
+    /**
+     * Sets the packed normal vector embedded in the vertex data.
+     */
+    void setForgeNormal(int idx, int normal);
 }
