@@ -44,10 +44,15 @@ public class ModLogoUtil {
         Optional<String> logoFile = erroredLogos.contains(modId) ? Optional.empty() : ModList.get().getModContainerById(modId).flatMap(c -> c.getModInfo().getLogoFile());
         ResourceLocation texture = null;
         if(logoFile.isPresent()) {
-            Path logoPath = ModList.get().getModFileById(modId).getFile().findResource(logoFile.get());
             try {
-                if(logoPath != null) {
-                    texture = handleIoSupplier(modId, Files.newInputStream(logoPath));
+                var modFile = ModList.get().getModFileById(modId).getFile();
+                //? if <1.21.10 {
+                Path logoPath = modFile.findResource(logoFile.get());
+                var logoStream = logoPath != null ? Files.newInputStream(logoPath) : null;
+                //?} else
+                /*var logoStream = modFile.getContents().openFile(logoFile.get());*/
+                if(logoStream != null) {
+                    texture = handleIoSupplier(modId, logoStream);
                 }
             } catch(IOException e) {
                 erroredLogos.add(modId);

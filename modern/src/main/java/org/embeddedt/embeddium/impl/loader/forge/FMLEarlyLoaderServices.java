@@ -30,7 +30,7 @@ public class FMLEarlyLoaderServices implements EarlyLoaderServices {
 
     @Override
     public Path findEarlyMixinFolder(String path) {
-        ModFileInfo modFileInfo = FMLLoader.getLoadingModList().getModFileById("embeddium");
+        ModFileInfo modFileInfo = FMLLoader/*? if >=1.21.10 {*//*.getCurrent()*//*?}*/.getLoadingModList().getModFileById("embeddium");
 
         if (modFileInfo == null) {
             // Probably a load error
