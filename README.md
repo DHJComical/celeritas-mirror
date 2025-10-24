@@ -41,6 +41,7 @@ To build for every Minecraft version at once, execute `./gradlew packageJar`.
 ## Version Archive
 Some versions that are now removed from buildable versions
 - [1.21.8[NeoForge]](https://github.com/DHJComical/celeritas-mirror/releases/tag/stonecutter-snapshot-20250916-119)
+- [1.21.9-pre1[NeoForge]](https://github.com/DHJComical/celeritas-mirror/releases/tag/stonecutter-snapshot-20250924-138)
 
 ## How to use
 
