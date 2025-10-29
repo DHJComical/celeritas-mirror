@@ -85,3 +85,16 @@ jar {
         ])
     }
 }
+
+// make RFG stop complaining
+def obfAttr = Attribute.of("com.gtnewhorizons.retrofuturagradle.obfuscation", String)
+def transformedAttr = Attribute.of("rfgDeobfuscatorTransformed", Boolean)
+
+configurations {
+    runtimeElements {
+        attributes {
+            attribute(obfAttr, "mcp")
+            attribute(transformedAttr, true)
+        }
+    }
+}

@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.gradle.mdg.remapper;
 
+import net.fabricmc.mappingio.MappingReader;
 import net.fabricmc.mappingio.extras.ClassAnalysisDescCompleter;
-import net.fabricmc.mappingio.format.srg.TsrgFileReader;
 import net.fabricmc.mappingio.tree.MemoryMappingTree;
 import net.fabricmc.tinyremapper.IMappingProvider;
 import net.fabricmc.tinyremapper.OutputConsumerPath;
@@ -15,7 +15,6 @@ import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.bundling.Jar;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -39,9 +38,8 @@ public abstract class ReobfuscateCodeAndMixinsTask extends Jar {
     private void remap(File inputJar, File outputJar) throws IOException {
         // Load TSRG mappings
         MemoryMappingTree mappingTree = new MemoryMappingTree();
-        try (BufferedReader reader = Files.newBufferedReader(getTsrgMappings().getAsFile().get().toPath())) {
-            TsrgFileReader.read(reader, mappingTree);
-        }
+        Path mappingsPath = getTsrgMappings().getAsFile().get().toPath();
+        MappingReader.read(mappingsPath, mappingTree);
         ClassAnalysisDescCompleter.process(getDeobfMinecraftJar().getAsFile().get().toPath(), mappingTree.getSrcNamespace(), mappingTree);
 
         IMappingProvider mappings = TinyRemapperMappingsHelper.create(mappingTree, "source", "target");
@@ -63,7 +61,7 @@ public abstract class ReobfuscateCodeAndMixinsTask extends Jar {
 
             // Run remap
             remapper.readInputs(inputJar.toPath());
-            remapper.readClassPath(getClasspath().getFiles().stream().map(File::toPath).toArray(Path[]::new));
+            remapper.readClassPath(getClasspath().getFiles().stream().map(File::toPath).filter(Files::exists).toArray(Path[]::new));
             remapper.apply(outputConsumer);
             remapper.finish();
         }

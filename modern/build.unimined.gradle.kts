@@ -1,5 +1,6 @@
 import bs.ModLoader
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.embeddedt.embeddium.gradle.build.conventions.ShadowHelper
 import org.embeddedt.embeddium.gradle.build.extensions.versionedProperty
 import org.embeddedt.embeddium.gradle.stonecutter.ModDependencyCollector
 import org.embeddedt.embeddium.gradle.unimined.ProductionJarHelper
@@ -103,7 +104,8 @@ dependencies {
 }
 
 ProductionJarHelper.configureProcessedResources(project)
-ProductionJarHelper.createShadowRemapJar(project)
+ShadowHelper.createShadowRemapJar(project)
+ProductionJarHelper.configureRemapJar(project)
 
 tasks.named<ProcessResources>("processResources") {
     from(generatedATPath) {

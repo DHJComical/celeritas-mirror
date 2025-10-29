@@ -1,5 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.embeddedt.embeddium.gradle.build.conventions.LWJGLHelper
+import org.embeddedt.embeddium.gradle.build.conventions.ShadowHelper
 import org.embeddedt.embeddium.gradle.unimined.ProductionJarHelper
 import xyz.wagyourtail.unimined.api.minecraft.EnvType
 import xyz.wagyourtail.unimined.api.minecraft.task.AbstractRemapJarTask
@@ -83,7 +84,8 @@ val remapJar = tasks.named<AbstractRemapJarTask>("remapJar") {
     }
 }
 
-ProductionJarHelper.createShadowRemapJar(project)
+ShadowHelper.createShadowRemapJar(project)
+ProductionJarHelper.configureRemapJar(project)
 LWJGLHelper.convertLwjgl2To3(project)
 ProductionJarHelper.configureProcessedResources(project)
 

@@ -59,6 +59,15 @@ pluginManagement {
                 includeGroupAndSubgroups("org.taumc")
             }
         }
+        maven {
+            // RetroFuturaGradle
+            name = "GTNH Maven"
+            url = uri("https://nexus.gtnewhorizons.com/repository/public/")
+            mavenContent {
+                includeGroupByRegex("com\\.gtnewhorizons\\..+")
+                includeGroup("com.gtnewhorizons")
+            }
+        }
     }
 
     plugins {
@@ -95,6 +104,10 @@ if(file("forge1710").exists() && isVersionIncluded("1.7.10")) {
     include("forge1710")
 }
 
+if(file("forge122").exists() && isVersionIncluded("1.12.2")) {
+    include("forge122")
+}
+
 fun <T> createStonecutterProject(subprojectFolder: String, versions: List<T>, mcVersionGetter: (version: T) -> String = { v -> v.toString() }, action: TreeBuilder.(versions: List<T>) -> Unit) {
     if (includedSubprojectsProp != null && !includedSubprojectsProp.contains(subprojectFolder)) {
         println("Skipping project $subprojectFolder by request")
@@ -115,11 +128,6 @@ fun <T> createStonecutterProject(subprojectFolder: String, versions: List<T>, mc
             action.invoke(this, filteredVersions)
         }
     }
-}
-
-createStonecutterProject("forge122", listOf("1.12.2", "1.10.2")) { versions ->
-    centralScript = "build.gradle.kts"
-    versions(versions)
 }
 
 createStonecutterProject("babric", listOf("1.2.5", "1.0.0-beta.7.3", "1.0.0-beta.8.1", "1.7.10", "1.8.9")) { versions ->

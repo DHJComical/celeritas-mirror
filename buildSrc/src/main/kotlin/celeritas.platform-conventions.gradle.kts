@@ -115,8 +115,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.projectlombok:lombok:1.18.30")
-    annotationProcessor("org.projectlombok:lombok:1.18.30")
+    val lombokVersion = rootProject.properties["lombok_version"].toString()
+    compileOnly("org.projectlombok:lombok:${lombokVersion}")
+    annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
 }
 

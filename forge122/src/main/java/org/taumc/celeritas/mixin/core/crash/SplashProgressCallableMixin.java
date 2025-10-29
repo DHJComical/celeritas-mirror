@@ -1,6 +1,5 @@
 package org.taumc.celeritas.mixin.core.crash;
 
-import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,7 +13,7 @@ public class SplashProgressCallableMixin {
         boolean isContextAvailable;
         try {
             isContextAvailable = Display.isCreated() && Display.getDrawable().isCurrent();
-        } catch (LWJGLException e) {
+        } catch (Exception e) {
             isContextAvailable = false;
         }
         if (!isContextAvailable) {
