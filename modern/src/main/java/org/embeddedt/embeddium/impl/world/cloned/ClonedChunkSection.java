@@ -44,6 +44,8 @@ public class ClonedChunkSection {
     private static final int DATA_LAYER_COUNT = DataLayer.LAYER_COUNT;
     //?} else {
     /*private static final int DATA_LAYER_COUNT = 16;
+    /// @see net.minecraft.world.level.chunk.LevelChunkSection#GLOBAL_BLOCKSTATE_PALETTE
+    private static final Palette<BlockState> GLOBAL_STATE_PALETTE = new GlobalPalette(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState());
     *///?}
 
     //? if >=1.20 {

@@ -1,6 +1,8 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.entity.shadows;
 
 //? if <1.21.9-beta.1 {
+//? if <1.20
+/*import org.embeddedt.embeddium.api.math.Matrix4fExtended;*/
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import org.embeddedt.embeddium.api.vertex.format.common.ModelVertex;
 import net.minecraft.client.renderer.LightTexture;
