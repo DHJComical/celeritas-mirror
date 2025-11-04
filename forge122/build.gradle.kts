@@ -79,10 +79,16 @@ repositories {
             includeGroup("com.gtnewhorizons")
         }
     }
-    mavenLocal()
+    maven {
+        name = "taumc releases"
+        url = uri("https://maven.taumc.org/releases")
+        content {
+            includeGroupAndSubgroups("org.taumc")
+        }
+    }
 }
 
-val lwjgl3ifyVersion = "1.0.1-38-g6410323"
+val lwjgl3ifyVersion = "d6af8e7"
 
 val forgePatchDeps by configurations.creating {
     isCanBeResolved = true
@@ -113,13 +119,13 @@ dependencies {
     compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.11") {
         exclude(group = "org.apache.logging.log4j")
     }
-    implementation("io.github.twilightflower:lwjgl3ify:${lwjgl3ifyVersion}:dev") {
+    implementation("org.taumc:lwjgl3ify:${lwjgl3ifyVersion}:dev") {
         isTransitive = false
     }
-    runtimeOnly("io.github.twilightflower:lwjgl3ify:${lwjgl3ifyVersion}:forgePatches") {
+    runtimeOnly("org.taumc:lwjgl3ify:${lwjgl3ifyVersion}:forgePatches") {
         isTransitive = false
     }
-    forgePatchDeps("io.github.twilightflower:lwjgl3ify:${lwjgl3ifyVersion}:forgePatches") {
+    forgePatchDeps("org.taumc:lwjgl3ify:${lwjgl3ifyVersion}:forgePatches") {
         isTransitive = false
     }
     "modRuntimeOnly"("curse.maven:ae2-223794:2747063")
