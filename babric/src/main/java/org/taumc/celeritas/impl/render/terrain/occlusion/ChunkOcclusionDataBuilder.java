@@ -49,11 +49,11 @@ public class ChunkOcclusionDataBuilder {
     }
 
     private static int pack(Vector3i pos) {
-        return pack(pos.x() & 15, pos.y() & 15, pos.z() & 15);
+        return pack(pos.x(), pos.y(), pos.z());
     }
 
     private static int pack(int x, int y, int z) {
-        return x << 0 | y << 8 | z << 4;
+        return (x & 15) << 0 | (y & 15) << 8 | (z & 15) << 4;
     }
 
     public ChunkOcclusionData build() {
