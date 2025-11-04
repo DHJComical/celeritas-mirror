@@ -40,6 +40,6 @@ jobs:
             unimined-v3-${{ runner.os }}-build-snapshot-${{ hashFiles('modern/build.gradle') }}-
             unimined-v3-${{ runner.os }}-build-snapshot-
       - name: Build all packaged jars
-        run: ./gradlew packageJar
+        run: ./gradlew packageJar --info --stacktrace
       - name: Show checksums
         run: find build/libs -name \*.jar | sort | xargs sha256sum
