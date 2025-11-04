@@ -77,7 +77,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         //?} else {
         /*var blockPos = new net.minecraft.util.math.BlockPos.Mutable(minX, minY, minZ);
         var region = new WorldRegion(world, new net.minecraft.util.math.BlockPos(minX, minY, minZ), new net.minecraft.util.math.BlockPos(maxX, maxY, maxZ), 1);
-        var renderBlocks = Minecraft.getInstance().getBlockRenderDispatcher();
+        var renderBlocks = net.minecraft.client.Minecraft.getInstance().getBlockRenderDispatcher();
         *///?}
 
         tesselator.offset(-this.render.getOriginX(), -this.render.getOriginY(), -this.render.getOriginZ());
