@@ -6,6 +6,7 @@ import org.embeddedt.embeddium.impl.gl.buffer.*;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.functions.BufferCopyFunctions;
+import org.embeddedt.embeddium.impl.gl.functions.BufferMapRangeFunctions;
 import org.embeddedt.embeddium.impl.gl.functions.BufferStorageFunctions;
 import org.embeddedt.embeddium.impl.gl.sync.GlFence;
 import org.embeddedt.embeddium.impl.gl.util.EnumBitField;
@@ -51,7 +52,8 @@ public class MappedStagingBuffer implements StagingBuffer {
     public static boolean isSupported(RenderDevice instance) {
         var functions = instance.getDeviceFunctions();
         return functions.bufferStorageFunctions() != BufferStorageFunctions.NONE
-                && functions.bufferCopyFunctions() != BufferCopyFunctions.PIXEL_PACK;
+                && functions.bufferCopyFunctions() != BufferCopyFunctions.PIXEL_PACK
+                && functions.bufferMapRangeFunctions() == BufferMapRangeFunctions.CORE;
     }
 
     @Override

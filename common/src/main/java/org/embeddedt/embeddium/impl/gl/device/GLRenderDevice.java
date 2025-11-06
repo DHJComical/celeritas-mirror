@@ -199,7 +199,8 @@ public class GLRenderDevice implements RenderDevice {
 
             this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, buffer);
 
-            ByteBuffer buf = GL32C.glMapBufferRange(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), offset, length, flags.getBitField());
+            ByteBuffer buf = GLRenderDevice.this.functions.bufferMapRangeFunctions()
+                    .mapBufferRange(buffer, offset, length, flags);
 
             if (buf == null) {
                 throw new RuntimeException("Failed to map buffer");
