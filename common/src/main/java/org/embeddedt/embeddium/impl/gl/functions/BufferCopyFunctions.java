@@ -20,6 +20,9 @@ public enum BufferCopyFunctions {
     PIXEL_PACK {
         @Override
         public void copyBufferSubData(CommandList commandList, GlBuffer src, GlBuffer dst, long readOffset, long writeOffset, long bytes) {
+            if (src.getActiveMapping() != null || dst.getActiveMapping() != null) {
+                throw new IllegalStateException("Cannot use PIXEL_PACK copy strategy on mapped buffers");
+            }
             commandList.bindBuffer(GlBufferTarget.PIXEL_PACK_BUFFER, src);
             commandList.bindBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER, dst);
             long srcBufPtr = GL15.nglMapBuffer(GlBufferTarget.PIXEL_PACK_BUFFER.getTargetParameter(), GL15.GL_READ_ONLY);
