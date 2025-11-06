@@ -47,14 +47,10 @@ public enum BufferMapRangeFunctions {
 
     public static BufferMapRangeFunctions pickBest(RenderDevice device) {
         var caps = device.getCapabilities();
-        /*
         if (caps.OpenGL30 || caps.GL_ARB_map_buffer_range) {
             return CORE;
         } else {
             return MAP_FULL_AND_SLICE;
         }
-
-         */
-        return MAP_FULL_AND_SLICE;
     }
 }
