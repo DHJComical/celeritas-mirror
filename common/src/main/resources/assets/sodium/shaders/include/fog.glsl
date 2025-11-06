@@ -43,9 +43,9 @@ vec4 _exp2Fog(vec4 fragColor, float fragDistance, vec4 fogColor, float fogDensit
 
 float getFragDistance(int fogShape, vec3 position) {
     // Use the maximum of the horizontal and vertical distance to get cylindrical fog if fog shape is cylindrical
-    switch (fogShape) {
-        case FOG_SHAPE_SPHERICAL: return length(position);
-        case FOG_SHAPE_CYLINDRICAL: return max(length(position.xz), abs(position.y));
-        default: return length(position); // This shouldn't be possible to get, but return a sane value just in case
+    if (fogShape == FOG_SHAPE_CYLINDRICAL) {
+        return max(length(position.xz), abs(position.y));
+    } else {
+        return length(position);
     }
 }
