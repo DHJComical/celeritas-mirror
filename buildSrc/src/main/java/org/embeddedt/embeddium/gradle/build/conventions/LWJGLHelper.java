@@ -31,6 +31,7 @@ public class LWJGLHelper {
             deps.add(configurationName, "org.lwjgl:" + component + ":" + LWJGL3_VERSION);
             deps.add(configurationName, "org.lwjgl:" + component + ":" + LWJGL3_VERSION + ":natives-" + "linux");
             deps.add(configurationName, "org.lwjgl:" + component + ":" + LWJGL3_VERSION + ":natives-" + "windows");
+            deps.add(configurationName, "org.lwjgl:" + component + ":" + LWJGL3_VERSION + ":natives-" + "macos-arm64");
         }
     }
 }
