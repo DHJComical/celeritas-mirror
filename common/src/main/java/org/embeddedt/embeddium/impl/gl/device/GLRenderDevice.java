@@ -109,10 +109,7 @@ public class GLRenderDevice implements RenderDevice {
 
         @Override
         public void copyBufferSubData(GlBuffer src, GlBuffer dst, long readOffset, long writeOffset, long bytes) {
-            this.bindBuffer(GlBufferTarget.COPY_READ_BUFFER, src);
-            this.bindBuffer(GlBufferTarget.COPY_WRITE_BUFFER, dst);
-
-            GL31C.glCopyBufferSubData(GL31C.GL_COPY_READ_BUFFER, GL31C.GL_COPY_WRITE_BUFFER, readOffset, writeOffset, bytes);
+            GLRenderDevice.this.functions.bufferCopyFunctions().copyBufferSubData(this, src, dst, readOffset, writeOffset, bytes);
         }
 
         @Override
