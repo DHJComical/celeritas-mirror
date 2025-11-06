@@ -7,6 +7,7 @@ import org.embeddedt.embeddium.impl.gl.state.GlStateTracker;
 import org.embeddedt.embeddium.impl.gl.sync.GlFence;
 import org.embeddedt.embeddium.impl.gl.tessellation.*;
 import org.embeddedt.embeddium.impl.gl.util.EnumBitField;
+import org.embeddedt.embeddium.impl.gl.util.VAOUtil;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.*;
 import java.nio.ByteBuffer;
@@ -86,7 +87,7 @@ public class GLRenderDevice implements RenderDevice {
         @Override
         public void bindVertexArray(GlVertexArray array) {
             if (this.stateTracker.makeVertexArrayActive(array)) {
-                GL30C.glBindVertexArray(array.handle());
+                VAOUtil.glBindVertexArray(array.handle());
             }
         }
 
@@ -124,7 +125,7 @@ public class GLRenderDevice implements RenderDevice {
         @Override
         public void unbindVertexArray() {
             if (this.stateTracker.makeVertexArrayActive(null)) {
-                GL30C.glBindVertexArray(GlVertexArray.NULL_ARRAY_ID);
+                VAOUtil.glBindVertexArray(GlVertexArray.NULL_ARRAY_ID);
             }
         }
 
