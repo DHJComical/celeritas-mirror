@@ -103,7 +103,9 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
             for (var attr : options.pass().vertexType().getVertexFormat().getAttributes()) {
                 builder.bindAttribute(attr.getName(), i++);
             }
-            builder.bindFragmentData("fragColor", ChunkShaderBindingPoints.FRAG_COLOR);
+            if (!this.enableLegacyGLPatches) {
+                builder.bindFragmentData("fragColor", ChunkShaderBindingPoints.FRAG_COLOR);
+            }
             return builder.link((shader) -> new DefaultChunkShaderInterface(shader, options));
         } finally {
             loadedShaders.forEach(GlShader::delete);
