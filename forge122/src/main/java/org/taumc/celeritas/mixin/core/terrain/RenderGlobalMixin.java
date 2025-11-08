@@ -196,11 +196,13 @@ public abstract class RenderGlobalMixin implements SimpleWorldRenderer.Provider<
          */
         synchronized(this.setTileEntities) {
             if (!this.setTileEntities.isEmpty()) {
+                TileEntityRendererDispatcher.instance.preDrawBatch();
                 for (var te : this.setTileEntities) {
                     if (te.shouldRenderInPass(pass)) {
                         TileEntityRendererDispatcher.instance.render(te, partialTicks, -1);
                     }
                 }
+                TileEntityRendererDispatcher.instance.drawBatch(pass);
             }
         }
 
