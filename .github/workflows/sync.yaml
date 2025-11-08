@@ -27,6 +27,7 @@ jobs:
         run: |
           git pull
           echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
       - name: Get previous commit hash from storage file
         id: get_previous
         run: |
@@ -35,6 +36,7 @@ jobs:
           else
             echo "commit_hash=first-run" >> $GITHUB_OUTPUT
           fi
+
       - name: Compare hashes and decide whether to run
         id: checker
         run: |
@@ -54,7 +56,7 @@ jobs:
           echo "Syncing remote upstream to local mirror..."
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git remote set-url origin https://github-actions:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git remote set-url origin https://github-actions:${{ secrets.PAT }}@github.com/${{ github.repository }}.git
           
           git fetch https://git.taumc.org/embeddedt/celeritas.git stonecutter
           
