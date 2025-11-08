@@ -8,9 +8,11 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.culling.ICamera;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -49,6 +51,9 @@ public abstract class RenderGlobalMixin implements SimpleWorldRenderer.Provider<
 
     @Shadow
     private WorldClient world;
+    @Shadow
+    @Final
+    private Set<TileEntity> setTileEntities;
     private CeleritasWorldRenderer renderer;
 
     @Redirect(method = "loadRenderers", at = @At(value = "FIELD", target = "Lnet/minecraft/client/settings/GameSettings;renderDistanceChunks:I", ordinal = 1))
@@ -181,8 +186,23 @@ public abstract class RenderGlobalMixin implements SimpleWorldRenderer.Provider<
     }
 
     @Inject(method = "renderEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderHelper;enableStandardItemLighting()V", shift = At.Shift.AFTER, ordinal = 1), cancellable = true)
-    public void sodium$renderTileEntities(Entity entity, ICamera camera, float partialTicks, CallbackInfo ci) {
+    public void sodium$renderTileEntities(Entity entity, ICamera camera, float partialTicks, CallbackInfo ci, @Local(ordinal = 0) int pass) {
         this.renderer.renderBlockEntities(new CeleritasWorldRenderer.TileEntityRenderContext(damagedBlocks, partialTicks));
+
+        /*
+         * Normally, setTileEntities will be empty because we suppress vanilla chunk rendering. However, some mods
+         * inject a custom renderer into the set. So we render any TE we find in it.
+         * https://github.com/pau101/Fairy-Lights/blob/8a92f770d69be6fa164d24d7a023d828249423bb/src/main/java/com/pau101/fairylights/client/ClientProxy.java#L203
+         */
+        synchronized(this.setTileEntities) {
+            if (!this.setTileEntities.isEmpty()) {
+                for (var te : this.setTileEntities) {
+                    if (te.shouldRenderInPass(pass)) {
+                        TileEntityRendererDispatcher.instance.render(te, partialTicks, -1);
+                    }
+                }
+            }
+        }
 
         this.mc.entityRenderer.disableLightmap();
         this.mc.profiler.endSection();
