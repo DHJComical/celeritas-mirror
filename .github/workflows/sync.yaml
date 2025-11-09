@@ -57,22 +57,11 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git remote set-url origin https://github-actions:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
-
-          git fetch https://git.taumc.org/embeddedt/celeritas.git stonecutter
-
-          git checkout -b temp-sync FETCH_HEAD
-
-          if [ -d ".github/workflows" ]; then
-            echo "Removing .github/workflows/ directory from upstream..."
-            git rm -rf .github/workflows/
-            git commit -m "Remove workflow files from upstream sync" || true
-          fi
-
-          echo "Pushing to stonecutter branch..."
-          git push --force origin temp-sync:stonecutter
-
-          echo "✅ Sync completed successfully!"
           
+          git fetch https://git.taumc.org/embeddedt/celeritas.git stonecutter
+          
+          git push --force origin FETCH_HEAD:refs/heads/stonecutter
+
       - name: Set up JDK
         if: steps.checker.outputs.should_run == 'true'
         uses: actions/setup-java@v4
