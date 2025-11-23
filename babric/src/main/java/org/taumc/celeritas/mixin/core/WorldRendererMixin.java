@@ -4,11 +4,18 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.platform.Lighting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.Culler;
-//? if >=1.8
-/*import net.minecraft.client.render.block.BlockLayer;*/
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.world.WorldRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.living.LivingEntity;
+//? if >=1.8 {
+/*import net.minecraft.client.world.ClientWorld;
+import net.minecraft.client.render.block.BlockLayer;
+import net.minecraft.entity.projectile.WitherSkullEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import org.taumc.celeritas.impl.render.entity.EntityGatherer;
+*///?}
 import net.minecraft.world.World;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
@@ -40,6 +47,15 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
 
     @Shadow
     public abstract void reload();
+
+    @Shadow
+    private ClientWorld world;
+    @Shadow
+    @Final
+    private EntityRenderDispatcher entityRenderDispatcher;
+
+    @Shadow
+    private int globalEntityCount;
     *///?}
 
     private CeleritasWorldRenderer renderer;
@@ -187,6 +203,42 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
     public void sodium$renderTileEntities(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) float partialTicks) {
         this.renderer.renderBlockEntities(partialTicks);
     }
+
+    //? if >=1.8 {
+    /*private final EntityGatherer celeritas$entityGatherer = new EntityGatherer();
+
+    @Inject(method = "renderEntities", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiler/Profiler;swap(Ljava/lang/String;)V", args = "ldc=entities"))
+    private void celeritas$renderEntities(Entity camera, Culler culler, float tickDelta, CallbackInfo ci, @Local(ordinal = 0) double d, @Local(ordinal = 1) double e, @Local(ordinal = 2) double g) {
+        celeritas$entityGatherer.clear();
+        var entityList = celeritas$entityGatherer.getLoadedEntityList(this.world);
+
+        BlockPos.Mutable entityBlockPos = new BlockPos.Mutable();
+
+        for (Entity entity : entityList) {
+            if (!this.entityRenderDispatcher.shouldRender(entity, culler, d, e, g) && entity.rider != this.minecraft.player) {
+                if (entity instanceof WitherSkullEntity) {
+                    this.minecraft.getEntityRenderDispatcher().renderNameTag(entity, tickDelta);
+                }
+                continue;
+            }
+
+            boolean isSelfSleeping = this.minecraft.getCamera() instanceof LivingEntity ? ((LivingEntity)this.minecraft.getCamera()).isSleeping() : false;
+            if (entity == this.minecraft.getCamera() && this.minecraft.options.perspective == 0 && !isSelfSleeping) {
+                continue;
+            }
+
+            if (entity.y >= 0.0 && entity.y < 256.0) {
+                entityBlockPos.set(MathHelper.floor(entity.x), MathHelper.floor(entity.y), MathHelper.floor(entity.z));
+                if (!this.world.isChunkLoaded(entityBlockPos)) {
+                    continue;
+                }
+            }
+
+            this.globalEntityCount++;
+            this.entityRenderDispatcher.renderSecondPass(entity, tickDelta);
+        }
+    }
+    *///?}
 
     /**
      * @reason Replace the debug string
