@@ -1,7 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.particle;
 
-//? if <1.21.9-beta.1 {
-
 //? if <1.20 {
 /*import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
@@ -221,4 +219,3 @@ public abstract class BillboardParticleMixin extends Particle {
         ParticleVertex.put(buffer, fx, fy, fz, u, v, color, light);
     }
 }
-//?}

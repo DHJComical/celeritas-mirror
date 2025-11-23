@@ -1,7 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.model;
 
-//? if <1.21.5 {
-
 //? if forge && >=1.19
 import net.minecraftforge.client.ChunkRenderTypeSet;
 //? if neoforge
@@ -191,5 +189,4 @@ public class ChunkRenderTypeSetMixin {
         return UNIVERSE[mask];
     }
 }
-//?}
 //?}

@@ -7,17 +7,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-//? if <1.21.9-beta.1 {
 @Mixin(net.minecraft.client.gui.screens.ReceivingLevelScreen.class)
-//?} else {
-/*@Mixin(targets = {"net/minecraft/client/multiplayer/LevelLoadTracker$WaitingForPlayerChunk"})
-*///?}
 public class DownloadingTerrainScreenMixin {
     @Redirect(method = {
-            //? if <1.21.9-beta.1 {
             "tick"
-            //?} else
-            /*"isReady"*/
     }, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;blockPosition()Lnet/minecraft/core/BlockPos;"), require = 0)
     private BlockPos redirect$getPlayerBlockPosition(LocalPlayer instance) {
         // Ensure the "eye" position (which the chunk rendering code is actually concerned about) is used instead of

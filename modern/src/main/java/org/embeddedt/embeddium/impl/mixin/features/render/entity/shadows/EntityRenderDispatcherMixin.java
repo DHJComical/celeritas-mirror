@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.entity.shadows;
 
-//? if <1.21.9-beta.1 {
 //? if <1.20
 /*import org.embeddedt.embeddium.api.math.Matrix4fExtended;*/
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
@@ -161,4 +160,3 @@ public class EntityRenderDispatcherMixin {
         ModelVertex.write(ptr, xt, yt, zt, color, u, v, LightDataAccess.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, normal);
     }
 }
-//?}

@@ -2,10 +2,10 @@ package org.embeddedt.embeddium.impl.mixin.features.model;
 
 //? if forge && >=1.19
 import net.minecraftforge.client.ChunkRenderTypeSet;
-//? if neoforge && <1.21.5
+//? if neoforge
 /*import net.neoforged.neoforge.client.ChunkRenderTypeSet;*/
 
-//? if forgelike && >=1.19 && <1.21.5 {
+//? if forgelike && >=1.19 {
 import net.minecraft.client.resources.model.SimpleBakedModel;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;

@@ -20,7 +20,6 @@ import java.util.Deque;
 public abstract class MatrixStackMixin implements CachingPoseStack {
     private int cacheEnabled = 0;
 
-    //? if <=1.21.4 {
     @Shadow
     @Final
     private Deque<PoseStack.Pose> poseStack;
@@ -82,7 +81,6 @@ public abstract class MatrixStackMixin implements CachingPoseStack {
     public PoseStack.Pose celeritas$last() {
         return this.poseStack.getLast();
     }
-    //?}
 
     @Override
     public void embeddium$setCachingEnabled(boolean flag) {

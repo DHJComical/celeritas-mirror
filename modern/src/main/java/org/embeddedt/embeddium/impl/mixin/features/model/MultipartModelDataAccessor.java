@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
-//? if neoforge && <1.21.5 {
+//? if neoforge {
 /*import net.minecraft.client.resources.model.BakedModel;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;

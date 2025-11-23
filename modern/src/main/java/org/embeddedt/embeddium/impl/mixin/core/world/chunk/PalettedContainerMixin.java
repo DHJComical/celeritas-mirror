@@ -5,9 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.BitStorage;
 import net.minecraft.world.level.chunk.GlobalPalette;
 import net.minecraft.world.level.chunk.Palette;
-//? if >=1.21.9-beta.1 {
-/*import net.minecraft.world.level.chunk.Strategy;
-*///?} else >=1.17 {
+//? if >=1.17 {
 import static net.minecraft.world.level.chunk.PalettedContainer.Strategy;
 //?}
 import org.embeddedt.embeddium.impl.world.PaletteStorageExtended;
@@ -37,9 +35,6 @@ public abstract class PalettedContainerMixin<T> implements ReadableContainerExte
     public abstract PalettedContainer<T> copy();
 
     private static int strategySize(Strategy strategy) {
-        //? if >=1.21.9-beta.1 {
-        /*return strategy.entryCount();
-        *///?} else
         return strategy.size();
     }
 

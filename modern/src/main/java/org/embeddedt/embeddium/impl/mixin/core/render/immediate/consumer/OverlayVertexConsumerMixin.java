@@ -104,9 +104,6 @@ public class OverlayVertexConsumerMixin implements VertexBufferWriter {
             normal.z = NormI8.unpackZ(packedNormal);
 
             Vector3f transformedNormal = inverseNormalMatrix.transform(normal);
-            //? >=1.21.2
-            /*Direction direction = Direction.getApproximateNearest(transformedNormal.x(), transformedNormal.y(), transformedNormal.z());*/
-            //? <1.21.2
             Direction direction = Direction.getNearest(transformedNormal.x(), transformedNormal.y(), transformedNormal.z());
 
             Vector4f transformedTexture = inverseTextureMatrix.transform(position);

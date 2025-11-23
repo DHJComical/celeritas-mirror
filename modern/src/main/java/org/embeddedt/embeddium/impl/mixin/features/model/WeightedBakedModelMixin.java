@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
-//? if >=1.18 <=1.21.4 {
+//? if >=1.18 {
 import com.google.common.collect.Iterables;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -10,8 +10,6 @@ import net.minecraft.client.resources.model.WeightedBakedModel;
 import net.minecraft.core.Direction;
 //$ rng_import
 import net.minecraft.util.RandomSource;
-//? if >=1.21.2
-/*import net.minecraft.util.random.SimpleWeightedRandomList;*/
 import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.world.level.block.state.BlockState;
 //? if forge && >=1.19 {
@@ -33,7 +31,6 @@ import java.util.*;
 
 @Mixin(WeightedBakedModel.class)
 public class WeightedBakedModelMixin {
-    //? if <1.21.2 {
     @Shadow
     @Final
     private List<WeightedEntry.Wrapper<BakedModel>> list;
@@ -41,11 +38,6 @@ public class WeightedBakedModelMixin {
     @Shadow
     @Final
     private int totalWeight;
-    //?} else {
-    /*@Shadow
-    @Final
-    private SimpleWeightedRandomList<BakedModel> list;
-    *///?}
 
     private static BakedModel getData(WeightedEntry.Wrapper<BakedModel> wrapper) {
         //? if >=1.20.6
@@ -55,10 +47,7 @@ public class WeightedBakedModelMixin {
     }
 
     private WeightedEntry.Wrapper<BakedModel> embeddium$readWeightedList(/*$ rng >>*/ RandomSource random) {
-        //? if <1.21.2
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) random.nextLong()) % this.totalWeight);
-        //? if >=1.21.2
-        /*WeightedEntry.Wrapper<BakedModel> quad = ((WeightedRandomListExtended<WeightedEntry.Wrapper<BakedModel>>)this.list).embeddium$getRandomItem(random);*/
         return quad;
     }
 

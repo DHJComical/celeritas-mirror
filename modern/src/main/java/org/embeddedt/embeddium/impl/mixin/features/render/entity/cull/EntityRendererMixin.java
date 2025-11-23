@@ -21,14 +21,9 @@ public abstract class EntityRendererMixin<T extends Entity> {
     @Final
     protected EntityRenderDispatcher entityRenderDispatcher;
 
-    //? if >=1.21.5 {
-    /*@Shadow
-    protected abstract AABB getBoundingBoxForCulling(Entity par1);
-    *///?} else {
     private AABB getBoundingBoxForCulling(Entity entity) {
         return entity.getBoundingBoxForCulling();
     }
-    //?}
 
     @ModifyExpressionValue(method = "shouldRender", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/culling/Frustum;isVisible(Lnet/minecraft/world/phys/AABB;)Z", ordinal = 0))
     private boolean checkSectionForCullingMain(boolean isWithinFrustum, @Local(ordinal = 0, argsOnly = true) T entity) {

@@ -1,12 +1,9 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.immediate.buffer_builder;
 
-//? if <1.21.5 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexBuffer;
-//? if >=1.21.2
-/*import net.minecraft.client.renderer.CompiledShaderProgram;*/
-//? if >=1.18 <1.21.2
+//? if >=1.18
 import net.minecraft.client.renderer.ShaderInstance;
 //? if >=1.20 {
 import org.joml.Matrix4f;
@@ -18,10 +15,8 @@ import org.spongepowered.asm.mixin.injection.At;
 // High priority so replacement happens before other mods increase the sampler count, so that we see the updated value
 //? if >=1.18 <1.21
 @Mixin(value = VertexBuffer.class, priority = 500)
-//? if >=1.21 <1.21.2
+//? if >=1.21
 /*@Mixin(value = ShaderInstance.class, priority = 500)*/
-//? if >=1.21.2
-/*@Mixin(value = CompiledShaderProgram.class, priority = 500)*/
 public class VertexBufferMixin {
     private static final int DEFAULT_NUM_SAMPLERS = 12;
     private static String[] SAMPLER_IDS = embeddium$makeSamplerIds(DEFAULT_NUM_SAMPLERS);
@@ -47,22 +42,17 @@ public class VertexBufferMixin {
     /*@ModifyExpressionValue(method = "setDefaultUniforms", at = @At(value = "CONSTANT", args = "intValue=" + DEFAULT_NUM_SAMPLERS, ordinal = 0))
     private int setSamplersManually(int numSamplers) {
     *///?}
-        //? if >=1.21 <1.21.2
+        //? if >=1.21
         /*ShaderInstance shader = (ShaderInstance)(Object)this;*/
-        //? if >=1.21.2
-        /*CompiledShaderProgram shader = (CompiledShaderProgram)(Object)this;*/
         String[] samplerIds = SAMPLER_IDS;
         if (samplerIds.length < numSamplers) {
             samplerIds = embeddium$makeSamplerIds(numSamplers);
             SAMPLER_IDS = samplerIds;
         }
         for(int i = 0; i < numSamplers; i++) {
-            //? if >=1.18 <1.21.2
+            //? if >=1.18
             shader.setSampler(samplerIds[i], RenderSystem.getShaderTexture(i));
-            //? if >=1.21.2
-            /*shader.bindSampler(samplerIds[i], RenderSystem.getShaderTexture(i));*/
         }
         return 0;
     }
 }
-//?}

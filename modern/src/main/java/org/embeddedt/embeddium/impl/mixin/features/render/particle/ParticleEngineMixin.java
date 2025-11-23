@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.particle;
 
-//? if forgelike && <1.21.9-beta.1 {
+//? if forgelike {
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
@@ -22,12 +22,10 @@ public class ParticleEngineMixin {
             "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;)V"
             //? if forge && <1.17
             /*"renderParticles"*/
-            //? if neoforge && <1.21.5
+            //? if neoforge
             /*"render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V"*/
-            //? if neoforge && >=1.21.5
-            /*"renderParticleType(Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/particle/ParticleRenderType;Ljava/util/Queue;Lnet/minecraft/client/renderer/culling/Frustum;)V"*/
     }, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/culling/Frustum;isVisible(Lnet/minecraft/world/phys/AABB;)Z"))
-    private /*? if neoforge && >=1.21.5 {*/ /*static *//*?}*/ boolean celeritas$useSectionVisibility(Frustum instance, AABB aabb, @Local(ordinal = 0) Particle particle) {
+    private boolean celeritas$useSectionVisibility(Frustum instance, AABB aabb, @Local(ordinal = 0) Particle particle) {
         var renderer = CeleritasWorldRenderer.instanceNullable();
 
         if (renderer == null) {

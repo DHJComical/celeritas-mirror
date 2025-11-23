@@ -47,17 +47,12 @@ public class WorldRendererMixin {
      * <p>When updating Sodium to new releases of the game, please check for new
      * ways the fog can be reduced in {@link FogRenderer#setupFog(Camera, FogRenderer.FogMode, float, boolean, float)} ()}.</p>
      */
-    //? if <1.21.2 {
     @Inject(method = "renderSky", at = @At("HEAD"), cancellable = true)
     private void preRenderSky(
             CallbackInfo ci
             //? if >=1.18
             , @Local(ordinal = 0, argsOnly = true) Camera camera
             ) {
-    //?} else {
-    /*@Inject(method = "addSkyPass", at = @At("HEAD"), cancellable = true)
-    private void preRenderSky(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) Camera camera) {
-    *///?}
         if (ShaderModBridge.areShadersEnabled()) {
             return;
         }

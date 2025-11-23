@@ -8,12 +8,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.client.renderer.*;
 //? if neoforge
 /*import net.neoforged.neoforge.client.ClientHooks;*/
-//? if >=1.21.5 {
-/*import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
-import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
-import net.minecraft.client.renderer.state.LevelRenderState;
-*///?}
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
@@ -91,13 +85,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
 
     @Shadow public abstract boolean shouldShowEntityOutlines();
 
-    //? if >=1.21.9-beta.1 {
-    /*@Shadow
-    @Final
-    private LevelRenderState levelRenderState;
-    *///?}
-
-    //? if >=1.18 && <1.21.5 {
+    //? if >=1.18 {
     @Shadow
     @Nullable
     private Frustum capturedFrustum;
@@ -170,7 +158,6 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      * @reason Redirect the chunk layer render passes to our renderer
      * @author JellySquid
      */
-    //? if <1.21.5 {
     @Overwrite
     private void /*? if <1.20.2 {*/ renderChunkLayer /*?} else {*/ /*renderSectionLayer *//*?}*/(RenderType renderLayer, /*? if <1.20.6 {*/ PoseStack matrices, /*?}*/ double x, double y, double z /*? if >=1.20.6 {*/ /*,Matrix4f pose *//*?}*/ /*? if >=1.17 {*/, Matrix4f matrix /*?}*/) {
         RenderDevice.enterManagedCode();
@@ -207,32 +194,13 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         renderLayer.clearRenderState();
         *///?}
     }
-    //?} else {
-    /*@Redirect(method = "lambda$addMainPass$1", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;)V"))
-    private void renderChunkLayer(ChunkSectionsToRender renderObject, ChunkSectionLayerGroup group, @Local(ordinal = 0) Matrix4f pose, @Local(ordinal = 0) Vec3 pos) {
-        RenderDevice.enterManagedCode();
-
-        try {
-            for (var layer : group.layers()) {
-                this.renderer.setCurrentChunkRenderPose(pose);
-                this.renderer.drawChunkLayer(layer, pos.x(), pos.y(), pos.z());
-            }
-        } finally {
-            RenderDevice.exitManagedCode();
-        }
-    }
-    *///?}
 
     /**
      * @reason Redirect the terrain setup phase to our renderer
      * @author JellySquid
      */
     @Overwrite
-    //? if <1.21.9-beta.1 {
     private void setupRender(Camera camera, Frustum frustum, boolean hasForcedFrustum, /*? if <1.18 {*/ /*int frame, *//*?}*/ boolean spectator) {
-    //?} else {
-    /*private void cullTerrain(Camera camera, Frustum frustum, boolean spectator) {
-    *///?}
         var viewport = ((ViewportProvider) frustum).sodium$createViewport();
 
         // Detect mods setting the vanilla update flags themselves
@@ -324,18 +292,10 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         }
     }
 
-    //? if >=1.21.5 {
-    /*@Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/framegraph/FramePass;executes(Ljava/lang/Runnable;)V", ordinal = 0))
-    private void captureProjectionMatrix(CallbackInfo ci, @Local(ordinal = 1, argsOnly = true) Matrix4f projectionMatrix) {
-        ChunkRenderMatricesBuilder.PROJECTION_MATRIX.set(projectionMatrix);
-    }
-    *///?}
-
     /**
      * @author embeddedt
      * @reason take over block entity rendering
      */
-    //? if <1.21.2 {
     @Inject(method = "renderLevel", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/LevelRenderer;globalBlockEntities:Ljava/util/Set;", shift = At.Shift.BEFORE, ordinal = 0))
     private void onRenderBlockEntities(
             //? if <1.20.6
@@ -354,25 +314,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
                 this.destructionProgress, tickDelta, null
         ));
     }
-    //?} else {
-    /*@Overwrite
-    //? if <1.21.9-beta.1 {
-    private void renderBlockEntities(PoseStack stack, MultiBufferSource.BufferSource bufferSource, MultiBufferSource.BufferSource bufferSource2, Camera camera, float partialTick) {
-    //?} else {
-    /^private void extractVisibleBlockEntities(Camera camera, float partialTick, LevelRenderState levelRenderState) {
-    ^///?}
-        var pos = camera.getPosition();
-        this.renderer.renderBlockEntities(new CeleritasWorldRenderer.BlockEntityRenderContext(
-                new PoseStack(), this.renderBuffers, pos.x, pos.y, pos.z, this.destructionProgress, partialTick,
-                null
-                //? if >=1.21.9-beta.1 {
-                /^, levelRenderState
-                ^///?}
-        ));
-    }
-    *///?}
 
-    //? if <1.21.2 {
     /**
      * Target the flag that selects whether or not to enable the entity outline shader, and enable it if
      * we rendered a block entity that requested it.
@@ -383,7 +325,6 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     private boolean changeEntityOutlineFlag(boolean bl) {
         return bl || (this.renderer.didBlockEntityRequestOutline() && this.shouldShowEntityOutlines());
     }
-    //?}
 
     /**
      * @reason Replace the debug string

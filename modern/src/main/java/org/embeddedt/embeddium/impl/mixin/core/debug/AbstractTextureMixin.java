@@ -1,7 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.core.debug;
 
-//? if <1.21.5-alpha.25.7.a {
-
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.render.texture.NameableTexture;
@@ -38,5 +36,3 @@ public class AbstractTextureMixin implements NameableTexture {
         this.celeritas$hasSetName = false;
     }
 }
-
-//?}

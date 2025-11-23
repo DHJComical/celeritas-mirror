@@ -1,7 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.immediate.fast_blit;
 
-//? if <1.21.2 {
-
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import org.lwjgl.opengl.GL32C;
@@ -37,4 +35,3 @@ public class RenderTargetMixin {
         }
     }
 }
-//?}

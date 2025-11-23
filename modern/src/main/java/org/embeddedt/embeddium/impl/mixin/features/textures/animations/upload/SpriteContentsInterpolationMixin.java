@@ -39,7 +39,7 @@ public class SpriteContentsInterpolationMixin {
      * @reason Drastic optimizations
      */
     @Overwrite
-    void uploadInterpolatedFrame(int x, int y, SpriteContents.Ticker arg /*? if >=1.21.5-alpha.25.7.a {*//*, com.mojang.blaze3d.textures.GpuTexture tex*//*?}*/) {
+    void uploadInterpolatedFrame(int x, int y, SpriteContents.Ticker arg) {
         SpriteContents.AnimatedTexture animation = ((SpriteContentsAnimatorImplAccessor) arg).getAnimationInfo();
         SpriteContentsAnimationAccessor animation2 = (SpriteContentsAnimationAccessor) ((SpriteContentsAnimatorImplAccessor) arg).getAnimationInfo();
         List<SpriteContents.FrameInfo> frames = ((SpriteContentsAnimationAccessor) animation).getFrames();
@@ -98,7 +98,7 @@ public class SpriteContentsInterpolationMixin {
             }
         }
 
-        ((SpriteContentsInvoker) this.parent).invokeUpload(x, y, 0, 0, this.activeFrame /*? if >=1.21.5-alpha.25.7.a {*//*, tex*//*?}*/);
+        ((SpriteContentsInvoker) this.parent).invokeUpload(x, y, 0, 0, this.activeFrame);
     }
 }
 //?} else if >=1.18 {

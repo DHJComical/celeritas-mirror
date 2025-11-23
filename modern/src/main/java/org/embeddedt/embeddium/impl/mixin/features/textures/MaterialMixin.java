@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.features.textures;
 
-//? if <1.21.9-beta.1 {
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.Material;
@@ -29,4 +28,3 @@ public abstract class MaterialMixin implements Function<ResourceLocation, Textur
         return Minecraft.getInstance().getModelManager().getAtlas(this.atlasLocation()).getSprite(this.texture());
     }
 }
-//?}

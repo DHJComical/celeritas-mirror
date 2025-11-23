@@ -1,7 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.model.block;
 
-//? if <1.21.2 {
-
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -31,4 +29,3 @@ public class BlockStateCacheMixin {
         }
     }
 }
-//?}

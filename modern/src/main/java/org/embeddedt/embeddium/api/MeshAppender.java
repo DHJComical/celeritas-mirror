@@ -23,8 +23,7 @@ public interface MeshAppender {
      * @param sodiumBuildBuffers Provides access to the Sodium/Embeddium vertex writing APIs. Intended mainly for internal
      *                           use
      */
-    record Context(/*? if >=1.15 && <1.21.5 {*/ Function<net.minecraft.client.renderer.RenderType, com.mojang.blaze3d.vertex.VertexConsumer> vertexConsumerProvider,/*?}*/
-                   /*? if >=1.21.5 {*/ /*Function<net.minecraft.client.renderer.chunk.ChunkSectionLayer, com.mojang.blaze3d.vertex.VertexConsumer> vertexConsumerProvider,*//*?}*/
+    record Context(/*? if >=1.15 {*/ Function<net.minecraft.client.renderer.RenderType, com.mojang.blaze3d.vertex.VertexConsumer> vertexConsumerProvider,/*?}*/
                    BlockAndTintGetter blockRenderView,
                    SectionPos sectionOrigin,
                    ChunkBuildBuffers sodiumBuildBuffers) {}

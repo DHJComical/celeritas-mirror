@@ -6,7 +6,6 @@ import net.minecraftforge.common.ForgeConfig;
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 //?} else if neoforge {
 /*import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-//? if <1.21.5
 import net.neoforged.neoforge.common.NeoForgeConfig;
 *///?}
 

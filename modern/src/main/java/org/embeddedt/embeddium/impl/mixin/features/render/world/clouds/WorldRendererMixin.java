@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.world.clouds;
 
-//? if >=1.17 <1.21.2 {
+//? if >=1.17 {
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.Celeritas;

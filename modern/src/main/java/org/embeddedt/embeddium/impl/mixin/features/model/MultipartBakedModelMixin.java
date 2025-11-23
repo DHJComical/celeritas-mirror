@@ -1,7 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.features.model;
 
-//? if <1.21.5 {
-
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 //? if forgelike && >=1.19 {
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -45,16 +43,10 @@ import java.util.function.Predicate;
 @Mixin(MultiPartBakedModel.class)
 public class MultipartBakedModelMixin {
     @Unique
-    private final Map<BlockState,
-            //? if <1.21.5-alpha.25.7.a {
-            net.minecraft.client.resources.model.BakedModel[]
-            //?} else
-            /*net.minecraft.client.renderer.block.model.BlockStateModel[]*/
-            > stateCacheFast = new Reference2ReferenceOpenHashMap<>();
+    private final Map<BlockState, net.minecraft.client.resources.model.BakedModel[]> stateCacheFast = new Reference2ReferenceOpenHashMap<>();
     @Unique
     private final StampedLock lock = new StampedLock();
 
-    //? if <1.21.2 {
     @Shadow
     @Final
     private List<Pair<Predicate<BlockState>, net.minecraft.client.resources.model.BakedModel>> selectors;
@@ -68,23 +60,6 @@ public class MultipartBakedModelMixin {
     private static net.minecraft.client.resources.model.BakedModel embeddium$getModel(Pair<Predicate<BlockState>, net.minecraft.client.resources.model.BakedModel> selector) {
         return selector.getRight();
     }
-    //?} else {
-    /*@Shadow
-    @Final
-    private List<MultiPartBakedModel.Selector> selectors;
-
-    @Unique
-    private static Predicate<BlockState> embeddium$getCond(MultiPartBakedModel.Selector selector) {
-        return selector.condition();
-    }
-
-    @Unique
-    //? if <1.21.5-alpha.25.7.a {
-    private static net.minecraft.client.resources.model.BakedModel embeddium$getModel(MultiPartBakedModel.Selector selector) { return selector.model(); }
-    //?} else {
-    /^private static net.minecraft.client.renderer.block.model.BlockStateModel embeddium$getModel(MultiPartBakedModel.Selector selector) { return selector.model(); }
-    ^///?}
-    *///?}
 
 
 
@@ -128,15 +103,9 @@ public class MultipartBakedModelMixin {
 
     //?}
 
-    //? if <1.21.5-alpha.25.7.a {
     @Unique
     private net.minecraft.client.resources.model.BakedModel[] getModelComponents(BlockState state) {
         net.minecraft.client.resources.model.BakedModel[] models;
-    //?} else {
-    /*@Unique
-    private net.minecraft.client.renderer.block.model.BlockStateModel[] getModelComponents(BlockState state) {
-        net.minecraft.client.renderer.block.model.BlockStateModel[] models;
-    *///?}
 
         long readStamp = this.lock.readLock();
         try {
@@ -150,10 +119,7 @@ public class MultipartBakedModelMixin {
             try {
 
                 models = this.selectors.stream().filter(pair -> embeddium$getCond(pair).test(state)).map(pair -> embeddium$getModel(pair)).toArray(
-                        //? if <1.21.5-alpha.25.7.a {
                         net.minecraft.client.resources.model.BakedModel[]::new
-                        //?} else
-                        /*net.minecraft.client.renderer.block.model.BlockStateModel[]::new*/
                 );
                 this.stateCacheFast.put(state, models);
             } finally {
@@ -322,4 +288,3 @@ public class MultipartBakedModelMixin {
     }
     *///?}
 }
-//?}

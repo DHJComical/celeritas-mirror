@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.gui.font;
 
-//? if >=1.20 && <1.21.9-beta.1 {
+//? if >=1.20 {
 
 import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.FontSet;

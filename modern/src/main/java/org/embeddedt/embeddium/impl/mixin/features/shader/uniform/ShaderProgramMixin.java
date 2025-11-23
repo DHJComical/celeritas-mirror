@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.features.shader.uniform;
 
-//? if >=1.17 && <1.21.5 {
+//? if >=1.17 {
 import com.mojang.blaze3d.shaders.Uniform;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -14,26 +14,19 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.Collections;
 import java.util.List;
 
-//? if <1.21.2
 import net.minecraft.client.renderer.ShaderInstance;
-//? if >=1.21.2
-/*import net.minecraft.client.renderer.CompiledShaderProgram;*/
 
 /**
  * On the NVIDIA drivers (and maybe some others), the OpenGL submission thread requires expensive state synchronization
  * to happen when glGetUniformLocation and glGetInteger are called. In our case, this is rather unnecessary, since
  * these uniform locations can be trivially cached.
  */
-//? if <1.21.2
 @Mixin(ShaderInstance.class)
-//? if >=1.21.2
-/*@Mixin(CompiledShaderProgram.class)*/
 public class ShaderProgramMixin {
     @Shadow
     @Final
     private List<Uniform> uniforms;
 
-    //? if <1.21.2 {
     @Shadow
     @Final
     private List<String> samplerNames;
@@ -70,12 +63,6 @@ public class ShaderProgramMixin {
 
     @Redirect(method = "apply", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/ShaderInstance;uniforms:Ljava/util/List;", ordinal = 0))
     private List<Uniform> uploadUniforms(ShaderInstance instance) {
-    //?}
-
-    //? if >=1.21.2 {
-    /*@Redirect(method = "apply", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/CompiledShaderProgram;uniforms:Ljava/util/List;", ordinal = 0))
-    private List<Uniform> uploadUniforms(CompiledShaderProgram instance) {
-    *///?}
         List<Uniform> uniforms = this.uniforms;
         //noinspection ForLoopReplaceableByForEach
         for(int i = 0; i < uniforms.size(); i++) {

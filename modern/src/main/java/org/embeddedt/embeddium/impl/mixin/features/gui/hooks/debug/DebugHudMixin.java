@@ -21,17 +21,10 @@ import static org.embeddedt.embeddium.impl.Celeritas.MODNAME;
 
 @Mixin(DebugScreenOverlay.class)
 public abstract class DebugHudMixin {
-    //? if <1.21.9-beta.1 {
     @ModifyExpressionValue(method = "getSystemInformation", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList([Ljava/lang/Object;)Ljava/util/ArrayList;", remap = false))
     private ArrayList<String> redirectRightTextEarly(ArrayList<String> strings) {
         return injectRightF3Text(strings);
     }
-    //?} else {
-    /*@ModifyArg(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/DebugScreenOverlay;renderLines(Lnet/minecraft/client/gui/GuiGraphics;Ljava/util/List;Z)V", ordinal = 1))
-    private List<String> redirectRightText(List<String> original) {
-        return injectRightF3Text(original);
-    }
-    *///?}
 
     private <T extends List<String>> T injectRightF3Text(T strings) {
         strings.add("");

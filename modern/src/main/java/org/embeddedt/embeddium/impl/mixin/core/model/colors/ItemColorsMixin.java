@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.core.model.colors;
 
-//? if <1.21.4-alpha.24.45.a {
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.model.color.interop.ItemColorsExtended;
@@ -35,4 +34,3 @@ public class ItemColorsMixin implements ItemColorsExtended {
         return this.itemsToColor.get(stack.getItem());
     }
 }
-//?}

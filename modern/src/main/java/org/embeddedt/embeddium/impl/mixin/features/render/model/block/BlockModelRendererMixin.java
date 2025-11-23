@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.model.block;
 
-//? if <1.21.5 {
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.render.immediate.model.BakedModelEncoder;
@@ -48,18 +47,14 @@ public class BlockModelRendererMixin {
      * @author JellySquid
      */
     @Inject(method = "renderModel(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lcom/mojang/blaze3d/vertex/VertexConsumer;Lnet/minecraft/world/level/block/state/BlockState;" +
-            /*? if <1.21.5-alpha.25.7.a {*/ "Lnet/minecraft/client/resources/model/BakedModel;" + /*?}*/
-            /*? if >=1.21.5-alpha.25.7.a {*/ /*"Lnet/minecraft/client/renderer/block/model/BlockStateModel;" + *//*?}*/
+            "Lnet/minecraft/client/resources/model/BakedModel;" +
             "FFFII" +
             /*? if forge && >=1.19 {*/ "Lnet/minecraftforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;" +  /*?}*/
             /*? if forge && <1.19 {*/ /*"Lnet/minecraftforge/client/model/data/IModelData;" +  *//*?}*/
             /*? if neoforge {*/ /*"Lnet/neoforged/neoforge/client/model/data/ModelData;Lnet/minecraft/client/renderer/RenderType;" +  *//*?}*/
     ")V", at = @At("HEAD"), cancellable = true/*? if forgelike && >=1.17 {*/, remap = false/*?}*/)
     private void renderFast(PoseStack.Pose entry, VertexConsumer vertexConsumer, BlockState blockState,
-                            //? if <1.21.5-alpha.25.7.a {
                             net.minecraft.client.resources.model.BakedModel bakedModel,
-                            //?} else
-                            /*net.minecraft.client.renderer.block.model.BlockStateModel bakedModel,*/
                             float red, float green, float blue, int light, int overlay,
                             /*? if forgelike && >=1.19 {*/ModelData modelData, RenderType renderType,/*?}*//*? if forge && <1.19 {*//*IModelData modelData,*//*?}*/ CallbackInfo ci) {
         var writer = VertexConsumerUtils.convertOrLog(vertexConsumer);
@@ -115,4 +110,3 @@ public class BlockModelRendererMixin {
         }
     }
 }
-//?}

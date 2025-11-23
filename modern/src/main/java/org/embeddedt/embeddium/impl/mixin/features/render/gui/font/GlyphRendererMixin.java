@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.gui.font;
 
-//? if <1.21.9-beta.1 {
 import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.api.vertex.format.common.GlyphVertex;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
@@ -58,30 +57,15 @@ public class GlyphRendererMixin {
      * @author JellySquid
      */
     @Inject(method = {
-            //? if <1.21.4-alpha.24.45.a {
             "render"
-            //?} else
-            /*"render(ZFFFLorg/joml/Matrix4f;Lcom/mojang/blaze3d/vertex/VertexConsumer;IZI)V"*/
     }, at = @At("HEAD"), cancellable = true)
     private void renderFast(boolean italic, float x, float y,
-                            //? if >=1.21.4-alpha.24.45.a
-                            /*float z,*/
                             Matrix4f matrix, VertexConsumer vertexConsumer,
-                            //? if <1.21.2
                             float red, float green, float blue, float alpha,
-                            //? if >=1.21.2
-                            /*int color,*/
-                            //? if >=1.21.4-alpha.24.45.a
-                            /*boolean applyBoldScale,*/
                             int light, CallbackInfo ci) {
-        //? if <1.21.2
         int packedColor = ColorABGR.pack(red, green, blue, alpha);
-        //? if >=1.21.2
-        /*int packedColor = ColorARGB.toABGR(color);*/
-        //? if <1.21.4-alpha.24.45.a {
         float z = 0.0f;
         boolean applyBoldScale = false;
-        //?}
         if(drawFast(italic, x, y, z, matrix, vertexConsumer, packedColor, light, applyBoldScale)) {
             ci.cancel();
         }
@@ -137,4 +121,3 @@ public class GlyphRendererMixin {
     }
 
 }
-//?}

@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.entity.sort;
 
-//? if <1.21.6 {
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -34,4 +33,3 @@ public class MixinLevelRenderer {
         return entities;
     }
 }
-//?}

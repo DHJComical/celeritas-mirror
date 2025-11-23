@@ -21,17 +21,11 @@ public class RenderLayersMixin {
     @Mutable
     @Shadow
     @Final
-    //? if <1.21.5 {
     private static Map<Fluid, ?> TYPE_BY_FLUID;
-    //?} else
-    /*private static Map<Fluid, ?> LAYER_BY_FLUID;*/
 
     static {
         // Replace the backing collection types with something a bit faster, since this is a hot spot in chunk rendering.
         TYPE_BY_BLOCK = new Reference2ReferenceOpenHashMap<>(TYPE_BY_BLOCK);
-        //? if <1.21.5 {
         TYPE_BY_FLUID = new Reference2ReferenceOpenHashMap<>(TYPE_BY_FLUID);
-        //?} else
-        /*LAYER_BY_FLUID = new Reference2ReferenceOpenHashMap<>(LAYER_BY_FLUID);*/
     }
 }
