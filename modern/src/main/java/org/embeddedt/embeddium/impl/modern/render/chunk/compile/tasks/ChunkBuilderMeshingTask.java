@@ -137,10 +137,12 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             var model = vanillaModel;
                             context.model(model);
 
+                            //? if forgelike {
                             var modelData = model.getModelData(context.localSlice(), blockPos, blockState, modelDataGetter.getModelData(blockPos));
                             context.setModelData(modelData);
 
                             context.random().setSeed(seed); // for render layers
+                            //?}
 
 
                             //? if forgelike && >=1.19 {
