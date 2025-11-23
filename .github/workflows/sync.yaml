@@ -76,11 +76,11 @@ jobs:
         working-directory: ./celeritas
         run: chmod +x gradlew
 
-      - name: Build for 1.21.10
-        if: steps.checker.outputs.should_run == 'true'
-        working-directory: ./celeritas
-        continue-on-error: true
-        run: ./gradlew -Ptarget_versions=1.21.10 packageJar
+#      - name: Build for 1.21.10
+#        if: steps.checker.outputs.should_run == 'true'
+#        working-directory: ./celeritas
+#        continue-on-error: true
+#        run: ./gradlew -Ptarget_versions=1.21.10 packageJar
 
 #      - name: Build for 1.21.9-pre1
 #        if: steps.checker.outputs.should_run == 'true'
