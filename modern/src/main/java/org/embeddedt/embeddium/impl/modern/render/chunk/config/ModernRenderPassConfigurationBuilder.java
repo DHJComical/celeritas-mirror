@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.config;
 
-//? if <1.21.5 {
 import com.google.common.collect.ImmutableListMultimap;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -163,4 +162,3 @@ public class ModernRenderPassConfigurationBuilder {
                 translucentMaterial);
     }
 }
-//?}

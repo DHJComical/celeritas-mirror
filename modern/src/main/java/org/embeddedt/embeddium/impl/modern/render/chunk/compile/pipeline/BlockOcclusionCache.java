@@ -57,26 +57,21 @@ public class BlockOcclusionCache {
 
         Direction oppositeFacing = OPPOSITE_CACHE[facing.ordinal()];
 
-        if (/*? if <1.21.2 {*/ adjState.canOcclude() /*?} else {*/ /*true *//*?}*/) {
-            adjShape = adjState.getFaceOcclusionShape(/*? if <1.21.2 {*/view, adjPos,/*?}*/ oppositeFacing);
+        if (adjState.canOcclude()) {
+            adjShape = adjState.getFaceOcclusionShape(view, adjPos, oppositeFacing);
 
-            // If both blocks use full-cube occlusion shapes (or we are in 1.21.2+, where only the occluding
-            // block's shape is checked by vanilla), then the neighbor certainly occludes us, and we
+            // If both blocks use full-cube occlusion shapes, then the neighbor certainly occludes us, and we
             // shouldn't render this face.
 
-            //? if >=1.21.2
-            /*if (adjShape == Shapes.block()) return false;*/
+            selfShape = selfState.getFaceOcclusionShape(view, pos, facing);
 
-            selfShape = selfState.getFaceOcclusionShape(/*? if <1.21.2 {*/view, pos,/*?}*/ facing);
-
-            //? if <1.21.2
             if (adjShape == Shapes.block() && selfShape == Shapes.block()) return false;
         } else if (this.leavesRenderingAsSolid && adjState.getBlock() instanceof LeavesBlock) {
             // Allow leaves to cull like a regular solid block when in fast mode, despite not being marked as occluding
             // We use the collision shape as a way of "guessing" what the block's visual shape is, since the occlusion
             // shape might be set to empty by vanilla/mods
             adjShape = adjState.getCollisionShape(view, pos);
-            selfShape = selfState.getFaceOcclusionShape(/*? if <1.21.2 {*/view, pos,/*?}*/ facing);
+            selfShape = selfState.getFaceOcclusionShape(view, pos, facing);
 
             if (adjShape == Shapes.block() && selfShape == Shapes.block()) return false;
         } else {

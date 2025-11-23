@@ -61,16 +61,11 @@ public class BiomeSlice {
     private void copyBiomeData(Level world, ChunkRenderContext context) {
         //? if >=1.18 {
         var defaultValue = world.registryAccess()
-                //? if <1.21.2 {
                 //? if <1.20
                 /*.registryOrThrow(BuiltinRegistries.BIOME.key())*/
                 //? if >=1.20
                 .registryOrThrow(Registries.BIOME)
                 .getHolderOrThrow(Biomes.PLAINS);
-                //?} else if >=1.21.2 {
-                /*.lookupOrThrow(Registries.BIOME)
-                .getOrThrow(Biomes.PLAINS);
-                *///?}
 
         //?} else
         /*Object defaultValue = null;*/

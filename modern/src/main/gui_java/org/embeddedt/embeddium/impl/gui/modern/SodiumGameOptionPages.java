@@ -22,8 +22,6 @@ import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
 import org.embeddedt.embeddium.impl.gui.options.CommonOptionPages;
 import net.minecraft.client.*;
-//? if >=1.21.2
-/*import net.minecraft.server.level.ParticleStatus;*/
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
 import org.taumc.celeritas.api.options.structure.*;
@@ -129,23 +127,9 @@ public class SodiumGameOptionPages {
                         .setControl(option -> new SliderControl(option, 10, 260, 10, ControlValueFormatter.fpsLimit()))
                         .setBinding((opts, value) -> {
                             opts.framerateLimit/*? if >=1.19 {*/().set/*?} else {*//*=*//*?}*/(value);
-                            //? if <1.21.2
                             Minecraft.getInstance().getWindow().setFramerateLimit(value);
-                            //? if >=1.21.2
-                            /*Minecraft.getInstance().getFramerateLimitTracker().setFramerateLimit(value);*/
                         }, opts -> opts.framerateLimit/*? if >=1.19 {*/().get()/*?}*/)
                         .build())
-                //? if >=1.21.2 {
-                /*.add(OptionImpl.createBuilder(InactivityFpsLimit.class, vanillaOpts)
-                        .setId(StandardOptions.Option.INACTIVITY_FPS_LIMIT.cast())
-                        .setName(TextComponent.translatable("options.inactivityFpsLimit"))
-                        .setTooltip(TextComponent.translatable("embeddium.options.inactivity_fps_limit.tooltip"))
-                        .setControl(option -> new CyclingControl<>(option, InactivityFpsLimit.class, Arrays.stream(InactivityFpsLimit.values()).map(InactivityFpsLimit::getKey).map(Component::translatable).toArray(Component[]::new)))
-                        .setBinding((opts, value) -> {
-                            opts.inactivityFpsLimit().set(value);
-                        }, opts -> opts.inactivityFpsLimit().get())
-                        .build())
-                *///?}
                 .build());
 
         groups.add(OptionGroup.createBuilder()
@@ -224,7 +208,7 @@ public class SodiumGameOptionPages {
                             if (Minecraft.useShaderTransparency()) {
                                 RenderTarget framebuffer = Minecraft.getInstance().levelRenderer.getCloudsTarget();
                                 if (framebuffer != null) {
-                                    framebuffer.clear(/*? if <1.21.2 {*/Minecraft.ON_OSX/*?}*/);
+                                    framebuffer.clear(Minecraft.ON_OSX);
                                 }
                             }
                             //?}

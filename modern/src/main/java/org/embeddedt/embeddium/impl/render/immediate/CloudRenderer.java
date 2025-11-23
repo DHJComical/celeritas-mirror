@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.render.immediate;
 
-//? if >=1.17 <1.21.2 {
+//? if >=1.17 {
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;

@@ -113,11 +113,7 @@ public class FluidRenderer {
     private final TextureAtlasSprite[] waterSprites;
 
     private static TextureAtlasSprite spriteFromMaterial(net.minecraft.client.resources.model.Material material) {
-        //? if <1.21.9-beta.1 {
         return material.sprite();
-        //?} else {
-        /*return Minecraft.getInstance().getAtlasManager().get(material);
-        *///?}
     }
 
     public FluidRenderer(ColorProviderRegistry colorProviderRegistry, LightPipelineProvider lighters) {
@@ -128,11 +124,11 @@ public class FluidRenderer {
 
         this.lavaSprites = new TextureAtlasSprite[2];
         this.lavaSprites[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState())
-                /*? if >=1.21.5-alpha.25.7.a {*//*.particleIcon()*//*?} else {*/.getParticleIcon()/*?}*/;
+                .getParticleIcon();
         this.lavaSprites[1] = spriteFromMaterial(ModelBakery.LAVA_FLOW);
         this.waterSprites = new TextureAtlasSprite[3];
         this.waterSprites[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState())
-                /*? if >=1.21.5-alpha.25.7.a {*//*.particleIcon()*//*?} else {*/.getParticleIcon()/*?}*/;
+                .getParticleIcon();
         this.waterSprites[1] = spriteFromMaterial(ModelBakery.WATER_FLOW);
         this.waterSprites[2] = spriteFromMaterial(ModelBakery.WATER_OVERLAY);
 
@@ -171,13 +167,13 @@ public class FluidRenderer {
             return false;
         }
 
-        VoxelShape sideShape = blockState.getFaceOcclusionShape(/*? if <1.21.2 {*/world, pos,/*?}*/ dir);
+        VoxelShape sideShape = blockState.getFaceOcclusionShape(world, pos, dir);
         if (sideShape == Shapes.block() || (sideShape != Shapes.empty() && Block.isShapeFullBlock(sideShape))) {
             // The face fills the 1x1 area, so the fluid is occluded
             if (dir == Direction.UP) {
                 // Need to consider the side faces of the block too, as they might not be full and may reveal the
                 // fluid
-                var fullOcclusionShape = blockState.getOcclusionShape(/*? if <1.21.2 {*/world, pos/*?}*/);
+                var fullOcclusionShape = blockState.getOcclusionShape(world, pos);
                 return !this.occlusionCache.isTopFluidFacePotentiallyVisible(fullOcclusionShape);
             }
             return true;
@@ -192,7 +188,7 @@ public class FluidRenderer {
         BlockState blockState = world.getBlockState(pos);
 
         if (blockState.canOcclude()) {
-            VoxelShape shape = blockState.getOcclusionShape(/*? if <1.21.2 {*/world, pos/*?}*/);
+            VoxelShape shape = blockState.getOcclusionShape(world, pos);
 
             // Hoist these checks to avoid allocating the shape below
             if (shape == Shapes.block()) {
@@ -204,10 +200,7 @@ public class FluidRenderer {
 
             VoxelShape threshold = Shapes.box(0.0D, 0.0D, 0.0D, 1.0D, height, 1.0D);
 
-            //? if <=1.21.4 {
             return !Shapes.blockOccudes(threshold, shape, dir);
-            //?} else
-            /*return !Shapes.blockOccludes(threshold, shape, dir);*/
         }
 
         return true;

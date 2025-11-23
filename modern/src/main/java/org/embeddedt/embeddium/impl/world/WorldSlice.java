@@ -395,17 +395,12 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
     }
     //?}
 
-    //? if >=1.17 <1.21.2 {
+    //? if >=1.17 {
     @Override
     public int getMinBuildHeight() {
         return this.world.getMinBuildHeight();
     }
-    //?} else if >=1.21.2 {
-    /*@Override
-    public int getMinY() {
-        return this.world.getMinY();
-    }
-    *///?}
+    //?}
 
     //? if forge && >=1.19 {
     @Override

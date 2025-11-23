@@ -18,23 +18,17 @@ public class ChunkRenderMatricesBuilder {
     }
     *///?}
 
-    //? if >=1.21.5
-    /*public static final Matrix4f PROJECTION_MATRIX = new Matrix4f();*/
 
     public static ChunkRenderMatrices from(PoseStack stack) {
         PoseStack.Pose entry = stack.last();
-        //? if >=1.21.5 {
-        /*return new ChunkRenderMatrices(new Matrix4f(PROJECTION_MATRIX), new Matrix4f(entry.pose()));
-        *///?} else if >=1.20 {
+        //? if >=1.20 {
         return new ChunkRenderMatrices(new Matrix4f(RenderSystem.getProjectionMatrix()), new Matrix4f(entry.pose()));
         //?} else
         /*return new ChunkRenderMatrices(JomlHelper.copy(getProjectionMatrix()), JomlHelper.copy(entry.pose()));*/
     }
 
     public static ChunkRenderMatrices from(Matrix4f pose) {
-        //? if >=1.21.5 {
-        /*return new ChunkRenderMatrices(new Matrix4f(PROJECTION_MATRIX), new Matrix4f(pose));
-        *///?} else if >=1.20 {
+        //? if >=1.20 {
         return new ChunkRenderMatrices(new Matrix4f(RenderSystem.getProjectionMatrix()), pose);
         //?} else
         /*return new ChunkRenderMatrices(JomlHelper.copy(getProjectionMatrix()), pose);*/

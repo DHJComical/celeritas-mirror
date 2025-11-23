@@ -70,7 +70,6 @@ public class MixinGameRenderer {
 		Iris.getPipelineManager().getPipeline().ifPresent(WorldRenderingPipeline::finalizeGameRendering);
 	}
 
-    //? if <1.21.2 {
 	@Redirect(method = "reloadShaders", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList()Ljava/util/ArrayList;"))
 	private ArrayList<Program> iris$reloadGeometryShaders() {
 		ArrayList<Program> programs = Lists.newArrayList();
@@ -79,5 +78,4 @@ public class MixinGameRenderer {
 		programs.addAll(IrisProgramTypes.TESS_EVAL.getPrograms().values());
 		return programs;
 	}
-    //?}
 }

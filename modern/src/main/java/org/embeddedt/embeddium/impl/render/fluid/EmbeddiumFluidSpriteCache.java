@@ -14,9 +14,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.FluidState;
 
-//? if >=1.21.9-beta.1 {
-/*import net.minecraft.data.AtlasIds;
-*///?} else
 import net.minecraft.client.renderer.texture.TextureAtlas;
 
 public class EmbeddiumFluidSpriteCache {
@@ -28,10 +25,7 @@ public class EmbeddiumFluidSpriteCache {
         TextureAtlasSprite sprite = spriteCache.get(identifier);
 
         if (sprite == null) {
-            //? if <1.21.9-beta.1 {
             sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(identifier);
-            //?} else
-            /*sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(identifier);*/
             spriteCache.put(identifier, sprite);
         }
 

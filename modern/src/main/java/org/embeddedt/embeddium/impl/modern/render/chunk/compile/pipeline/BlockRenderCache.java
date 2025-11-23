@@ -75,10 +75,7 @@ public class BlockRenderCache {
         var colorRegistry = new ColorProviderRegistry(client.getBlockColors());
 
         this.blockRenderer = new BlockRenderer(colorRegistry, lightPipelineProvider,
-                //? if <1.21.5 {
                 WorldRenderingSettings.INSTANCE.getBlockTypeIds()
-                //?} else
-                /*null*/
         );
         this.fluidRenderer = new FluidRenderer(colorRegistry, lightPipelineProvider);
         this.lightPipelineProvider = lightPipelineProvider;

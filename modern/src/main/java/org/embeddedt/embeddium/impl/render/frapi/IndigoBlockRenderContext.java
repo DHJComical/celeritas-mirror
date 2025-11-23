@@ -65,7 +65,6 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
         };
     }
 
-    //? if <1.21.4-rc.3 {
     @Override
     public boolean isFaceCulled(@Nullable Direction face) {
         if (face == null) {
@@ -87,7 +86,6 @@ public class IndigoBlockRenderContext extends BlockRenderContext implements FRAP
             return flag;
         }
     }
-    //?}
 
     @Override
     protected VertexConsumer getVertexConsumer(RenderType layer) {

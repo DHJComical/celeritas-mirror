@@ -62,10 +62,7 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     }
 
     public static ModernRenderSectionManager create(ChunkVertexType vertexType, ClientLevel world, int renderDistance, CommandList commandList) {
-        //? if <1.21.5 {
         var renderPassConfiguration = org.embeddedt.embeddium.impl.modern.render.chunk.config.ModernRenderPassConfigurationBuilder.build(vertexType);
-        //?} else
-        /*var renderPassConfiguration = new org.embeddedt.embeddium.impl.modern.render.chunk.config.PostmodernRenderPassConfigurationBuilder(vertexType).build();*/
         return new ModernRenderSectionManager(renderPassConfiguration, world, renderDistance, commandList);
     }
 
@@ -95,7 +92,7 @@ public class ModernRenderSectionManager extends RenderSectionManager {
         BlockPos origin = new BlockPos(camBlockPos.x(), camBlockPos.y(), camBlockPos.z());
 
         if (spectator && this.world.getBlockState(origin)
-                .isSolidRender(/*? if <1.21.2 {*/this.world, origin/*?}*/))
+                .isSolidRender(this.world, origin))
         {
             useOcclusionCulling = false;
         } else {

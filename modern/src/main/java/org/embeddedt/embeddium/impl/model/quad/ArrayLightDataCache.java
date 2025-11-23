@@ -30,8 +30,8 @@ public class ArrayLightDataCache extends LightDataAccess {
         BlockState state = world.getBlockState(pos);
 
         boolean em = state.emissiveRendering(/*? if >=1.16 {*/world, pos/*?}*/);
-        boolean op = state.isViewBlocking(world, pos) && state.getLightBlock(/*? if <1.21.2 {*/world, pos/*?}*/) != 0;
-        boolean fo = state.isSolidRender(/*? if <1.21.2 {*/world, pos/*?}*/);
+        boolean op = state.isViewBlocking(world, pos) && state.getLightBlock(world, pos) != 0;
+        boolean fo = state.isSolidRender(world, pos);
         boolean fc = state.isCollisionShapeFullBlock(world, pos);
 
         int lu = WorldUtil.getLightEmission(state, world, pos);
@@ -49,7 +49,7 @@ public class ArrayLightDataCache extends LightDataAccess {
                 sl = world.getBrightness(LightLayer.SKY, pos);
             } else {
                 // call the vanilla method so mods using custom lightmap logic work correctly
-                int packedCoords = LevelRenderer.getLightColor(/*? if >=1.21.5 {*//*LevelRenderer.BrightnessGetter.DEFAULT,*//*?}*/ world, state, pos);
+                int packedCoords = LevelRenderer.getLightColor(world, state, pos);
                 bl = LightTexture.block(packedCoords);
                 sl = LightTexture.sky(packedCoords);
             }

@@ -160,9 +160,7 @@ public class ClonedChunkSection {
             return null;
 
         // We use swapUnsafe in the loops to avoid acquiring/releasing the lock on each iteration
-        //? if >=1.21.9-beta.1 {
-        /*var container = level.palettedContainerFactory().createForBlockStates();
-        *///?} else if >=1.18 {
+        //? if >=1.18 {
         var container = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
         //?} else
         /*var container = new PalettedContainer<>(GLOBAL_STATE_PALETTE, Block.BLOCK_STATE_REGISTRY, NbtUtils::readBlockState, NbtUtils::writeBlockState, Blocks.AIR.defaultBlockState());*/

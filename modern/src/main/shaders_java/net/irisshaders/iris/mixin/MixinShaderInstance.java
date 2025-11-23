@@ -3,7 +3,6 @@ package net.irisshaders.iris.mixin;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonObject;
 import com.llamalad7.mixinextras.sugar.Local;
-//? if <1.21.2
 import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -19,9 +18,6 @@ import net.irisshaders.iris.pipeline.programs.FallbackShader;
 import net.irisshaders.iris.pipeline.programs.ShaderInstanceInterface;
 import net.irisshaders.iris.shadows.ShadowRenderer;
 import net.minecraft.client.Minecraft;
-//? if >=1.21.2
-/*import net.minecraft.client.renderer.CompiledShaderProgram;*/
-//? if <1.21.2
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
@@ -50,10 +46,7 @@ import java.lang.invoke.MethodType;
 import java.util.Map;
 import java.util.Objects;
 
-//? if <1.21.2
 @Mixin(ShaderInstance.class)
-//? if >=1.21.2
-/*@Mixin(CompiledShaderProgram.class)*/
 public abstract class MixinShaderInstance implements ShaderInstanceInterface {
     @Unique
     private static final ImmutableSet<String> ATTRIBUTE_LIST = ImmutableSet.of("Position", "Color", "Normal", "UV0", "UV1", "UV2");
@@ -73,7 +66,6 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
     @Final
     private int programId;
 
-    //? if <1.21.2 {
     @Shadow
     public abstract int getId();
 
@@ -106,7 +98,6 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
             Uniform.glBindAttribLocation(i, j, charSequence);
         }
     }
-    //?}
 
 
     @Unique
@@ -193,7 +184,6 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         DepthColorStorage.unlockDepthColor();
     }
 
-    //? if <1.21.2 {
     @Redirect(method = "/<init>/", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/GsonHelper;parse(Ljava/io/Reader;)Lcom/google/gson/JsonObject;"))
     public JsonObject iris$setupGeometryShader(Reader reader, @Local(ordinal = 0, argsOnly = true) ResourceProvider resourceProvider, @Local(ordinal = 0) ResourceLocation name) {
         this.iris$createExtraShaders(resourceProvider, name);
@@ -207,7 +197,6 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         GLDebug.nameObject(KHRDebug.GL_SHADER, this.vertexProgram.getId(), name);
         GLDebug.nameObject(KHRDebug.GL_SHADER, this.fragmentProgram.getId(), name);
     }
-    //?}
 
     @Override
     public void iris$createExtraShaders(ResourceProvider provider, ResourceLocation name) {

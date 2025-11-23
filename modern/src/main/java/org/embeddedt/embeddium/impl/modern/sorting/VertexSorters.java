@@ -1,8 +1,6 @@
 package org.embeddedt.embeddium.impl.modern.sorting;
 
 //? if >=1.20 {
-//? if >=1.21.9-beta.1
-/*import com.mojang.blaze3d.vertex.CompactVectorArray;*/
 import com.mojang.blaze3d.vertex.VertexSorting;
 import org.embeddedt.embeddium.impl.util.sorting.MergeSort;
 import org.joml.Vector3f;
@@ -26,7 +24,6 @@ public class VertexSorters {
     }
 
     private static abstract class AbstractVertexSorter implements VertexSorting {
-        //? if <1.21.9-beta.1 {
         @Override
         public final int[] sort(Vector3f[] positions) {
             return this.mergeSort(positions);
@@ -41,19 +38,6 @@ public class VertexSorters {
 
             return MergeSort.mergeSort(keys);
         }
-        //?} else {
-        /*@Override
-        public final int[] sort(CompactVectorArray array) {
-            Vector3f tmp = new Vector3f();
-            final var keys = new float[array.size()];
-
-            for (int index = 0; index < array.size(); index++) {
-                keys[index] = this.getKey(array.get(index, tmp));
-            }
-
-            return MergeSort.mergeSort(keys);
-        }
-        *///?}
 
         protected abstract float getKey(Vector3f object);
     }

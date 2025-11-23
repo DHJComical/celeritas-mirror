@@ -3,10 +3,6 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-//? if >=1.21.5 {
-/*import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.client.renderer.block.model.BlockModelPart;
-*///?}
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.level.block.AirBlock;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
@@ -43,7 +39,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.client.model.data.ModelData;
 //? if forge && <1.19
 /*import net.minecraftforge.client.ForgeHooksClient;*/
-//? if neoforge && <1.21.5
+//? if neoforge
 /*import net.neoforged.neoforge.client.model.data.ModelData;*/
 import org.embeddedt.embeddium.api.ChunkDataBuiltEvent;
 import org.embeddedt.embeddium.impl.chunk.MeshAppenderRenderer;
@@ -109,9 +105,6 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
         boolean voxelizingLight = WorldRenderingSettings.INSTANCE.shouldVoxelizeLightBlocks();
 
-        //? if >=1.21.5
-        /*ObjectArrayList<BlockModelPart> renderedParts = new ObjectArrayList<>(10);*/
-
         try {
             for (int y = minY; y < maxY; y++) {
                 if (cancellationToken.isCancelled()) {
@@ -141,36 +134,16 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, seed);
 
                             var vanillaModel = cache.getBlockModels().getBlockModel(blockState);
-                            //? if <1.21.5 {
                             var model = vanillaModel;
                             context.model(model);
-                            //?}
 
-                            //? if forgelike && <1.21.5 {
                             var modelData = model.getModelData(context.localSlice(), blockPos, blockState, modelDataGetter.getModelData(blockPos));
                             context.setModelData(modelData);
 
                             context.random().setSeed(seed); // for render layers
-                            //?}
 
 
-                            //? if >=1.21.5 {
-
-                            /*//? if !neoforge
-                            var renderType = ItemBlockRenderTypes.getChunkRenderType(blockState);
-
-                            vanillaModel.collectParts(/^? if neoforge {^//^context.localSlice(), blockPos, blockState, ^//^?}^/ context.random(), renderedParts);
-                            //noinspection ForLoopReplaceableByForEach
-                            for (int i = 0; i < renderedParts.size(); i++) {
-                                context.model(renderedParts.get(i));
-                                //? if neoforge {
-                                /^context.renderLayer(context.model().getRenderType(blockState));
-                                ^///?} else
-                                context.renderLayer(renderType);
-                                cache.getBlockRenderer().renderModel(context, buffers);
-                            }
-                            renderedParts.clear();
-                            *///?} else if forgelike && >=1.19 {
+                            //? if forgelike && >=1.19 {
                             // We optimize the asList() call to return a cached ImmutableList, so this will not allocate.
                             var renderTypeList = model.getRenderTypes(blockState, context.random(), modelData).asList();
                             //noinspection ForLoopReplaceableByForEach
@@ -212,17 +185,17 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
 
                             if (entity != null) {
                                 //? if >=1.17 {
-                                BlockEntityRenderer<BlockEntity/*? if >=1.21.9-beta.1 {*//*, ? *//*?}*/> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(entity);
+                                BlockEntityRenderer<BlockEntity> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(entity);
                                 //?} else
                                 /*BlockEntityRenderer<BlockEntity> renderer = net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher.instance.getRenderer(entity);*/
 
                                 if (renderer != null) {
-                                    (renderer.shouldRenderOffScreen(/*? if <1.21.5 {*/entity/*?}*/) ? renderData.globalBlockEntities : renderData.culledBlockEntities).add(entity);
+                                    (renderer.shouldRenderOffScreen(entity) ? renderData.globalBlockEntities : renderData.culledBlockEntities).add(entity);
                                 }
                             }
                         }
 
-                        if (blockState.isSolidRender(/*? if <1.21.2 {*/slice, blockPos/*?}*/)) {
+                        if (blockState.isSolidRender(slice, blockPos)) {
                             occluder.setOpaque(blockPos);
                         }
                     }

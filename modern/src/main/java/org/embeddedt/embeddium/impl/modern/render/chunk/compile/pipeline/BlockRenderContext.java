@@ -47,10 +47,7 @@ public class BlockRenderContext {
      */
     @Getter
     @Setter
-    //? if <1.21.5-alpha.25.7.a {
     private net.minecraft.client.resources.model.BakedModel model;
-    //?} else
-    /*private net.minecraft.client.renderer.block.model.BlockModelPart model;*/
 
     private long seed;
 
@@ -65,10 +62,7 @@ public class BlockRenderContext {
 
     @Getter
     @Setter
-    //? if <1.21.5 {
     private RenderType renderLayer;
-    //?} else
-    /*private net.minecraft.client.renderer.chunk.ChunkSectionLayer renderLayer;*/
 
     private int lightValue = -1;
 
