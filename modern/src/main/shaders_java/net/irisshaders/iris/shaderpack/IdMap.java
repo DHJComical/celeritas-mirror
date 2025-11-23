@@ -18,7 +18,10 @@ import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.option.OrderBackedProperties;
 import net.irisshaders.iris.shaderpack.option.ShaderPackOptions;
 import net.irisshaders.iris.shaderpack.preprocessor.PropertiesPreprocessor;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Blocks;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
+import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -215,7 +218,17 @@ public class IdMap {
 				}
 
 				try {
-					entries.add(BlockEntry.parse(part));
+                    var parsedEntry = BlockEntry.parse(part);
+
+                    if (!parsedEntry.isTag()) {
+                        // We can skip adding block entries for blocks that aren't registered. The registry does not
+                        // change during the lifetime of a shader pack.
+                        if (BuiltInRegistries.BLOCK.get(ResourceLocationUtil.make(parsedEntry.id().getNamespace(), parsedEntry.id().getName())) == Blocks.AIR) {
+                            continue;
+                        }
+                    }
+
+					entries.add(parsedEntry);
 				} catch (Exception e) {
 					Iris.logger.warn("Unexpected error while parsing an entry from " + fileName + " for the key " + key + ":", e);
 				}
@@ -224,7 +237,7 @@ public class IdMap {
             // Place tag entries after regular entries
             entries.sort(Comparator.comparingInt(e -> e.isTag() ? 1 : 0));
 
-			entriesById.put(intId, Collections.unmodifiableList(entries));
+			entriesById.put(intId, List.copyOf(entries));
 		});
 
 		return Int2ObjectMaps.unmodifiable(entriesById);

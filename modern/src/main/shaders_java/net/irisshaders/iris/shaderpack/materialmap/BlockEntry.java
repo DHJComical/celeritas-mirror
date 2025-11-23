@@ -44,7 +44,7 @@ public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates
 
 		// Trivial case: no states, no namespace
 		if (splitStates.length == 1) {
-			return new BlockEntry(new NamespacedId("minecraft", entry), Collections.emptyMap(), isTag);
+			return new BlockEntry(new NamespacedId("minecraft", entry), Map.of(), isTag);
 		}
 
 		// Less trivial case: no states involved, just a namespace
@@ -52,7 +52,7 @@ public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates
 		// The first term MUST be a valid ResourceLocation component without an equals sign
 		// The second term, if it does not contain an equals sign, must be a valid ResourceLocation component.
 		if (splitStates.length == 2 && !splitStates[1].contains("=")) {
-			return new BlockEntry(new NamespacedId(splitStates[0], splitStates[1]), Collections.emptyMap(), isTag);
+			return new BlockEntry(new NamespacedId(splitStates[0], splitStates[1]), Map.of(), isTag);
 		}
 
 		// Complex case: One or more states involved...
@@ -98,7 +98,7 @@ public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates
 			map.put(propertyParts[0], propertyParts[1]);
 		}
 
-		return new BlockEntry(id, map, isTag);
+		return new BlockEntry(id, Map.copyOf(map), isTag);
 	}
 
     public Iterable<BlockEntry> expandEntries() {
