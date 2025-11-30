@@ -82,8 +82,6 @@ public class BlockRenderer {
     private final MojangVertexConsumer vertexConsumer = new MojangVertexConsumer();
     private final BakedQuadGroupAnalyzer analyzer = new BakedQuadGroupAnalyzer();
 
-    private int quadRenderingFlags = 0;
-
     private final Map<Block, RenderType> renderTypeOverrides;
 
     public BlockRenderer(ColorProviderRegistry colorRegistry, LightPipelineProvider lighters,
@@ -179,8 +177,8 @@ public class BlockRenderer {
                     contextAwareEncoder.prepareToRenderBlockFace(ctx, face);
                 }
 
-                this.quadRenderingFlags = this.analyzer.getFlagsForRendering(ModernQuadFacing.fromDirection(face), BakedQuadView.ofList(quads));
-                this.renderQuadList(ctx, material, lighter, colorizer, renderOffset, buffers, meshBuilder, quads, face);
+                int flags = this.analyzer.getFlagsForRendering(ModernQuadFacing.fromDirection(face), BakedQuadView.ofList(quads));
+                this.renderQuadList(ctx, material, lighter, colorizer, renderOffset, buffers, meshBuilder, quads, face, flags);
             }
         }
 
@@ -191,8 +189,8 @@ public class BlockRenderer {
                 contextAwareEncoder.prepareToRenderBlockFace(ctx, null);
             }
 
-            this.quadRenderingFlags = this.analyzer.getFlagsForRendering(ModelQuadFacing.UNASSIGNED, BakedQuadView.ofList(all));
-            this.renderQuadList(ctx, material, lighter, colorizer, renderOffset, buffers, meshBuilder, all, null);
+            int flags = this.analyzer.getFlagsForRendering(ModelQuadFacing.UNASSIGNED, BakedQuadView.ofList(all));
+            this.renderQuadList(ctx, material, lighter, colorizer, renderOffset, buffers, meshBuilder, all, null, flags);
         }
 
         if (encoder instanceof ContextAwareChunkVertexEncoder contextAwareEncoder) {
@@ -212,8 +210,10 @@ public class BlockRenderer {
     }
 
     private void renderQuadList(BlockRenderContext ctx, Material material, LightPipeline lighter, ColorProvider<BlockState> colorizer, Vec3 offset,
-                                ChunkBuildBuffers buffers, ChunkModelBuilder defaultBuilder, List<BakedQuad> quads, Direction cullFace) {
+                                ChunkBuildBuffers buffers, ChunkModelBuilder defaultBuilder, List<BakedQuad> quads, Direction cullFace, int flags) {
         var renderPassConfig = buffers.getRenderPassConfiguration();
+
+        boolean reorient = (flags & USE_REORIENTING) != 0;
 
         // This is a very hot allocation, iterate over it manually
         // noinspection ForLoopReplaceableByForEach
@@ -223,10 +223,10 @@ public class BlockRenderer {
             final var lightData = this.getVertexLight(ctx, quad.hasAmbientOcclusion() ? lighter : this.lighters.getLighter(LightMode.FLAT), cullFace, quad);
             final var vertexColors = this.getVertexColors(ctx, colorizer, quad);
 
-            var quadMaterial = BakedQuadGroupAnalyzer.chooseOptimalMaterial(material, renderPassConfig, quad);
+            var quadMaterial = BakedQuadGroupAnalyzer.chooseOptimalMaterial(flags, material, renderPassConfig, quad);
             ChunkModelBuilder builder = (quadMaterial == material) ? defaultBuilder : buffers.get(quadMaterial);
 
-            this.writeGeometry(ctx, builder, offset, quadMaterial, quad, vertexColors, lightData);
+            this.writeGeometry(ctx, builder, offset, quadMaterial, quad, vertexColors, lightData, reorient);
 
             TextureAtlasSprite sprite = (TextureAtlasSprite)quad.celeritas$getSprite();
 
@@ -267,9 +267,10 @@ public class BlockRenderer {
                                Material material,
                                BakedQuadView quad,
                                int[] colors,
-                               QuadLightData light)
+                               QuadLightData light,
+                               boolean reorient)
     {
-        ModelQuadOrientation orientation = (this.quadRenderingFlags & USE_REORIENTING) != 0 ? ModelQuadOrientation.orientByBrightness(light.br, light.lm) : ModelQuadOrientation.NORMAL;
+        ModelQuadOrientation orientation = reorient ? ModelQuadOrientation.orientByBrightness(light.br, light.lm) : ModelQuadOrientation.NORMAL;
         var vertices = this.vertices;
 
         ModelQuadFacing normalFace = quad.getNormalFace();

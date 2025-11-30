@@ -91,8 +91,8 @@ public class BakedQuadGroupAnalyzer {
         return quadRenderingFlags;
     }
 
-    public static Material chooseOptimalMaterial(Material defaultMaterial, RenderPassConfiguration<?> renderPassConfiguration, BakedQuadView quad) {
-        if (defaultMaterial == renderPassConfiguration.defaultSolidMaterial() || (quad.getFlags() & ModelQuadFlags.IS_PASS_OPTIMIZABLE) == 0 || quad.celeritas$getSprite() == null) {
+    public static Material chooseOptimalMaterial(int analyzerFlags, Material defaultMaterial, RenderPassConfiguration<?> renderPassConfiguration, BakedQuadView quad) {
+        if (defaultMaterial == renderPassConfiguration.defaultSolidMaterial() || (analyzerFlags & USE_RENDER_PASS_OPTIMIZATION) == 0 || (quad.getFlags() & ModelQuadFlags.IS_PASS_OPTIMIZABLE) == 0 || quad.celeritas$getSprite() == null) {
             // No improvement possible
             return defaultMaterial;
         }

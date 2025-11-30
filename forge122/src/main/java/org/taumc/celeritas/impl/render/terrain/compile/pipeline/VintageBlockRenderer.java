@@ -171,7 +171,7 @@ public class VintageBlockRenderer {
                 this.currentOrientations[cullFace.ordinal()] = orientation = ModelQuadOrientation.orientByBrightness(light.br, light.lm);
             }
 
-            var quadMaterial = BakedQuadGroupAnalyzer.chooseOptimalMaterial(material, config, BakedQuadView.of(quad));
+            var quadMaterial = BakedQuadGroupAnalyzer.chooseOptimalMaterial(this.currentQuadRenderingFlags, material, config, BakedQuadView.of(quad));
             ChunkModelBuilder buffer = (quadMaterial == material) ? defaultBuffer : buffers.get(quadMaterial);
 
             this.writeGeometry(localX, localY, localZ, buffer, offset, quadMaterial,
