@@ -1,16 +1,15 @@
 package org.embeddedt.embeddium.impl.model;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class BlockEntityImplInfo {
-    private static final ConcurrentHashMap<Class<? extends BlockEntity>, Boolean> OVERRIDES_GET_MODEL_DATA = new ConcurrentHashMap<>();
-
-    public static boolean providesModelData(BlockEntity be) {
-        //? if forgelike {
-        return OVERRIDES_GET_MODEL_DATA.computeIfAbsent(be.getClass(), clz -> {
+    //? if forgelike {
+    private static final ClassValue<Boolean> OVERRIDES_GET_MODEL_DATA = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(@NotNull Class<?> clz) {
             try {
                 Method method = clz.getMethod("getModelData");
                 //? if neoforge
@@ -22,8 +21,15 @@ public class BlockEntityImplInfo {
             } catch (NoSuchMethodException e) {
                 return false;
             }
-        });
-        //?} else
-        /*return false;*/
+        }
+    };
+
+    public static boolean providesModelData(BlockEntity be) {
+        return OVERRIDES_GET_MODEL_DATA.get(be.getClass());
     }
+    //?} else {
+    /*public static boolean providesModelData(BlockEntity be) {
+        return false;
+    }
+    *///?}
 }

@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -63,10 +64,9 @@ public class BlockMaterialMapping {
 		};
 	}
 
-    private static final Reference2BooleanOpenHashMap<Class<? extends Block>> APPEARANCE_CHANGING_BLOCKS = new Reference2BooleanOpenHashMap<>();
-
-    private static boolean isAppearanceChangingBlock(Block block) {
-        return APPEARANCE_CHANGING_BLOCKS.computeIfAbsent(block.getClass(), (Class<? extends Block> clz) -> {
+    private static final ClassValue<Boolean> IS_APPEARANCE_CHANGING = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(@NotNull Class<?> clz) {
             Method m;
             try {
                 m = clz.getMethod("getAppearance", BlockState.class, BlockAndTintGetter.class, BlockPos.class, Direction.class, BlockState.class, BlockPos.class);
@@ -77,9 +77,13 @@ public class BlockMaterialMapping {
             return m.getDeclaringClass() != net.minecraftforge.common.extensions.IForgeBlock.class;
             //?} else if neoforge {
             /*return m.getDeclaringClass() != net.neoforged.neoforge.common.extensions.IBlockExtension.class;
-            *///?} else
+             *///?} else
             /*return false;*/
-        });
+        }
+    };
+
+    private static boolean isAppearanceChangingBlock(Block block) {
+        return IS_APPEARANCE_CHANGING.get(block.getClass());
     }
 
 	private static void addBlockStates(BlockEntry entry, Object2IntMap<BlockState> idMap, int intId) {
