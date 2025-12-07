@@ -144,4 +144,10 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     protected boolean shouldRespectUpdateTaskQueueSizeLimit() {
         return !FlawlessFrames.isActive();
     }
+
+    public void markShadowGraphDirty() {
+        if (this.shadowRenderListManager != null) {
+            this.shadowRenderListManager.setNeedsUpdate(true);
+        }
+    }
 }
