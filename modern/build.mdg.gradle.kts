@@ -14,8 +14,8 @@ import org.gradle.kotlin.dsl.named
 
 plugins {
     // Apply the plugin. You can find the latest version at https://projects.neoforged.net/neoforged/ModDevGradle
-    id("net.neoforged.moddev") version "2.0.107" apply false
-    id("net.neoforged.moddev.legacyforge") version "2.0.107" apply false
+    id("net.neoforged.moddev") version "2.0.122" apply false
+    id("net.neoforged.moddev.legacyforge") version "2.0.122" apply false
     id("embeddium-mdg-remapper")
     id("celeritas.platform-conventions")
     id("celeritas.shader-conventions") apply false
