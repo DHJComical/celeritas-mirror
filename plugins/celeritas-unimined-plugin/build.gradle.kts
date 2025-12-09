@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     implementation("com.gradleup.shadow:shadow-gradle-plugin:9.3.0")
-    implementation("xyz.wagyourtail.unimined:xyz.wagyourtail.unimined.gradle.plugin:1.3.15-SNAPSHOT")
+    implementation("org.taumc.unimined:org.taumc.unimined.gradle.plugin:1.3.17")
 }
 
 repositories {
@@ -24,10 +24,9 @@ repositories {
         }
     }
     exclusiveContent {
-        forRepository { maven("https://maven.wagyourtail.xyz/snapshots") }
-        forRepository { maven("https://maven.wagyourtail.xyz/releases") }
+        forRepository { maven("https://maven.taumc.org/releases") }
         filter {
-            includeGroup("xyz.wagyourtail.unimined")
+            includeGroupAndSubgroups("org.taumc")
         }
     }
 }
