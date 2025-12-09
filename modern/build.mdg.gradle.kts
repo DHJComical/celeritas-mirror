@@ -145,6 +145,7 @@ if (stonecutter.constants.getOrDefault("shaders", false)) {
 modDevExtension.runs {
     create("client") {
         client()
+        ideName.set("")
         for (config in modMixinConfigs) {
             programArgument("--mixin.config")
             programArgument(config)
