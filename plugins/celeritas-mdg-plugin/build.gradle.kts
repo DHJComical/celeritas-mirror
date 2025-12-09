@@ -14,8 +14,18 @@ dependencies {
 
 repositories {
     mavenCentral()
-    maven("https://maven.neoforged.net/")
-    maven("https://maven.fabricmc.net/")
+    exclusiveContent {
+        forRepository { maven("https://maven.neoforged.net/") }
+        filter {
+            includeGroup("net.neoforged")
+        }
+    }
+    exclusiveContent {
+        forRepository { maven("https://maven.fabricmc.net/") }
+        filter {
+            includeGroup("net.fabricmc")
+        }
+    }
 }
 
 gradlePlugin {

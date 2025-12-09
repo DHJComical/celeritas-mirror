@@ -43,9 +43,9 @@ minecraft {
 }
 
 repositories {
-    maven {
-        url = uri("https://maven.cleanroommc.com")
-        content {
+    exclusiveContent {
+        forRepository { maven("https://maven.cleanroommc.com") }
+        filter {
             includeGroup("zone.rong")
         }
     }
@@ -70,19 +70,15 @@ repositories {
             includeGroup("maven.modrinth")
         }
     }
-    maven {
-        // RetroFuturaGradle
-        name = "GTNH Maven"
-        url = uri("https://nexus.gtnewhorizons.com/repository/public/")
-        mavenContent {
-            includeGroupByRegex("com\\.gtnewhorizons\\..+")
-            includeGroup("com.gtnewhorizons")
+    exclusiveContent {
+        forRepository { maven("https://nexus.gtnewhorizons.com/repository/public/") }
+        filter {
+            includeGroupAndSubgroups("com.gtnewhorizons")
         }
     }
-    maven {
-        name = "taumc releases"
-        url = uri("https://maven.taumc.org/releases")
-        content {
+    exclusiveContent {
+        forRepository { maven("https://maven.taumc.org/releases") }
+        filter {
             includeGroupAndSubgroups("org.taumc")
         }
     }

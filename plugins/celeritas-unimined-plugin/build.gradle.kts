@@ -10,8 +10,26 @@ dependencies {
 
 repositories {
     mavenCentral()
-    maven("https://maven.wagyourtail.xyz/releases")
-    maven("https://maven.wagyourtail.xyz/snapshots")
+    exclusiveContent {
+        forRepository { maven("https://maven.neoforged.net/") }
+        filter {
+            includeGroup("net.neoforged")
+            includeGroup("net.minecraftforge")
+        }
+    }
+    exclusiveContent {
+        forRepository { maven("https://maven.fabricmc.net/") }
+        filter {
+            includeGroup("net.fabricmc")
+        }
+    }
+    exclusiveContent {
+        forRepository { maven("https://maven.wagyourtail.xyz/snapshots") }
+        forRepository { maven("https://maven.wagyourtail.xyz/releases") }
+        filter {
+            includeGroup("xyz.wagyourtail.unimined")
+        }
+    }
 }
 
 gradlePlugin {

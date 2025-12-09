@@ -161,6 +161,10 @@ tasks.named("remapJar") {
     }
 }
 
+tasks.named("genIntellijRuns") {
+    enabled = false
+}
+
 tasks.withType(AbstractArchiveTask).configureEach {
     preserveFileTimestamps = false
     reproducibleFileOrder = true

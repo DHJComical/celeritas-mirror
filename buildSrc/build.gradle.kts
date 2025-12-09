@@ -18,9 +18,18 @@ dependencies {
 
 repositories {
     mavenCentral()
-    maven("https://maven.fabricmc.net/")
-    maven("https://maven.kikugie.dev/releases")
-    maven("https://maven.kikugie.dev/snapshots")
+    exclusiveContent {
+        forRepository { maven("https://maven.fabricmc.net/") }
+        filter {
+            includeGroupAndSubgroups("net.fabricmc")
+        }
+    }
+    exclusiveContent {
+        forRepository { maven("https://maven.kikugie.dev/releases") }
+        filter {
+            includeGroup("dev.kikugie")
+        }
+    }
 }
 
 gradlePlugin {

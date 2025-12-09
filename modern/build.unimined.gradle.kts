@@ -133,3 +133,7 @@ tasks.register("packageJar", Copy::class) {
     from(tasks.named<xyz.wagyourtail.jvmdg.gradle.task.ShadeJar>("shadeDowngradedShadowRemapJar").get().archiveFile)
     into("${rootProject.layout.buildDirectory.get()}/libs/${project.version}")
 }
+
+tasks.named("genIntellijRuns") {
+    enabled = false
+}

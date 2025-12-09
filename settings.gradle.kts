@@ -5,53 +5,31 @@ pluginManagement {
         mavenLocal()
         mavenCentral()
         gradlePluginPortal()
-        maven {
-            name = "sponge"
-            url = uri("https://repo.spongepowered.org/maven-public/")
-            content {
-                includeGroupAndSubgroups("org.spongepowered")
+        exclusiveContent {
+            forRepository { maven("https://maven.neoforged.net/") }
+            filter {
+                includeGroup("net.neoforged")
             }
         }
-        maven {
-            name = "Fabric Maven"
-            url = uri("https://maven.fabricmc.net/")
-            content {
+        exclusiveContent {
+            forRepository { maven("https://maven.kikugie.dev/releases") }
+            forRepository { maven("https://maven.kikugie.dev/snapshots") }
+            filter {
+                includeGroup("dev.kikugie")
+            }
+        }
+        exclusiveContent {
+            forRepository { maven("https://maven.fabricmc.net/") }
+            filter {
                 includeGroupAndSubgroups("net.fabricmc")
                 includeGroup("fabric-loom")
             }
         }
-        maven("https://maven.minecraftforge.net/") {
-            content {
-                includeGroupAndSubgroups("net.minecraftforge")
-            }
-        }
-        maven("https://maven.neoforged.net/releases") {
-            content {
-                includeGroupAndSubgroups("net.neoforged")
-            }
-        }
-        maven("https://maven.kikugie.dev/releases") {
-            content {
-                includeGroupAndSubgroups("dev.kikugie")
-            }
-        }
-        maven("https://maven.kikugie.dev/snapshots") {
-            content {
-                includeGroupAndSubgroups("dev.kikugie")
-            }
-        }
-        maven {
-            name = "wagyourtail releases"
-            url = uri("https://maven.wagyourtail.xyz/releases")
-            content {
-                includeGroupAndSubgroups("xyz.wagyourtail")
-            }
-        }
-        maven {
-            name = "wagyourtail snapshots"
-            url = uri("https://maven.wagyourtail.xyz/snapshots")
-            content {
-                includeGroupAndSubgroups("xyz.wagyourtail")
+        exclusiveContent {
+            forRepository { maven("https://maven.wagyourtail.xyz/snapshots") }
+            forRepository { maven("https://maven.wagyourtail.xyz/releases") }
+            filter {
+                includeGroup("xyz.wagyourtail.unimined")
             }
         }
         maven("https://maven.taumc.org/releases") {
@@ -59,13 +37,22 @@ pluginManagement {
                 includeGroupAndSubgroups("org.taumc")
             }
         }
+        exclusiveContent {
+            forRepository { maven("https://nexus.gtnewhorizons.com/repository/public/") }
+            filter {
+                includeGroupAndSubgroups("com.gtnewhorizons")
+            }
+        }
+        maven("https://maven.minecraftforge.net/") {
+            content {
+                includeGroupAndSubgroups("net.minecraftforge")
+            }
+        }
         maven {
-            // RetroFuturaGradle
-            name = "GTNH Maven"
-            url = uri("https://nexus.gtnewhorizons.com/repository/public/")
-            mavenContent {
-                includeGroupByRegex("com\\.gtnewhorizons\\..+")
-                includeGroup("com.gtnewhorizons")
+            name = "sponge"
+            url = uri("https://repo.spongepowered.org/maven-public/")
+            content {
+                includeGroupAndSubgroups("org.spongepowered")
             }
         }
     }

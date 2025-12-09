@@ -13,7 +13,12 @@ plugins {
 }
 
 repositories {
-    maven("https://maven.fabricmc.net")
+    exclusiveContent {
+        forRepository { maven("https://maven.fabricmc.net/") }
+        filter {
+            includeGroup("net.fabricmc")
+        }
+    }
 }
 
 group = "org.embeddedt"
@@ -92,4 +97,8 @@ ProductionJarHelper.configureProcessedResources(project)
 tasks.register("packageJar", Copy::class) {
     from(tasks.named<ShadowJar>("shadowRemapJar").get().archiveFile)
     into("${rootProject.layout.buildDirectory.get()}/libs/${project.version}")
+}
+
+tasks.named("genIntellijRuns") {
+    enabled = false
 }
