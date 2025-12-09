@@ -8,14 +8,6 @@ version = rootProject.version
 
 repositories {
     maven {
-        name = "wagyourtail releases"
-        url = "https://maven.wagyourtail.xyz/releases"
-    }
-    maven {
-        name = "sponge"
-        url = "https://repo.spongepowered.org/maven"
-    }
-    maven {
         name "GTNH Maven"
         url "https://nexus.gtnewhorizons.com/repository/public/"
     }
@@ -53,10 +45,15 @@ repositories {
             includeGroup('NotFine')
         }
     }
-    repositories {
-        maven {
-            name "Modrinth"
-            url "https://api.modrinth.com/maven"
+    exclusiveContent {
+        forRepository {
+            maven {
+                name "Modrinth"
+                url "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup("maven.modrinth")
         }
     }
     mavenCentral()

@@ -20,8 +20,9 @@ val minecraftVersion = ModLoader.getMinecraftVersion(project)!!
 val defaultArchiveBaseName = "celeritas-${modLoader.friendlyName}-mc${minecraftVersion.replace("^1\\.".toRegex(), "")}"
 
 repositories {
-    maven("https://maven.parchmentmc.org/") {
-        content {
+    exclusiveContent {
+        forRepository { maven("https://maven.parchmentmc.org/") }
+        filter {
             includeGroup("org.parchmentmc.data")
         }
     }
