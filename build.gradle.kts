@@ -74,7 +74,7 @@ val publishTask = tau.publishing.publish {
                 minecraftVersionRange = bs.ModLoader.getMinecraftVersion(name)
                 javaVersions.add(JavaVersion.VERSION_21)
 
-                environment = ModEnvironment.CLIENT_ONLY
+                environment.set(ModEnvironment.CLIENT_ONLY)
 
                 modLoaders.add(when(ourLoader) {
                     bs.ModLoader.FABRIC -> ModLoader.FABRIC

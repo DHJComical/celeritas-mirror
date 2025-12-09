@@ -1,7 +1,6 @@
 plugins {
     `kotlin-dsl`
     `java-library`
-    kotlin("jvm") version "2.2.0"
     id("java-gradle-plugin") // so we can assign and ID to our plugin
 }
 

@@ -59,7 +59,9 @@ repositories {
     mavenCentral()
 }
 
-archivesBaseName = "celeritas-forge-mc7.10"
+base {
+    archivesName = "celeritas-forge-mc7.10"
+}
 
 evaluationDependsOn(":common")
 
