@@ -14,8 +14,8 @@ import org.gradle.kotlin.dsl.named
 
 plugins {
     // Apply the plugin. You can find the latest version at https://projects.neoforged.net/neoforged/ModDevGradle
-    id("net.neoforged.moddev") version "2.0.122" apply false
-    id("net.neoforged.moddev.legacyforge") version "2.0.122" apply false
+    id("net.neoforged.moddev") version "2.0.124" apply false
+    id("net.neoforged.moddev.legacyforge") version "2.0.124" apply false
     id("embeddium-mdg-remapper")
     id("celeritas.platform-conventions")
     id("celeritas.shader-conventions") apply false
@@ -63,16 +63,24 @@ if (neoforgePr != null) {
     }
 }
 
+val isDecompDisabled = System.getenv("CELERITAS_DISABLE_DECOMP") == "true"
+
 val config: MDGConfig = if (modLoader == ModLoader.NEOFORGE) {
     apply(plugin = "net.neoforged.moddev")
     val neoForge = project.extensions.getByName("neoForge") as NeoForgeExtension
-    neoForge.version = versionedProperty("neoforge")
+    neoForge.enable {
+        version = versionedProperty("neoforge")
+        isDisableRecompilation = isDecompDisabled
+    }
     neoForge.unitTest.enable()
     MDGConfig(neoForge, "jar")
 } else {
     apply(plugin = "net.neoforged.moddev.legacyforge")
     val legacyForge = project.extensions.getByName("legacyForge") as LegacyForgeExtension
-    legacyForge.version = versionedProperty("forge")
+    legacyForge.enable {
+        forgeVersion = versionedProperty("forge")
+        isDisableRecompilation = isDecompDisabled
+    }
     val obfuscation = project.extensions.getByType<ObfuscationExtension>()
     val generateNamedToIntermediary = tasks.register<GenerateNamedToIntermediaryTSRGTask>("generateNamedToIntermediaryTSRG") {
         tsrgPath = layout.buildDirectory.file("generated/namedToIntermediaryCeleritas.tsrg")

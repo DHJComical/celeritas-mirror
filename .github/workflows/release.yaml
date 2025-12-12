@@ -19,6 +19,7 @@ env:
   MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
   MAVEN_SECRET: ${{ secrets.MAVEN_SECRET }}
   GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+  CELERITAS_DISABLE_DECOMP: true
 
 jobs:
   build:

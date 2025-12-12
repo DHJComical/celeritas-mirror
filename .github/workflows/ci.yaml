@@ -3,6 +3,9 @@
 name: ci
 on: push
 
+env:
+  CELERITAS_DISABLE_DECOMP: true
+
 jobs:
   build:
     runs-on: ubuntu-large
