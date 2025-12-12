@@ -17,6 +17,13 @@ evaluationDependsOn(":common")
 repositories {
     mavenCentral()
     maven {
+        name = "wagyourtail releases"
+        url = uri("https://maven.wagyourtail.xyz/releases")
+        content {
+            includeGroupAndSubgroups("xyz.wagyourtail")
+        }
+    }
+    maven {
         name = "sponge"
         url = uri("https://repo.spongepowered.org/maven")
         content {

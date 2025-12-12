@@ -9,7 +9,7 @@ import java.net.URI
 plugins {
     id("celeritas.platform-conventions")
     id("celeritas-unimined-plugin")
-    id("org.taumc.unimined") version "1.3.17"
+    id("xyz.wagyourtail.unimined") version "1.3.15-SNAPSHOT"
 }
 
 repositories {

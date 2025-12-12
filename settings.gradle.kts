@@ -25,6 +25,13 @@ pluginManagement {
                 includeGroup("fabric-loom")
             }
         }
+        exclusiveContent {
+            forRepository { maven("https://maven.wagyourtail.xyz/snapshots") }
+            forRepository { maven("https://maven.wagyourtail.xyz/releases") }
+            filter {
+                includeGroup("xyz.wagyourtail.unimined")
+            }
+        }
         maven("https://maven.taumc.org/releases") {
             content {
                 includeGroupAndSubgroups("org.taumc")
