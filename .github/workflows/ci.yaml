@@ -24,15 +24,8 @@ jobs:
             8
             17
             21
-      - name: Initialize caches
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: release-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('settings.gradle') }}
-          restore-keys: |
-            release-${{ runner.os }}-build-snapshot-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}-
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
       - name: Initialize Unimined caches
         uses: actions/cache@v4
         with:
