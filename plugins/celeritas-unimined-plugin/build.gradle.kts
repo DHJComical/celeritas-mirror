@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     implementation("com.gradleup.shadow:shadow-gradle-plugin:9.2.2")
-    implementation("xyz.wagyourtail.unimined:xyz.wagyourtail.unimined.gradle.plugin:1.3.15-SNAPSHOT")
+    implementation("xyz.wagyourtail.unimined:xyz.wagyourtail.unimined.gradle.plugin:1.4.2-SNAPSHOT")
 }
 
 repositories {
@@ -27,7 +27,7 @@ repositories {
         forRepository { maven("https://maven.wagyourtail.xyz/snapshots") }
         forRepository { maven("https://maven.wagyourtail.xyz/releases") }
         filter {
-            includeGroup("xyz.wagyourtail.unimined")
+            includeGroupAndSubgroups("xyz.wagyourtail")
         }
     }
 }

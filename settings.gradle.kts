@@ -37,7 +37,7 @@ pluginManagement {
             forRepository { maven("https://maven.wagyourtail.xyz/snapshots") }
             forRepository { maven("https://maven.wagyourtail.xyz/releases") }
             filter {
-                includeGroup("xyz.wagyourtail.unimined")
+                includeGroupAndSubgroups("xyz.wagyourtail")
             }
         }
         maven("https://maven.taumc.org/releases") {
