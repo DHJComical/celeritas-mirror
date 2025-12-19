@@ -102,7 +102,7 @@ tasks.named("validateAccessWidener") {
     enabled = false
 }
 
-tasks.named<RemapJarTask>("remapJar") {
+val remapJarTask = tasks.named<RemapJarTask>("remapJar") {
     archiveClassifier.set("thin")
 }
 
@@ -110,7 +110,7 @@ val shadowJar = tasks.register<ShadowJar>("shadowRemapJar") {
     archiveBaseName = defaultArchiveBaseName
     archiveClassifier = ""
     configurations = listOf(project.configurations.shadow.get())
-    from(tasks.named("remapJar"))
+    from(zipTree(remapJarTask.get().archiveFile))
     manifest.inheritFrom(tasks.named<Jar>("jar").get().manifest)
     mergeServiceFiles()
 

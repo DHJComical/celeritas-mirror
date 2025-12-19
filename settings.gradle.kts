@@ -26,6 +26,14 @@ pluginManagement {
             }
         }
         exclusiveContent {
+            forRepository { maven("https://maven.ornithemc.net/releases") }
+            filter {
+                includeModule("io.github.gaming32", "signature-changer")
+                includeGroupAndSubgroups("net.ornithemc")
+                includeGroup("ploceus")
+            }
+        }
+        exclusiveContent {
             forRepository { maven("https://maven.wagyourtail.xyz/snapshots") }
             forRepository { maven("https://maven.wagyourtail.xyz/releases") }
             filter {

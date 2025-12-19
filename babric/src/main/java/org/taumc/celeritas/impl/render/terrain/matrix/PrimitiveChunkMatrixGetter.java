@@ -12,8 +12,8 @@ public class PrimitiveChunkMatrixGetter {
     private static final FloatBuffer MODELVIEW = MemoryTracker.createFloatBuffer(16);
 
     public static ChunkRenderMatrices getMatrices() {
-        GL11.glGetFloatv(GL11.GL_PROJECTION_MATRIX, PROJECTION);
-        GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, MODELVIEW);
+        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, PROJECTION);
+        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, MODELVIEW);
         return new ChunkRenderMatrices(
                 new Matrix4f(PROJECTION),
                 new Matrix4f(MODELVIEW)

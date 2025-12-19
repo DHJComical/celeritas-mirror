@@ -1,15 +1,12 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import net.fabricmc.loom.task.RemapJarTask
 import org.embeddedt.embeddium.gradle.build.conventions.LWJGLHelper
-import org.embeddedt.embeddium.gradle.build.conventions.ShadowHelper
-import org.embeddedt.embeddium.gradle.unimined.ProductionJarHelper
-import xyz.wagyourtail.unimined.api.minecraft.EnvType
-import xyz.wagyourtail.unimined.api.minecraft.task.AbstractRemapJarTask
 import java.net.URI
 
 plugins {
     id("celeritas.platform-conventions")
-    id("celeritas-unimined-plugin")
-    id("xyz.wagyourtail.unimined") version "1.3.15-SNAPSHOT"
+    id("fabric-loom") version "1.13.6"
+    id("ploceus") version "1.13.4"
 }
 
 repositories {
@@ -41,48 +38,72 @@ val versionData = versionDataMap.getOrDefault(project.name, VersionData(project.
 
 base.archivesName = "celeritas-fabriclike-mc${versionData.uniminedVersion.replace(Regex("^1\\."), "")}"
 
-unimined.minecraft {
-    combineWith(project(":common"), project(":common").sourceSets.getByName("main"))
-
-    version = versionData.uniminedVersion
-    side = if(isClientServerSplit) EnvType.CLIENT else EnvType.COMBINED
-
-    if (versionData.metadataURL != null) {
-        minecraftData.metadataURL = versionData.metadataURL
+loom {
+    if (isClientServerSplit) {
+        clientOnlyMinecraftJar()
     }
-
-    mappings {
-        calamus()
-        feather(featherVersion)
+    mixin {
+        useLegacyMixinAp = false
     }
+}
 
-    fabric {
-        loader("0.16.14")
-    }
-
-    minecraftRemapper.config {
-        ignoreConflicts(true)
-    }
-
-    runs.config("client") {
-        javaVersion = JavaVersion.VERSION_21
-    }
-
-    if (!isClientServerSplit) {
-        runs.config("server") {
-            enabled = false
-        }
+ploceus {
+    if (isClientServerSplit) {
+        clientOnlyMappings()
     }
 }
 
 dependencies {
+    minecraft("com.mojang:minecraft:${versionData.uniminedVersion}")
+    mappings(ploceus.featherMappings(featherVersion.toString()))
+
+    implementation(project(":common")) {
+        isTransitive = false
+    }
+    shadow(project(":common")) {
+        isTransitive = false
+    }
+
     implementation("org.joml:joml:1.10.5")
     shadow("org.joml:joml:1.10.5")
     implementation("it.unimi.dsi:fastutil:8.5.15")
 
     implementation("org.apache.logging.log4j:log4j-api:2.0-beta9")
+
+    modImplementation("net.fabricmc:fabric-loader:${rootProject.property("fabricloader")}")
 }
 
+LWJGLHelper.convertLwjgl2To3(project)
+
+tasks.named("validateAccessWidener") {
+    enabled = false
+}
+
+val remapJarTask = tasks.named<RemapJarTask>("remapJar") {
+    archiveClassifier.set("thin")
+}
+
+val shadowJar = tasks.register<ShadowJar>("shadowRemapJar") {
+    archiveBaseName = base.archivesName
+    archiveClassifier = ""
+    configurations = listOf(project.configurations.shadow.get())
+    from(zipTree(remapJarTask.get().archiveFile))
+    manifest.inheritFrom(tasks.named<Jar>("jar").get().manifest)
+    mergeServiceFiles()
+
+    from("COPYING", "COPYING.LESSER", "README.md")
+}
+
+val packageJar = tasks.register("packageJar", Copy::class) {
+    from(shadowJar.get().archiveFile)
+    into("${rootProject.layout.buildDirectory.get()}/libs/${project.version}")
+}
+
+tasks.named("assemble") {
+    dependsOn(packageJar)
+}
+
+/*
 val remapJar = tasks.named<AbstractRemapJarTask>("remapJar") {
     manifest {
         attributes(mapOf("Calamus-Generation" to "1"))
@@ -102,3 +123,5 @@ tasks.register("packageJar", Copy::class) {
 tasks.named("genIntellijRuns") {
     enabled = false
 }
+
+ */
