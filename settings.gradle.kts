@@ -125,7 +125,7 @@ fun <T> createStonecutterProject(subprojectFolder: String, versions: List<T>, mc
     }
 }
 
-createStonecutterProject("babric", listOf("1.2.5", "1.0.0-beta.7.3", "1.0.0-beta.8.1", "1.7.10", "1.8.9")) { versions ->
+createStonecutterProject("ornithe", listOf("1.2.5", "1.0.0-beta.7.3", "1.0.0-beta.8.1", "1.7.10", "1.8.9")) { versions ->
     centralScript = "build.gradle.kts"
     versions(versions)
 }
