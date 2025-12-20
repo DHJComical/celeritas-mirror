@@ -52,7 +52,7 @@ public class NormI8 {
      */
     private static int encode(float comp) {
         // TODO: is the clamp necessary here? our inputs should always be normalized vector components
-        return ((int) (Math.clamp(comp, -1.0F, 1.0F) * COMPONENT_RANGE) & 255);
+        return ((int) (Math.clamp(-1.0F, 1.0F, comp) * COMPONENT_RANGE) & 255);
     }
 
     /**

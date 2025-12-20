@@ -106,7 +106,7 @@ public class SliderControl implements Control<Integer> {
 
             this.thumbPosition = this.getThumbPositionForValue(this.option.getValue());
 
-            double thumbOffset = org.joml.Math.clamp((double) (this.getIntValue() - this.min) / this.range * sliderWidth, 0, sliderWidth);
+            double thumbOffset = org.joml.Math.clamp(0, sliderWidth, (double) (this.getIntValue() - this.min) / this.range * sliderWidth);
 
             int thumbX = (int) (sliderX + thumbOffset - THUMB_WIDTH);
             int trackY = (int) (sliderY + (sliderHeight / 2f) - ((double) TRACK_HEIGHT / 2));
@@ -154,7 +154,7 @@ public class SliderControl implements Control<Integer> {
         }
 
         public void setValue(double d) {
-            this.thumbPosition = org.joml.Math.clamp(d, 0.0D, 1.0D);
+            this.thumbPosition = org.joml.Math.clamp(0.0D, 1.0D, d);
 
             int value = this.getIntValue();
 
