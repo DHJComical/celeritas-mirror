@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.asm.legacy;
 
-//? if forge && <=1.20.1 {
+//? if (forge && <=1.20.1) || (neoforge && 1.21.1) {
 
 import com.google.common.collect.ImmutableMap;
 import cpw.mods.modlauncher.LaunchPluginHandler;

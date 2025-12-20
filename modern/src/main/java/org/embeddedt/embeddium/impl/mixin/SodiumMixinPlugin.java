@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -55,8 +56,14 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
             }
             *///?}
 
-            //? if forge && <=1.20.1
-            org.embeddedt.embeddium.impl.asm.legacy.LegacyAddonPatcher.install();
+            try {
+                Class<?> clz = Class.forName("org.embeddedt.embeddium.impl.asm.legacy.LegacyAddonPatcher");
+                var installMethod = clz.getDeclaredMethod("install");
+                installMethod.invoke(null);
+            } catch (ClassNotFoundException ignored) {
+            } catch (ReflectiveOperationException e) {
+                this.logger.error("Error installing legacy patcher", e);
+            }
         }
 
 
