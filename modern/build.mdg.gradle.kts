@@ -223,7 +223,7 @@ val shadowJar = tasks.register<ShadowJar>("shadowRemapJar") {
     archiveBaseName = defaultArchiveBaseName
     archiveClassifier = ""
     configurations = listOf(project.configurations.shadow.get())
-    from(tasks.named(config.productionJarTask))
+    from(zipTree(tasks.named<Jar>(config.productionJarTask).get().archiveFile))
     manifest.inheritFrom(tasks.named<Jar>("jar").get().manifest)
     if (modLoader == ModLoader.FORGE && stonecutter.eval(minecraftVersion, "<1.17")) {
         relocate("com.llamalad7.mixinextras", "org.embeddedt.embeddium.impl.shadow.mixinextras")
