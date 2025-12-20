@@ -180,12 +180,14 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel, Mod
                 continue;
             }
 
-            //? if forge {
+            // Disabled for now as it is relatively expensive to do virtual dispatch on getRenderBoundingBox when most
+            // TEs fit within the 1x1x1 area, and are thus likely to be visible anyway
+            /*
             var aabb = blockEntity.getRenderBoundingBox();
             if (!viewport.isBoxVisible(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ)) {
                 continue;
             }
-            //?}
+             */
 
             //? if forgelike && >=1.19.2 {
             if (blockEntity.hasCustomOutlineRendering(this.client.player)) {
