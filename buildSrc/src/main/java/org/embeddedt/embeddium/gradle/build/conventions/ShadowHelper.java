@@ -20,7 +20,7 @@ public class ShadowHelper {
         project.getTasks().register("shadowRemapJar", ShadowJar.class).configure(shadowJar -> {
             shadowJar.getArchiveClassifier().set("");
             shadowJar.getConfigurations().set(List.of(project.getConfigurations().getByName("shadow")));
-            shadowJar.from(project.getTasks().named(remapJarTaskName));
+            shadowJar.from(project.zipTree(((Jar)project.getTasks().named(remapJarTaskName).get()).getArchiveFile()));
             shadowJar.getManifest().inheritFrom(((Jar)project.getTasks().getByName("jar")).getManifest());
             shadowJar.relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml");
             shadowJar.mergeServiceFiles();
