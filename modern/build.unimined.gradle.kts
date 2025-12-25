@@ -7,7 +7,7 @@ import org.embeddedt.embeddium.gradle.unimined.ProductionJarHelper
 import org.gradle.kotlin.dsl.named
 
 plugins {
-    id("xyz.wagyourtail.unimined") version "1.4.2-SNAPSHOT"
+    id("xyz.wagyourtail.unimined") version "1.3.16-SNAPSHOT"
     id("celeritas.platform-conventions")
     id("celeritas-unimined-plugin")
     id("xyz.wagyourtail.jvmdowngrader") version "1.1.3"

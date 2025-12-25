@@ -95,7 +95,7 @@ fun isVersionIncluded(ver: String): Boolean {
     return includedVersionsProp.any { stonecutter.eval(testVer, it) }
 }
 
-if(extra.has("enable_celeritas_1710") && file("forge1710").exists() && isVersionIncluded("1.7.10")) {
+if(file("forge1710").exists() && isVersionIncluded("1.7.10")) {
     include("forge1710")
 }
 
