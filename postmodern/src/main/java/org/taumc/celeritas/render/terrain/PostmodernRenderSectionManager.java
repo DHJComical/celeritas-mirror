@@ -3,7 +3,9 @@ package org.taumc.celeritas.render.terrain;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.chunk.RenderRegionCache;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunkSection;
@@ -19,6 +21,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.Alp
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.jetbrains.annotations.Nullable;
+import org.taumc.celeritas.render.terrain.task.MeshingTask;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -131,6 +134,14 @@ public class PostmodernRenderSectionManager extends RenderSectionManager {
 
     @Override
     protected @Nullable ChunkBuilderTask<ChunkBuildOutput> createRebuildTask(RenderSection render, int frame) {
-        return null;
+        if (isSectionVisuallyEmpty(render.getChunkX(), render.getChunkY(), render.getChunkZ())) {
+            return null;
+        }
+
+        // TODO: port faster & safer chunk section cloning
+        RenderRegionCache renderregioncache = new RenderRegionCache();
+        var region = renderregioncache.createRegion(this.world, SectionPos.asLong(render.getChunkX(), render.getChunkY(), render.getChunkZ()));
+
+        return new MeshingTask(render, region, cameraPosition, frame);
     }
 }

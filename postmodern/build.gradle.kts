@@ -16,7 +16,7 @@ neoForge {
         version = "21.11.14-beta"
     }
 
-    val parchmentVersion = versionedProperty("parchment_version")
+    val parchmentVersion = rootProject.properties["parchment_version_1_21_11"]?.toString()
 
     if (parchmentVersion != null) {
         val parchmentData = parchmentVersion.split(":")
