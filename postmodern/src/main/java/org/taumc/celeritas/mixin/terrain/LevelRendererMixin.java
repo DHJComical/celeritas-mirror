@@ -69,6 +69,17 @@ public abstract class LevelRendererMixin implements CeleritasWorldRenderer.Holde
         return 0;
     }
 
+    @Inject(method = "allChanged()V", at = @At("RETURN"))
+    private void onReload(CallbackInfo ci) {
+        RenderDevice.enterManagedCode();
+
+        try {
+            this.celeritas$renderer.reload();
+        } finally {
+            RenderDevice.exitManagedCode();
+        }
+    }
+
     @Inject(method = "setLevel", at = @At("HEAD"))
     private void onWorldChanged(ClientLevel world, CallbackInfo ci) {
         RenderDevice.enterManagedCode();
@@ -145,5 +156,41 @@ public abstract class LevelRendererMixin implements CeleritasWorldRenderer.Holde
                 SectionPos.blockToSectionCoord(pos.getY()),
                 SectionPos.blockToSectionCoord(pos.getZ())
         );
+    }
+
+    /**
+     * @reason Redirect chunk updates to our renderer
+     * @author JellySquid
+     */
+    @Overwrite
+    public void setBlocksDirty(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        this.celeritas$renderer.scheduleRebuildForBlockArea(minX, minY, minZ, maxX, maxY, maxZ, false);
+    }
+
+    /**
+     * @reason Redirect chunk updates to our renderer
+     * @author JellySquid
+     */
+    @Overwrite
+    public void setSectionDirtyWithNeighbors(int x, int y, int z) {
+        this.celeritas$renderer.scheduleRebuildForChunks(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1, false);
+    }
+
+    /**
+     * @reason Redirect chunk updates to our renderer
+     * @author JellySquid
+     */
+    @Overwrite
+    private void setBlockDirty(BlockPos pos, boolean important) {
+        this.celeritas$renderer.scheduleRebuildForBlockArea(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1, pos.getX() + 1, pos.getY() + 1, pos.getZ() + 1, important);
+    }
+
+    /**
+     * @reason Redirect chunk updates to our renderer
+     * @author JellySquid
+     */
+    @Overwrite
+    private void setSectionDirty(int x, int y, int z, boolean important) {
+        this.celeritas$renderer.scheduleRebuildForChunk(x, y, z, important);
     }
 }

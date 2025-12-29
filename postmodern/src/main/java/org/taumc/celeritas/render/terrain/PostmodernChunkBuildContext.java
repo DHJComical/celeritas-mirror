@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import lombok.Getter;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
@@ -47,6 +48,10 @@ public class PostmodernChunkBuildContext extends ChunkBuildContext {
         return c;
     }
 
+    public void flushVertexConsumers() {
+        materialMap.values().forEach(VertexTranslator::flushQuad);
+    }
+
     private static class VertexTranslator implements VertexConsumer {
         private final ChunkVertexEncoder.Vertex[] quad;
         private final Material material;
@@ -59,6 +64,7 @@ public class PostmodernChunkBuildContext extends ChunkBuildContext {
             this.material = material;
             this.targetBuilder = targetBuilder;
             this.quad = ChunkVertexEncoder.Vertex.uninitializedQuad();
+            this.currentIndex = -1;
         }
 
         private void applyNormal(int packedNormal) {
@@ -121,7 +127,7 @@ public class PostmodernChunkBuildContext extends ChunkBuildContext {
 
         @Override
         public VertexConsumer setUv2(int u, int v) {
-            currentVertexObj.light = LightDataAccess.pack(u, v);
+            currentVertexObj.light = LightTexture.FULL_BRIGHT; // LightDataAccess.pack(u, v);
             return this;
         }
 

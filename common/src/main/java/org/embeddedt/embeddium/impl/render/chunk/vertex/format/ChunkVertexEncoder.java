@@ -32,5 +32,10 @@ public interface ChunkVertexEncoder {
 
             return vertices;
         }
+
+        @Override
+        public String toString() {
+            return String.format("XYZ: (%.02f, %.02f, %.02f), C: %08x, L: %08x", x, y, z, color, light);
+        }
     }
 }

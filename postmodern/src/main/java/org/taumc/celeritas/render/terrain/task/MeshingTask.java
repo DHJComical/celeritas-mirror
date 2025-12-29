@@ -93,6 +93,7 @@ public class MeshingTask extends ChunkBuilderTask<ChunkBuildOutput> {
                             stack.translate(x & 15, y & 15, z & 15);
                             Minecraft.getInstance().getBlockRenderer().renderBatched(blockState, blockPos, slice, stack,
                                     bufferLookup, true, renderedParts);
+                            buildContext.flushVertexConsumers();
                             stack.popPose();
                             renderedParts.clear();
                         }
