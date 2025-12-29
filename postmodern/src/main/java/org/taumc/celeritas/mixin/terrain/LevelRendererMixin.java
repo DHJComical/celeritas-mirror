@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
@@ -30,6 +31,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.taumc.celeritas.render.terrain.CeleritasWorldRenderer;
+import org.taumc.celeritas.render.terrain.PostmodernRenderSectionManager;
 
 import java.util.EnumMap;
 
@@ -111,7 +113,7 @@ public abstract class LevelRendererMixin implements CeleritasWorldRenderer.Holde
      */
     @Overwrite
     private ChunkSectionsToRender prepareChunkRenders(Matrix4fc matrix, double cameraX, double cameraY, double cameraZ) {
-        var blocksAtlas = this.minecraft.getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS).getTextureView();
+        var blocksAtlas = this.minecraft.getTextureManager().getTexture(AtlasIds.BLOCKS).getTextureView();
         celeritas$renderer.setPoseMatrix(matrix);
         celeritas$camera.set(cameraX, cameraY, cameraZ);
         return new ChunkSectionsToRender(blocksAtlas, new EnumMap<>(ChunkSectionLayer.class), 0, new GpuBufferSlice[0]);
@@ -120,11 +122,13 @@ public abstract class LevelRendererMixin implements CeleritasWorldRenderer.Holde
     @Redirect(method = "lambda$addMainPass$1", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;Lcom/mojang/blaze3d/textures/GpuSampler;)V"))
     private void renderChunksWithCeleritas(ChunkSectionsToRender sectionsToRender, ChunkSectionLayerGroup group, GpuSampler terrainSampler) {
         RenderDevice.enterManagedCode();
+        PostmodernRenderSectionManager.PostmodernPipeline.terrainSampler = terrainSampler;
         try {
             for (ChunkSectionLayer layer : group.layers()) {
                 celeritas$renderer.drawChunkLayer(layer, celeritas$camera.x, celeritas$camera.y, celeritas$camera.z);
             }
         } finally {
+            PostmodernRenderSectionManager.PostmodernPipeline.terrainSampler = null;
             RenderDevice.exitManagedCode();
         }
     }
