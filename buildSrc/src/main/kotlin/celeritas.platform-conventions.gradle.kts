@@ -126,16 +126,16 @@ tasks.withType<AbstractArchiveTask>().configureEach {
     isReproducibleFileOrder = true
 }
 
-val modLoader = ModLoader.fromProject(project)
+val modLoader: ModLoader? = ModLoader.fromProject(project)
 val minecraftVersion = ModLoader.getMinecraftVersion(project)
 
-val stonecutterExt = project.extensions.getByType<StonecutterBuildExtension>()
+val stonecutterExt = project.extensions.findByType<StonecutterBuildExtension>()
 
 val modMixinConfigs = mutableListOf("embeddium.mixins.json")
 project.extra.set("celeritasMixinConfigs", modMixinConfigs)
 
 if (generateSequence(project) { it.parent }.any { it.name == "modern" }) {
-    if (stonecutterExt.constants.getOrDefault("settings_gui", false)) {
+    if (stonecutterExt?.constants?.getOrDefault("settings_gui", false) ?: false) {
         sourceSets {
             main {
                 java.srcDir("src/main/gui_java")
@@ -145,18 +145,10 @@ if (generateSequence(project) { it.parent }.any { it.name == "modern" }) {
 }
 
 tasks.named<ProcessResources>("processResources") {
-    val mixinCompatLevel = if (stonecutterExt.eval(minecraftVersion, "<1.17")) {
-        "JAVA_8"
-    } else if (stonecutterExt.eval(minecraftVersion, "<1.18")) {
-        "JAVA_16"
-    } else {
-        "JAVA_17"
-    }
-    val inputProps = mapOf(
+    val inputProps = mutableMapOf(
             "forgeid" to if (modLoader == ModLoader.NEOFORGE) "neoforge" else "forge",
             "minecraft" to (versionedProperty("minecraft_dependency") ?: ""),
             "mod_version" to version,
-            "mixinCompatLevel" to mixinCompatLevel,
             "mod_id" to rootProject.property("mod_id"),
             "mod_display_name" to rootProject.property("mod_display_name"),
             "mod_description" to rootProject.property("mod_description"),
@@ -170,11 +162,22 @@ tasks.named<ProcessResources>("processResources") {
             "fabric_api_modules" to rootProject.property("fabric_api_modules")
     )
 
+    stonecutterExt?.let {
+        val mixinCompatLevel = if (it.eval(minecraftVersion, "<1.17")) {
+            "JAVA_8"
+        } else if (it.eval(minecraftVersion, "<1.18")) {
+            "JAVA_16"
+        } else {
+            "JAVA_17"
+        }
+        inputProps.put("mixinCompatLevel", mixinCompatLevel)
+    }
+
     inputProps.forEach { (key, value) ->
         inputs.property(key, value)
     }
 
-    filesMatching(listOf("fabric.mod.json", "META-INF/mods.toml", "quilt.mod.json", "embeddium.mixins.json")) {
+    filesMatching(listOf("fabric.mod.json", "META-INF/mods.toml", "META-INF/neoforge.mods.toml", "quilt.mod.json", "embeddium.mixins.json")) {
         expand(inputProps)
     }
 

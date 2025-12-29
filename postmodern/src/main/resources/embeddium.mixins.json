@@ -1,0 +1,15 @@
+{
+  "package" : "org.taumc.celeritas.mixin",
+  "required" : true,
+  "minVersion": "0.8",
+  "compatibilityLevel" : "JAVA_17",
+  "plugin" : "org.taumc.celeritas.mixin.MixinPlugin",
+  "injectors" : {
+    "defaultRequire" : 1
+  },
+  "overwrites" : {
+    "conformVisibility" : true
+  },
+  "client" : [
+  ]
+}

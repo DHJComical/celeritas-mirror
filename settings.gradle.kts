@@ -68,6 +68,8 @@ pluginManagement {
     plugins {
         id("org.taumc.gradle.versioning") version(extra["taugradle_version"].toString())
         id("org.taumc.gradle.publishing") version(extra["taugradle_version"].toString())
+        id("net.neoforged.moddev") version "2.0.134"
+        id("net.neoforged.moddev.legacyforge") version "2.0.134"
     }
 }
 
@@ -157,3 +159,5 @@ createStonecutterProject("modern", listOf(
         }
     }
 }
+
+include("postmodern")

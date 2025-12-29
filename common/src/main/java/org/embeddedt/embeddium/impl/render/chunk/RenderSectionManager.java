@@ -261,7 +261,13 @@ public abstract class RenderSectionManager {
         }
     }
 
-    protected abstract boolean shouldRespectUpdateTaskQueueSizeLimit();
+    /**
+     * {@return true if the renderer should respect per-frame queue limits and not try to update as many chunks as
+     * possible per frame}
+     */
+    protected boolean shouldRespectUpdateTaskQueueSizeLimit() {
+        return true;
+    }
 
     private void createTerrainRenderList(Viewport viewport, int frame, boolean spectator) {
         final var searchDistance = this.getSearchDistance();
@@ -752,7 +758,13 @@ public abstract class RenderSectionManager {
         return this.lastCameraPosition != null && section.getSquaredDistanceFromBlockCenter(this.lastCameraPosition.x(), this.lastCameraPosition.y(), this.lastCameraPosition.z()) < NEARBY_REBUILD_DISTANCE;
     }
 
-    protected abstract boolean allowImportantRebuilds();
+    /**
+     * {@return true if rebuilds of chunks near the player should block the main thread, reduces flickering but will
+     * potentially cause lag spikes}
+     */
+    protected boolean allowImportantRebuilds() {
+        return false;
+    }
 
     private float getEffectiveRenderDistance() {
         var color = ChunkShaderFogComponent.FOG_SERVICE.getFogColor();

@@ -22,6 +22,6 @@ public enum AlphaCutoffParameter {
                 return param;
             }
         }
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("No alpha cutoff option found for value: " + val);
     }
 }
