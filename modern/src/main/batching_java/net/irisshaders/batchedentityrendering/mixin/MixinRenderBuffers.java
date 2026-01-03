@@ -38,9 +38,12 @@ public class MixinRenderBuffers implements RenderBuffersExt, MemoryTrackingRende
 	@Final
 	private net.minecraft.client.renderer. /*? if <1.20.2 {*/ ChunkBufferBuilderPack /*?} else {*/ /*SectionBufferBuilderPack *//*?}*/ fixedBufferPack;
 
+    @Unique
+    private static final boolean BATCHED_OPTIMIZATION_ENABLED = !Boolean.getBoolean("celeritas.disableBatchedEntityRendering");
+
 	@Inject(method = "bufferSource", at = @At("HEAD"), cancellable = true)
 	private void batchedentityrendering$replaceBufferSource(CallbackInfoReturnable<MultiBufferSource.BufferSource> cir) {
-		if (begins == 0) {
+		if (!BATCHED_OPTIMIZATION_ENABLED || begins == 0) {
 			return;
 		}
 
@@ -49,7 +52,7 @@ public class MixinRenderBuffers implements RenderBuffersExt, MemoryTrackingRende
 
 	@Inject(method = "crumblingBufferSource", at = @At("HEAD"), cancellable = true)
 	private void batchedentityrendering$replaceCrumblingBufferSource(CallbackInfoReturnable<MultiBufferSource.BufferSource> cir) {
-		if (begins == 0) {
+		if (!BATCHED_OPTIMIZATION_ENABLED || begins == 0) {
 			return;
 		}
 
@@ -67,7 +70,7 @@ public class MixinRenderBuffers implements RenderBuffersExt, MemoryTrackingRende
 
 	@Inject(method = "outlineBufferSource", at = @At("HEAD"), cancellable = true)
 	private void batchedentityrendering$replaceOutlineBufferSource(CallbackInfoReturnable<OutlineBufferSource> provider) {
-		if (begins == 0) {
+		if (!BATCHED_OPTIMIZATION_ENABLED || begins == 0) {
 			return;
 		}
 
