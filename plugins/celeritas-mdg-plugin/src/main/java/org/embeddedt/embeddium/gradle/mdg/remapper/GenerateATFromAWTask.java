@@ -6,17 +6,17 @@ import net.fabricmc.accesswidener.AccessWidenerVisitor;
 import net.neoforged.srgutils.IMappingFile;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.Optional;
-import org.gradle.api.tasks.OutputFile;
-import org.gradle.api.tasks.TaskAction;
 import org.objectweb.asm.commons.Remapper;
 
 import java.io.*;
 import java.util.*;
 
+@CacheableTask
 public abstract class GenerateATFromAWTask extends DefaultTask {
     @InputFile
+    @PathSensitive(PathSensitivity.RELATIVE)
     public abstract RegularFileProperty getAccessWidenerPath();
 
     @OutputFile
@@ -24,6 +24,7 @@ public abstract class GenerateATFromAWTask extends DefaultTask {
 
     @InputFile
     @Optional
+    @PathSensitive(PathSensitivity.RELATIVE)
     public abstract RegularFileProperty getTsrgMappings();
 
     @TaskAction
