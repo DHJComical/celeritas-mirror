@@ -16,9 +16,13 @@ public class LWJGLHelper {
     );
 
     public static void convertLwjgl2To3(Project project) {
-        project.getConfigurations().getByName("minecraftLibraries").getDependencies().removeIf(dep -> Objects.equals(dep.getGroup(), "org.lwjgl.lwjgl"));
-        project.getDependencies().add("minecraftLibraries", "org.taumc:legacy-lwjgl3:1.2-tau");
-        addLwjgl3(project, "minecraftLibraries");
+        convertLwjgl2To3(project, "minecraftLibraries");
+    }
+
+    public static void convertLwjgl2To3(Project project, String minecraftLibsConfigurationName) {
+        project.getConfigurations().getByName(minecraftLibsConfigurationName).getDependencies().removeIf(dep -> Objects.equals(dep.getGroup(), "org.lwjgl.lwjgl"));
+        project.getDependencies().add(minecraftLibsConfigurationName, "org.taumc:legacy-lwjgl3:1.2-tau");
+        addLwjgl3(project, minecraftLibsConfigurationName);
     }
 
     public static void addLwjgl3(Project project) {

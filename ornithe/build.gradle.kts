@@ -73,7 +73,9 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:${rootProject.property("fabricloader")}")
 }
 
-LWJGLHelper.convertLwjgl2To3(project)
+listOf("minecraftClientLibraries", "minecraftClientRuntimeLibraries").forEach {
+    LWJGLHelper.convertLwjgl2To3(project, it)
+}
 
 tasks.named("validateAccessWidener") {
     enabled = false
