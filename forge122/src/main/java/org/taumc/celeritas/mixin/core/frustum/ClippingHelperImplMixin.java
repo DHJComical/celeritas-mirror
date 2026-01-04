@@ -14,7 +14,7 @@ import org.taumc.celeritas.impl.render.frustum.IClippingHelper;
 @Mixin(ClippingHelperImpl.class)
 public abstract class ClippingHelperImplMixin extends ClippingHelper implements IClippingHelper {
     @Unique
-    private FrustumIntersection celeritas$frustum;
+    private final FrustumIntersection celeritas$frustum = new FrustumIntersection();
 
     @Inject(method = "init", at = @At("RETURN"))
     private void updateJoml(CallbackInfo ci) {
@@ -22,7 +22,7 @@ public abstract class ClippingHelperImplMixin extends ClippingHelper implements 
         jomlProjection.set(projectionMatrix);
         Matrix4f jomlModelview = new Matrix4f();
         jomlModelview.set(modelviewMatrix);
-        this.celeritas$frustum = new FrustumIntersection(jomlProjection.mul(jomlModelview));
+        this.celeritas$frustum.set(jomlProjection.mul(jomlModelview), true);
     }
 
     @Override
