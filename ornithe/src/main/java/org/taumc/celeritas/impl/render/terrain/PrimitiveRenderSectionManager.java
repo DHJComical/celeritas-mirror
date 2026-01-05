@@ -40,7 +40,13 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
         int idealThreadCount = -1;
         //?} else
         /*int idealThreadCount = 0;*/
-        return new PrimitiveRenderSectionManager(PrimitiveRenderPassConfigurationBuilder.build(vertexType), world, renderDistance, commandList, 0, 8, idealThreadCount);
+        //? if <1.2 {
+        /*int maxSection = 8;
+        *///?} else
+        int maxSection = world.getHeight() / 16;
+        return new PrimitiveRenderSectionManager(PrimitiveRenderPassConfigurationBuilder.build(vertexType), world, renderDistance, commandList,
+                0, maxSection,
+                idealThreadCount);
     }
 
     @Override
