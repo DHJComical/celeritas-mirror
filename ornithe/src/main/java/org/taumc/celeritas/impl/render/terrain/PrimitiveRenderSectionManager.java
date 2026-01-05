@@ -2,7 +2,9 @@ package org.taumc.celeritas.impl.render.terrain;
 
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.block.Block;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.WorldChunk;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.*;
@@ -82,6 +84,40 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
         return chunk.isEmpty();
     }
 
+    //? if >=1.8 {
+    /*private void populateTileEntities(WorldChunk chunk, int sectionY) {
+        if (chunk.isEmpty()) {
+            return;
+        }
+        var sections = chunk.getSections();
+        if (sectionY < 0 || sectionY > sections.length) {
+            return;
+        }
+
+        var section = sections[sectionY];
+
+        if (section == null || section.isEmpty()) {
+            return;
+        }
+
+        BlockPos.Mutable cursor = new BlockPos.Mutable();
+        int sectionBlockY = sectionY * 16;
+        int chunkBlockX = chunk.chunkX * 16;
+        int chunkBlockZ = chunk.chunkZ * 16;
+        for (int y = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++) {
+                for (int x = 0; x < 16; x++) {
+                    var block = section.getBlock(x, y, z);
+                    if (block.hasBlockEntity()) {
+                        cursor.set(chunkBlockX + x, sectionBlockY + y, chunkBlockZ + z);
+                        chunk.getBlockEntity(cursor, WorldChunk.BlockEntityCreationType.IMMEDIATE);
+                    }
+                }
+            }
+        }
+    }
+    *///?}
+
     @Override
     protected @Nullable ChunkBuilderTask<ChunkBuildOutput> createRebuildTask(RenderSection render, int frame) {
         if (isSectionVisuallyEmpty(render.getChunkX(), render.getChunkY(), render.getChunkZ())) {
@@ -89,6 +125,10 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
         }
 
         ChunkRenderContext context = new ChunkRenderContext(new SectionPos(render.getChunkX(), render.getChunkY(), render.getChunkZ()));
+
+        // TODO: This is a workaround until we properly snapshot chunk sections as is done in 1.12
+        //? if >=1.8
+        /*populateTileEntities(this.world.getChunkAt(render.getChunkX(), render.getChunkZ()), render.getChunkY());*/
 
         return new ChunkBuilderMeshingTask(render, context, frame, this.cameraPosition);
     }
