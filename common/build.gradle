@@ -49,6 +49,8 @@ tasks.named("compileLwjglCommonJava") {
     dependsOn(generateAbstractionLayer)
 }
 
+def compileAgainstLwjgl = true
+
 dependencies {
     def lwjglVersion = "3.3.1"
     def lwjgl2Version = "2.9.3"
@@ -59,10 +61,12 @@ dependencies {
 
     lwjgl2CompileOnly("org.lwjgl.lwjgl:lwjgl:$lwjgl2Version")
 
-    // TODO Completely remove direct dependency on LWJGL3
-    implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
-    implementation "org.lwjgl:lwjgl"
-    implementation "org.lwjgl:lwjgl-opengl"
+    if (compileAgainstLwjgl) {
+        // TODO Completely remove direct dependency on LWJGL3
+        implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
+        implementation "org.lwjgl:lwjgl"
+        implementation "org.lwjgl:lwjgl-opengl"
+    }
 
     implementation "org.joml:joml:1.10.5"
     implementation "it.unimi.dsi:fastutil:7.1.0"

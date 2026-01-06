@@ -40,6 +40,17 @@ abstract class GenerateLWJGLAbstraction : DefaultTask() {
         fun signature(): String = "$name(${params.joinToString(",") { it.first }})$returnType"
     }
 
+    data class GLConstant(
+            val name: String,
+            val type: String,
+            val value: Any
+    )
+
+    class GLClassData {
+        val methods = mutableSetOf<GLMethod>();
+        val constants = mutableSetOf<GLConstant>();
+    }
+
     @TaskAction
     fun generate() {
         val outputDir = outputDirectory.get().asFile
@@ -67,12 +78,12 @@ abstract class GenerateLWJGLAbstraction : DefaultTask() {
             "46" to "org/lwjgl/opengl/GL46"
         )
 
-        val allMethods = mutableMapOf<String, MutableSet<GLMethod>>()
+        val allMethods = mutableMapOf<String, GLClassData>()
 
         glVersions.forEach { (version, classPath) ->
             val methods = extractGLMethods(classPath, lwjgl3Classpath.files)
-            allMethods[version] = methods.toMutableSet()
-            logger.info("Extracted ${methods.size} methods from GL$version")
+            allMethods[version] = methods
+            logger.info("Extracted ${methods.methods.size} methods from GL$version")
         }
 
         filterValidGLMethods(allMethods, glVersions, lwjgl2Classpath.files)
@@ -87,7 +98,7 @@ abstract class GenerateLWJGLAbstraction : DefaultTask() {
 
         // Generate GLXY wrapper classes
         glVersions.keys.forEach { version ->
-            val methods = allMethods[version] ?: emptySet()
+            val methods = allMethods[version] ?: GLClassData()
             generateGLWrapper(outputDir, version, methods)
         }
 
@@ -101,8 +112,8 @@ abstract class GenerateLWJGLAbstraction : DefaultTask() {
         return (isStatic && isPublic && method.name.startsWith("gl"))
     }
 
-    private fun extractGLMethods(classPath: String, classpathFiles: Set<File>): List<GLMethod> {
-        val methods = mutableListOf<GLMethod>()
+    private fun extractGLMethods(classPath: String, classpathFiles: Set<File>): GLClassData {
+        val data = GLClassData()
 
         for (file in classpathFiles) {
             if (!file.exists() || !file.name.endsWith(".jar")) continue
@@ -115,6 +126,23 @@ abstract class GenerateLWJGLAbstraction : DefaultTask() {
                         val classReader = ClassReader(stream)
                         val classNode = ClassNode()
                         classReader.accept(classNode, 0)
+
+                        classNode.fields.forEach { field ->
+                            val isStatic = (field.access and Opcodes.ACC_STATIC) != 0
+                            val isFinal = (field.access and Opcodes.ACC_FINAL) != 0
+                            val isPublic = (field.access and Opcodes.ACC_PUBLIC) != 0
+
+                            if (isStatic && isFinal && isPublic && field.value != null) {
+                                val type = Type.getType(field.desc)
+                                val javaType = asmTypeToJavaType(type)
+
+                                data.constants.add(GLConstant(
+                                        name = field.name,
+                                        type = javaType,
+                                        value = field.value
+                                ))
+                            }
+                        }
 
                         classNode.methods.filter { isGLMethod(it) }.forEach { method ->
                             val methodType = Type.getMethodType(method.desc)
@@ -159,7 +187,7 @@ abstract class GenerateLWJGLAbstraction : DefaultTask() {
                                 type to paramNames[idx]
                             }
 
-                            methods.add(GLMethod(
+                            data.methods.add(GLMethod(
                                 returnType = returnType,
                                 name = method.name,
                                 params = params
@@ -167,17 +195,17 @@ abstract class GenerateLWJGLAbstraction : DefaultTask() {
                         }
                     }
 
-                    if (methods.isNotEmpty()) break
+                    if (data.methods.isNotEmpty()) break
                 }
             } catch (e: Exception) {
                 logger.warn("Could not read class $classPath from ${file.name}: ${e.message}")
             }
         }
 
-        return methods
+        return data
     }
 
-    private fun filterValidGLMethods(allMethods: MutableMap<String, MutableSet<GLMethod>>, glVersions: Map<String, String>, classpathFiles: Set<File>) {
+    private fun filterValidGLMethods(allMethods: MutableMap<String, GLClassData>, glVersions: Map<String, String>, classpathFiles: Set<File>) {
         val lwjgl2Signatures = mutableSetOf<String>()
 
         for (file in classpathFiles) {
@@ -216,9 +244,9 @@ abstract class GenerateLWJGLAbstraction : DefaultTask() {
 
 
         allMethods.forEach { (version, methodSet) ->
-            val oldSize = methodSet.size
-            methodSet.removeIf { !lwjgl2Signatures.contains(it.signature()) }
-            val newSize = methodSet.size
+            val oldSize = methodSet.methods.size
+            methodSet.methods.removeIf { !lwjgl2Signatures.contains(it.signature()) }
+            val newSize = methodSet.methods.size
             if (newSize < oldSize) {
                 logger.info("Removed {} methods from GL{} that don't exist in LWJGL2", oldSize - newSize, version)
             }
@@ -246,12 +274,12 @@ abstract class GenerateLWJGLAbstraction : DefaultTask() {
         return File(outputDir, group + File.separatorChar + LWJGL_ABSTRACTION_PACKAGE.replace('.', File.separatorChar))
     }
 
-    private fun generateLWJGLServiceInterface(outputDir: File, allMethods: Map<String, Set<GLMethod>>) {
+    private fun generateLWJGLServiceInterface(outputDir: File, allMethods: Map<String, GLClassData>) {
         val packageDir = getOutputDir(outputDir, "main")
         packageDir.mkdirs()
 
         val serviceFile = File(packageDir, "LWJGLService.java")
-        val allUniqueMethods = allMethods.values.flatten().distinctBy { it.signature() }
+        val allUniqueMethods = allMethods.values.map { it.methods }.flatten().distinctBy { it.signature() }
 
         serviceFile.writeText("""
 package ${LWJGL_ABSTRACTION_PACKAGE};
@@ -286,7 +314,7 @@ ${allUniqueMethods.joinToString("\n\n") { method ->
 """.trimIndent())
     }
 
-    private fun generateLWJGLBackingService(outputDir: File, version: LWJGLVersion, allMethods: Map<String, Set<GLMethod>>, glVersions: Map<String, String>) {
+    private fun generateLWJGLBackingService(outputDir: File, version: LWJGLVersion, allMethods: Map<String, GLClassData>, glVersions: Map<String, String>) {
         val packageDir = getOutputDir(outputDir, "lwjgl" + version.version)
         packageDir.mkdirs()
 
@@ -295,14 +323,14 @@ ${allUniqueMethods.joinToString("\n\n") { method ->
         // Create a map of methods to their GL class
         val methodToClass = mutableMapOf<String, String>()
         glVersions.forEach { (version, _) ->
-            allMethods[version]?.forEach { method ->
+            allMethods[version]?.methods?.forEach { method ->
                 if (!methodToClass.containsKey(method.signature())) {
                     methodToClass[method.signature()] = version
                 }
             }
         }
 
-        val allUniqueMethods = allMethods.values.flatten().distinctBy { it.signature() }
+        val allUniqueMethods = allMethods.values.map { it.methods }.flatten().distinctBy { it.signature() }
 
         serviceFile.writeText("""
 package ${LWJGL_ABSTRACTION_PACKAGE};
@@ -323,7 +351,7 @@ ${allUniqueMethods.joinToString("\n\n") { method ->
 """.trimIndent())
     }
 
-    private fun generateGLWrapper(outputDir: File, version: String, methods: Set<GLMethod>) {
+    private fun generateGLWrapper(outputDir: File, version: String, classData: GLClassData) {
         val packageDir = getOutputDir(outputDir, "main")
         packageDir.mkdirs()
 
@@ -336,8 +364,11 @@ package ${LWJGL_ABSTRACTION_PACKAGE};
 public class $className {
     
     private static final LWJGLService service = LWJGLService.INSTANCE;
+${classData.constants.joinToString("\n\n") { constant -> 
+    "    public static final ${constant.type} ${constant.name} = ${constant.value};"
+        }}
     
-${methods.joinToString("\n\n") { method ->
+${classData.methods.joinToString("\n\n") { method ->
             val params = method.params.joinToString(", ") { "${it.first} ${it.second}" }
             val paramNames = method.params.joinToString(", ") { it.second }
             val returnStmt = if (method.returnType == "void") "" else "return "
