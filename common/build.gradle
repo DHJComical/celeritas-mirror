@@ -1,3 +1,5 @@
+import org.embeddedt.embeddium.gradle.task.GenerateLWJGLAbstraction
+
 plugins {
     id 'java-library'
     id 'maven-publish'
@@ -16,15 +18,52 @@ repositories {
     mavenCentral()
 }
 
+def generatedSourcesDir = layout.buildDirectory.dir("generated/sources/lwjgl-abstraction/java")
+
+sourceSets {
+    lwjglCommon {
+        java.srcDir(generatedSourcesDir.map { it.dir("main") })
+    }
+    lwjgl2 {
+        java.srcDir(generatedSourcesDir.map { it.dir("lwjgl2") })
+        compileClasspath += main.compileClasspath
+        compileClasspath += lwjglCommon.output
+    }
+    lwjgl3 {
+        java.srcDir(generatedSourcesDir.map { it.dir("lwjgl3") })
+        compileClasspath += main.compileClasspath
+        compileClasspath += lwjglCommon.output
+    }
+    main {
+        compileClasspath += lwjglCommon.output
+    }
+}
+
+def generateAbstractionLayer = tasks.register("generateLWJGLAbstraction", GenerateLWJGLAbstraction) {
+    lwjgl2Classpath.from(configurations.named("lwjgl2CompileClasspath"))
+    lwjgl3Classpath.from(configurations.named("lwjgl3CompileClasspath"))
+    outputDirectory.set(generatedSourcesDir)
+}
+
+tasks.named("compileLwjglCommonJava") {
+    dependsOn(generateAbstractionLayer)
+}
+
 dependencies {
     def lwjglVersion = "3.3.1"
-    def lwjglNatives = "natives-linux"
+    def lwjgl2Version = "2.9.3"
 
+    lwjgl3CompileOnly(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
+    lwjgl3CompileOnly "org.lwjgl:lwjgl"
+    lwjgl3CompileOnly "org.lwjgl:lwjgl-opengl"
+
+    lwjgl2CompileOnly("org.lwjgl.lwjgl:lwjgl:$lwjgl2Version")
+
+    // TODO Completely remove direct dependency on LWJGL3
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
     implementation "org.lwjgl:lwjgl"
     implementation "org.lwjgl:lwjgl-opengl"
-    runtimeOnly(group: "org.lwjgl", name: "lwjgl", classifier: lwjglNatives)
-    runtimeOnly(group: "org.lwjgl", name: "lwjgl-opengl", classifier: lwjglNatives)
+
     implementation "org.joml:joml:1.10.5"
     implementation "it.unimi.dsi:fastutil:7.1.0"
     implementation "org.apache.logging.log4j:log4j-api:2.0-beta9"
@@ -79,6 +118,9 @@ tasks.withType(Jar).configureEach {
 }
 
 jar {
+    from(sourceSets.lwjglCommon.output)
+    from(sourceSets.lwjgl2.output)
+    from(sourceSets.lwjgl3.output)
     manifest {
         attributes([
                 "Lwjgl3ify-Aware": "true"
