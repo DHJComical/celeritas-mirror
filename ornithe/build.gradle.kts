@@ -5,8 +5,8 @@ import java.net.URI
 
 plugins {
     id("celeritas.platform-conventions")
-    id("net.fabricmc.fabric-loom-remap") version "1.14.7"
-    id("ploceus") version "1.14.3"
+    id("net.fabricmc.fabric-loom-remap") version "1.15.3"
+    id("ploceus") version "1.15.6"
 }
 
 repositories {
