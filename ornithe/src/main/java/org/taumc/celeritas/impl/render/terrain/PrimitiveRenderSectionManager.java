@@ -106,7 +106,6 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
             return;
         }
 
-        BlockPos.Mutable cursor = new BlockPos.Mutable();
         int sectionBlockY = sectionY * 16;
         int chunkBlockX = chunk.chunkX * 16;
         int chunkBlockZ = chunk.chunkZ * 16;
@@ -115,8 +114,8 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
                 for (int x = 0; x < 16; x++) {
                     var block = section.getBlock(x, y, z);
                     if (block.hasBlockEntity()) {
-                        cursor.set(chunkBlockX + x, sectionBlockY + y, chunkBlockZ + z);
-                        chunk.getBlockEntity(cursor, WorldChunk.BlockEntityCreationType.IMMEDIATE);
+                        var pos = new BlockPos(chunkBlockX + x, sectionBlockY + y, chunkBlockZ + z);
+                        chunk.getBlockEntity(pos, WorldChunk.BlockEntityCreationType.IMMEDIATE);
                     }
                 }
             }
