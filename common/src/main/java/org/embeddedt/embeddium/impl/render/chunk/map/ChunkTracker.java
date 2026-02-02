@@ -10,8 +10,26 @@ public class ChunkTracker implements ClientChunkEventListener {
     private final LongSet unloadQueue = new LongOpenHashSet();
     private final LongSet loadQueue = new LongOpenHashSet();
 
-    public ChunkTracker() {
+    private final int requiredNeighborRadius;
 
+    public ChunkTracker() {
+        this(1);
+    }
+
+    /**
+     * Constructs a new chunk tracker.
+     * @param requiredNeighborRadius the radius of chunks around a given chunk that must be available before the chunk
+     *                               itself is considered loaded (0 requires no chunks to be loaded, 1 requires
+     *                               all adjacent chunks). Note that a radius of 0 is guaranteed to produce incorrect
+     *                               rendering of the edge chunks for blocks that rely on data from the adjacent chunk
+     *                               (e.g. fences, fluids). Vanilla handles this by updating the chunks again as
+     *                               neighbors load, but this wastes CPU time and looks bad
+     */
+    public ChunkTracker(int requiredNeighborRadius) {
+        if (requiredNeighborRadius < 0) {
+            throw new IllegalArgumentException("requiredNeighborRadius must be positive");
+        }
+        this.requiredNeighborRadius = requiredNeighborRadius;
     }
 
     @Override
@@ -61,8 +79,9 @@ public class ChunkTracker implements ClientChunkEventListener {
     }
 
     private void updateNeighbors(int x, int z) {
-        for (int ox = -1; ox <= 1; ox++) {
-            for (int oz = -1; oz <= 1; oz++) {
+        int r = this.requiredNeighborRadius;
+        for (int ox = -r; ox <= r; ox++) {
+            for (int oz = -r; oz <= r; oz++) {
                 this.updateMerged(ox + x, oz + z);
             }
         }
@@ -71,10 +90,11 @@ public class ChunkTracker implements ClientChunkEventListener {
     private void updateMerged(int x, int z) {
         long key = PositionUtil.packChunk(x, z);
 
+        int r = this.requiredNeighborRadius;
         int flags = this.chunkStatus.get(key);
 
-        for (int ox = -1; ox <= 1; ox++) {
-            for (int oz = -1; oz <= 1; oz++) {
+        for (int ox = -r; ox <= r; ox++) {
+            for (int oz = -r; oz <= r; oz++) {
                 flags &= this.chunkStatus.get(PositionUtil.packChunk(ox + x, oz + z));
             }
         }
