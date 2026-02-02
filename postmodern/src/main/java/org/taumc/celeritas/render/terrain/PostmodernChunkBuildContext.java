@@ -126,8 +126,14 @@ public class PostmodernChunkBuildContext extends ChunkBuildContext {
         }
 
         @Override
+        public VertexConsumer setLight(int packedLight) {
+            currentVertexObj.light = packedLight;
+            return this;
+        }
+
+        @Override
         public VertexConsumer setUv2(int u, int v) {
-            currentVertexObj.light = LightTexture.FULL_BRIGHT; // LightDataAccess.pack(u, v);
+            currentVertexObj.light = LightTexture.packWithFraction(u, v);
             return this;
         }
 

@@ -7,6 +7,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.textures.GpuTextureView;
@@ -82,7 +83,14 @@ public class PostmodernRenderSectionManager extends RenderSectionManager {
             if (currentChunkRenderPass != null) {
                 throw new IllegalStateException("In previous render pass");
             }
-            Objects.requireNonNull(terrainSampler);
+            if (terrainSampler == null) {
+                // TODO switch to linear if shader fetches from texture manually for RGSS
+                terrainSampler = RenderSystem.getDevice().createSampler(
+                        AddressMode.CLAMP_TO_EDGE,
+                        AddressMode.CLAMP_TO_EDGE,
+                        FilterMode.NEAREST, FilterMode.NEAREST,
+                        1, OptionalDouble.empty());
+            }
             var encoder = RenderSystem.getDevice().createCommandEncoder();
             var rendertarget = config.target();
             currentChunkRenderPass = encoder

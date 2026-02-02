@@ -133,13 +133,11 @@ public abstract class LevelRendererMixin implements CeleritasWorldRenderer.Holde
     @Redirect(method = "lambda$addMainPass$1", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;Lcom/mojang/blaze3d/textures/GpuSampler;)V"))
     private void renderChunksWithCeleritas(ChunkSectionsToRender sectionsToRender, ChunkSectionLayerGroup group, GpuSampler terrainSampler) {
         RenderDevice.enterManagedCode();
-        PostmodernRenderSectionManager.PostmodernPipeline.terrainSampler = terrainSampler;
         try {
             for (ChunkSectionLayer layer : group.layers()) {
                 celeritas$renderer.drawChunkLayer(layer, celeritas$camera.x, celeritas$camera.y, celeritas$camera.z);
             }
         } finally {
-            PostmodernRenderSectionManager.PostmodernPipeline.terrainSampler = null;
             RenderDevice.exitManagedCode();
         }
     }
