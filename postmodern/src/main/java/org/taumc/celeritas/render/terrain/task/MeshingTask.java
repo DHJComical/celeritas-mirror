@@ -105,6 +105,7 @@ public class MeshingTask extends ChunkBuilderTask<ChunkBuildOutput> {
                         if (!fluidState.isEmpty()) {
                             var consumer = buildContext.getVertexConsumer(ItemBlockRenderTypes.getRenderLayer(fluidState));
                             blockRenderer.renderLiquid(blockPos, slice, consumer, blockState, fluidState);
+                            buildContext.flushVertexConsumers();
                         }
 
                         if (blockState.isSolidRender()) {
