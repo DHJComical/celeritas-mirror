@@ -9,6 +9,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.block.model.BlockModelPart;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -64,6 +65,8 @@ public class MeshingTask extends ChunkBuilderTask<ChunkBuildOutput> {
 
         buildContext.buffers.init(renderData, this.render.getSectionIndex());
 
+        var blockRenderer = Minecraft.getInstance().getBlockRenderer();
+
         try {
             for (int y = minY; y < maxY; y++) {
                 if (cancellationToken.isCancelled()) {
@@ -91,11 +94,17 @@ public class MeshingTask extends ChunkBuilderTask<ChunkBuildOutput> {
 
                             stack.pushPose();
                             stack.translate(x & 15, y & 15, z & 15);
-                            Minecraft.getInstance().getBlockRenderer().renderBatched(blockState, blockPos, slice, stack,
+                            blockRenderer.renderBatched(blockState, blockPos, slice, stack,
                                     bufferLookup, true, renderedParts);
                             buildContext.flushVertexConsumers();
                             stack.popPose();
                             renderedParts.clear();
+                        }
+
+                        var fluidState = blockState.getFluidState();
+                        if (!fluidState.isEmpty()) {
+                            var consumer = buildContext.getVertexConsumer(ItemBlockRenderTypes.getRenderLayer(fluidState));
+                            blockRenderer.renderLiquid(blockPos, slice, consumer, blockState, fluidState);
                         }
 
                         if (blockState.isSolidRender()) {
