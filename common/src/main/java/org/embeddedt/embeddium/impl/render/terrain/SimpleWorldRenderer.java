@@ -393,7 +393,9 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
             var transform = this.currentViewport.getTransform();
             debugStrings.add("Viewport: %.02f %.02f %.02f".formatted(transform.x, transform.y, transform.z));
         }
-        debugStrings.addAll(this.renderSectionManager.getDebugStrings());
+        if (this.renderSectionManager != null) {
+            debugStrings.addAll(this.renderSectionManager.getDebugStrings());
+        }
         return debugStrings;
     }
 
