@@ -9,9 +9,8 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
-import org.embeddedt.embeddium.api.util.ColorARGB;
+import org.embeddedt.embeddium.api.util.ColorABGR;
 import org.embeddedt.embeddium.api.util.NormI8;
-import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
@@ -101,7 +100,7 @@ public class PostmodernChunkBuildContext extends ChunkBuildContext {
 
         @Override
         public VertexConsumer setColor(int red, int green, int blue, int alpha) {
-            currentVertexObj.color = ColorARGB.pack(red, green, blue, alpha);
+            currentVertexObj.color = ColorABGR.pack(red, green, blue, alpha);
             return this;
         }
 
