@@ -157,11 +157,9 @@ artifacts {
 def obfAttr = Attribute.of("com.gtnewhorizons.retrofuturagradle.obfuscation", String)
 def transformedAttr = Attribute.of("rfgDeobfuscatorTransformed", Boolean)
 
-configurations {
-    runtimeElements {
-        attributes {
-            attribute(obfAttr, "mcp")
-            attribute(transformedAttr, true)
-        }
+["runtimeElements", "downgraded"].forEach { name ->
+    configurations.getByName(name).attributes {
+        attribute(obfAttr, "mcp")
+        attribute(transformedAttr, true)
     }
 }
