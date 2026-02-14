@@ -1,5 +1,6 @@
 package org.taumc.celeritas.impl.render.terrain;
 
+import com.github.bsideup.jabel.Desugar;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.DestroyBlockProgress;
@@ -13,11 +14,9 @@ import net.minecraftforge.client.MinecraftForgeClient;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
-import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
-import org.joml.Matrix4f;
 import org.taumc.celeritas.CeleritasVintage;
 import org.taumc.celeritas.mixin.core.terrain.ActiveRenderInfoAccessor;
 
@@ -27,6 +26,7 @@ import java.util.*;
  * Provides an extension to vanilla's {@link net.minecraft.client.renderer.RenderGlobal}.
  */
 public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, VintageRenderSectionManager, BlockRenderLayer, TileEntity, CeleritasWorldRenderer.TileEntityRenderContext>  {
+    @Desugar
     public record TileEntityRenderContext(Map<Integer, DestroyBlockProgress> damagedBlocks, float partialTicks) {}
 
     /**

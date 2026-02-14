@@ -30,7 +30,7 @@ public abstract class TextureAtlasSpriteMixin implements SpriteExtension, Sprite
         if (this.framesTextureData.isEmpty()) {
             return;
         }
-        embeddium$processTransparentImages(this.framesTextureData.getFirst()[0], level > 0 && isBlockTexture(iconName) && !iconName.contains("leaves"));
+        embeddium$processTransparentImages(this.framesTextureData.get(0)[0], level > 0 && isBlockTexture(iconName) && !iconName.contains("leaves"));
     }
 
     private static boolean isBlockTexture(String iconName) {

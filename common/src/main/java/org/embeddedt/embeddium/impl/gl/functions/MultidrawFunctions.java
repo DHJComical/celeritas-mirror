@@ -1,11 +1,10 @@
 package org.embeddedt.embeddium.impl.gl.functions;
 
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
-import org.lwjgl.opengl.ARBDrawElementsBaseVertex;
-import org.lwjgl.opengl.GL32C;
-import org.lwjgl.opengl.GLCapabilities;
-import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.system.Pointer;
+import org.taumc.celeritas.lwjgl.GLExtension;
+import org.taumc.celeritas.lwjgl.LWJGLServiceProvider;
 
 public enum MultidrawFunctions {
     NONE {
@@ -19,11 +18,11 @@ public enum MultidrawFunctions {
         public void multiDrawElementsBaseVertex(int mode, long pCount, int type, long pIndices, int size, long pBaseVertex) {
             for (int i = 0; i < size; i++) {
                 long off = i * 4L;
-                int count = MemoryUtil.memGetInt(pCount + off);
+                int count = LWJGL.memGetInt(pCount + off);
                 if (count > 0) {
-                    ARBDrawElementsBaseVertex.nglDrawElementsBaseVertex(mode, count, type,
-                            MemoryUtil.memGetAddress(pIndices + ((long)i * Pointer.POINTER_SIZE)),
-                            MemoryUtil.memGetInt(pBaseVertex + off));
+                    LWJGL.glDrawElementsBaseVertex(mode, count, type,
+                            LWJGL.memGetAddress(pIndices + ((long)i * LWJGLServiceProvider.POINTER_SIZE)),
+                            LWJGL.memGetInt(pBaseVertex + off));
                 }
             }
         }
@@ -31,16 +30,14 @@ public enum MultidrawFunctions {
     CORE {
         @Override
         public void multiDrawElementsBaseVertex(int mode, long pCount, int type, long pIndices, int size, long pBaseVertex) {
-            GL32C.nglMultiDrawElementsBaseVertex(mode, pCount, type, pIndices, size, pBaseVertex);
+            LWJGL.glMultiDrawElementsBaseVertex(mode, pCount, type, pIndices, size, pBaseVertex);
         }
     };
 
     public static MultidrawFunctions pickBest(RenderDevice device) {
-        GLCapabilities capabilities = device.getCapabilities();
-
-        if (capabilities.OpenGL32) {
+        if (LWJGL.isOpenGLVersionSupported(3, 2)) {
             return CORE;
-        } else if (capabilities.GL_ARB_draw_elements_base_vertex) {
+        } else if (LWJGL.isExtensionSupported(GLExtension.ARB_draw_elements_base_vertex)) {
             return FALLBACK;
         } else {
             return NONE;

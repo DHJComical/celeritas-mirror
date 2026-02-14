@@ -7,10 +7,12 @@ import org.embeddedt.embeddium.impl.gl.state.GlStateTracker;
 import org.embeddedt.embeddium.impl.gl.sync.GlFence;
 import org.embeddedt.embeddium.impl.gl.tessellation.*;
 import org.embeddedt.embeddium.impl.gl.util.EnumBitField;
-import org.embeddedt.embeddium.impl.gl.util.VAOUtil;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.*;
+import org.taumc.celeritas.lwjgl.GL32;
+
 import java.nio.ByteBuffer;
+
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 public class GLRenderDevice implements RenderDevice {
     private final GlStateTracker stateTracker = new GlStateTracker();
@@ -62,11 +64,6 @@ public class GLRenderDevice implements RenderDevice {
     }
 
     @Override
-    public GLCapabilities getCapabilities() {
-        return GL.getCapabilities();
-    }
-
-    @Override
     public DeviceFunctions getDeviceFunctions() {
         return this.functions;
     }
@@ -87,7 +84,7 @@ public class GLRenderDevice implements RenderDevice {
         @Override
         public void bindVertexArray(GlVertexArray array) {
             if (this.stateTracker.makeVertexArrayActive(array)) {
-                VAOUtil.glBindVertexArray(array.handle());
+                LWJGL.glBindVertexArray(array.handle());
             }
         }
 
@@ -95,7 +92,7 @@ public class GLRenderDevice implements RenderDevice {
         public void uploadData(GlMutableBuffer glBuffer, ByteBuffer byteBuffer, GlBufferUsage usage) {
             this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, glBuffer);
 
-            GL20C.glBufferData(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), byteBuffer, usage.getId());
+            LWJGL.glBufferData(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), byteBuffer, usage.getId());
             glBuffer.setSize(byteBuffer.remaining());
         }
 
@@ -103,7 +100,7 @@ public class GLRenderDevice implements RenderDevice {
         public void uploadData(GlMutableBuffer glBuffer, long ptr, long bytes, GlBufferUsage usage) {
             this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, glBuffer);
 
-            GL20C.nglBufferData(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), bytes, ptr, usage.getId());
+            LWJGL.glBufferData(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), bytes, ptr, usage.getId());
             glBuffer.setSize(bytes);
         }
 
@@ -115,14 +112,14 @@ public class GLRenderDevice implements RenderDevice {
         @Override
         public void bindBuffer(GlBufferTarget target, @Nullable GlBuffer buffer) {
             if (this.stateTracker.makeBufferActive(target, buffer)) {
-                GL20C.glBindBuffer(target.getTargetParameter(), buffer != null ? buffer.handle() : 0);
+                LWJGL.glBindBuffer(target.getTargetParameter(), buffer != null ? buffer.handle() : 0);
             }
         }
 
         @Override
         public void unbindVertexArray() {
             if (this.stateTracker.makeVertexArrayActive(null)) {
-                VAOUtil.glBindVertexArray(GlVertexArray.NULL_ARRAY_ID);
+                LWJGL.glBindVertexArray(GlVertexArray.NULL_ARRAY_ID);
             }
         }
 
@@ -130,7 +127,7 @@ public class GLRenderDevice implements RenderDevice {
         public void allocateStorage(GlMutableBuffer buffer, long bufferSize, GlBufferUsage usage) {
             this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, buffer);
 
-            GL20C.glBufferData(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), bufferSize, usage.getId());
+            LWJGL.glBufferData(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), bufferSize, usage.getId());
             buffer.setSize(bufferSize);
         }
 
@@ -220,7 +217,7 @@ public class GLRenderDevice implements RenderDevice {
             GlBuffer buffer = map.getBufferObject();
 
             this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, buffer);
-            GL32C.glUnmapBuffer(GlBufferTarget.ARRAY_BUFFER.getTargetParameter());
+            LWJGL.glUnmapBuffer(GlBufferTarget.ARRAY_BUFFER.getTargetParameter());
 
             buffer.setActiveMapping(null);
             map.dispose();
@@ -233,12 +230,12 @@ public class GLRenderDevice implements RenderDevice {
             GlBuffer buffer = map.getBufferObject();
 
             this.bindBuffer(GlBufferTarget.COPY_READ_BUFFER, buffer);
-            GL32C.glFlushMappedBufferRange(GlBufferTarget.COPY_READ_BUFFER.getTargetParameter(), offset, length);
+            LWJGL.glFlushMappedBufferRange(GlBufferTarget.COPY_READ_BUFFER.getTargetParameter(), offset, length);
         }
 
         @Override
         public GlFence createFence() {
-            return new GlFence(GL32C.glFenceSync(GL32C.GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
+            return new GlFence(LWJGL.glFenceSync(GL32.GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
         }
 
         private void checkMapDisposed(GlBufferMapping map) {
@@ -281,7 +278,7 @@ public class GLRenderDevice implements RenderDevice {
 
         @Override
         public void multiDrawElementsIndirect(GlBuffer indirectBuffer, int count, GlPrimitiveType primitiveType, GlIndexType indexType) {
-            GL43C.glMultiDrawElementsIndirect(primitiveType.getId(), indexType.getFormatId(), 0, count, 0);
+            LWJGL.glMultiDrawElementsIndirect(primitiveType.getId(), indexType.getFormatId(), 0, count, 0);
         }
 
         @Override

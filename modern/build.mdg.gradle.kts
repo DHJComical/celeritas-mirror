@@ -118,7 +118,10 @@ if (parchmentVersion != null) {
 
 val mainMod = modDevExtension.mods.create("embeddium") {
     sourceSet(sourceSets.main.get())
-    sourceSet(project(":common").sourceSets.main.get())
+    val commonProj = project(":common")
+    listOf("main", "lwjgl3", "lwjglCommon").forEach {
+        sourceSet(commonProj.sourceSets.getByName(it))
+    }
 }
 
 if (modLoader == ModLoader.NEOFORGE) {

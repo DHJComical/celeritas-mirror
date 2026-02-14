@@ -1,6 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.data;
 
-import org.lwjgl.system.MemoryUtil;
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 // This code is a terrible hack to get around the fact that we are so incredibly memory bound, and that we
 // have no control over memory layout. The chunk rendering code spends an astronomical amount of time chasing
@@ -30,15 +30,15 @@ public class SectionRenderDataUnsafe {
     private static final long STRIDE = 8 + (DATA_PER_FACING_SIZE * NUM_FACINGS);
 
     public static long allocateHeap(int count) {
-        return MemoryUtil.nmemCalloc(count, STRIDE);
+        return LWJGL.nmemCalloc(count, STRIDE);
     }
 
     public static void freeHeap(long pointer) {
-        MemoryUtil.nmemFree(pointer);
+        LWJGL.nmemFree(pointer);
     }
 
     public static void clear(long pointer) {
-        MemoryUtil.memSet(pointer, 0x0, STRIDE);
+        LWJGL.memSet(pointer, 0x0, STRIDE);
     }
 
     public static long heapPointer(long ptr, int index) {
@@ -46,34 +46,34 @@ public class SectionRenderDataUnsafe {
     }
 
     public static void setSliceMask(long ptr, int value) {
-        MemoryUtil.memPutInt(ptr + OFFSET_SLICE_MASK, value);
+        LWJGL.memPutInt(ptr + OFFSET_SLICE_MASK, value);
     }
 
     public static int getSliceMask(long ptr) {
-        return MemoryUtil.memGetInt(ptr + OFFSET_SLICE_MASK);
+        return LWJGL.memGetInt(ptr + OFFSET_SLICE_MASK);
     }
 
     public static void setVertexOffset(long ptr, int facing, int value) {
-        MemoryUtil.memPutInt(ptr + OFFSET_SLICE_RANGES + (facing * DATA_PER_FACING_SIZE) + 0L, value);
+        LWJGL.memPutInt(ptr + OFFSET_SLICE_RANGES + (facing * DATA_PER_FACING_SIZE) + 0L, value);
     }
 
     public static int getVertexOffset(long ptr, int facing) {
-        return MemoryUtil.memGetInt(ptr + OFFSET_SLICE_RANGES + (facing * DATA_PER_FACING_SIZE) + 0L);
+        return LWJGL.memGetInt(ptr + OFFSET_SLICE_RANGES + (facing * DATA_PER_FACING_SIZE) + 0L);
     }
 
     public static void setElementCount(long ptr, int facing, int value) {
-        MemoryUtil.memPutInt(ptr + OFFSET_SLICE_RANGES + (facing * DATA_PER_FACING_SIZE) + 4L, value);
+        LWJGL.memPutInt(ptr + OFFSET_SLICE_RANGES + (facing * DATA_PER_FACING_SIZE) + 4L, value);
     }
 
     public static int getElementCount(long ptr, int facing) {
-        return MemoryUtil.memGetInt(ptr + OFFSET_SLICE_RANGES + (facing * DATA_PER_FACING_SIZE) + 4L);
+        return LWJGL.memGetInt(ptr + OFFSET_SLICE_RANGES + (facing * DATA_PER_FACING_SIZE) + 4L);
     }
 
     public static void setIndexOffset(long ptr, int facing, int value) {
-        MemoryUtil.memPutInt(ptr + OFFSET_SLICE_RANGES + (facing * DATA_PER_FACING_SIZE) + 8L, value);
+        LWJGL.memPutInt(ptr + OFFSET_SLICE_RANGES + (facing * DATA_PER_FACING_SIZE) + 8L, value);
     }
 
     public static int getIndexOffset(long ptr, int facing) {
-        return MemoryUtil.memGetInt(ptr + OFFSET_SLICE_RANGES + (facing * DATA_PER_FACING_SIZE) + 8L);
+        return LWJGL.memGetInt(ptr + OFFSET_SLICE_RANGES + (facing * DATA_PER_FACING_SIZE) + 8L);
     }
 }

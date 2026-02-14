@@ -10,7 +10,8 @@ import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataUnsafe;
-import org.lwjgl.system.MemoryUtil;
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+import org.taumc.celeritas.lwjgl.LWJGLServiceProvider;
 
 /**
  * A multidraw emitter that uses indirect rendering to exploit hardware acceleration, which
@@ -31,8 +32,8 @@ public class IndirectMultiDrawEmitter implements MultiDrawEmitter {
     private final GlMutableBuffer indirectBufferGpu;
 
     public IndirectMultiDrawEmitter() {
-        this.indirectBuffer = MemoryUtil.nmemAlignedAlloc(32, BUFFER_SIZE);
-        if (this.indirectBuffer == MemoryUtil.NULL) {
+        this.indirectBuffer = LWJGL.nmemAlignedAlloc(32, BUFFER_SIZE);
+        if (this.indirectBuffer == LWJGLServiceProvider.NULL) {
             throw new OutOfMemoryError("Failed to allocate indirect buffer");
         }
         this.prefillConstants();
@@ -43,8 +44,8 @@ public class IndirectMultiDrawEmitter implements MultiDrawEmitter {
         // Prefill constants
         long ptr = this.indirectBuffer;
         for (int i = 0; i < MultiDrawEmitter.MAX_COMMAND_COUNT; i++) {
-            MemoryUtil.memPutInt(ptr + 4L, 1); // instanceCount
-            MemoryUtil.memPutInt(ptr + 16L, 0); // baseInstance
+            LWJGL.memPutInt(ptr + 4L, 1); // instanceCount
+            LWJGL.memPutInt(ptr + 16L, 0); // baseInstance
             ptr += COMMAND_SIZE;
         }
     }
@@ -57,10 +58,10 @@ public class IndirectMultiDrawEmitter implements MultiDrawEmitter {
 
         for (int facing = 0; facing < ModelQuadFacing.COUNT; facing++) {
             long ptr = basePtr + (long)size * COMMAND_SIZE;
-            MemoryUtil.memPutInt(ptr + 0L, SectionRenderDataUnsafe.getElementCount(pMeshData, facing)); // count
+            LWJGL.memPutInt(ptr + 0L, SectionRenderDataUnsafe.getElementCount(pMeshData, facing)); // count
             int indexOffset = SectionRenderDataUnsafe.getIndexOffset(pMeshData, facing) & indexPointerMask;
-            MemoryUtil.memPutInt(ptr + 8L, indexOffset / 4);
-            MemoryUtil.memPutInt(ptr + 12L, SectionRenderDataUnsafe.getVertexOffset(pMeshData, facing)); // baseVertex
+            LWJGL.memPutInt(ptr + 8L, indexOffset / 4);
+            LWJGL.memPutInt(ptr + 12L, SectionRenderDataUnsafe.getVertexOffset(pMeshData, facing)); // baseVertex
 
             size += (facingMask >> facing) & 1;
         }
@@ -92,7 +93,7 @@ public class IndirectMultiDrawEmitter implements MultiDrawEmitter {
         long pElementCount = this.indirectBuffer;
 
         for (var index = 0; index < this.numCommands; index++) {
-            elements = Math.max(elements, MemoryUtil.memGetInt(pElementCount));
+            elements = Math.max(elements, LWJGL.memGetInt(pElementCount));
             pElementCount += COMMAND_SIZE;
         }
 
@@ -106,7 +107,7 @@ public class IndirectMultiDrawEmitter implements MultiDrawEmitter {
 
     @Override
     public void delete() {
-        MemoryUtil.nmemAlignedFree(this.indirectBuffer);
+        LWJGL.nmemAlignedFree(this.indirectBuffer);
         this.indirectBufferGpu.delete();
     }
 }

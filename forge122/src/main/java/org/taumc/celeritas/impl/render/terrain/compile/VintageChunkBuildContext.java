@@ -18,18 +18,17 @@ import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.util.QuadUtil;
-import org.lwjgl.opengl.GL11C;
-import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.opengl.GL11;
 import org.taumc.celeritas.CeleritasVintage;
-import org.taumc.celeritas.impl.extensions.SpriteExtension;
 import org.taumc.celeritas.impl.extensions.TextureMapExtension;
 import org.taumc.celeritas.impl.render.terrain.compile.light.LightDataCache;
 import org.taumc.celeritas.impl.render.terrain.compile.pipeline.VintageBlockRenderer;
 import org.taumc.celeritas.impl.world.WorldSlice;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.Objects;
+
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 public class VintageChunkBuildContext extends ChunkBuildContext {
     public static final BlockRenderLayer[] LAYERS = BlockRenderLayer.values();
@@ -71,7 +70,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
             this.worldRenderers[layer.ordinal()] = builder;
         }
         if (!this.usedWorldRenderers[layer.ordinal()]) {
-            builder.begin(GL11C.GL_QUADS, DefaultVertexFormats.BLOCK);
+            builder.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
             builder.setTranslation(-this.offX, -this.offY, -this.offZ);
             this.usedWorldRenderers[layer.ordinal()] = true;
         }
@@ -134,22 +133,22 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
     private void copyBlockData(ByteBuffer source, ChunkBuildBuffers buffers, Material material) {
         int vsize = BLOCK_VERTEX_FORMAT_SIZE;
         int numQuads = source.limit() / (vsize * 4);
-        long ptr = MemoryUtil.memAddress(source);
+        long ptr = LWJGL.memAddress(source);
         var quad = ChunkVertexEncoder.Vertex.uninitializedQuad();
         var animatedSpritesList = ((MinecraftBuiltRenderSectionData<TextureAtlasSprite, TileEntity>)buffers.getSectionContextBundle()).animatedSprites;
         for(int q = 0; q < numQuads; q++) {
             float uSum = 0, vSum = 0;
             for(int v = 0; v < 4; v++) {
                 var vertex = quad[v];
-                vertex.x = MemoryUtil.memGetFloat(ptr);
-                vertex.y = MemoryUtil.memGetFloat(ptr + 4);
-                vertex.z = MemoryUtil.memGetFloat(ptr + 8);
-                vertex.color = MemoryUtil.memGetInt(ptr + 12);
-                vertex.u = MemoryUtil.memGetFloat(ptr + 16);
-                vertex.v = MemoryUtil.memGetFloat(ptr + 20);
+                vertex.x = LWJGL.memGetFloat(ptr);
+                vertex.y = LWJGL.memGetFloat(ptr + 4);
+                vertex.z = LWJGL.memGetFloat(ptr + 8);
+                vertex.color = LWJGL.memGetInt(ptr + 12);
+                vertex.u = LWJGL.memGetFloat(ptr + 16);
+                vertex.v = LWJGL.memGetFloat(ptr + 20);
                 uSum += vertex.u;
                 vSum += vertex.v;
-                vertex.light = MemoryUtil.memGetInt(ptr + 24);
+                vertex.light = LWJGL.memGetInt(ptr + 24);
                 ptr += vsize;
             }
             TextureAtlasSprite sprite = this.textureAtlas.celeritas$findFromUV(uSum * 0.25f, vSum * 0.25f);

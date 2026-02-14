@@ -21,7 +21,8 @@ import org.embeddedt.embeddium.impl.gui.framework.DrawContext;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.embeddedt.embeddium.impl.gui.framework.TextFormattingStyle;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL20C;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -30,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class VintageDrawContext implements DrawContext {
     private final FontRenderer font = Minecraft.getMinecraft().fontRenderer;
@@ -69,7 +71,7 @@ public class VintageDrawContext implements DrawContext {
                 return str;
             }
         }
-        return keys.getFirst();
+        return keys.get(0);
     }
 
     private ITextComponent convertComponent(TextComponent component) {
@@ -144,13 +146,13 @@ public class VintageDrawContext implements DrawContext {
         var mc = Minecraft.getMinecraft();
         ScaledResolution scaledresolution = new ScaledResolution(mc);
         int scale = scaledresolution.getScaleFactor();
-        GL20C.glEnable(GL20C.GL_SCISSOR_TEST);
-        GL20C.glScissor(x * scale, mc.displayHeight - (y + height) * scale, width * scale, height * scale);
+        GL11.glEnable(GL11.GL_SCISSOR_TEST);
+        GL11.glScissor(x * scale, mc.displayHeight - (y + height) * scale, width * scale, height * scale);
     }
 
     @Override
     public void disableScissor() {
-        GL20C.glDisable(GL20C.GL_SCISSOR_TEST);
+        GL11.glDisable(GL11.GL_SCISSOR_TEST);
     }
 
     @Override
@@ -165,7 +167,7 @@ public class VintageDrawContext implements DrawContext {
 
     @Override
     public List<TextComponent> split(TextComponent component, int maxWidth) {
-        return font.listFormattedStringToWidth(compile(component).getFormattedText(), maxWidth).stream().map(TextComponent::literal).toList();
+        return font.listFormattedStringToWidth(compile(component).getFormattedText(), maxWidth).stream().map(TextComponent::literal).collect(Collectors.toList());
     }
 
     @Override

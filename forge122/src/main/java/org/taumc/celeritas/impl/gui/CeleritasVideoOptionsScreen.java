@@ -13,10 +13,7 @@ import org.lwjgl.input.Mouse;
 import org.taumc.celeritas.CeleritasVintage;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class CeleritasVideoOptionsScreen extends GuiScreen {
     private final GuiScreen prevScreen;
@@ -27,7 +24,7 @@ public class CeleritasVideoOptionsScreen extends GuiScreen {
     public CeleritasVideoOptionsScreen(GuiScreen prevScreen) {
         super();
         this.prevScreen = prevScreen;
-        this.controller = new CeleritasVideoOptionsController(() -> this.mc.displayGuiScreen(this.prevScreen), List.of(
+        this.controller = new CeleritasVideoOptionsController(() -> this.mc.displayGuiScreen(this.prevScreen), Arrays.asList(
                 SodiumGameOptionPages.general(),
                 SodiumGameOptionPages.quality(),
                 CommonOptionPages.performance(CeleritasVintage.options()),

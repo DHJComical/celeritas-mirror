@@ -45,7 +45,7 @@ public class ClonedChunkSection {
         Chunk chunk = world.getChunk(x, z);
 
         if (chunk == null) {
-            throw new RuntimeException("Couldn't retrieve chunk at %d, %d".formatted(x, z));
+            throw new RuntimeException(String.format("Couldn't retrieve chunk at %d, %d", x, z));
         }
 
         ExtendedBlockStorage section = getChunkSection(chunk, y);

@@ -1,6 +1,8 @@
 package org.embeddedt.embeddium.impl.gl.shader.uniform;
 
-import org.lwjgl.opengl.GL30C;
+import org.taumc.celeritas.lwjgl.GL30;
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 
 public class GlUniformFloat4v extends GlUniform<float[]> {
     public GlUniformFloat4v(int index) {
@@ -13,6 +15,6 @@ public class GlUniformFloat4v extends GlUniform<float[]> {
             throw new IllegalArgumentException("value.length != 4");
         }
 
-        GL30C.glUniform4fv(this.index, value);
+        LWJGL.glUniform4fv(this.index, value);
     }
 }

@@ -1,5 +1,11 @@
 package org.embeddedt.embeddium.impl.gl.shader;
 
+import org.taumc.celeritas.lwjgl.GL20;
+import org.taumc.celeritas.lwjgl.GL30;
+import org.taumc.celeritas.lwjgl.GL32;
+import org.taumc.celeritas.lwjgl.GL43;
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 import org.embeddedt.embeddium.impl.gl.GlObject;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniform;
@@ -7,10 +13,6 @@ import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformBlock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL20C;
-import org.lwjgl.opengl.GL30C;
-import org.lwjgl.opengl.GL32C;
-import org.lwjgl.opengl.GL43C;
 
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -37,21 +39,21 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
     }
 
     public void bind() {
-        GL20C.glUseProgram(this.handle());
+        LWJGL.glUseProgram(this.handle());
     }
 
     public void unbind() {
-        GL20C.glUseProgram(0);
+        LWJGL.glUseProgram(0);
     }
 
     @Override
     protected void destroyInternal() {
-        GL20C.glDeleteProgram(this.handle());
+        LWJGL.glDeleteProgram(this.handle());
     }
 
     @Override
     public <U extends GlUniform<?>> @Nullable U bindUniformIfPresent(String name, IntFunction<U> factory) {
-        int index = GL20C.glGetUniformLocation(this.handle(), name);
+        int index = LWJGL.glGetUniformLocation(this.handle(), name);
 
         if (index < 0) {
             return null;
@@ -62,13 +64,13 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
 
     @Override
     public @Nullable GlUniformBlock bindUniformBlockIfPresent(String name, int bindingPoint) {
-        int index = GL32C.glGetUniformBlockIndex(this.handle(), name);
+        int index = LWJGL.glGetUniformBlockIndex(this.handle(), name);
 
         if (index < 0) {
             return null;
         }
 
-        GL32C.glUniformBlockBinding(this.handle(), index, bindingPoint);
+        LWJGL.glUniformBlockBinding(this.handle(), index, bindingPoint);
 
         return new GlUniformBlock(bindingPoint);
     }
@@ -79,11 +81,11 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
 
         public Builder(String name) {
             this.name = name;
-            this.program = GL20C.glCreateProgram();
+            this.program = LWJGL.glCreateProgram();
         }
 
         public Builder attachShader(GlShader shader) {
-            GL20C.glAttachShader(this.program, shader.handle());
+            LWJGL.glAttachShader(this.program, shader.handle());
 
             return this;
         }
@@ -98,33 +100,33 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
          * @return An instantiated shader container as provided by the factory
          */
         public <U> GlProgram<U> link(Function<ShaderBindingContext, U> factory) {
-            GL20C.glLinkProgram(this.program);
+            LWJGL.glLinkProgram(this.program);
 
-            String log = GL20C.glGetProgramInfoLog(this.program);
+            String log = LWJGL.glGetProgramInfoLog(this.program, 4096);
 
             if (!log.isEmpty()) {
                 LOGGER.warn("Program link log for " + this.name + ": " + log);
             }
 
-            int result = GL20C.glGetProgrami(this.program, GL20C.GL_LINK_STATUS);
+            int result = LWJGL.glGetProgrami(this.program, GL20.GL_LINK_STATUS);
 
-            if (result != GL20C.GL_TRUE) {
+            if (result != GL20.GL_TRUE) {
                 throw new RuntimeException("Shader program linking failed, see log for details");
             }
 
-            GLDebug.nameObject(GL43C.GL_PROGRAM, this.program, this.name);
+            GLDebug.nameObject(GL43.GL_PROGRAM, this.program, this.name);
 
             return new GlProgram<>(this.program, factory);
         }
 
         public Builder bindAttribute(String name, int index) {
-            GL20C.glBindAttribLocation(this.program, index, name);
+            LWJGL.glBindAttribLocation(this.program, index, name);
 
             return this;
         }
 
         public Builder bindFragmentData(String name, int index) {
-            GL30C.glBindFragDataLocation(this.program, index, name);
+            LWJGL.glBindFragDataLocation(this.program, index, name);
 
             return this;
         }

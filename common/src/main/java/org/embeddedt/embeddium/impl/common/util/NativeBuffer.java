@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.system.MemoryUtil;
+import org.taumc.celeritas.lwjgl.LWJGLServiceProvider;
 
 import java.lang.ref.PhantomReference;
 import java.lang.ref.Reference;
@@ -13,6 +13,8 @@ import java.lang.ref.ReferenceQueue;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 public class NativeBuffer {
     private static final Logger LOGGER = LogManager.getLogger(NativeBuffer.class);
@@ -35,14 +37,14 @@ public class NativeBuffer {
 
     public static NativeBuffer copy(ByteBuffer src) {
         NativeBuffer dst = new NativeBuffer(src.remaining());
-        MemoryUtil.memCopy(src, dst.getDirectBuffer());
+        LWJGL.memCopy(src, dst.getDirectBuffer());
         return dst;
     }
 
     public ByteBuffer getDirectBuffer() {
         this.ref.checkFreed();
 
-        return MemoryUtil.memByteBuffer(this.ref.address, this.ref.length);
+        return LWJGL.memByteBuffer(this.ref.address, this.ref.length);
     }
 
     public void free() {
@@ -97,9 +99,9 @@ public class NativeBuffer {
         int attempts = 0;
 
         while (++attempts <= MAX_ALLOCATION_ATTEMPTS) {
-            address = MemoryUtil.nmemAlloc(bytes);
+            address = LWJGL.nmemAlloc(bytes);
 
-            if (address != MemoryUtil.NULL) {
+            if (address != LWJGLServiceProvider.NULL) {
                 break;
             }
 
@@ -110,7 +112,7 @@ public class NativeBuffer {
             reclaim(true);
         }
 
-        if (address == MemoryUtil.NULL) {
+        if (address == LWJGLServiceProvider.NULL) {
             throw new OutOfMemoryError("Couldn't allocate %s bytes after %s attempts".formatted(bytes, attempts));
         }
 
@@ -126,7 +128,7 @@ public class NativeBuffer {
         ref.checkFreed();
         ref.freed = true;
 
-        MemoryUtil.nmemFree(ref.address);
+        LWJGL.nmemFree(ref.address);
 
         ALLOCATED -= ref.length;
     }

@@ -1,13 +1,15 @@
 package org.embeddedt.embeddium.impl.gl.buffer;
 
+import org.taumc.celeritas.lwjgl.GL20;
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 import org.embeddedt.embeddium.impl.gl.GlObject;
-import org.lwjgl.opengl.GL20C;
 
 public abstract class GlBuffer extends GlObject {
     private GlBufferMapping activeMapping;
 
     protected GlBuffer() {
-        this.setHandle(GL20C.glGenBuffers());
+        this.setHandle(LWJGL.glGenBuffers());
     }
 
     public GlBufferMapping getActiveMapping() {
@@ -20,6 +22,6 @@ public abstract class GlBuffer extends GlObject {
 
     @Override
     protected void destroyInternal() {
-        GL20C.glDeleteBuffers(this.handle());
+        LWJGL.glDeleteBuffers(this.handle());
     }
 }

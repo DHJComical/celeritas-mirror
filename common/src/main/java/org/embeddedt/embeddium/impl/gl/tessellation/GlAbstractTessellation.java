@@ -1,21 +1,11 @@
 package org.embeddedt.embeddium.impl.gl.tessellation;
 
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeBinding;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
-import org.lwjgl.opengl.EXTGPUShader4;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL20C;
-import org.lwjgl.opengl.GL30C;
 
 public abstract class GlAbstractTessellation implements GlTessellation {
-    private static final boolean coreIPointerSupported, extIPointerSupported;
-
-    static {
-        var caps = GL.getCapabilities();
-        coreIPointerSupported = caps.OpenGL30;
-        extIPointerSupported = caps.GL_EXT_gpu_shader4;
-    }
-
     protected final TessellationBinding[] bindings;
 
     protected GlAbstractTessellation(TessellationBinding[] bindings) {
@@ -23,13 +13,7 @@ public abstract class GlAbstractTessellation implements GlTessellation {
     }
 
     private static void glVertexAttribIPointer(int index, int size, int type, int stride, long ptr) {
-        if (coreIPointerSupported) {
-            GL30C.glVertexAttribIPointer(index, size, type, stride, ptr);
-        } else if (extIPointerSupported) {
-            EXTGPUShader4.glVertexAttribIPointerEXT(index, size, type, stride, ptr);
-        } else {
-            throw new UnsupportedOperationException();
-        }
+        LWJGL.glVertexAttribIPointer(index, size, type, stride, ptr);
     }
 
     protected void bindAttributes(CommandList commandList) {
@@ -41,10 +25,10 @@ public abstract class GlAbstractTessellation implements GlTessellation {
                     glVertexAttribIPointer(attrib.getIndex(), attrib.getCount(), attrib.getFormat().typeId(),
                             attrib.getStride(), attrib.getPointer());
                 } else {
-                    GL20C.glVertexAttribPointer(attrib.getIndex(), attrib.getCount(), attrib.getFormat().typeId(), attrib.isNormalized(),
+                    LWJGL.glVertexAttribPointer(attrib.getIndex(), attrib.getCount(), attrib.getFormat().typeId(), attrib.isNormalized(),
                             attrib.getStride(), attrib.getPointer());
                 }
-                GL20C.glEnableVertexAttribArray(attrib.getIndex());
+                LWJGL.glEnableVertexAttribArray(attrib.getIndex());
             }
         }
     }

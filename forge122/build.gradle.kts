@@ -1,10 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.gtnewhorizons.retrofuturagradle.ObfuscationAttribute
 import com.gtnewhorizons.retrofuturagradle.mcp.ApplySourceAccessTransformersTask
-import com.gtnewhorizons.retrofuturagradle.minecraft.MinecraftTasks
-import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask
 import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils
-import org.embeddedt.embeddium.gradle.build.conventions.RFBArgs
 import org.embeddedt.embeddium.gradle.build.conventions.ShadowHelper
 import org.embeddedt.embeddium.gradle.mdg.remapper.ReobfuscateCodeAndMixinsTask
 
@@ -21,7 +17,7 @@ version = rootProject.version
 java {
     withSourcesJar()
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(8))
     }
 }
 
@@ -35,11 +31,7 @@ configurations.runtimeOnly.get().extendsFrom(modRuntimeOnly)
 val celeritasLwjglVersion = "3.3.3"
 
 minecraft {
-    javaCompatibilityVersion = 21
-    mainLwjglVersion = 3
     mcVersion.set("1.12.2")
-    lwjgl3Version = celeritasLwjglVersion
-    RFBArgs.JAVA_17_ARGS.forEach { extraRunJvmArguments.add(it) }
 }
 
 repositories {
@@ -74,6 +66,7 @@ repositories {
         forRepository { maven("https://nexus.gtnewhorizons.com/repository/public/") }
         filter {
             includeGroupAndSubgroups("com.gtnewhorizons")
+            includeGroup("com.github.GTNewHorizons")
         }
     }
     exclusiveContent {
@@ -83,8 +76,6 @@ repositories {
         }
     }
 }
-
-val lwjgl3ifyVersion = "d6af8e7"
 
 val forgePatchDeps by configurations.creating {
     isCanBeResolved = true
@@ -103,10 +94,16 @@ dependencies {
     val lombokVersion = rootProject.properties["lombok_version"].toString()
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
-    implementation(project(":common")) {
+
+    val jabelVersion = rootProject.properties["jabel_version"].toString()
+
+    annotationProcessor("com.github.GTNewHorizons:jabel-javac-plugin:${jabelVersion}")
+    compileOnly("com.github.GTNewHorizons:jabel-javac-plugin:${jabelVersion}")
+
+    implementation(project(":common", configuration = "downgraded")) {
         isTransitive = false
     }
-    shadow(project(":common")) {
+    shadow(project(":common", configuration = "downgraded")) {
         isTransitive = false
     }
     "shadow"("org.joml:joml:1.10.5")
@@ -115,17 +112,17 @@ dependencies {
     compileOnly("com.gtnewhorizons.retrofuturabootstrap:RetroFuturaBootstrap:1.0.11") {
         exclude(group = "org.apache.logging.log4j")
     }
-    implementation("org.taumc:lwjgl3ify:${lwjgl3ifyVersion}:dev") {
-        isTransitive = false
-    }
-    runtimeOnly("org.taumc:lwjgl3ify:${lwjgl3ifyVersion}:forgePatches") {
-        isTransitive = false
-    }
-    forgePatchDeps("org.taumc:lwjgl3ify:${lwjgl3ifyVersion}:forgePatches") {
-        isTransitive = false
-    }
     "modRuntimeOnly"("curse.maven:ae2-223794:2747063")
     modCompileOnly("maven.modrinth:fluidlogged-api:3.0.6")
+}
+
+tasks.named<JavaCompile>("compileJava") {
+    sourceCompatibility = "21"
+    options.release = 8
+
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 tasks.named("reobfJar").configure {
@@ -144,33 +141,6 @@ tasks.register<ReobfuscateCodeAndMixinsTask>("celeritasRemapJar") {
 
 ShadowHelper.createShadowRemapJar(project, "celeritasRemapJar")
 
-tasks.named("runClient") {
-    enabled = false
-}
-
-tasks.register<RunMinecraftTask>("runRFBClient", RunMinecraftTask::class.java, com.gtnewhorizons.retrofuturagradle.util.Distribution.CLIENT).configure {
-    val mcTasks = project.extensions.getByType<MinecraftTasks>()
-    classpath(forgePatchDeps)
-    classpath(mcpTasks.taskPackageMcLauncher)
-    classpath(mcpTasks.taskPackagePatchedMc)
-    classpath(mcpTasks.patchedConfiguration)
-    classpath(tasks.named("jar"))
-    classpath(configurations.runtimeClasspath)
-    setup(project)
-    dependsOn(
-            mcpTasks.launcherSources.classesTaskName,
-            mcTasks.taskDownloadVanillaAssets,
-            mcpTasks.taskPackagePatchedMc,
-            "jar"
-    )
-    mainClass.set("GradleStart")
-    username.set(minecraft.username)
-    userUUID.set(minecraft.userUUID)
-    systemProperty("gradlestart.bouncerClient", "com.gtnewhorizons.retrofuturabootstrap.Main")
-    systemProperty("fml.coreMods.load", "zone.rong.mixinbooter.MixinBooterPlugin,org.taumc.celeritas.core.CeleritasLoadingPlugin")
-    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
-}
-
 tasks.named<ApplySourceAccessTransformersTask>("applySourceAccessTransformers") {
     accessTransformerFiles.from("src/main/resources/META-INF/celeritas_at.cfg")
 }
@@ -178,7 +148,6 @@ tasks.named<ApplySourceAccessTransformersTask>("applySourceAccessTransformers") 
 tasks.named<Jar>("jar") {
     manifest {
         attributes["FMLAT"] = "celeritas_at.cfg"
-        attributes["Lwjgl3ify-Aware"] = "true"
         attributes["FMLCorePlugin"] = "org.taumc.celeritas.core.CeleritasLoadingPlugin"
         attributes["FMLCorePluginContainsFMLMod"] = "true"
         attributes["ForceLoadAsMod"] = "true"

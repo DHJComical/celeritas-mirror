@@ -14,6 +14,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
@@ -58,7 +59,6 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
     public List<String> getMixins() {
         List<Path> rootPaths = new ArrayList<>();
 
-
         rootPaths.addAll(Stream.of("org.taumc.celeritas.mixin")
                 .flatMap(str -> {
                     URL url = CeleritasVintageMixinPlugin.class.getResource("/" + str.replace('.', '/'));
@@ -66,12 +66,12 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
                         return Stream.empty();
                     }
                     try {
-                        return Stream.of(Path.of(url.toURI()));
+                        return Stream.of(Paths.get(url.toURI()));
                     } catch (Exception e) {
                         return Stream.empty();
                     }
                 })
-                .toList());
+                .collect(Collectors.toList()));
 
         if (rootPaths.isEmpty()) {
             try {
@@ -104,7 +104,7 @@ public class CeleritasVintageMixinPlugin implements IMixinConfigPlugin {
         if (possibleMixinClasses.size() == 0) {
             throw new IllegalStateException("Found no mixin classes, something went very wrong");
         }
-        return List.copyOf(possibleMixinClasses);
+        return new ArrayList<>(possibleMixinClasses);
     }
 
     @Override

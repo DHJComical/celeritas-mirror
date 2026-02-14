@@ -1,13 +1,15 @@
 package org.embeddedt.embeddium.impl.gl.functions;
 
+import org.taumc.celeritas.lwjgl.GL15;
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 import org.embeddedt.embeddium.impl.gl.buffer.GlBuffer;
 import org.embeddedt.embeddium.impl.gl.buffer.GlBufferMapFlags;
 import org.embeddedt.embeddium.impl.gl.buffer.GlBufferTarget;
 import org.embeddedt.embeddium.impl.gl.buffer.GlMutableBuffer;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.util.EnumBitField;
-import org.lwjgl.opengl.GL15C;
-import org.lwjgl.opengl.GL30C;
+import org.taumc.celeritas.lwjgl.GLExtension;
 
 import java.nio.ByteBuffer;
 
@@ -15,7 +17,7 @@ public enum BufferMapRangeFunctions {
     CORE {
         @Override
         public ByteBuffer mapBufferRange(GlBuffer buffer, long offset, long length, EnumBitField<GlBufferMapFlags> flags) {
-            return GL30C.glMapBufferRange(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), offset, length, flags.getBitField());
+            return LWJGL.glMapBufferRange(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), offset, length, flags.getBitField());
         }
     },
     MAP_FULL_AND_SLICE {
@@ -26,13 +28,13 @@ public enum BufferMapRangeFunctions {
             }
             int access;
             if (flags.contains(GlBufferMapFlags.WRITE) && flags.contains(GlBufferMapFlags.READ)) {
-                access = GL15C.GL_READ_WRITE;
+                access = GL15.GL_READ_WRITE;
             } else if (flags.contains(GlBufferMapFlags.WRITE)) {
-                access = GL15C.GL_WRITE_ONLY;
+                access = GL15.GL_WRITE_ONLY;
             } else {
-                access = GL15C.GL_READ_ONLY;
+                access = GL15.GL_READ_ONLY;
             }
-            ByteBuffer buf = GL15C.glMapBuffer(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), access, null);
+            ByteBuffer buf = LWJGL.glMapBuffer(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), access);
             // Avoid slicing the buffer if we can prove that the full buffer is being mapped
             if (buffer instanceof GlMutableBuffer mutBuffer && mutBuffer.getSize() == length && offset == 0) {
                 return buf;
@@ -46,8 +48,8 @@ public enum BufferMapRangeFunctions {
     public abstract ByteBuffer mapBufferRange(GlBuffer buffer, long offset, long length, EnumBitField<GlBufferMapFlags> flags);
 
     public static BufferMapRangeFunctions pickBest(RenderDevice device) {
-        var caps = device.getCapabilities();
-        if (caps.OpenGL30 || caps.GL_ARB_map_buffer_range) {
+        if (LWJGL.isOpenGLVersionSupported(3, 0)
+                || LWJGL.isExtensionSupported(GLExtension.ARB_map_buffer_range)) {
             return CORE;
         } else {
             return MAP_FULL_AND_SLICE;

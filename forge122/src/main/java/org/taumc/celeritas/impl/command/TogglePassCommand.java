@@ -12,6 +12,7 @@ import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TogglePassCommand extends CommandBase {
@@ -42,7 +43,7 @@ public class TogglePassCommand extends CommandBase {
 
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
-        return new ArrayList<>(getAllPasses().map(TerrainRenderPass::name).toList());
+        return new ArrayList<>(getAllPasses().map(TerrainRenderPass::name).collect(Collectors.toList()));
     }
 
     @Override

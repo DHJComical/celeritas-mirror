@@ -1,12 +1,12 @@
 package org.embeddedt.embeddium.impl.gl.functions;
 
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 import org.embeddedt.embeddium.impl.gl.buffer.GlBufferStorageFlags;
 import org.embeddedt.embeddium.impl.gl.buffer.GlBufferTarget;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.util.EnumBitField;
-import org.lwjgl.opengl.ARBBufferStorage;
-import org.lwjgl.opengl.GL44C;
-import org.lwjgl.opengl.GLCapabilities;
+import org.taumc.celeritas.lwjgl.GLExtension;
 
 public enum BufferStorageFunctions {
     NONE {
@@ -18,22 +18,20 @@ public enum BufferStorageFunctions {
     CORE {
         @Override
         public void createBufferStorage(GlBufferTarget target, long length, EnumBitField<GlBufferStorageFlags> flags) {
-            GL44C.glBufferStorage(target.getTargetParameter(), length, flags.getBitField());
+            LWJGL.glBufferStorage(target.getTargetParameter(), length, flags.getBitField());
         }
     },
     ARB {
         @Override
         public void createBufferStorage(GlBufferTarget target, long length, EnumBitField<GlBufferStorageFlags> flags) {
-            ARBBufferStorage.glBufferStorage(target.getTargetParameter(), length, flags.getBitField());
+            LWJGL.glBufferStorage(target.getTargetParameter(), length, flags.getBitField());
         }
     };
 
     public static BufferStorageFunctions pickBest(RenderDevice device) {
-        GLCapabilities capabilities = device.getCapabilities();
-
-        if (capabilities.OpenGL44) {
+        if (LWJGL.isOpenGLVersionSupported(4, 4)) {
             return CORE;
-        } else if (capabilities.GL_ARB_buffer_storage) {
+        } else if (LWJGL.isExtensionSupported(GLExtension.ARB_buffer_storage)) {
             return ARB;
         } else {
             return NONE;

@@ -44,14 +44,9 @@ Celeritas generally requires a "modernized" environment on older Minecraft versi
 with a default modded Minecraft instance. Newer Minecraft versions ship with the necessary dependencies and will not
 require any custom setup.
 
-For legacy (pre-1.13) versions, your game instance must provide LWJGL 3, and in some cases must also be running Java 21.
-Most of these versions do not have a ready-to-download launcher profile available that meets these requirements out of
-the box, except for Forge 1.7.10 (lwjgl3ify) and Forge 1.12.2 (lwjgl3ify or Cleanroom Loader).
-
-The Ornithe versions (pre-1.7) are especially experimental and have not yet been tested outside of a development environment
-at all.
-
-For modern (1.13+) versions, the final mod jar should run as-is in a standard instance for that version (e.g. Java 17
+* Forge 1.12.2 is supported out of the box on Java 8 + LWJGL 2.
+* Older versions of Minecraft require lwjgl3ify (or an equivalent) & Java 21. (This requirement will begin being relaxed in the near future.)
+* For modern (1.13+) versions, the final mod jar should run as-is in a standard instance for that version (e.g. Java 17
 or 21 are not required, unless the underlying Minecraft version itself requires them).
 
 ## License

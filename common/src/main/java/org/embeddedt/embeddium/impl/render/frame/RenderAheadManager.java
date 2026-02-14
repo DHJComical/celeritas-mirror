@@ -1,8 +1,10 @@
 package org.embeddedt.embeddium.impl.render.frame;
 
+import org.taumc.celeritas.lwjgl.GL32;
+import org.taumc.celeritas.lwjgl.GL32;
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 import it.unimi.dsi.fastutil.longs.LongArrayFIFOQueue;
-import org.lwjgl.opengl.GL32;
-import org.lwjgl.opengl.GL32C;
 
 public class RenderAheadManager {
     private final LongArrayFIFOQueue fences = new LongArrayFIFOQueue();
@@ -27,13 +29,13 @@ public class RenderAheadManager {
             // Because we are also waiting on the client for the FenceSync to finish, the flush is effectively treated
             // like a Finish command, where we know that once ClientWaitSync returns, it's likely that everything
             // before it has been completed by the GPU.
-            GL32C.glClientWaitSync(fence, GL32C.GL_SYNC_FLUSH_COMMANDS_BIT, Long.MAX_VALUE);
-            GL32C.glDeleteSync(fence);
+            LWJGL.glClientWaitSync(fence, GL32.GL_SYNC_FLUSH_COMMANDS_BIT, Long.MAX_VALUE);
+            LWJGL.glDeleteSync(fence);
         }
     }
 
     public void endFrame() {
-        var fence = GL32.glFenceSync(GL32.GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+        var fence = LWJGL.glFenceSync(GL32.GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
         if (fence == 0) {
             throw new RuntimeException("Failed to create fence object");

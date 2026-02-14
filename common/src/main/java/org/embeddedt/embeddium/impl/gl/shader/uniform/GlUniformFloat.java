@@ -1,6 +1,8 @@
 package org.embeddedt.embeddium.impl.gl.shader.uniform;
 
-import org.lwjgl.opengl.GL30C;
+import org.taumc.celeritas.lwjgl.GL30;
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 
 public class GlUniformFloat extends GlUniform<Float> {
     public GlUniformFloat(int index) {
@@ -13,6 +15,6 @@ public class GlUniformFloat extends GlUniform<Float> {
     }
 
     public void setFloat(float value) {
-        GL30C.glUniform1f(this.index, value);
+        LWJGL.glUniform1f(this.index, value);
     }
 }

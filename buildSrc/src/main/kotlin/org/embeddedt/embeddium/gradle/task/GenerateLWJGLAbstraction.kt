@@ -89,12 +89,12 @@ abstract class GenerateLWJGLAbstraction : DefaultTask() {
         filterValidGLMethods(allMethods, glVersions, lwjgl2Classpath.files)
 
         // Generate LWJGLService interface
-        generateLWJGLServiceInterface(outputDir, allMethods)
+        //generateLWJGLServiceInterface(outputDir, allMethods)
 
         // Generate LWJGLService implementations
-        for (version in LWJGLVersion.entries) {
-            generateLWJGLBackingService(outputDir, version, allMethods, glVersions)
-        }
+        //for (version in LWJGLVersion.entries) {
+        //    generateLWJGLBackingService(outputDir, version, allMethods, glVersions)
+        //}
 
         // Generate GLXY wrapper classes
         glVersions.keys.forEach { version ->
@@ -351,6 +351,10 @@ ${allUniqueMethods.joinToString("\n\n") { method ->
 """.trimIndent())
     }
 
+    private val GL_VERSION_CHAIN = listOf(
+            "11", "12", "13", "14", "15", "20", "21", "30", "31", "32", "33", "40", "41", "42", "43", "44", "45"
+    )
+
     private fun generateGLWrapper(outputDir: File, version: String, classData: GLClassData) {
         val packageDir = getOutputDir(outputDir, "main")
         packageDir.mkdirs()
@@ -358,23 +362,21 @@ ${allUniqueMethods.joinToString("\n\n") { method ->
         val className = "GL$version"
         val wrapperFile = File(packageDir, "$className.java")
 
+        // Determine previous version in the chain, or null if none
+        val previousVersion = GL_VERSION_CHAIN
+                .zipWithNext()
+                .firstOrNull { it.second == version }
+                ?.first
+
+        val extendsClause = previousVersion?.let { " extends GL$it" } ?: ""
+
         wrapperFile.writeText("""
 package ${LWJGL_ABSTRACTION_PACKAGE};
 
-public class $className {
+public class $className$extendsClause {
     
-    private static final LWJGLService service = LWJGLService.INSTANCE;
 ${classData.constants.joinToString("\n\n") { constant -> 
     "    public static final ${constant.type} ${constant.name} = ${constant.value};"
-        }}
-    
-${classData.methods.joinToString("\n\n") { method ->
-            val params = method.params.joinToString(", ") { "${it.first} ${it.second}" }
-            val paramNames = method.params.joinToString(", ") { it.second }
-            val returnStmt = if (method.returnType == "void") "" else "return "
-            """    public static ${method.returnType} ${method.name}($params) {
-        ${returnStmt}service.${method.name}($paramNames);
-    }"""
         }}
 }
 """.trimIndent())

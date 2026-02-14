@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.render.chunk.compile.sorting;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 import org.embeddedt.embeddium.impl.util.sorting.MergeSort;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.system.MemoryUtil;
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 import java.nio.ByteBuffer;
 import java.util.BitSet;
@@ -44,7 +44,7 @@ public final class QuadPrimitiveType implements ChunkPrimitiveType {
         if(indexBuffer.capacity() < minimumRequiredBufferSize) {
             throw new IllegalStateException("Given index buffer has length " + indexBuffer.capacity() + " but we need " + minimumRequiredBufferSize);
         }
-        long ptr = MemoryUtil.memAddress(indexBuffer);
+        long ptr = LWJGL.memAddress(indexBuffer);
 
         int elementsPerPrimitive = this.getIndexBufferElementsPerPrimitive();
         boolean triangulating = this.triangulating;
@@ -53,16 +53,16 @@ public final class QuadPrimitiveType implements ChunkPrimitiveType {
             int indexOffset = primitiveIndex * elementsPerPrimitive;
             int vertexOffset = primitiveIndex * VERTICES_PER_PRIMITIVE;
 
-            MemoryUtil.memPutInt(ptr + (indexOffset + 0) * 4, vertexOffset + 0);
-            MemoryUtil.memPutInt(ptr + (indexOffset + 1) * 4, vertexOffset + 1);
-            MemoryUtil.memPutInt(ptr + (indexOffset + 2) * 4, vertexOffset + 2);
+            LWJGL.memPutInt(ptr + (indexOffset + 0) * 4, vertexOffset + 0);
+            LWJGL.memPutInt(ptr + (indexOffset + 1) * 4, vertexOffset + 1);
+            LWJGL.memPutInt(ptr + (indexOffset + 2) * 4, vertexOffset + 2);
 
             if (triangulating) {
-                MemoryUtil.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 2);
-                MemoryUtil.memPutInt(ptr + (indexOffset + 4) * 4, vertexOffset + 3);
-                MemoryUtil.memPutInt(ptr + (indexOffset + 5) * 4, vertexOffset + 0);
+                LWJGL.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 2);
+                LWJGL.memPutInt(ptr + (indexOffset + 4) * 4, vertexOffset + 3);
+                LWJGL.memPutInt(ptr + (indexOffset + 5) * 4, vertexOffset + 0);
             } else {
-                MemoryUtil.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 3);
+                LWJGL.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 3);
             }
         }
     }
@@ -72,7 +72,7 @@ public final class QuadPrimitiveType implements ChunkPrimitiveType {
         if(indexBuffer.capacity() != bufferSize) {
             throw new IllegalStateException("Given index buffer has length " + indexBuffer.capacity() + " but we expected " + bufferSize);
         }
-        long ptr = MemoryUtil.memAddress(indexBuffer);
+        long ptr = LWJGL.memAddress(indexBuffer);
 
         int elementsPerPrimitive = this.getIndexBufferElementsPerPrimitive();
         boolean triangulating = this.triangulating;
@@ -83,16 +83,16 @@ public final class QuadPrimitiveType implements ChunkPrimitiveType {
             // Map to the desired primitive
             int vertexOffset = primitiveMapping[primitiveIndex] * VERTICES_PER_PRIMITIVE;
 
-            MemoryUtil.memPutInt(ptr + (indexOffset + 0) * 4, vertexOffset + 0);
-            MemoryUtil.memPutInt(ptr + (indexOffset + 1) * 4, vertexOffset + 1);
-            MemoryUtil.memPutInt(ptr + (indexOffset + 2) * 4, vertexOffset + 2);
+            LWJGL.memPutInt(ptr + (indexOffset + 0) * 4, vertexOffset + 0);
+            LWJGL.memPutInt(ptr + (indexOffset + 1) * 4, vertexOffset + 1);
+            LWJGL.memPutInt(ptr + (indexOffset + 2) * 4, vertexOffset + 2);
 
             if (triangulating) {
-                MemoryUtil.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 2);
-                MemoryUtil.memPutInt(ptr + (indexOffset + 4) * 4, vertexOffset + 3);
-                MemoryUtil.memPutInt(ptr + (indexOffset + 5) * 4, vertexOffset + 0);
+                LWJGL.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 2);
+                LWJGL.memPutInt(ptr + (indexOffset + 4) * 4, vertexOffset + 3);
+                LWJGL.memPutInt(ptr + (indexOffset + 5) * 4, vertexOffset + 0);
             } else {
-                MemoryUtil.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 3);
+                LWJGL.memPutInt(ptr + (indexOffset + 3) * 4, vertexOffset + 3);
             }
         }
     }

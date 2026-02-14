@@ -1,6 +1,8 @@
 package org.embeddedt.embeddium.impl.gl.shader.uniform;
 
-import org.lwjgl.opengl.GL30C;
+import org.taumc.celeritas.lwjgl.GL30;
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 
 public class GlUniformInt extends GlUniform<Integer> {
     public GlUniformInt(int index) {
@@ -13,6 +15,6 @@ public class GlUniformInt extends GlUniform<Integer> {
     }
 
     public void setInt(int value) {
-        GL30C.glUniform1i(this.index, value);
+        LWJGL.glUniform1i(this.index, value);
     }
 }

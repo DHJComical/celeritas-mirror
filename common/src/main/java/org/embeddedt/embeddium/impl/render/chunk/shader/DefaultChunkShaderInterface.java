@@ -9,8 +9,8 @@ import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.QuadPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.joml.Matrix4fc;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
+import org.taumc.celeritas.lwjgl.MemoryStack;
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 import java.nio.FloatBuffer;
 import java.util.EnumMap;
@@ -96,11 +96,11 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
         var uniform = this.uniformChunkAges;
 
         if (uniform != null) {
-            try (MemoryStack stack = MemoryStack.stackPush()) {
+            try (MemoryStack stack = LWJGL.stackPush()) {
                 FloatBuffer buf = stack.callocFloat(loadTimes.length);
-                long ptr = MemoryUtil.memAddress(buf);
+                long ptr = LWJGL.memAddress(buf);
                 for (long loadTime : loadTimes) {
-                    MemoryUtil.memPutFloat(ptr, (float) Math.min(MAX_CHUNK_AGE, (timestamp - loadTime) / (1000000L)));
+                    LWJGL.memPutFloat(ptr, (float) Math.min(MAX_CHUNK_AGE, (timestamp - loadTime) / (1000000L)));
                     ptr += 4;
                 }
                 uniform.set(buf);

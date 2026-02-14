@@ -5,7 +5,7 @@ import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
-import org.lwjgl.system.MemoryUtil;
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 /**
  * This vertex format is less performant and uses more VRAM than {@link CompactChunkVertex}, but should be completely
@@ -44,13 +44,13 @@ public class VanillaLikeChunkVertex implements ChunkVertexType {
     @Override
     public ChunkVertexEncoder createEncoder() {
         return (ptr, material, vertex, sectionIndex) -> {
-            MemoryUtil.memPutFloat(ptr + 0, vertex.x);
-            MemoryUtil.memPutFloat(ptr + 4, vertex.y);
-            MemoryUtil.memPutFloat(ptr + 8, vertex.z);
-            MemoryUtil.memPutInt(ptr + 12, vertex.color);
-            MemoryUtil.memPutFloat(ptr + 16, encodeTexture(vertex.u));
-            MemoryUtil.memPutFloat(ptr + 20, encodeTexture(vertex.v));
-            MemoryUtil.memPutInt(ptr + 24, (encodeDrawParameters(material, sectionIndex) << 0) | (encodeLight(vertex.light) << 16));
+            LWJGL.memPutFloat(ptr + 0, vertex.x);
+            LWJGL.memPutFloat(ptr + 4, vertex.y);
+            LWJGL.memPutFloat(ptr + 8, vertex.z);
+            LWJGL.memPutInt(ptr + 12, vertex.color);
+            LWJGL.memPutFloat(ptr + 16, encodeTexture(vertex.u));
+            LWJGL.memPutFloat(ptr + 20, encodeTexture(vertex.v));
+            LWJGL.memPutInt(ptr + 24, (encodeDrawParameters(material, sectionIndex) << 0) | (encodeLight(vertex.light) << 16));
 
             return ptr + STRIDE;
         };

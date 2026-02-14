@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 public abstract class ShaderChunkRenderer implements ChunkRenderer {
     private static final Logger LOGGER = LogManager.getLogger(ShaderChunkRenderer.class);
 
@@ -35,7 +37,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
     public ShaderChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
         this.device = device;
         this.renderPassConfiguration = renderPassConfiguration;
-        this.enableLegacyGLPatches = !device.getCapabilities().OpenGL32;
+        this.enableLegacyGLPatches = !LWJGL.isOpenGLVersionSupported(3, 2);
         if (this.enableLegacyGLPatches) {
             LOGGER.warn("System does not support modern GLSL, will attempt to patch terrain shaders");
         }

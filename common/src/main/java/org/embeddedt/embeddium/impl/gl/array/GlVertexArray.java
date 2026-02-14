@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.gl.array;
 
 import org.embeddedt.embeddium.impl.gl.GlObject;
-import org.embeddedt.embeddium.impl.gl.util.VAOUtil;
+import org.taumc.celeritas.lwjgl.LWJGLServiceProvider;
 
 /**
  * Provides Vertex Array functionality on supported platforms.
@@ -10,11 +10,11 @@ public class GlVertexArray extends GlObject {
     public static final int NULL_ARRAY_ID = 0;
 
     public GlVertexArray() {
-        this.setHandle(VAOUtil.glGenVertexArrays());
+        this.setHandle(LWJGLServiceProvider.LWJGL.glGenVertexArrays());
     }
 
     @Override
     protected void destroyInternal() {
-        VAOUtil.glDeleteVertexArrays(this.handle());
+        LWJGLServiceProvider.LWJGL.glDeleteVertexArrays(this.handle());
     }
 }
