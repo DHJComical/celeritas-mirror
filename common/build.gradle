@@ -91,6 +91,10 @@ publishing {
         mavenJava(MavenPublication) {
             artifactId 'celeritas-common'
             from components.java
+
+            artifact(shadeDowngradedApi) {
+                classifier = 'downgraded-8'
+            }
         }
     }
     repositories {
