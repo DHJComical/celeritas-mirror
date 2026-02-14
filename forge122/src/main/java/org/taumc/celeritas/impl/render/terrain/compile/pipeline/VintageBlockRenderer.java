@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BlockModelShapes;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.color.IBlockColor;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormatElement;
 import net.minecraft.util.BlockRenderLayer;
@@ -28,6 +29,7 @@ import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildBuffers;
 import org.embeddedt.embeddium.impl.render.chunk.compile.buffers.ChunkModelBuilder;
 import org.embeddedt.embeddium.impl.render.chunk.compile.pipeline.BakedQuadGroupAnalyzer;
+import org.embeddedt.embeddium.impl.render.chunk.data.MinecraftBuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
@@ -39,6 +41,7 @@ import org.taumc.celeritas.impl.world.cloned.CeleritasBlockAccess;
 import org.taumc.celeritas.mixin.core.terrain.BlockColorsAccessor;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -176,6 +179,13 @@ public class VintageBlockRenderer {
 
             this.writeGeometry(localX, localY, localZ, buffer, offset, quadMaterial,
                     quadView, colors, light, orientation);
+
+            TextureAtlasSprite sprite = (TextureAtlasSprite)quadView.celeritas$getSprite();
+
+            if (sprite.hasAnimationMetadata() && buffer.getSectionContextBundle() instanceof MinecraftBuiltRenderSectionData<?,?> mcData) {
+                //noinspection unchecked
+                ((Collection<TextureAtlasSprite>)mcData.animatedSprites).add(sprite);
+            }
         }
     }
 
