@@ -1,5 +1,6 @@
 package org.taumc.celeritas.lwjgl.lwjgl2;
 
+import org.lwjgl.BufferUtils;
 import org.taumc.celeritas.lwjgl.DebugMessageHandler;
 import org.taumc.celeritas.lwjgl.LWJGLService;
 import org.taumc.celeritas.lwjgl.lwjgl2.memory.MemoryStack;
@@ -475,7 +476,19 @@ public record LWJGL2Service(
 
     @Override
     public void glUniform3fv(int location, float[] value) {
-        GL20.glUniform3f(location, value[0], value[1], value[2]);
+        if (value.length == 3) {
+            // fast path: single vec3
+            GL20.glUniform3f(location, value[0], value[1], value[2]);
+            return;
+        }
+
+        if (value.length % 3 != 0)
+            throw new IllegalArgumentException("Array length must be multiple of 3");
+
+        // general path: multiple vec3s
+        FloatBuffer buffer = BufferUtils.createFloatBuffer(value.length);
+        buffer.put(value).flip();
+        GL20.glUniform3(location, buffer);
     }
 
     @Override
@@ -485,7 +498,19 @@ public record LWJGL2Service(
 
     @Override
     public void glUniform4fv(int location, float[] value) {
-        GL20.glUniform4f(location, value[0], value[1], value[2], value[3]);
+        if (value.length == 4) {
+            // fast path: single vec4
+            GL20.glUniform4f(location, value[0], value[1], value[2], value[3]);
+            return;
+        }
+
+        if (value.length % 4 != 0)
+            throw new IllegalArgumentException("Array length must be multiple of 4");
+
+        // general path: multiple vec4s
+        FloatBuffer buffer = BufferUtils.createFloatBuffer(value.length);
+        buffer.put(value).flip();
+        GL20.glUniform4(location, buffer);
     }
 
     @Override
