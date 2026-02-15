@@ -54,6 +54,9 @@ abstract class GenerateLWJGLAbstraction : DefaultTask() {
     @TaskAction
     fun generate() {
         val outputDir = outputDirectory.get().asFile
+        if (outputDir.exists()) {
+            outputDir.deleteRecursively()
+        }
         outputDir.mkdirs()
 
         // GL version classes to process
