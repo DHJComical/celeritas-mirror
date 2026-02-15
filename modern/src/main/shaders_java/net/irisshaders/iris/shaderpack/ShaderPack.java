@@ -10,13 +10,11 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.api.v0.IrisApi;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.texture.TextureDefinition;
-import net.irisshaders.iris.gui.FeatureMissingErrorScreen;
-import net.irisshaders.iris.gui.screen.ShaderPackScreen;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
+import net.irisshaders.iris.shaderpack.error.UnsupportedFeatureFlagException;
 import net.irisshaders.iris.shaderpack.include.AbsolutePackPath;
 import net.irisshaders.iris.shaderpack.include.IncludeGraph;
 import net.irisshaders.iris.shaderpack.include.IncludeProcessor;
@@ -37,10 +35,6 @@ import net.irisshaders.iris.shaderpack.texture.CustomTextureData;
 import net.irisshaders.iris.shaderpack.texture.TextureFilteringData;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
@@ -52,7 +46,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -87,10 +80,6 @@ public class ShaderPack {
     @Getter
 	private Map<NamespacedId, String> dimensionMap;
 
-	public ShaderPack(Path root, ImmutableList<StringPair> environmentDefines) throws IOException, IllegalStateException {
-		this(root, Collections.emptyMap(), environmentDefines);
-	}
-
 	/**
 	 * Reads a shader pack from the disk.
 	 *
@@ -99,7 +88,7 @@ public class ShaderPack {
 	 *             have completed, and there is no need to hold on to the path for that reason.
 	 * @throws IOException if there are any IO errors during shader pack loading.
 	 */
-	public ShaderPack(Path root, Map<String, String> changedConfigs, ImmutableList<StringPair> environmentDefines) throws IOException, IllegalStateException {
+	public ShaderPack(Path root, Map<String, String> changedConfigs, ImmutableList<StringPair> environmentDefines) throws IOException, UnsupportedFeatureFlagException, IllegalStateException {
 		// A null path is not allowed.
 		Objects.requireNonNull(root);
 
@@ -198,16 +187,9 @@ public class ShaderPack {
 		List<String> invalidFeatureFlags = invalidFlagList.stream().map(FeatureFlags::getHumanReadableName).toList();
 
 		if (!invalidFeatureFlags.isEmpty()) {
-			if (Minecraft.getInstance().screen instanceof ShaderPackScreen) {
-				MutableComponent component = Component.translatable("iris.unsupported.pack.description", FeatureFlags.getInvalidStatus(invalidFlagList), invalidFeatureFlags.stream()
-					.collect(Collectors.joining(", ", ": ", ".")));
-				if (SystemUtils.IS_OS_MAC) {
-					component = component.append(Component.translatable("iris.unsupported.pack.macos"));
-				}
-				Minecraft.getInstance().setScreen(new FeatureMissingErrorScreen(Minecraft.getInstance().screen, Component.translatable("iris.unsupported.pack"), component));
-			}
-			IrisApi.getInstance().getConfig().setShadersEnabledAndApply(false);
+            throw new UnsupportedFeatureFlagException(invalidFlagList);
 		}
+
 		List<StringPair> newEnvDefines = new ArrayList<>(environmentDefines);
 
 		if (shaderProperties.supportsColorCorrection().orElse(false)) {
