@@ -184,9 +184,8 @@ public class ShaderPack {
 		}
 
 		List<FeatureFlags> invalidFlagList = shaderProperties.getRequiredFeatureFlags().stream().filter(FeatureFlags::isInvalid).map(FeatureFlags::getValue).collect(Collectors.toList());
-		List<String> invalidFeatureFlags = invalidFlagList.stream().map(FeatureFlags::getHumanReadableName).toList();
 
-		if (!invalidFeatureFlags.isEmpty()) {
+		if (!invalidFlagList.isEmpty()) {
             throw new UnsupportedFeatureFlagException(invalidFlagList);
 		}
 

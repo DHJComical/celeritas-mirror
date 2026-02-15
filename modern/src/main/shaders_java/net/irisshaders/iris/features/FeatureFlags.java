@@ -1,11 +1,10 @@
 package net.irisshaders.iris.features;
 
 import net.irisshaders.iris.gl.IrisRenderSystem;
-import net.minecraft.client.resources.language.I18n;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 public enum FeatureFlags {
@@ -29,7 +28,9 @@ public enum FeatureFlags {
 		this.hardwareRequirement = hardwareRequirement;
 	}
 
-	public static String getInvalidStatus(List<FeatureFlags> invalidFeatureFlags) {
+    public record InvalidStatus(boolean unsupportedHardware, boolean unsupportedIris) {}
+
+	public static Optional<InvalidStatus> getInvalidStatus(List<FeatureFlags> invalidFeatureFlags) {
 		boolean unsupportedHardware = false, unsupportedIris = false;
 		FeatureFlags[] flags = invalidFeatureFlags.toArray(new FeatureFlags[0]);
 		for (FeatureFlags flag : flags) {
@@ -37,17 +38,11 @@ public enum FeatureFlags {
 			unsupportedHardware |= !flag.hardwareRequirement.getAsBoolean();
 		}
 
-		if (unsupportedIris) {
-			if (unsupportedHardware) {
-				return I18n.get("iris.unsupported.irisorpc");
-			}
-
-			return I18n.get("iris.unsupported.iris");
-		} else if (unsupportedHardware) {
-			return I18n.get("iris.unsupported.pc");
-		} else {
-			return null;
-		}
+        if (unsupportedHardware || unsupportedIris) {
+            return Optional.of(new InvalidStatus(unsupportedHardware, unsupportedIris));
+        } else {
+            return Optional.empty();
+        }
 	}
 
 	public static boolean isInvalid(String name) {
@@ -68,10 +63,6 @@ public enum FeatureFlags {
 		} catch (IllegalArgumentException e) {
 			return FeatureFlags.UNKNOWN;
 		}
-	}
-
-	public String getHumanReadableName() {
-		return StringUtils.capitalize(name().replace("_", " ").toLowerCase());
 	}
 
 	public boolean isUsable() {
