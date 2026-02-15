@@ -44,13 +44,13 @@ public class IrisRenderSystem {
 	public static void initRenderer() {
 		if (GL.getCapabilities().OpenGL45) {
 			dsaState = new DSACore();
-			Iris.logger.info("OpenGL 4.5 detected, enabling DSA.");
+			Iris.logger().info("OpenGL 4.5 detected, enabling DSA.");
 		} else if (GL.getCapabilities().GL_ARB_direct_state_access) {
 			dsaState = new DSAARB();
-			Iris.logger.info("ARB_direct_state_access detected, enabling DSA.");
+			Iris.logger().info("ARB_direct_state_access detected, enabling DSA.");
 		} else {
 			dsaState = new DSAUnsupported();
-			Iris.logger.info("DSA support not detected.");
+			Iris.logger().info("DSA support not detected.");
 		}
 
 		hasMultibind = GL.getCapabilities().OpenGL45 || GL.getCapabilities().GL_ARB_multi_bind;

@@ -3,7 +3,6 @@ package net.irisshaders.iris.mixin;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.irisshaders.iris.Iris;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -52,7 +51,7 @@ public class MixinMinecraft_PipelineManagement {
 	@Inject(method = "updateLevelInEngines", at = @At("HEAD"))
 	private void iris$resetPipeline(@Nullable ClientLevel level, CallbackInfo ci) {
 		if (Iris.getCurrentDimension() != Iris.lastDimension) {
-			Iris.logger.info("Reloading pipeline on dimension change: " + Iris.lastDimension + " => " + Iris.getCurrentDimension());
+			Iris.logger().info("Reloading pipeline on dimension change: " + Iris.lastDimension + " => " + Iris.getCurrentDimension());
 			// Destroy pipelines when changing dimensions.
 			Iris.getPipelineManager().destroyPipeline();
 

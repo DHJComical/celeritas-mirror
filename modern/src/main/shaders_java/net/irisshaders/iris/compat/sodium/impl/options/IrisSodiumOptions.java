@@ -37,7 +37,7 @@ public class IrisSodiumOptions {
                     Iris.reload();
                 }
             } catch (IOException e) {
-                Iris.logger.error("Error saving config", e);
+                Iris.logger().error("Error saving config", e);
             }
         }
     };

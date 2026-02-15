@@ -58,7 +58,7 @@ public class OptionMenuContainer {
 						}
 					}
 				} catch (IllegalArgumentException error) {
-					Iris.logger.warn(error);
+					Iris.logger().warn(error);
 
 					elementsToInsert.add(OptionMenuElement.EMPTY);
 				}

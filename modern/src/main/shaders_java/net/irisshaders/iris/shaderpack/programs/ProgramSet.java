@@ -196,7 +196,7 @@ public class ProgramSet implements ProgramSetInterface {
 
 		if (!sources.containsKey(ShaderType.VERTEX) && sources.containsKey(ShaderType.FRAGMENT)) {
 			// This is for really old packs that do not use a vertex shader.
-			Iris.logger.warn("Found a program (" + program + ") that has a fragment shader but no vertex shader? This is very legacy behavior and might not work right.");
+			Iris.logger().warn("Found a program (" + program + ") that has a fragment shader but no vertex shader? This is very legacy behavior and might not work right.");
 			sources.put(ShaderType.VERTEX, """
 				#version 120
 
@@ -358,7 +358,7 @@ public class ProgramSet implements ProgramSetInterface {
 		}
 
 		packDirectives.getRenderTargetDirectives().getRenderTargetSettings().forEach((index, settings) ->
-			Iris.logger.debug("Render target settings for colortex" + index + ": " + settings));
+			Iris.logger().debug("Render target settings for colortex" + index + ": " + settings));
 	}
 
 	public Optional<ProgramSource> getShadow() {

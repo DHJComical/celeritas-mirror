@@ -196,7 +196,7 @@ public class IncludeGraph {
 						""");
 
 				// TODO: Expose this to the caller (more semantic error handling)
-				Iris.logger.error(error.toString());
+				Iris.logger().error(error.toString());
 
 				throw new IllegalStateException("Cycle detected in #include graph, see previous messages for details");
 			}

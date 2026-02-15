@@ -142,7 +142,7 @@ public class ShaderPack {
 
 		if (!graph.getFailures().isEmpty()) {
 			graph.getFailures().forEach((path, error) -> {
-				Iris.logger.error("{}", error.toString());
+				Iris.logger().error("{}", error.toString());
 			});
 
 			throw new IOException("Failed to resolve some #include directives, see previous messages for details");
@@ -200,7 +200,7 @@ public class ShaderPack {
 		List<String> optionalFeatureFlags = shaderProperties.getOptionalFeatureFlags().stream().filter(flag -> !FeatureFlags.isInvalid(flag)).toList();
 
 		if (!optionalFeatureFlags.isEmpty()) {
-			optionalFeatureFlags.forEach(flag -> Iris.logger.warn("Found flag " + flag));
+			optionalFeatureFlags.forEach(flag -> Iris.logger().warn("Found flag " + flag));
 			optionalFeatureFlags.forEach(flag -> newEnvDefines.add(new StringPair("IRIS_FEATURE_" + flag, "")));
 		}
 
@@ -233,7 +233,7 @@ public class ShaderPack {
 			this.profileInfo = "Profile: " + profileName + " (+" + userOptionsChanged + " option" + (userOptionsChanged == 1 ? "" : "s") + " changed by user)";
 		}
 
-		Iris.logger.info(this.profileInfo);
+		Iris.logger().info(this.profileInfo);
 
 		// Prepare our include processor
 		IncludeProcessor includeProcessor = new IncludeProcessor(graph);
@@ -286,7 +286,7 @@ public class ShaderPack {
 			try {
 				return readTexture(root, new TextureDefinition.PNGDefinition(path));
 			} catch (IOException e) {
-				Iris.logger.error("Unable to read the custom noise texture at " + path, e);
+				Iris.logger().error("Unable to read the custom noise texture at " + path, e);
 
 				return null;
 			}
@@ -298,7 +298,7 @@ public class ShaderPack {
 				try {
 					innerCustomTextureDataMap.put(samplerName, readTexture(root, path));
 				} catch (IOException e) {
-					Iris.logger.error("Unable to read the custom texture at " + path, e);
+					Iris.logger().error("Unable to read the custom texture at " + path, e);
 				}
 			});
 
@@ -313,7 +313,7 @@ public class ShaderPack {
 			try {
 				irisCustomTextureDataMap.put(name, readTexture(root, texture));
 			} catch (IOException e) {
-				Iris.logger.error("Unable to read the custom texture at " + texture.getName(), e);
+				Iris.logger().error("Unable to read the custom texture at " + texture.getName(), e);
 			}
 		});
 	}
@@ -341,7 +341,7 @@ public class ShaderPack {
 		try {
 			properties.load(propertiesReader);
 		} catch (IOException e) {
-			Iris.logger.error("Error loading " + name + " at " + shaderPath, e);
+			Iris.logger().error("Error loading " + name + " at " + shaderPath, e);
 
 			return Optional.empty();
 		}
@@ -399,11 +399,11 @@ public class ShaderPack {
 			// Property files should be encoded in ISO_8859_1.
 			return Files.readString(shaderPath.resolve(name), StandardCharsets.ISO_8859_1);
 		} catch (NoSuchFileException e) {
-			Iris.logger.debug("An " + name + " file was not found in the current shaderpack");
+			Iris.logger().debug("An " + name + " file was not found in the current shaderpack");
 
 			return null;
 		} catch (IOException e) {
-			Iris.logger.error("An IOException occurred reading " + name + " from the current shaderpack", e);
+			Iris.logger().error("An IOException occurred reading " + name + " from the current shaderpack", e);
 
 			return null;
 		}
@@ -443,7 +443,7 @@ public class ShaderPack {
 			String[] parts = path.split(":");
 
 			if (parts.length > 2) {
-				Iris.logger.warn("Resource location " + path + " contained more than two parts?");
+				Iris.logger().warn("Resource location " + path + " contained more than two parts?");
 			}
 
 			if (parts[0].equals("minecraft") && (parts[1].equals("dynamic/lightmap_1") || parts[1].equals("dynamic/light_map_1"))) {
@@ -477,7 +477,7 @@ public class ShaderPack {
 						}
 					}
 				} catch (IOException e) {
-					Iris.logger.error("Unable to read the custom texture mcmeta at " + mcMetaPath + ", ignoring: " + e);
+					Iris.logger().error("Unable to read the custom texture mcmeta at " + mcMetaPath + ", ignoring: " + e);
 				}
 			}
 
@@ -520,7 +520,7 @@ public class ShaderPack {
 				if (dimensionIds.contains(name)) {
 					return new ProgramSet(AbsolutePackPath.fromAbsolutePath("/" + name), sourceProvider, shaderProperties, this);
 				} else {
-					Iris.logger.error("Attempted to load dimension folder " + name + " for dimension " + dimension + ", but it does not exist!");
+					Iris.logger().error("Attempted to load dimension folder " + name + " for dimension " + dimension + ", but it does not exist!");
 					return ProgramSetInterface.Empty.INSTANCE;
 				}
 			} else {

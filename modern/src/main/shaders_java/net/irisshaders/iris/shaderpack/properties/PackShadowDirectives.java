@@ -339,7 +339,7 @@ public class PackShadowDirectives {
 				if (internalFormat.isPresent()) {
 					settings.computeIfAbsent(finalI, sa -> new SamplingSettings()).setFormat(internalFormat.get());
 				} else {
-					Iris.logger.warn("Unrecognized internal texture format " + format + " specified for " + bufferName + "Format, ignoring.");
+					Iris.logger().warn("Unrecognized internal texture format " + format + " specified for " + bufferName + "Format, ignoring.");
 				}
 			});
 

@@ -53,7 +53,7 @@ public class ShaderOverrideEngine {
         if (overrideSupplier != null) {
             return overrideSupplier.get();
         } else if (missingOverrides.add(name)) {
-            Iris.logger.warn("Missing shader override for '{}'", name);
+            Iris.logger().warn("Missing shader override for '{}'", name);
         }
 
         return null;

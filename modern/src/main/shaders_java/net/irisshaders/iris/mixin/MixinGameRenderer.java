@@ -54,10 +54,10 @@ public class MixinGameRenderer {
 
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void iris$logSystem(Minecraft arg, ItemInHandRenderer arg2, ResourceManager arg3, RenderBuffers arg4, CallbackInfo ci) {
-		Iris.logger.info("Hardware information:");
-		Iris.logger.info("CPU: " + GlUtil.getCpuInfo());
-		Iris.logger.info("GPU: " + GlUtil.getRenderer() + " (Supports OpenGL " + GlUtil.getOpenGLVersion() + ")");
-		Iris.logger.info("OS: " + System.getProperty("os.name") + " (" + System.getProperty("os.version") + ")");
+		Iris.logger().info("Hardware information:");
+		Iris.logger().info("CPU: " + GlUtil.getCpuInfo());
+		Iris.logger().info("GPU: " + GlUtil.getRenderer() + " (Supports OpenGL " + GlUtil.getOpenGLVersion() + ")");
+		Iris.logger().info("OS: " + System.getProperty("os.name") + " (" + System.getProperty("os.version") + ")");
 	}
 
 	@WrapWithCondition(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/player/LocalPlayer;I)V"))

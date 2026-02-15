@@ -285,7 +285,7 @@ public class PackDirectives {
 			if (index != -1) {
 				explicitFlips.put(index, shouldFlip);
 			} else {
-				Iris.logger.warn("Unknown buffer with ID " + buffer + " specified in flip directive for pass "
+				Iris.logger().warn("Unknown buffer with ID " + buffer + " specified in flip directive for pass "
 					+ pass);
 			}
 		});

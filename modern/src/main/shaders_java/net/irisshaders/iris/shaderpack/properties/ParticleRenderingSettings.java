@@ -13,7 +13,7 @@ public enum ParticleRenderingSettings {
 		try {
 			return Optional.of(ParticleRenderingSettings.valueOf(name));
 		} catch (IllegalArgumentException e) {
-			Iris.logger.warn("Invalid particle rendering settings! " + name);
+			Iris.logger().warn("Invalid particle rendering settings! " + name);
 			return Optional.empty();
 		}
 	}

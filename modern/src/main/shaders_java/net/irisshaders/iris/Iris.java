@@ -69,7 +69,7 @@ public class Iris {
 	 * separately in mixin plugin classes & the language files.
 	 */
 	public static final String MODNAME = "Celeritas";
-	public static final IrisLogging logger = new IrisLogging(MODNAME);
+	private static final IrisLogging logger = new IrisLogging(MODNAME);
 	private static final Map<String, String> shaderPackOptionQueue = new HashMap<>();
 	// Change this for snapshots!
 	private static final String backupVersionNumber = "1.20.3";
@@ -111,7 +111,7 @@ public class Iris {
 	 */
 	public static void onRenderSystemInit() {
 		if (!initialized) {
-			Iris.logger.warn("Iris::onRenderSystemInit was called, but Iris::onEarlyInitialize was not called." +
+			Iris.logger().warn("Iris::onRenderSystemInit was called, but Iris::onEarlyInitialize was not called." +
 				" Trying to avoid a crash but this is an odd state.");
 			return;
 		}
@@ -136,7 +136,7 @@ public class Iris {
 	 */
 	public static void onLoadingComplete() {
 		if (!initialized) {
-			Iris.logger.warn("Iris::onLoadingComplete was called, but Iris::onEarlyInitialize was not called." +
+			Iris.logger().warn("Iris::onLoadingComplete was called, but Iris::onEarlyInitialize was not called." +
 				" Trying to avoid a crash but this is an odd state.");
 			return;
 		}
@@ -161,7 +161,7 @@ public class Iris {
 				}
 
 			} catch (Exception e) {
-				logger.error("Error while reloading Shaders for " + MODNAME + "!", e);
+				logger().error("Error while reloading Shaders for " + MODNAME + "!", e);
 
 				if (minecraft.player != null) {
 					minecraft.player.displayClientMessage(Component.translatable("iris.shaders.reloaded.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED), false);
@@ -171,7 +171,7 @@ public class Iris {
 			try {
 				toggleShaders(minecraft, !irisConfig.areShadersEnabled());
 			} catch (Exception e) {
-				logger.error("Error while toggling shaders!", e);
+				logger().error("Error while toggling shaders!", e);
 
 				if (minecraft.player != null) {
 					minecraft.player.displayClientMessage(Component.translatable("iris.shaders.toggled.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED), false);
@@ -213,7 +213,7 @@ public class Iris {
 		}
 
 		if (!irisConfig.areShadersEnabled()) {
-			logger.info("Shaders are disabled because enableShaders is set to false in iris.properties");
+			logger().info("Shaders are disabled because enableShaders is set to false in iris.properties");
 
 			setShadersDisabled();
 
@@ -224,7 +224,7 @@ public class Iris {
 		Optional<String> externalName = irisConfig.getShaderPackName();
 
 		if (externalName.isEmpty()) {
-			logger.info("Shaders are disabled because no valid shaderpack is selected");
+			logger().info("Shaders are disabled because no valid shaderpack is selected");
 
 			setShadersDisabled();
 
@@ -232,7 +232,7 @@ public class Iris {
 		}
 
 		if (!loadExternalShaderpack(externalName.get())) {
-			logger.warn("Falling back to normal rendering without shaders because the shaderpack could not be loaded");
+			logger().warn("Falling back to normal rendering without shaders because the shaderpack could not be loaded");
 			setShadersDisabled();
 			fallback = true;
 		}
@@ -247,13 +247,13 @@ public class Iris {
 			shaderPackRoot = getShaderpacksDirectory().resolve(name);
 			shaderPackConfigTxt = getShaderpacksDirectory().resolve(name + ".txt");
 		} catch (InvalidPathException e) {
-			logger.error("Failed to load the shaderpack \"{}\" because it contains invalid characters in its path", name);
+			logger().error("Failed to load the shaderpack \"{}\" because it contains invalid characters in its path", name);
 
 			return false;
 		}
 
 		if (!isValidShaderpack(shaderPackRoot)) {
-			logger.error("Pack \"{}\" is not valid! Can't load it.", name);
+			logger().error("Pack \"{}\" is not valid! Can't load it.", name);
 			return false;
 		}
 
@@ -265,16 +265,16 @@ public class Iris {
 			try {
 				optionalPath = loadExternalZipShaderpack(shaderPackRoot);
 			} catch (FileSystemNotFoundException | NoSuchFileException e) {
-				logger.error("Failed to load the shaderpack \"{}\" because it does not exist in your shaderpacks folder!", name);
+				logger().error("Failed to load the shaderpack \"{}\" because it does not exist in your shaderpacks folder!", name);
 
 				return false;
 			} catch (ZipException e) {
-				logger.error("The shaderpack \"{}\" appears to be corrupted, please try downloading it again!", name);
+				logger().error("The shaderpack \"{}\" appears to be corrupted, please try downloading it again!", name);
 
 				return false;
 			} catch (IOException e) {
-				logger.error("Failed to load the shaderpack \"{}\"!", name);
-				logger.error("", e);
+				logger().error("Failed to load the shaderpack \"{}\"!", name);
+				logger().error("", e);
 
 				return false;
 			}
@@ -282,12 +282,12 @@ public class Iris {
 			if (optionalPath.isPresent()) {
 				shaderPackPath = optionalPath.get();
 			} else {
-				logger.error("Could not load the shaderpack \"{}\" because it appears to lack a \"shaders\" directory", name);
+				logger().error("Could not load the shaderpack \"{}\" because it appears to lack a \"shaders\" directory", name);
 				return false;
 			}
 		} else {
 			if (!Files.exists(shaderPackRoot)) {
-				logger.error("Failed to load the shaderpack \"{}\" because it does not exist!", name);
+				logger().error("Failed to load the shaderpack \"{}\" because it does not exist!", name);
 				return false;
 			}
 
@@ -296,7 +296,7 @@ public class Iris {
 		}
 
 		if (!Files.exists(shaderPackPath)) {
-			logger.error("Could not load the shaderpack \"{}\" because it appears to lack a \"shaders\" directory", name);
+			logger().error("Could not load the shaderpack \"{}\" because it appears to lack a \"shaders\" directory", name);
 			return false;
 		}
 
@@ -324,8 +324,8 @@ public class Iris {
 
 			tryUpdateConfigPropertiesFile(shaderPackConfigTxt, configsToSave);
 		} catch (Exception e) {
-			logger.error("Failed to load the shaderpack \"{}\"!", name);
-			logger.error("", e);
+			logger().error("Failed to load the shaderpack \"{}\"!", name);
+			logger().error("", e);
             // TODO: Consider showing the feature flag screen
             /*
             if (Minecraft.getInstance().screen instanceof ShaderPackScreen) {
@@ -344,7 +344,7 @@ public class Iris {
 		fallback = false;
 		currentPackName = name;
 
-		logger.info("Using shaderpack: " + name);
+		logger().info("Using shaderpack: " + name);
 
 		return true;
 	}
@@ -381,7 +381,7 @@ public class Iris {
 		fallback = false;
 		currentPackName = "(off)";
 
-		logger.info("Shaders are disabled");
+		logger().info("Shaders are disabled");
 	}
 
 	public static void setDebug(boolean enable) {
@@ -389,7 +389,7 @@ public class Iris {
 			irisConfig.setDebugEnabled(enable);
 			irisConfig.save();
 		} catch (IOException e) {
-			Iris.logger.fatal("Failed to save config!", e);
+			Iris.logger().fatal("Failed to save config!", e);
 		}
 
 		int success;
@@ -401,7 +401,7 @@ public class Iris {
 			success = 1;
 		}
 
-		logger.info("Debug functionality is " + (enable ? "enabled, logging will be more verbose!" : "disabled."));
+		logger().info("Debug functionality is " + (enable ? "enabled, logging will be more verbose!" : "disabled."));
 		if (Minecraft.getInstance().player != null) {
 			Minecraft.getInstance().player.displayClientMessage(Component.translatable(success != 0 ? (enable ? "iris.shaders.debug.enabled" : "iris.shaders.debug.disabled") : "iris.shaders.debug.failure"), false);
 			if (success == 2) {
@@ -482,7 +482,7 @@ public class Iris {
 				}
 			} catch (ZipError zipError) {
 				// Java 8 seems to throw a ZipError instead of a subclass of IOException
-				Iris.logger.warn("The ZIP at " + pack + " is corrupt");
+				Iris.logger().warn("The ZIP at " + pack + " is corrupt");
 			} catch (IOException ignored) {
 				// ignored, not a valid shader pack.
 			}
@@ -571,9 +571,9 @@ public class Iris {
 			try {
 				zipFileSystem.close();
 			} catch (NoSuchFileException e) {
-				logger.warn("Failed to close the shaderpack zip when reloading because it was deleted, proceeding anyways.");
+				logger().warn("Failed to close the shaderpack zip when reloading because it was deleted, proceeding anyways.");
 			} catch (IOException e) {
-				logger.error("Failed to close zip file system?", e);
+				logger().error("Failed to close zip file system?", e);
 			}
 		}
 	}
@@ -636,7 +636,7 @@ public class Iris {
 					storedError = Optional.of(e);
 				}
 			}
-			logger.error("Failed to create shader rendering pipeline, disabling shaders!", e);
+			logger().error("Failed to create shader rendering pipeline, disabling shaders!", e);
 			// TODO: This should be reverted if a dimension change causes shaders to compile again
 			fallback = true;
 
@@ -655,7 +655,7 @@ public class Iris {
 			try {
 				reload();
 			} catch (IOException e) {
-				logger.error("Error while reloading Shaders for " + MODNAME + "!", e);
+				logger().error("Error while reloading Shaders for " + MODNAME + "!", e);
 
 				if (Minecraft.getInstance().player != null) {
 					Minecraft.getInstance().player.displayClientMessage(Component.translatable("iris.shaders.reloaded.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED), false);
@@ -775,8 +775,8 @@ public class Iris {
 				Files.createDirectories(getShaderpacksDirectory());
 			}
 		} catch (IOException e) {
-			logger.warn("Failed to create the shaderpacks directory!");
-			logger.warn("", e);
+			logger().warn("Failed to create the shaderpacks directory!");
+			logger().warn("", e);
 		}
 
 		irisConfig = new IrisConfig(PlatformUtil.getConfigDir().resolve(MODID + "-shaders.properties"));
@@ -784,10 +784,14 @@ public class Iris {
 		try {
 			irisConfig.initialize();
 		} catch (IOException e) {
-			logger.error("Failed to initialize Iris configuration, default values will be used instead");
-			logger.error("", e);
+			logger().error("Failed to initialize Iris configuration, default values will be used instead");
+			logger().error("", e);
 		}
 
 		initialized = true;
 	}
+
+    public static IrisLogging logger() {
+        return logger;
+    }
 }

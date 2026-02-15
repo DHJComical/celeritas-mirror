@@ -26,7 +26,7 @@ public class MixinClientPacketListener {
 
 		if (Iris.loadedIncompatiblePack()) {
 			Minecraft.getInstance().gui.setTimes(10, 70, 140);
-			Iris.logger.warn("Incompatible pack for DH!");
+			Iris.logger().warn("Incompatible pack for DH!");
 			Minecraft.getInstance().player.displayClientMessage(Component.literal("This pack doesn't have DH support.").withStyle(ChatFormatting.BOLD, ChatFormatting.RED), false);
 			Minecraft.getInstance().player.displayClientMessage(Component.literal("Distant Horizons (DH) chunks won't show up. This isn't a bug, get another shader.").withStyle(ChatFormatting.RED), false);
 		}

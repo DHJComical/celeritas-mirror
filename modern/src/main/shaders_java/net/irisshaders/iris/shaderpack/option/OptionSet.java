@@ -69,7 +69,7 @@ public class OptionSet {
 
 				if (merged == null) {
 					// TODO: Warn about ambiguous options better
-					Iris.logger.warn("Ignoring ambiguous boolean option " + option.getName());
+					Iris.logger().warn("Ignoring ambiguous boolean option " + option.getName());
 					booleanOptions.remove(option.getName());
 					return;
 				}
@@ -95,7 +95,7 @@ public class OptionSet {
 
 				if (merged == null) {
 					// TODO: Warn about ambiguous options better
-					Iris.logger.warn("Ignoring ambiguous string option " + option.getName());
+					Iris.logger().warn("Ignoring ambiguous string option " + option.getName());
 					stringOptions.remove(option.getName());
 					return;
 				}

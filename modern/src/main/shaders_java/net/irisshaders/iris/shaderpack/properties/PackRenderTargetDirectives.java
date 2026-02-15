@@ -80,7 +80,7 @@ public class PackRenderTargetDirectives {
 				} else if ("RGB16".equals(format)) {
 					colortex7.requestedFormat = InternalTextureFormat.RGB16;
 				} else {
-					Iris.logger.warn("Ignoring GAUX4FORMAT directive /* GAUX4FORMAT:" + format + "*/ because " + format
+					Iris.logger().warn("Ignoring GAUX4FORMAT directive /* GAUX4FORMAT:" + format + "*/ because " + format
 						+ " must be RGBA32F, RGB32F, or RGB16. Use `const int colortex7Format = " + format + ";` + instead.");
 				}
 			});
@@ -112,7 +112,7 @@ public class PackRenderTargetDirectives {
 			if (internalFormat.isPresent()) {
 				settings.requestedFormat = internalFormat.get();
 			} else {
-				Iris.logger.warn("Unrecognized internal texture format " + format + " specified for " + bufferName + "Format, ignoring.");
+				Iris.logger().warn("Unrecognized internal texture format " + format + " specified for " + bufferName + "Format, ignoring.");
 			}
 		});
 

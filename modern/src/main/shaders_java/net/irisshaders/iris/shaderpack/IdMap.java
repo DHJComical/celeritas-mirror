@@ -100,7 +100,7 @@ public class IdMap {
 		try {
 			properties.load(propertiesReader);
 		} catch (IOException e) {
-			Iris.logger.error("Error loading " + name + " at " + shaderPath, e);
+			Iris.logger().error("Error loading " + name + " at " + shaderPath, e);
 
 			return Optional.empty();
 		}
@@ -122,11 +122,11 @@ public class IdMap {
 			// ID maps should be encoded in ISO_8859_1.
 			return Files.readString(shaderPath.resolve(name), StandardCharsets.ISO_8859_1);
 		} catch (NoSuchFileException e) {
-			Iris.logger.debug("An " + name + " file was not found in the current shaderpack");
+			Iris.logger().debug("An " + name + " file was not found in the current shaderpack");
 
 			return null;
 		} catch (IOException e) {
-			Iris.logger.error("An IOException occurred reading " + name + " from the current shaderpack", e);
+			Iris.logger().error("An IOException occurred reading " + name + " from the current shaderpack", e);
 
 			return null;
 		}
@@ -162,7 +162,7 @@ public class IdMap {
 				intId = Integer.parseInt(key.substring(keyPrefix.length()));
 			} catch (NumberFormatException e) {
 				// Not a valid property line
-				Iris.logger.warn("Failed to parse line in " + fileName + ": invalid key " + key);
+				Iris.logger().warn("Failed to parse line in " + fileName + ": invalid key " + key);
 				return;
 			}
 
@@ -170,7 +170,7 @@ public class IdMap {
 			for (String part : value.split("\\s+")) {
 				if (part.contains("=")) {
 					// Avoid tons of logspam for now
-					Iris.logger.warn("Failed to parse an ResourceLocation in " + fileName + " for the key " + key + ": state properties are currently not supported: " + part);
+					Iris.logger().warn("Failed to parse an ResourceLocation in " + fileName + " for the key " + key + ": state properties are currently not supported: " + part);
 					continue;
 				}
 
@@ -201,7 +201,7 @@ public class IdMap {
 				intId = Integer.parseInt(key.substring(keyPrefix.length()));
 			} catch (NumberFormatException e) {
 				// Not a valid property line
-				Iris.logger.warn("Failed to parse line in " + fileName + ": invalid key " + key);
+				Iris.logger().warn("Failed to parse line in " + fileName + ": invalid key " + key);
 				return;
 			}
 
@@ -218,7 +218,7 @@ public class IdMap {
 
 					entries.add(parsedEntry);
 				} catch (Exception e) {
-					Iris.logger.warn("Unexpected error while parsing an entry from " + fileName + " for the key " + key + ":", e);
+					Iris.logger().warn("Unexpected error while parsing an entry from " + fileName + " for the key " + key + ":", e);
 				}
 			}
 
@@ -254,7 +254,7 @@ public class IdMap {
 			BlockRenderType renderType = BlockRenderType.fromString(keyWithoutPrefix).orElse(null);
 
 			if (renderType == null) {
-				Iris.logger.warn("Failed to parse line in " + fileName + ": invalid block render type: " + key);
+				Iris.logger().warn("Failed to parse line in " + fileName + ": invalid block render type: " + key);
 				return;
 			}
 

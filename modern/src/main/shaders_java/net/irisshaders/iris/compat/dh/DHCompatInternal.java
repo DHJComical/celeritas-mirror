@@ -53,7 +53,7 @@ public class DHCompatInternal {
 		}
 
 		if (pipeline.getDHTerrainShader().isEmpty() && pipeline.getDHWaterShader().isEmpty()) {
-			Iris.logger.warn("No DH shader found in this pack.");
+			Iris.logger().warn("No DH shader found in this pack.");
 			incompatible = true;
 			return;
 		}

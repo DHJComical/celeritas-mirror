@@ -42,7 +42,7 @@ public class PropertiesPreprocessor {
 				try {
 					pp.addMacro(name, value);
 				} catch (LexerException e) {
-					Iris.logger.fatal("Failed to preprocess property file!", e);
+					Iris.logger().fatal("Failed to preprocess property file!", e);
 				}
 			});
 
@@ -66,7 +66,7 @@ public class PropertiesPreprocessor {
 				preprocessor.addMacro(envDefine.key(), envDefine.value());
 			}
 		} catch (LexerException e) {
-			Iris.logger.fatal("Failed to preprocess property file!", e);
+			Iris.logger().fatal("Failed to preprocess property file!", e);
 		}
 
 		return process(preprocessor, source);
@@ -111,7 +111,7 @@ public class PropertiesPreprocessor {
 				builder.append(tok.getText());
 			}
 		} catch (final Exception e) {
-			Iris.logger.error("Properties pre-processing failed", e);
+			Iris.logger().error("Properties pre-processing failed", e);
 		}
 
 		source = builder.toString();

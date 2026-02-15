@@ -68,7 +68,7 @@ public class CustomUniforms implements FunctionContext {
 				}
 				//Iris.logger.info("Was able to resolve uniform " + variable.name + " = " + variable.expression);
 			} catch (Exception e) {
-				Iris.logger
+				Iris.logger()
 					.warn("Failed to resolve uniform " + variable.name + ", reason: " + e
 						.getMessage() + " ( = " + variable.expression + ")", e);
 			}
@@ -158,7 +158,7 @@ public class CustomUniforms implements FunctionContext {
 			}
 
 			if (!brokenUniforms.isEmpty()) {
-				Iris.logger.warn(
+				Iris.logger().warn(
 					"The following uniforms won't work, either because they are broken, or reference a broken uniform: \n" +
 						brokenUniforms.stream().map(CachedUniform::getName).collect(Collectors.joining(", ")));
 			}
@@ -309,13 +309,13 @@ public class CustomUniforms implements FunctionContext {
 
 		public void addVariable(String type, String name, String expression, boolean isUniform) {
 			if (variables.containsKey(name)) {
-				Iris.logger.warn("Ignoring duplicated custom uniform name: " + name);
+				Iris.logger().warn("Ignoring duplicated custom uniform name: " + name);
 				return;
 			}
 
 			Type parsedType = types.get(type);
 			if (parsedType == null) {
-				Iris.logger.warn("Ignoring invalid uniform type: " + type + " of " + name);
+				Iris.logger().warn("Ignoring invalid uniform type: " + type + " of " + name);
 				return;
 			}
 
@@ -323,14 +323,14 @@ public class CustomUniforms implements FunctionContext {
 				ExpressionElement ast = Parser.parse(expression, IrisOptions.options);
 				variables.put(name, new Variable(parsedType, name, ast, isUniform));
 			} catch (Exception e) {
-				Iris.logger.warn("Failed to parse custom variable/uniform " + name + " with expression " + expression, e);
+				Iris.logger().warn("Failed to parse custom variable/uniform " + name + " with expression " + expression, e);
 			}
 		}
 
 		public CustomUniforms build(
 			CustomUniformFixedInputUniformsHolder inputHolder
 		) {
-			Iris.logger.info("Starting custom uniform resolving");
+			Iris.logger().info("Starting custom uniform resolving");
 			return new CustomUniforms(inputHolder, this.variables);
 		}
 

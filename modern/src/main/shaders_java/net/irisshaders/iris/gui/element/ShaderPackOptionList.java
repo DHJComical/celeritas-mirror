@@ -283,7 +283,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 					"Shader Pack Settings (.txt)", "*.txt")
 				.whenComplete((path, err) -> {
 					if (err != null) {
-						Iris.logger.error("Error selecting shader settings from file", err);
+						Iris.logger().error("Error selecting shader settings from file", err);
 
 						return;
 					}
@@ -319,7 +319,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 					"Shader Pack Settings (.txt)", "*.txt")
 				.whenComplete((path, err) -> {
 					if (err != null) {
-						Iris.logger.error("Error selecting file to export shader settings", err);
+						Iris.logger().error("Error selecting file to export shader settings", err);
 
 						return;
 					}
@@ -341,7 +341,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 						try (OutputStream out = Files.newOutputStream(p)) {
 							toSave.store(out, null);
 						} catch (IOException e) {
-							Iris.logger.error("Error saving properties to \"" + p + "\"", e);
+							Iris.logger().error("Error saving properties to \"" + p + "\"", e);
 						}
 					});
 				});

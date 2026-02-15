@@ -29,7 +29,7 @@ public class MixinSpriteContents implements SpriteContentsExtension {
 				try {
 					return generator.generateMipLevels(nativeImages, mipLevel);
 				} catch (Exception e) {
-					Iris.logger.error("ERROR MIPMAPPING", e);
+					Iris.logger().error("ERROR MIPMAPPING", e);
 				}
 			}
 		}

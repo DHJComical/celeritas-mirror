@@ -88,7 +88,7 @@ public class PBRAtlasTexture extends AbstractTexture implements PBRDumpable {
 				writer.write(String.format(Locale.ROOT, "%s\tx=%d\ty=%d\tw=%d\th=%d%n", entry.getKey(), sprite.getX(), sprite.getY(), sprite.contents().width(), sprite.contents().height()));
 			}
 		} catch (IOException e) {
-			Iris.logger.warn("Failed to write file {}", path, e);
+			Iris.logger().warn("Failed to write file {}", path, e);
 		}
 	}
 

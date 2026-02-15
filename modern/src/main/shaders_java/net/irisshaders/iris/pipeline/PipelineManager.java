@@ -5,7 +5,6 @@ import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
-import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20C;
 
@@ -29,7 +28,7 @@ public class PipelineManager {
 			SystemTimeUniforms.COUNTER.reset();
 			SystemTimeUniforms.TIMER.reset();
 
-			Iris.logger.info("Creating pipeline for dimension {}", currentDimension);
+			Iris.logger().info("Creating pipeline for dimension {}", currentDimension);
 			pipeline = pipelineFactory.apply(currentDimension);
 			pipelinesPerDimension.put(currentDimension, pipeline);
 
@@ -76,7 +75,7 @@ public class PipelineManager {
 	 */
 	public void destroyPipeline() {
 		pipelinesPerDimension.forEach((dimensionId, pipeline) -> {
-			Iris.logger.info("Destroying pipeline {}", dimensionId);
+			Iris.logger().info("Destroying pipeline {}", dimensionId);
 			resetTextureState();
 			pipeline.destroy();
 		});

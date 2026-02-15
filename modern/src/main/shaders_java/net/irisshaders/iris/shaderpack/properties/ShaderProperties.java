@@ -139,7 +139,7 @@ public class ShaderProperties {
 			preprocessed.load(new StringReader(preprocessedContents));
 			original.load(new StringReader(contents));
 		} catch (IOException e) {
-			Iris.logger.error("Error loading shaders.properties!", e);
+			Iris.logger().error("Error loading shaders.properties!", e);
 		}
 
 		preprocessed.forEach((keyObject, valueObject) -> {
@@ -159,7 +159,7 @@ public class ShaderProperties {
 				} else if ("fancy".equals(value)) {
 					cloudSetting = CloudSetting.FANCY;
 				} else {
-					Iris.logger.error("Unrecognized clouds setting: " + value);
+					Iris.logger().error("Unrecognized clouds setting: " + value);
 				}
 
 				if (dhCloudSetting == CloudSetting.DEFAULT) {
@@ -173,7 +173,7 @@ public class ShaderProperties {
 				} else if ("on".equals(value) || "fancy".equals(value)) {
 					dhCloudSetting = CloudSetting.FANCY;
 				} else {
-					Iris.logger.error("Unrecognized DH clouds setting (need off, on): " + value);
+					Iris.logger().error("Unrecognized DH clouds setting (need off, on): " + value);
 				}
 			}
 
@@ -185,7 +185,7 @@ public class ShaderProperties {
 				} else if ("reversed".equals(value)) {
 					shadowCulling = ShadowCullState.REVERSED;
 				} else {
-					Iris.logger.error("Unrecognized shadow culling setting: " + value);
+					Iris.logger().error("Unrecognized shadow culling setting: " + value);
 				}
 			}
 
@@ -249,7 +249,7 @@ public class ShaderProperties {
 						offsetY = Float.parseFloat(parts[2]);
 					}
 				} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-					Iris.logger.error("Unable to parse scale directive for " + pass + ": " + value, e);
+					Iris.logger().error("Unable to parse scale directive for " + pass + ": " + value, e);
 					return;
 				}
 
@@ -260,7 +260,7 @@ public class ShaderProperties {
 				String[] parts = value.split(" ");
 
 				if (parts.length != 2) {
-					Iris.logger.error("Unable to parse size.buffer directive for " + pass + ": " + value);
+					Iris.logger().error("Unable to parse size.buffer directive for " + pass + ": " + value);
 					return;
 				}
 
@@ -276,16 +276,16 @@ public class ShaderProperties {
 				String[] parts = value.split(" ");
 
 				if (parts.length > 2) {
-					Iris.logger.warn("Weird alpha test directive for " + pass + " contains more parts than we expected: " + value);
+					Iris.logger().warn("Weird alpha test directive for " + pass + " contains more parts than we expected: " + value);
 				} else if (parts.length < 2) {
-					Iris.logger.error("Invalid alpha test directive for " + pass + ": " + value);
+					Iris.logger().error("Invalid alpha test directive for " + pass + ": " + value);
 					return;
 				}
 
 				Optional<AlphaTestFunction> function = AlphaTestFunction.fromString(parts[0]);
 
 				if (!function.isPresent()) {
-					Iris.logger.error("Unable to parse alpha test directive for " + pass + ", unknown alpha test function " + parts[0] + ": " + value);
+					Iris.logger().error("Unable to parse alpha test directive for " + pass + ", unknown alpha test function " + parts[0] + ": " + value);
 					return;
 				}
 
@@ -294,7 +294,7 @@ public class ShaderProperties {
 				try {
 					reference = Float.parseFloat(parts[1]);
 				} catch (NumberFormatException e) {
-					Iris.logger.error("Unable to parse alpha test directive for " + pass + ": " + value, e);
+					Iris.logger().error("Unable to parse alpha test directive for " + pass + ": " + value, e);
 					return;
 				}
 
@@ -367,7 +367,7 @@ public class ShaderProperties {
 
 					indirectPointers.put(pass, new IndirectPointer(Integer.parseInt(locations[0]), Long.parseLong(locations[1])));
 				} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-					Iris.logger.fatal("Failed to parse indirect command for " + pass + "! " + value);
+					Iris.logger().fatal("Failed to parse indirect command for " + pass + "! " + value);
 				}
 			});
 
@@ -386,12 +386,12 @@ public class ShaderProperties {
 						trueIndex = Integer.parseInt(index);
 						trueSize = Integer.parseInt(value);
 					} catch (NumberFormatException e) {
-						Iris.logger.error("Number format exception parsing SSBO index/size!", e);
+						Iris.logger().error("Number format exception parsing SSBO index/size!", e);
 						return;
 					}
 
 					if (trueIndex > 8) {
-						Iris.logger.fatal("SSBO's cannot use buffer numbers higher than 8, they're reserved!");
+						Iris.logger().fatal("SSBO's cannot use buffer numbers higher than 8, they're reserved!");
 						return;
 					}
 
@@ -410,12 +410,12 @@ public class ShaderProperties {
 						scaleX = Float.parseFloat(parts[2]);
 						scaleY = Float.parseFloat(parts[3]);
 					} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-						Iris.logger.error("Number format exception parsing SSBO index/size, or not correct format!", e);
+						Iris.logger().error("Number format exception parsing SSBO index/size, or not correct format!", e);
 						return;
 					}
 
 					if (trueIndex > 8) {
-						Iris.logger.fatal("SSBO's cannot use buffer numbers higher than 8, they're reserved!");
+						Iris.logger().fatal("SSBO's cannot use buffer numbers higher than 8, they're reserved!");
 						return;
 					}
 
@@ -436,7 +436,7 @@ public class ShaderProperties {
 				Optional<TextureStage> optionalTextureStage = TextureStage.parse(stageName);
 
 				if (!optionalTextureStage.isPresent()) {
-					Iris.logger.warn("Unknown texture stage " + "\"" + stageName + "\"," + " ignoring custom texture directive for " + key);
+					Iris.logger().warn("Unknown texture stage " + "\"" + stageName + "\"," + " ignoring custom texture directive for " + key);
 					return;
 				}
 
@@ -460,7 +460,7 @@ public class ShaderProperties {
 						type = TextureType.TEXTURE_3D;
 						irisCustomTextures.put(newSamplerName, new TextureDefinition.RawDefinition(parts[0], TextureType.valueOf(parts[1].toUpperCase(Locale.ROOT)), InternalTextureFormat.fromString(parts[2]).orElseThrow(IllegalArgumentException::new), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), Integer.parseInt(parts[5]), PixelFormat.fromString(parts[6]).orElseThrow(IllegalArgumentException::new), PixelType.fromString(parts[7]).orElseThrow(IllegalArgumentException::new)));
 					} else {
-						Iris.logger.warn("Unknown texture directive for " + key + ": " + value);
+						Iris.logger().warn("Unknown texture directive for " + key + ": " + value);
 					}
 
 					customTexturePatching.put(new Tri<>(samplerName, type, stage), newSamplerName);
@@ -488,7 +488,7 @@ public class ShaderProperties {
 						// 3D texture handling
 						irisCustomTextures.put(samplerName, new TextureDefinition.RawDefinition(parts[0], TextureType.valueOf(parts[1].toUpperCase(Locale.ROOT)), InternalTextureFormat.fromString(parts[2]).orElseThrow(IllegalArgumentException::new), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), Integer.parseInt(parts[5]), PixelFormat.fromString(parts[6]).orElseThrow(IllegalArgumentException::new), PixelType.fromString(parts[7]).orElseThrow(IllegalArgumentException::new)));
 					} else {
-						Iris.logger.warn("Unknown texture directive for " + key + ": " + value);
+						Iris.logger().warn("Unknown texture directive for " + key + ": " + value);
 					}
 
 					return;
@@ -502,7 +502,7 @@ public class ShaderProperties {
 				String key2 = key.substring(6);
 
 				if (irisCustomImages.size() > 15) {
-					Iris.logger.error("Only up to 16 images are allowed, but tried to add another image! " + key);
+					Iris.logger().error("Only up to 16 images are allowed, but tried to add another image! " + key);
 					return;
 				}
 
@@ -517,7 +517,7 @@ public class ShaderProperties {
 				PixelType pixelType = PixelType.fromString(parts[3]).orElse(null);
 
 				if (format == null || internalFormat == null || pixelType == null) {
-					Iris.logger.error("Image " + key2 + " is invalid! Format: " + format + " Internal format: " + internalFormat + " Pixel type: " + pixelType);
+					Iris.logger().error("Image " + key2 + " is invalid! Format: " + format + " Internal format: " + internalFormat + " Pixel type: " + pixelType);
 				}
 
 				boolean clear = Boolean.parseBoolean(parts[4]);
@@ -547,7 +547,7 @@ public class ShaderProperties {
 						height = Integer.parseInt(parts[7]);
 						depth = Integer.parseInt(parts[8]);
 					} else {
-						Iris.logger.error("Unknown image type! " + key2 + " = " + value);
+						Iris.logger().error("Unknown image type! " + key2 + " = " + value);
 						return;
 					}
 					image = new ImageInformation(key2, samplerName, type, format, internalFormat, pixelType, width, height, depth, clear, false, 0, 0);
@@ -566,7 +566,7 @@ public class ShaderProperties {
 			handlePassDirective("variable.", key, value, pass -> {
 				String[] parts = pass.split("\\.");
 				if (parts.length != 2) {
-					Iris.logger.warn("Custom variables should take the form of `variable.<type>.<name> = <expression>. Ignoring " + key);
+					Iris.logger().warn("Custom variables should take the form of `variable.<type>.<name> = <expression>. Ignoring " + key);
 					return;
 				}
 
@@ -576,7 +576,7 @@ public class ShaderProperties {
 			handlePassDirective("uniform.", key, value, pass -> {
 				String[] parts = pass.split("\\.");
 				if (parts.length != 2) {
-					Iris.logger.warn("Custom uniforms should take the form of `uniform.<type>.<name> = <expression>. Ignoring " + key);
+					Iris.logger().warn("Custom uniforms should take the form of `uniform.<type>.<name> = <expression>. Ignoring " + key);
 					return;
 				}
 
@@ -619,7 +619,7 @@ public class ShaderProperties {
 		} else if ("false".equals(value)) {
 			handler.accept(false);
 		} else {
-			Iris.logger.warn("Unexpected value for boolean key " + key + " in shaders.properties: got " + value + ", but expected either true or false");
+			Iris.logger().warn("Unexpected value for boolean key " + key + " in shaders.properties: got " + value + ", but expected either true or false");
 		}
 	}
 
@@ -633,7 +633,7 @@ public class ShaderProperties {
 		} else if ("false".equals(value)) {
 			handler.accept(OptionalBoolean.FALSE);
 		} else {
-			Iris.logger.warn("Unexpected value for boolean key " + key + " in shaders.properties: got " + value + ", but expected either true or false");
+			Iris.logger().warn("Unexpected value for boolean key " + key + " in shaders.properties: got " + value + ", but expected either true or false");
 		}
 	}
 
@@ -647,7 +647,7 @@ public class ShaderProperties {
 
 			handler.accept(result);
 		} catch (NumberFormatException nex) {
-			Iris.logger.warn("Unexpected value for integer key " + key + " in shaders.properties: got " + value + ", but expected an integer");
+			Iris.logger().warn("Unexpected value for integer key " + key + " in shaders.properties: got " + value + ", but expected an integer");
 		}
 
 		return true;
@@ -669,7 +669,7 @@ public class ShaderProperties {
 
 				handler.accept(affixStrippedKey, result);
 			} catch (NumberFormatException nex) {
-				Iris.logger.warn("Unexpected value for integer key " + key + " in shaders.properties: got " + value + ", but expected an integer");
+				Iris.logger().warn("Unexpected value for integer key " + key + " in shaders.properties: got " + value + ", but expected an integer");
 			}
 
 			return true;

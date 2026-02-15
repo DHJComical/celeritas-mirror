@@ -96,7 +96,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		try {
 			animationMetadata = resource.metadata();
 		} catch (Exception e) {
-			Iris.logger.error("Unable to parse metadata from {}", pbrImageLocation, e);
+			Iris.logger().error("Unable to parse metadata from {}", pbrImageLocation, e);
 			return null;
 		}
 
@@ -104,7 +104,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		try (InputStream stream = resource.open()) {
 			nativeImage = NativeImage.read(stream);
 		} catch (IOException e) {
-			Iris.logger.error("Using missing texture, unable to load {}", pbrImageLocation, e);
+			Iris.logger().error("Using missing texture, unable to load {}", pbrImageLocation, e);
 			return null;
 		}
 
@@ -115,7 +115,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		int frameWidth = frameSize.width();
 		int frameHeight = frameSize.height();
 		if (!Mth.isMultipleOf(imageWidth, frameWidth) || !Mth.isMultipleOf(imageHeight, frameHeight)) {
-			Iris.logger.error("Image {} size {},{} is not multiple of frame size {},{}", pbrImageLocation, imageWidth, imageHeight, frameWidth, frameHeight);
+			Iris.logger().error("Image {} size {},{} is not multiple of frame size {},{}", pbrImageLocation, imageWidth, imageHeight, frameWidth, frameHeight);
 			nativeImage.close();
 			return null;
 		}
@@ -153,7 +153,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 					}
 				}
 			} catch (Exception e) {
-				Iris.logger.error("Something bad happened trying to load PBR texture " + spriteName.getPath() + pbrType.getSuffix() + "!", e);
+				Iris.logger().error("Something bad happened trying to load PBR texture " + spriteName.getPath() + pbrType.getSuffix() + "!", e);
 				throw e;
 			}
 		}

@@ -181,7 +181,7 @@ public class ModelTextureAnalyzer {
         Stopwatch watch = Stopwatch.createStarted();
         var result = runAnalysis(blockStateIds).join();
         watch.stop();
-        Iris.logger.info("Analyzed texture materials in {}", watch);
+        Iris.logger().info("Analyzed texture materials in {}", watch);
         return result;
     }
 
@@ -302,7 +302,7 @@ public class ModelTextureAnalyzer {
             try {
                 this.tasks.forEach(this::voteOnStates);
             } catch(Throwable e) {
-                Iris.logger.error("Exception encountered during texture analysis", e);
+                Iris.logger().error("Exception encountered during texture analysis", e);
             } finally {
                 this.completableFuture.complete(null);
             }

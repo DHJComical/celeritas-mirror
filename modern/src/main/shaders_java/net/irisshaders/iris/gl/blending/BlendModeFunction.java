@@ -28,7 +28,7 @@ public enum BlendModeFunction {
 		try {
 			return Optional.of(BlendModeFunction.valueOf(name));
 		} catch (IllegalArgumentException e) {
-			Iris.logger.warn("Invalid blend mode! " + name);
+			Iris.logger().warn("Invalid blend mode! " + name);
 			return Optional.empty();
 		}
 	}

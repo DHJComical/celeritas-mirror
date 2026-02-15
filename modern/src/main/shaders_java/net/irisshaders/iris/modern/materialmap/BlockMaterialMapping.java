@@ -25,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.function.Consumer;
 
 public class BlockMaterialMapping {
 	public static Object2IntMap<BlockState> createBlockStateIdMap(Int2ObjectMap<List<BlockEntry>> blockPropertiesMap) {
@@ -103,7 +102,7 @@ public class BlockMaterialMapping {
         *///?}
 
         if (!tagOpt.isPresent()) {
-            Iris.logger.warn("Failed to find the block tag {}", tag.location());
+            Iris.logger().warn("Failed to find the block tag {}", tag.location());
             return Collections.emptyList();
         }
 
@@ -136,8 +135,8 @@ public class BlockMaterialMapping {
 		}
 
         if (isAppearanceChangingBlock(block)) {
-            Iris.logger.warn("Warning while parsing the block ID map entry for \"" + "block." + intId + "\":");
-            Iris.logger.warn("- The block {} can change appearance, skipping!", resourceLocation);
+            Iris.logger().warn("Warning while parsing the block ID map entry for \"" + "block." + intId + "\":");
+            Iris.logger().warn("- The block {} can change appearance, skipping!", resourceLocation);
             return;
         }
 
@@ -165,8 +164,8 @@ public class BlockMaterialMapping {
 			Property<?> property = stateManager.getProperty(key);
 
 			if (property == null) {
-				Iris.logger.warn("Error while parsing the block ID map entry for \"" + "block." + intId + "\":");
-				Iris.logger.warn("- The block " + resourceLocation + " has no property with the name " + key + ", ignoring!");
+				Iris.logger().warn("Error while parsing the block ID map entry for \"" + "block." + intId + "\":");
+				Iris.logger().warn("- The block " + resourceLocation + " has no property with the name " + key + ", ignoring!");
 
 				return;
 			}

@@ -32,7 +32,6 @@ import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -41,7 +40,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 public class ShaderPackScreen extends Screen implements HudHideable {
 	/**
@@ -399,7 +397,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 
 				return;
 			} catch (IOException e) {
-				Iris.logger.warn("Error copying dragged shader pack", e);
+				Iris.logger().warn("Error copying dragged shader pack", e);
 
 				this.notificationDialog = Component.translatable(
 					"options.iris.shaderPackSelection.copyError",
@@ -500,7 +498,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 		} catch (Exception e) {
 			// If the file could not be properly parsed or loaded,
 			// log the error and display a message to the user
-			Iris.logger.error("Error importing shader settings file \"" + settingFile.toString() + "\"", e);
+			Iris.logger().error("Error importing shader settings file \"" + settingFile.toString() + "\"", e);
 
 			this.notificationDialog = Component.translatable(
 				"options.iris.shaderPackOptions.failedImport",
@@ -521,7 +519,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 		try {
 			shaderPackList.close();
 		} catch (IOException e) {
-			Iris.logger.error("Failed to safely close shaderpack selection!", e);
+			Iris.logger().error("Failed to safely close shaderpack selection!", e);
 		}
 
 		this.minecraft.setScreen(parent);

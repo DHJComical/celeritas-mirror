@@ -452,7 +452,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
         }
 
         watch.stop();
-        Iris.logger.info("Loaded shaders in {}", watch);
+        Iris.logger().info("Loaded shaders in {}", watch);
 
         // We need to defer creation of the block state mappings, like Iris 1.8, because tags may not exist at launch time
         blockIdsNeedPopulation = true;

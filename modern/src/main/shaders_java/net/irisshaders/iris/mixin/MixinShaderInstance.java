@@ -5,10 +5,8 @@ import com.google.gson.JsonObject;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.shaders.Uniform;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.irisshaders.iris.Iris;
-import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.blending.DepthColorStorage;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
@@ -23,10 +21,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.GsonHelper;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
-import org.lwjgl.opengl.ARBTextureSwizzle;
-import org.lwjgl.opengl.GL20C;
-import org.lwjgl.opengl.GL30C;
-import net.minecraft.util.GsonHelper;
 import org.lwjgl.opengl.KHRDebug;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -37,14 +31,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.io.Reader;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.Map;
-import java.util.Objects;
 
 @Mixin(ShaderInstance.class)
 public abstract class MixinShaderInstance implements ShaderInstanceInterface {
@@ -118,7 +110,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         shouldSkip = shouldSkipList.computeIfAbsent(getClass(), x -> {
             try {
                 MethodHandle iris$skipDraw = MethodHandles.lookup().findVirtual(x, "iris$skipDraw", MethodType.methodType(boolean.class));
-                Iris.logger.warn("Class " + x.getName() + " has opted out of being rendered with shaders.");
+                Iris.logger().warn("Class " + x.getName() + " has opted out of being rendered with shaders.");
                 return iris$skipDraw;
             } catch (NoSuchMethodException | IllegalAccessException e) {
                 return NONE;

@@ -78,7 +78,7 @@ public class ProfileSet {
 			} else if (optionSet.isBooleanOption(option)) {
 				builder.option(option, "true");
 			} else {
-				Iris.logger.warn("Invalid pack option: " + option);
+				Iris.logger().warn("Invalid pack option: " + option);
 			}
 		}
 

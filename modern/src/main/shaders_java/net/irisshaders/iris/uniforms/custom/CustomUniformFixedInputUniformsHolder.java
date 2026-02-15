@@ -71,7 +71,7 @@ public class CustomUniformFixedInputUniformsHolder {
 
 		private Builder put(String name, CachedUniform uniform) {
 			if (inputVariables.containsKey(name)) {
-				Iris.logger.warn("Duplicated fixed uniform supplied as inputs to the Custom uniform holder: " + name);
+				Iris.logger().warn("Duplicated fixed uniform supplied as inputs to the Custom uniform holder: " + name);
 				return this;
 			}
 			inputVariables.put(name, uniform);

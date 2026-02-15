@@ -35,7 +35,7 @@ public class MixinDisableFabulousGraphics {
 		}
 
 		if (options.graphicsMode().get() == GraphicsStatus.FABULOUS) {
-            Iris.logger.warn("Fabulous mode is forcefully disabled if shaders are on");
+            Iris.logger().warn("Fabulous mode is forcefully disabled if shaders are on");
 			// Disable fabulous graphics when shaders are enabled.
 			options.graphicsMode().set(GraphicsStatus.FANCY);
 		}

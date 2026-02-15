@@ -301,7 +301,7 @@ public class ProgramUniforms {
 				locations.put(id, name);
 				uniformNames.put(name, type);
 			} else {
-				Iris.logger.warn("[" + this.name + "] Duplicate uniform: " + type.toString().toLowerCase() + " " + name);
+				Iris.logger().warn("[" + this.name + "] Duplicate uniform: " + type.toString().toLowerCase() + " " + name);
 
 				return OptionalInt.empty();
 			}
@@ -339,7 +339,7 @@ public class ProgramUniforms {
 						expectedName = "(unsupported type: " + getTypeName(type) + ")";
 					}
 
-					Iris.logger.error("[" + this.name + "] Wrong uniform type for " + name + ": Iris is providing " + provided + " but the program expects " + expectedName + ". Disabling that uniform.");
+					Iris.logger().error("[" + this.name + "] Wrong uniform type for " + name + ": Iris is providing " + provided + " but the program expects " + expectedName + ". Disabling that uniform.");
 
 					once.remove(name);
 					perTick.remove(name);
