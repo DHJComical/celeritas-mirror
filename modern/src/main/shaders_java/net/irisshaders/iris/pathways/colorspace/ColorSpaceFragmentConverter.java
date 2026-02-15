@@ -1,7 +1,6 @@
 package net.irisshaders.iris.pathways.colorspace;
 
 import com.google.common.collect.ImmutableSet;
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.program.Program;
@@ -12,14 +11,15 @@ import net.irisshaders.iris.pathways.FullScreenQuadRenderer;
 import net.irisshaders.iris.shaderpack.preprocessor.JcppProcessor;
 import org.apache.commons.io.IOUtils;
 import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL11C;
-import org.lwjgl.opengl.GL30C;
+import org.taumc.celeritas.lwjgl.GL30;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 public class ColorSpaceFragmentConverter implements ColorSpaceConverter {
 	private int width;
@@ -36,12 +36,13 @@ public class ColorSpaceFragmentConverter implements ColorSpaceConverter {
 	}
 
 	public void rebuildProgram(int width, int height, ColorSpace colorSpace) {
+        // Note: The raw GL calls in here _should_ be safe enough not to conflict with the Mojang state manager.
 		if (program != null) {
 			program.destroy();
 			program = null;
 			framebuffer.destroy();
 			framebuffer = null;
-			GlStateManager._deleteTexture(swapTexture);
+            LWJGL.glDeleteTextures(swapTexture);
 			swapTexture = 0;
 		}
 
@@ -71,8 +72,8 @@ public class ColorSpaceFragmentConverter implements ColorSpaceConverter {
 		builder.uniformMatrix(UniformUpdateFrequency.ONCE, "projection", () -> new Matrix4f(2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, -1, -1, 0, 1));
 		builder.addDynamicSampler(() -> target, "readImage");
 
-		swapTexture = GlStateManager._genTexture();
-		IrisRenderSystem.texImage2D(swapTexture, GL30C.GL_TEXTURE_2D, 0, GL30C.GL_RGBA8, width, height, 0, GL30C.GL_RGBA, GL30C.GL_UNSIGNED_BYTE, null);
+		swapTexture = LWJGL.glGenTextures();
+		IrisRenderSystem.texImage2D(swapTexture, GL30.GL_TEXTURE_2D, 0, GL30.GL_RGBA8, width, height, 0, GL30.GL_RGBA, GL30.GL_UNSIGNED_BYTE, null);
 
 		this.framebuffer = new GlFramebuffer();
 		framebuffer.addColorAttachment(0, swapTexture);
@@ -88,6 +89,6 @@ public class ColorSpaceFragmentConverter implements ColorSpaceConverter {
 		FullScreenQuadRenderer.INSTANCE.render();
 		Program.unbind();
 		framebuffer.bindAsReadBuffer();
-		IrisRenderSystem.copyTexSubImage2D(targetImage, GL11C.GL_TEXTURE_2D, 0, 0, 0, 0, 0, width, height);
+		IrisRenderSystem.copyTexSubImage2D(targetImage, GL30.GL_TEXTURE_2D, 0, 0, 0, 0, 0, width, height);
 	}
 }
