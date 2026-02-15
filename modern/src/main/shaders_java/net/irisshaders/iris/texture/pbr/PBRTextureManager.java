@@ -3,7 +3,6 @@ package net.irisshaders.iris.texture.pbr;
 import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.state.StateUpdateNotifiers;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.irisshaders.iris.targets.backed.NativeImageBackedSingleColorTexture;
@@ -16,6 +15,7 @@ import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.Dumpable;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -57,7 +57,7 @@ public class PBRTextureManager {
 		try {
 			dumpable.dumpContents(id, path);
 		} catch (IOException e) {
-			Iris.logger().error("Failed to dump texture {}", id, e);
+			CeleritasShaders.logger().error("Failed to dump texture {}", id, e);
 		}
 	}
 
@@ -115,7 +115,7 @@ public class PBRTextureManager {
 					loader.load(texture, Minecraft.getInstance().getResourceManager(), consumer);
 					return consumer.toHolder();
 				} catch (Exception e) {
-					Iris.logger().debug("Failed to load PBR textures for texture " + id, e);
+					CeleritasShaders.logger().debug("Failed to load PBR textures for texture " + id, e);
 				} finally {
 					GlStateManager._bindTexture(previousTextureBinding);
 				}

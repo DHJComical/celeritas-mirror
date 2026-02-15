@@ -3,7 +3,6 @@ package net.irisshaders.iris.modern.materialmap;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.*;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.shaderpack.materialmap.BlockEntry;
 import net.irisshaders.iris.shaderpack.materialmap.BlockRenderType;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
@@ -22,6 +21,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.NotNull;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -102,7 +102,7 @@ public class BlockMaterialMapping {
         *///?}
 
         if (!tagOpt.isPresent()) {
-            Iris.logger().warn("Failed to find the block tag {}", tag.location());
+            CeleritasShaders.logger().warn("Failed to find the block tag {}", tag.location());
             return Collections.emptyList();
         }
 
@@ -135,8 +135,8 @@ public class BlockMaterialMapping {
 		}
 
         if (isAppearanceChangingBlock(block)) {
-            Iris.logger().warn("Warning while parsing the block ID map entry for \"" + "block." + intId + "\":");
-            Iris.logger().warn("- The block {} can change appearance, skipping!", resourceLocation);
+            CeleritasShaders.logger().warn("Warning while parsing the block ID map entry for \"" + "block." + intId + "\":");
+            CeleritasShaders.logger().warn("- The block {} can change appearance, skipping!", resourceLocation);
             return;
         }
 
@@ -164,8 +164,8 @@ public class BlockMaterialMapping {
 			Property<?> property = stateManager.getProperty(key);
 
 			if (property == null) {
-				Iris.logger().warn("Error while parsing the block ID map entry for \"" + "block." + intId + "\":");
-				Iris.logger().warn("- The block " + resourceLocation + " has no property with the name " + key + ", ignoring!");
+				CeleritasShaders.logger().warn("Error while parsing the block ID map entry for \"" + "block." + intId + "\":");
+				CeleritasShaders.logger().warn("- The block " + resourceLocation + " has no property with the name " + key + ", ignoring!");
 
 				return;
 			}

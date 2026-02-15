@@ -41,6 +41,7 @@ import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -111,7 +112,7 @@ public class Iris {
 	 */
 	public static void onRenderSystemInit() {
 		if (!initialized) {
-			Iris.logger().warn("Iris::onRenderSystemInit was called, but Iris::onEarlyInitialize was not called." +
+			CeleritasShaders.logger().warn("Iris::onRenderSystemInit was called, but Iris::onEarlyInitialize was not called." +
 				" Trying to avoid a crash but this is an odd state.");
 			return;
 		}
@@ -136,7 +137,7 @@ public class Iris {
 	 */
 	public static void onLoadingComplete() {
 		if (!initialized) {
-			Iris.logger().warn("Iris::onLoadingComplete was called, but Iris::onEarlyInitialize was not called." +
+			CeleritasShaders.logger().warn("Iris::onLoadingComplete was called, but Iris::onEarlyInitialize was not called." +
 				" Trying to avoid a crash but this is an odd state.");
 			return;
 		}
@@ -161,7 +162,7 @@ public class Iris {
 				}
 
 			} catch (Exception e) {
-				logger().error("Error while reloading Shaders for " + MODNAME + "!", e);
+				CeleritasShaders.logger().error("Error while reloading Shaders for " + MODNAME + "!", e);
 
 				if (minecraft.player != null) {
 					minecraft.player.displayClientMessage(Component.translatable("iris.shaders.reloaded.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED), false);
@@ -171,7 +172,7 @@ public class Iris {
 			try {
 				toggleShaders(minecraft, !irisConfig.areShadersEnabled());
 			} catch (Exception e) {
-				logger().error("Error while toggling shaders!", e);
+				CeleritasShaders.logger().error("Error while toggling shaders!", e);
 
 				if (minecraft.player != null) {
 					minecraft.player.displayClientMessage(Component.translatable("iris.shaders.toggled.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED), false);
@@ -213,7 +214,7 @@ public class Iris {
 		}
 
 		if (!irisConfig.areShadersEnabled()) {
-			logger().info("Shaders are disabled because enableShaders is set to false in iris.properties");
+			CeleritasShaders.logger().info("Shaders are disabled because enableShaders is set to false in iris.properties");
 
 			setShadersDisabled();
 
@@ -224,7 +225,7 @@ public class Iris {
 		Optional<String> externalName = irisConfig.getShaderPackName();
 
 		if (externalName.isEmpty()) {
-			logger().info("Shaders are disabled because no valid shaderpack is selected");
+			CeleritasShaders.logger().info("Shaders are disabled because no valid shaderpack is selected");
 
 			setShadersDisabled();
 
@@ -232,7 +233,7 @@ public class Iris {
 		}
 
 		if (!loadExternalShaderpack(externalName.get())) {
-			logger().warn("Falling back to normal rendering without shaders because the shaderpack could not be loaded");
+			CeleritasShaders.logger().warn("Falling back to normal rendering without shaders because the shaderpack could not be loaded");
 			setShadersDisabled();
 			fallback = true;
 		}
@@ -247,13 +248,13 @@ public class Iris {
 			shaderPackRoot = getShaderpacksDirectory().resolve(name);
 			shaderPackConfigTxt = getShaderpacksDirectory().resolve(name + ".txt");
 		} catch (InvalidPathException e) {
-			logger().error("Failed to load the shaderpack \"{}\" because it contains invalid characters in its path", name);
+			CeleritasShaders.logger().error("Failed to load the shaderpack \"{}\" because it contains invalid characters in its path", name);
 
 			return false;
 		}
 
 		if (!isValidShaderpack(shaderPackRoot)) {
-			logger().error("Pack \"{}\" is not valid! Can't load it.", name);
+			CeleritasShaders.logger().error("Pack \"{}\" is not valid! Can't load it.", name);
 			return false;
 		}
 
@@ -265,16 +266,16 @@ public class Iris {
 			try {
 				optionalPath = loadExternalZipShaderpack(shaderPackRoot);
 			} catch (FileSystemNotFoundException | NoSuchFileException e) {
-				logger().error("Failed to load the shaderpack \"{}\" because it does not exist in your shaderpacks folder!", name);
+				CeleritasShaders.logger().error("Failed to load the shaderpack \"{}\" because it does not exist in your shaderpacks folder!", name);
 
 				return false;
 			} catch (ZipException e) {
-				logger().error("The shaderpack \"{}\" appears to be corrupted, please try downloading it again!", name);
+				CeleritasShaders.logger().error("The shaderpack \"{}\" appears to be corrupted, please try downloading it again!", name);
 
 				return false;
 			} catch (IOException e) {
-				logger().error("Failed to load the shaderpack \"{}\"!", name);
-				logger().error("", e);
+				CeleritasShaders.logger().error("Failed to load the shaderpack \"{}\"!", name);
+				CeleritasShaders.logger().error("", e);
 
 				return false;
 			}
@@ -282,12 +283,12 @@ public class Iris {
 			if (optionalPath.isPresent()) {
 				shaderPackPath = optionalPath.get();
 			} else {
-				logger().error("Could not load the shaderpack \"{}\" because it appears to lack a \"shaders\" directory", name);
+				CeleritasShaders.logger().error("Could not load the shaderpack \"{}\" because it appears to lack a \"shaders\" directory", name);
 				return false;
 			}
 		} else {
 			if (!Files.exists(shaderPackRoot)) {
-				logger().error("Failed to load the shaderpack \"{}\" because it does not exist!", name);
+				CeleritasShaders.logger().error("Failed to load the shaderpack \"{}\" because it does not exist!", name);
 				return false;
 			}
 
@@ -296,7 +297,7 @@ public class Iris {
 		}
 
 		if (!Files.exists(shaderPackPath)) {
-			logger().error("Could not load the shaderpack \"{}\" because it appears to lack a \"shaders\" directory", name);
+			CeleritasShaders.logger().error("Could not load the shaderpack \"{}\" because it appears to lack a \"shaders\" directory", name);
 			return false;
 		}
 
@@ -324,8 +325,8 @@ public class Iris {
 
 			tryUpdateConfigPropertiesFile(shaderPackConfigTxt, configsToSave);
 		} catch (Exception e) {
-			logger().error("Failed to load the shaderpack \"{}\"!", name);
-			logger().error("", e);
+			CeleritasShaders.logger().error("Failed to load the shaderpack \"{}\"!", name);
+			CeleritasShaders.logger().error("", e);
             // TODO: Consider showing the feature flag screen
             /*
             if (Minecraft.getInstance().screen instanceof ShaderPackScreen) {
@@ -344,7 +345,7 @@ public class Iris {
 		fallback = false;
 		currentPackName = name;
 
-		logger().info("Using shaderpack: " + name);
+		CeleritasShaders.logger().info("Using shaderpack: " + name);
 
 		return true;
 	}
@@ -381,7 +382,7 @@ public class Iris {
 		fallback = false;
 		currentPackName = "(off)";
 
-		logger().info("Shaders are disabled");
+		CeleritasShaders.logger().info("Shaders are disabled");
 	}
 
 	public static void setDebug(boolean enable) {
@@ -389,7 +390,7 @@ public class Iris {
 			irisConfig.setDebugEnabled(enable);
 			irisConfig.save();
 		} catch (IOException e) {
-			Iris.logger().fatal("Failed to save config!", e);
+			CeleritasShaders.logger().fatal("Failed to save config!", e);
 		}
 
 		int success;
@@ -401,7 +402,7 @@ public class Iris {
 			success = 1;
 		}
 
-		logger().info("Debug functionality is " + (enable ? "enabled, logging will be more verbose!" : "disabled."));
+		CeleritasShaders.logger().info("Debug functionality is " + (enable ? "enabled, logging will be more verbose!" : "disabled."));
 		if (Minecraft.getInstance().player != null) {
 			Minecraft.getInstance().player.displayClientMessage(Component.translatable(success != 0 ? (enable ? "iris.shaders.debug.enabled" : "iris.shaders.debug.disabled") : "iris.shaders.debug.failure"), false);
 			if (success == 2) {
@@ -482,7 +483,7 @@ public class Iris {
 				}
 			} catch (ZipError zipError) {
 				// Java 8 seems to throw a ZipError instead of a subclass of IOException
-				Iris.logger().warn("The ZIP at " + pack + " is corrupt");
+				CeleritasShaders.logger().warn("The ZIP at " + pack + " is corrupt");
 			} catch (IOException ignored) {
 				// ignored, not a valid shader pack.
 			}
@@ -571,9 +572,9 @@ public class Iris {
 			try {
 				zipFileSystem.close();
 			} catch (NoSuchFileException e) {
-				logger().warn("Failed to close the shaderpack zip when reloading because it was deleted, proceeding anyways.");
+				CeleritasShaders.logger().warn("Failed to close the shaderpack zip when reloading because it was deleted, proceeding anyways.");
 			} catch (IOException e) {
-				logger().error("Failed to close zip file system?", e);
+				CeleritasShaders.logger().error("Failed to close zip file system?", e);
 			}
 		}
 	}
@@ -636,7 +637,7 @@ public class Iris {
 					storedError = Optional.of(e);
 				}
 			}
-			logger().error("Failed to create shader rendering pipeline, disabling shaders!", e);
+			CeleritasShaders.logger().error("Failed to create shader rendering pipeline, disabling shaders!", e);
 			// TODO: This should be reverted if a dimension change causes shaders to compile again
 			fallback = true;
 
@@ -655,7 +656,7 @@ public class Iris {
 			try {
 				reload();
 			} catch (IOException e) {
-				logger().error("Error while reloading Shaders for " + MODNAME + "!", e);
+				CeleritasShaders.logger().error("Error while reloading Shaders for " + MODNAME + "!", e);
 
 				if (Minecraft.getInstance().player != null) {
 					Minecraft.getInstance().player.displayClientMessage(Component.translatable("iris.shaders.reloaded.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED), false);
@@ -775,8 +776,8 @@ public class Iris {
 				Files.createDirectories(getShaderpacksDirectory());
 			}
 		} catch (IOException e) {
-			logger().warn("Failed to create the shaderpacks directory!");
-			logger().warn("", e);
+			CeleritasShaders.logger().warn("Failed to create the shaderpacks directory!");
+			CeleritasShaders.logger().warn("", e);
 		}
 
 		irisConfig = new IrisConfig(PlatformUtil.getConfigDir().resolve(MODID + "-shaders.properties"));
@@ -784,14 +785,11 @@ public class Iris {
 		try {
 			irisConfig.initialize();
 		} catch (IOException e) {
-			logger().error("Failed to initialize Iris configuration, default values will be used instead");
-			logger().error("", e);
+			CeleritasShaders.logger().error("Failed to initialize Iris configuration, default values will be used instead");
+			CeleritasShaders.logger().error("", e);
 		}
 
 		initialized = true;
 	}
 
-    public static IrisLogging logger() {
-        return logger;
-    }
 }

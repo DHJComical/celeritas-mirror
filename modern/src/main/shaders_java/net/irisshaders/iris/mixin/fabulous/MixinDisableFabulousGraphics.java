@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 @Mixin(LevelRenderer.class)
 public class MixinDisableFabulousGraphics {
@@ -35,7 +36,7 @@ public class MixinDisableFabulousGraphics {
 		}
 
 		if (options.graphicsMode().get() == GraphicsStatus.FABULOUS) {
-            Iris.logger().warn("Fabulous mode is forcefully disabled if shaders are on");
+            CeleritasShaders.logger().warn("Fabulous mode is forcefully disabled if shaders are on");
 			// Disable fabulous graphics when shaders are enabled.
 			options.graphicsMode().set(GraphicsStatus.FANCY);
 		}

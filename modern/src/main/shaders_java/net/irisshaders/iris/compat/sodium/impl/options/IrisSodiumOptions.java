@@ -17,6 +17,7 @@ import org.taumc.celeritas.api.options.control.TickBoxControl;
 import org.embeddedt.embeddium.impl.gui.modern.SodiumGameOptionPages;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
 import org.taumc.celeritas.api.options.structure.*;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.util.Set;
@@ -37,7 +38,7 @@ public class IrisSodiumOptions {
                     Iris.reload();
                 }
             } catch (IOException e) {
-                Iris.logger().error("Error saving config", e);
+                CeleritasShaders.logger().error("Error saving config", e);
             }
         }
     };

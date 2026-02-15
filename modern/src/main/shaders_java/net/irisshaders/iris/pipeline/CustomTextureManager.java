@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.texture.GlTexture;
 import net.irisshaders.iris.gl.texture.TextureAccess;
 import net.irisshaders.iris.gl.texture.TextureType;
@@ -29,6 +28,7 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.io.FilenameUtils;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public class CustomTextureManager {
 				try {
 					customTextureIds.put(samplerName, createCustomTexture(textureData));
 				} catch (IOException | ResourceLocationException e) {
-					Iris.logger().error("Unable to parse the image data for the custom texture on stage "
+					CeleritasShaders.logger().error("Unable to parse the image data for the custom texture on stage "
 						+ textureStage + ", sampler " + samplerName, e);
 				}
 			});
@@ -71,7 +71,7 @@ public class CustomTextureManager {
 			try {
 				irisCustomTextures.put(name, createCustomTexture(texture));
 			} catch (IOException e) {
-				Iris.logger().error("Unable to parse the image data for the custom texture on sampler " + name, e);
+				CeleritasShaders.logger().error("Unable to parse the image data for the custom texture on sampler " + name, e);
 			}
 		});
 
@@ -79,7 +79,7 @@ public class CustomTextureManager {
 			try {
 				return Optional.of(createCustomTexture(textureData));
 			} catch (IOException | ResourceLocationException e) {
-				Iris.logger().error("Unable to parse the image data for the custom noise texture", e);
+				CeleritasShaders.logger().error("Unable to parse the image data for the custom noise texture", e);
 
 				return Optional.empty();
 			}

@@ -26,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.ArrayList;
 
@@ -54,10 +55,10 @@ public class MixinGameRenderer {
 
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void iris$logSystem(Minecraft arg, ItemInHandRenderer arg2, ResourceManager arg3, RenderBuffers arg4, CallbackInfo ci) {
-		Iris.logger().info("Hardware information:");
-		Iris.logger().info("CPU: " + GlUtil.getCpuInfo());
-		Iris.logger().info("GPU: " + GlUtil.getRenderer() + " (Supports OpenGL " + GlUtil.getOpenGLVersion() + ")");
-		Iris.logger().info("OS: " + System.getProperty("os.name") + " (" + System.getProperty("os.version") + ")");
+		CeleritasShaders.logger().info("Hardware information:");
+		CeleritasShaders.logger().info("CPU: " + GlUtil.getCpuInfo());
+		CeleritasShaders.logger().info("GPU: " + GlUtil.getRenderer() + " (Supports OpenGL " + GlUtil.getOpenGLVersion() + ")");
+		CeleritasShaders.logger().info("OS: " + System.getProperty("os.name") + " (" + System.getProperty("os.version") + ")");
 	}
 
 	@WrapWithCondition(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/player/LocalPlayer;I)V"))

@@ -1,7 +1,7 @@
 package net.irisshaders.iris.gl.blending;
 
-import net.irisshaders.iris.Iris;
 import org.lwjgl.opengl.GL11;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.Optional;
 
@@ -28,7 +28,7 @@ public enum BlendModeFunction {
 		try {
 			return Optional.of(BlendModeFunction.valueOf(name));
 		} catch (IllegalArgumentException e) {
-			Iris.logger().warn("Invalid blend mode! " + name);
+			CeleritasShaders.logger().warn("Invalid blend mode! " + name);
 			return Optional.empty();
 		}
 	}

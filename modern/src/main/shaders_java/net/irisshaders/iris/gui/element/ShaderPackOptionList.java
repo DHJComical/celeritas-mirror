@@ -27,6 +27,7 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -283,7 +284,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 					"Shader Pack Settings (.txt)", "*.txt")
 				.whenComplete((path, err) -> {
 					if (err != null) {
-						Iris.logger().error("Error selecting shader settings from file", err);
+						CeleritasShaders.logger().error("Error selecting shader settings from file", err);
 
 						return;
 					}
@@ -319,7 +320,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 					"Shader Pack Settings (.txt)", "*.txt")
 				.whenComplete((path, err) -> {
 					if (err != null) {
-						Iris.logger().error("Error selecting file to export shader settings", err);
+						CeleritasShaders.logger().error("Error selecting file to export shader settings", err);
 
 						return;
 					}
@@ -341,7 +342,7 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 						try (OutputStream out = Files.newOutputStream(p)) {
 							toSave.store(out, null);
 						} catch (IOException e) {
-							Iris.logger().error("Error saving properties to \"" + p + "\"", e);
+							CeleritasShaders.logger().error("Error saving properties to \"" + p + "\"", e);
 						}
 					});
 				});

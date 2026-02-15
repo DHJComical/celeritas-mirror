@@ -1,12 +1,12 @@
 package net.irisshaders.iris.compat.dh;
 
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.joml.Matrix4f;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -81,7 +81,7 @@ public class DHCompat {
 					throw new RuntimeException("DH found, but one or more API methods are missing. Iris requires DH [2.0.4] or DH API version [1.1.0] or newer. Please make sure you are on the latest version of DH and Iris.", e);
 				}
 			} else {
-				Iris.logger().info("DH not found, and classes not found.");
+				CeleritasShaders.logger().info("DH not found, and classes not found.");
 			}
 		}
 	}

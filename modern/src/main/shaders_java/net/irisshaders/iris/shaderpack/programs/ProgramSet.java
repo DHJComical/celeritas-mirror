@@ -1,6 +1,5 @@
 package net.irisshaders.iris.shaderpack.programs;
 
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
 import net.irisshaders.iris.shaderpack.ShaderPack;
@@ -13,6 +12,7 @@ import net.irisshaders.iris.shaderpack.properties.PackDirectives;
 import net.irisshaders.iris.shaderpack.properties.PackRenderTargetDirectives;
 import net.irisshaders.iris.shaderpack.properties.ShaderProperties;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.*;
 import java.util.function.Function;
@@ -196,7 +196,7 @@ public class ProgramSet implements ProgramSetInterface {
 
 		if (!sources.containsKey(ShaderType.VERTEX) && sources.containsKey(ShaderType.FRAGMENT)) {
 			// This is for really old packs that do not use a vertex shader.
-			Iris.logger().warn("Found a program (" + program + ") that has a fragment shader but no vertex shader? This is very legacy behavior and might not work right.");
+			CeleritasShaders.logger().warn("Found a program (" + program + ") that has a fragment shader but no vertex shader? This is very legacy behavior and might not work right.");
 			sources.put(ShaderType.VERTEX, """
 				#version 120
 
@@ -358,7 +358,7 @@ public class ProgramSet implements ProgramSetInterface {
 		}
 
 		packDirectives.getRenderTargetDirectives().getRenderTargetSettings().forEach((index, settings) ->
-			Iris.logger().debug("Render target settings for colortex" + index + ": " + settings));
+			CeleritasShaders.logger().debug("Render target settings for colortex" + index + ": " + settings));
 	}
 
 	public Optional<ProgramSource> getShadow() {

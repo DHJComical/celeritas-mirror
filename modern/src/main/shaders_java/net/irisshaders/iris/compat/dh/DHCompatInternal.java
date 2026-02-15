@@ -19,6 +19,7 @@ import net.irisshaders.iris.targets.DepthTexture;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.opengl.GL20C;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 
@@ -53,7 +54,7 @@ public class DHCompatInternal {
 		}
 
 		if (pipeline.getDHTerrainShader().isEmpty() && pipeline.getDHWaterShader().isEmpty()) {
-			Iris.logger().warn("No DH shader found in this pack.");
+			CeleritasShaders.logger().warn("No DH shader found in this pack.");
 			incompatible = true;
 			return;
 		}

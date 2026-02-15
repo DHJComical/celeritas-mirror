@@ -1,6 +1,5 @@
 package net.irisshaders.iris.shaderpack.preprocessor;
 
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.shaderpack.option.ShaderPackOptions;
 import org.anarres.cpp.Feature;
@@ -9,6 +8,7 @@ import org.anarres.cpp.Preprocessor;
 import org.anarres.cpp.PreprocessorCommand;
 import org.anarres.cpp.StringLexerSource;
 import org.anarres.cpp.Token;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class PropertiesPreprocessor {
 				try {
 					pp.addMacro(name, value);
 				} catch (LexerException e) {
-					Iris.logger().fatal("Failed to preprocess property file!", e);
+					CeleritasShaders.logger().fatal("Failed to preprocess property file!", e);
 				}
 			});
 
@@ -66,7 +66,7 @@ public class PropertiesPreprocessor {
 				preprocessor.addMacro(envDefine.key(), envDefine.value());
 			}
 		} catch (LexerException e) {
-			Iris.logger().fatal("Failed to preprocess property file!", e);
+			CeleritasShaders.logger().fatal("Failed to preprocess property file!", e);
 		}
 
 		return process(preprocessor, source);
@@ -111,7 +111,7 @@ public class PropertiesPreprocessor {
 				builder.append(tok.getText());
 			}
 		} catch (final Exception e) {
-			Iris.logger().error("Properties pre-processing failed", e);
+			CeleritasShaders.logger().error("Properties pre-processing failed", e);
 		}
 
 		source = builder.toString();

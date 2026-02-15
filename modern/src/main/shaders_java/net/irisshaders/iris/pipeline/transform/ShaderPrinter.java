@@ -3,6 +3,7 @@ package net.irisshaders.iris.pipeline.transform;
 import net.irisshaders.iris.Iris;
 import org.apache.commons.io.FilenameUtils;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -47,7 +48,7 @@ public class ShaderPrinter {
 
 				Files.createDirectories(debugOutDir);
 			} catch (IOException e) {
-				Iris.logger().warn("Failed to initialize debug patched shader source location", e);
+				CeleritasShaders.logger().warn("Failed to initialize debug patched shader source location", e);
 			}
 			outputLocationCleared = true;
 		}
@@ -138,7 +139,7 @@ public class ShaderPrinter {
 
 						Files.createDirectories(debugOutDir);
 					} catch (IOException e) {
-						Iris.logger().warn("Failed to initialize debug patched shader source location", e);
+						CeleritasShaders.logger().warn("Failed to initialize debug patched shader source location", e);
 					}
 					outputLocationCleared = true;
 				}
@@ -148,7 +149,7 @@ public class ShaderPrinter {
 						Files.writeString(debugOutDir.resolve(sources.get(i)), sources.get(i + 1));
 					}
 				} catch (IOException e) {
-					Iris.logger().warn("Failed to write debug patched shader source", e);
+					CeleritasShaders.logger().warn("Failed to write debug patched shader source", e);
 				}
 			}
 		}

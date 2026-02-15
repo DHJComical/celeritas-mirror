@@ -1,7 +1,6 @@
 package net.irisshaders.iris.mixin.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.texture.SpriteContentsExtension;
 import net.irisshaders.iris.texture.mipmap.CustomMipmapGenerator;
 import net.minecraft.client.renderer.texture.MipmapGenerator;
@@ -14,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 @Mixin(SpriteContents.class)
 public class MixinSpriteContents implements SpriteContentsExtension {
@@ -29,7 +29,7 @@ public class MixinSpriteContents implements SpriteContentsExtension {
 				try {
 					return generator.generateMipLevels(nativeImages, mipLevel);
 				} catch (Exception e) {
-					Iris.logger().error("ERROR MIPMAPPING", e);
+					CeleritasShaders.logger().error("ERROR MIPMAPPING", e);
 				}
 			}
 		}

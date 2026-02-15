@@ -11,6 +11,7 @@ import net.irisshaders.iris.pipeline.programs.ExtendedShader;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
 import net.irisshaders.iris.shadows.ShadowRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class ShaderOverrideEngine {
         if (overrideSupplier != null) {
             return overrideSupplier.get();
         } else if (missingOverrides.add(name)) {
-            Iris.logger().warn("Missing shader override for '{}'", name);
+            CeleritasShaders.logger().warn("Missing shader override for '{}'", name);
         }
 
         return null;

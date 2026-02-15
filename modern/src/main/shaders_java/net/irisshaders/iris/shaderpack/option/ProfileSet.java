@@ -1,9 +1,9 @@
 package net.irisshaders.iris.shaderpack.option;
 
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.IrisLogging;
 import net.irisshaders.iris.shaderpack.option.values.OptionValues;
 import org.jetbrains.annotations.Nullable;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -78,7 +78,7 @@ public class ProfileSet {
 			} else if (optionSet.isBooleanOption(option)) {
 				builder.option(option, "true");
 			} else {
-				Iris.logger().warn("Invalid pack option: " + option);
+				CeleritasShaders.logger().warn("Invalid pack option: " + option);
 			}
 		}
 

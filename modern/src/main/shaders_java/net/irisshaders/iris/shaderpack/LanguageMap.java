@@ -1,7 +1,7 @@
 package net.irisshaders.iris.shaderpack;
 
 import com.google.common.collect.ImmutableMap;
-import net.irisshaders.iris.Iris;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -46,7 +46,7 @@ public class LanguageMap {
 				try (InputStreamReader isr = new InputStreamReader(Files.newInputStream(path), StandardCharsets.UTF_8)) {
 					properties.load(isr);
 				} catch (IOException e) {
-					Iris.logger().error("Failed to parse shader pack language file " + path, e);
+					CeleritasShaders.logger().error("Failed to parse shader pack language file " + path, e);
 				}
 
 				ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();

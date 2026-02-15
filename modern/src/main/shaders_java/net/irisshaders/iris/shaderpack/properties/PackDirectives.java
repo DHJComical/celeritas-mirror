@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.buffer.ShaderStorageInfo;
 import net.irisshaders.iris.gl.texture.TextureScaleOverride;
 import net.irisshaders.iris.gl.texture.TextureType;
@@ -14,6 +13,7 @@ import net.irisshaders.iris.helpers.Tri;
 import net.irisshaders.iris.shaderpack.parsing.DirectiveHolder;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import org.joml.Vector2i;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.Optional;
 import java.util.Set;
@@ -285,7 +285,7 @@ public class PackDirectives {
 			if (index != -1) {
 				explicitFlips.put(index, shouldFlip);
 			} else {
-				Iris.logger().warn("Unknown buffer with ID " + buffer + " specified in flip directive for pass "
+				CeleritasShaders.logger().warn("Unknown buffer with ID " + buffer + " specified in flip directive for pass "
 					+ pass);
 			}
 		});

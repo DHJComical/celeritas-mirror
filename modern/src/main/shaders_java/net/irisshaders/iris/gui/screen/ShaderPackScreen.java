@@ -26,6 +26,7 @@ import net.minecraft.util.FormattedCharSequence;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -397,7 +398,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 
 				return;
 			} catch (IOException e) {
-				Iris.logger().warn("Error copying dragged shader pack", e);
+				CeleritasShaders.logger().warn("Error copying dragged shader pack", e);
 
 				this.notificationDialog = Component.translatable(
 					"options.iris.shaderPackSelection.copyError",
@@ -498,7 +499,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 		} catch (Exception e) {
 			// If the file could not be properly parsed or loaded,
 			// log the error and display a message to the user
-			Iris.logger().error("Error importing shader settings file \"" + settingFile.toString() + "\"", e);
+			CeleritasShaders.logger().error("Error importing shader settings file \"" + settingFile.toString() + "\"", e);
 
 			this.notificationDialog = Component.translatable(
 				"options.iris.shaderPackOptions.failedImport",
@@ -519,7 +520,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
 		try {
 			shaderPackList.close();
 		} catch (IOException e) {
-			Iris.logger().error("Failed to safely close shaderpack selection!", e);
+			CeleritasShaders.logger().error("Failed to safely close shaderpack selection!", e);
 		}
 
 		this.minecraft.setScreen(parent);

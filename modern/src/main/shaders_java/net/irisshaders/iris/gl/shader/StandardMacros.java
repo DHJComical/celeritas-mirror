@@ -17,6 +17,7 @@ import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,7 +122,7 @@ public class StandardMacros {
 		String[] splitVersion = version.split("\\.");
 
 		if (splitVersion.length < 2) {
-			Iris.logger().error("Could not parse game version \"" + version + "\"");
+			CeleritasShaders.logger().error("Could not parse game version \"" + version + "\"");
 			splitVersion = Iris.getBackupVersionNumber().split("\\.");
 		}
 

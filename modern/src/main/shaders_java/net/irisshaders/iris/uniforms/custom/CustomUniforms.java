@@ -15,13 +15,13 @@ import kroppeb.stareval.function.FunctionReturn;
 import kroppeb.stareval.function.Type;
 import kroppeb.stareval.parser.Parser;
 import kroppeb.stareval.resolver.ExpressionResolver;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.uniform.LocationalUniformHolder;
 import net.irisshaders.iris.gl.uniform.UniformHolder;
 import net.irisshaders.iris.parsing.IrisFunctions;
 import net.irisshaders.iris.parsing.IrisOptions;
 import net.irisshaders.iris.parsing.VectorType;
 import net.irisshaders.iris.uniforms.custom.cached.CachedUniform;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +68,7 @@ public class CustomUniforms implements FunctionContext {
 				}
 				//Iris.logger.info("Was able to resolve uniform " + variable.name + " = " + variable.expression);
 			} catch (Exception e) {
-				Iris.logger()
+				CeleritasShaders.logger()
 					.warn("Failed to resolve uniform " + variable.name + ", reason: " + e
 						.getMessage() + " ( = " + variable.expression + ")", e);
 			}
@@ -158,7 +158,7 @@ public class CustomUniforms implements FunctionContext {
 			}
 
 			if (!brokenUniforms.isEmpty()) {
-				Iris.logger().warn(
+				CeleritasShaders.logger().warn(
 					"The following uniforms won't work, either because they are broken, or reference a broken uniform: \n" +
 						brokenUniforms.stream().map(CachedUniform::getName).collect(Collectors.joining(", ")));
 			}
@@ -309,13 +309,13 @@ public class CustomUniforms implements FunctionContext {
 
 		public void addVariable(String type, String name, String expression, boolean isUniform) {
 			if (variables.containsKey(name)) {
-				Iris.logger().warn("Ignoring duplicated custom uniform name: " + name);
+				CeleritasShaders.logger().warn("Ignoring duplicated custom uniform name: " + name);
 				return;
 			}
 
 			Type parsedType = types.get(type);
 			if (parsedType == null) {
-				Iris.logger().warn("Ignoring invalid uniform type: " + type + " of " + name);
+				CeleritasShaders.logger().warn("Ignoring invalid uniform type: " + type + " of " + name);
 				return;
 			}
 
@@ -323,14 +323,14 @@ public class CustomUniforms implements FunctionContext {
 				ExpressionElement ast = Parser.parse(expression, IrisOptions.options);
 				variables.put(name, new Variable(parsedType, name, ast, isUniform));
 			} catch (Exception e) {
-				Iris.logger().warn("Failed to parse custom variable/uniform " + name + " with expression " + expression, e);
+				CeleritasShaders.logger().warn("Failed to parse custom variable/uniform " + name + " with expression " + expression, e);
 			}
 		}
 
 		public CustomUniforms build(
 			CustomUniformFixedInputUniformsHolder inputHolder
 		) {
-			Iris.logger().info("Starting custom uniform resolving");
+			CeleritasShaders.logger().info("Starting custom uniform resolving");
 			return new CustomUniforms(inputHolder, this.variables);
 		}
 

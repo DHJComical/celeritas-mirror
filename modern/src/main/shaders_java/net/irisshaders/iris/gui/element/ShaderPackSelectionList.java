@@ -15,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -54,7 +55,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
 				StandardWatchEventKinds.ENTRY_DELETE);
 			keyValid = true;
 		} catch (IOException e) {
-			Iris.logger().error("Couldn't register file watcher!", e);
+			CeleritasShaders.logger().error("Couldn't register file watcher!", e);
 			watcher1 = null;
 			key1 = null;
 			keyValid = false;
@@ -118,7 +119,7 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
 		try {
 			names = Iris.getShaderpacksDirectoryManager().enumerate();
 		} catch (Throwable e) {
-			Iris.logger().error("Error reading files while constructing selection UI", e);
+			CeleritasShaders.logger().error("Error reading files while constructing selection UI", e);
 
 			// Not translating this since it's going to be seen very rarely,
 			// We're just trying to get more information on a seemingly untraceable bug:

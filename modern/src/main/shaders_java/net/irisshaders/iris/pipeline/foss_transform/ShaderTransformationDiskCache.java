@@ -2,10 +2,10 @@ package net.irisshaders.iris.pipeline.foss_transform;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import net.irisshaders.iris.Iris;
 import org.apache.commons.codec.binary.Hex;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -60,12 +60,12 @@ public class ShaderTransformationDiskCache {
             if(map != null && !map.isEmpty()) {
                 return map;
             } else {
-                Iris.logger().error("Cache data is corrupt");
+                CeleritasShaders.logger().error("Cache data is corrupt");
                 Files.deleteIfExists(path);
             }
         } catch(FileNotFoundException | NoSuchFileException ignored) {
         } catch(IOException e) {
-            Iris.logger().error("Error loading transformed shader, will re-transform now", e);
+            CeleritasShaders.logger().error("Error loading transformed shader, will re-transform now", e);
         }
 
         Map<ShaderType, String> results = transformFn.get();
@@ -76,7 +76,7 @@ public class ShaderTransformationDiskCache {
                 writer.write(new Gson().toJson(results, typeToken.getType()));
             }
         } catch(IOException e) {
-            Iris.logger().error("Error writing transformed shader to disk", e);
+            CeleritasShaders.logger().error("Error writing transformed shader to disk", e);
         }
 
         return results;

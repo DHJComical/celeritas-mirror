@@ -1,20 +1,20 @@
 package net.irisshaders.iris.shaderpack.parsing;
 
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.shaderpack.programs.ComputeSource;
 import org.joml.Vector2f;
 import org.joml.Vector3i;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 public class ComputeDirectiveParser {
 	public static void setComputeWorkGroups(ComputeSource source, ConstDirectiveParser.ConstDirective directive) {
 		if (!directive.getValue().startsWith("ivec3")) {
-			Iris.logger().error("Failed to process " + directive + ": value was not a valid ivec3 constructor");
+			CeleritasShaders.logger().error("Failed to process " + directive + ": value was not a valid ivec3 constructor");
 		}
 
 		String ivec3Args = directive.getValue().substring("ivec3".length()).trim();
 
 		if (!ivec3Args.startsWith("(") || !ivec3Args.endsWith(")")) {
-			Iris.logger().error("Failed to process " + directive + ": value was not a valid ivec3 constructor");
+			CeleritasShaders.logger().error("Failed to process " + directive + ": value was not a valid ivec3 constructor");
 		}
 
 		ivec3Args = ivec3Args.substring(1, ivec3Args.length() - 1);
@@ -26,7 +26,7 @@ public class ComputeDirectiveParser {
 		}
 
 		if (parts.length != 3) {
-			Iris.logger().error("Failed to process " + directive +
+			CeleritasShaders.logger().error("Failed to process " + directive +
 				": expected 3 arguments to a ivec3 constructor, got " + parts.length);
 		}
 
@@ -36,19 +36,19 @@ public class ComputeDirectiveParser {
 				Integer.parseInt(parts[1]),
 				Integer.parseInt(parts[2])));
 		} catch (NumberFormatException e) {
-			Iris.logger().error("Failed to process " + directive, e);
+			CeleritasShaders.logger().error("Failed to process " + directive, e);
 		}
 	}
 
 	public static void setComputeWorkGroupsRelative(ComputeSource source, ConstDirectiveParser.ConstDirective directive) {
 		if (!directive.getValue().startsWith("vec2")) {
-			Iris.logger().error("Failed to process " + directive + ": value was not a valid vec2 constructor");
+			CeleritasShaders.logger().error("Failed to process " + directive + ": value was not a valid vec2 constructor");
 		}
 
 		String vec2Args = directive.getValue().substring("vec2".length()).trim();
 
 		if (!vec2Args.startsWith("(") || !vec2Args.endsWith(")")) {
-			Iris.logger().error("Failed to process " + directive + ": value was not a valid vec2 constructor");
+			CeleritasShaders.logger().error("Failed to process " + directive + ": value was not a valid vec2 constructor");
 		}
 
 		vec2Args = vec2Args.substring(1, vec2Args.length() - 1);
@@ -60,7 +60,7 @@ public class ComputeDirectiveParser {
 		}
 
 		if (parts.length != 2) {
-			Iris.logger().error("Failed to process " + directive +
+			CeleritasShaders.logger().error("Failed to process " + directive +
 				": expected 2 arguments to a vec2 constructor, got " + parts.length);
 		}
 
@@ -70,7 +70,7 @@ public class ComputeDirectiveParser {
 				Float.parseFloat(parts[1])
 			));
 		} catch (NumberFormatException e) {
-			Iris.logger().error("Failed to process " + directive, e);
+			CeleritasShaders.logger().error("Failed to process " + directive, e);
 		}
 	}
 }

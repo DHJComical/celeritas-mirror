@@ -6,6 +6,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -55,14 +56,14 @@ public class TextureFormatLoader {
 							}
 							return factory.createFormat(name, version);
 						} else {
-							Iris.logger().warn("Invalid texture format '" + name + "' in file '" + LOCATION + "'");
+							CeleritasShaders.logger().warn("Invalid texture format '" + name + "' in file '" + LOCATION + "'");
 						}
 					}
 				}
 			} catch (FileNotFoundException e) {
 				//
 			} catch (Exception e) {
-				Iris.logger().error("Failed to load texture format from file '" + LOCATION + "'", e);
+				CeleritasShaders.logger().error("Failed to load texture format from file '" + LOCATION + "'", e);
 			}
 		}
 		return null;

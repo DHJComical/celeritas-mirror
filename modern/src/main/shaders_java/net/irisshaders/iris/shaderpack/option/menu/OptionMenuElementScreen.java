@@ -1,8 +1,8 @@
 package net.irisshaders.iris.shaderpack.option.menu;
 
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.shaderpack.option.ShaderPackOptions;
 import net.irisshaders.iris.shaderpack.properties.ShaderProperties;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class OptionMenuElementScreen {
 					}
 				}
 			} catch (IllegalArgumentException error) {
-				Iris.logger().warn(error.getMessage());
+				CeleritasShaders.logger().warn(error.getMessage());
 
 				this.elements.add(OptionMenuElement.EMPTY);
 			}

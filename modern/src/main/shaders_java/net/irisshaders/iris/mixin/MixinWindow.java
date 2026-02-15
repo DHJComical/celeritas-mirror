@@ -9,6 +9,7 @@ import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 @Mixin(value = Window.class, priority = 1010)
 public class MixinWindow {
@@ -17,7 +18,7 @@ public class MixinWindow {
 		GLFW.glfwDefaultWindowHints();
 		if (Iris.getIrisConfig().areDebugOptionsEnabled()) {
 			GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GLFW.GLFW_TRUE);
-			Iris.logger().info("OpenGL debug context activated.");
+			CeleritasShaders.logger().info("OpenGL debug context activated.");
 		}
 	}
 }

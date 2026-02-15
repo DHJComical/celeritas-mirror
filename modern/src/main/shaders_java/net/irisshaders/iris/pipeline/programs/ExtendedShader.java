@@ -6,7 +6,6 @@ import com.mojang.blaze3d.shaders.ProgramManager;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
@@ -37,6 +36,7 @@ import org.joml.Matrix4f;
 import org.lwjgl.opengl.ARBTextureSwizzle;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.KHRDebug;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.util.List;
@@ -244,7 +244,7 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 				});
 				GLDebug.nameObject(KHRDebug.GL_SHADER, this.geometry.getId(), name.getPath() + "_geometry.gsh");
 			} catch (IOException e) {
-				Iris.logger().error("Failed to create shader program", e);
+				CeleritasShaders.logger().error("Failed to create shader program", e);
 			}
 		});
 		factory.getResource(ResourceLocationUtil.make(name.getNamespace(), name.getPath() + "_tessControl.tcs")).ifPresent(tessControl -> {
@@ -258,7 +258,7 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 				});
 				GLDebug.nameObject(KHRDebug.GL_SHADER, this.tessControl.getId(), name.getPath() + "_tessControl.tcs");
 			} catch (IOException e) {
-				Iris.logger().error("Failed to create shader program", e);
+				CeleritasShaders.logger().error("Failed to create shader program", e);
 			}
 		});
 		factory.getResource(ResourceLocationUtil.make(name.getNamespace(), name.getPath() + "_tessEval.tes")).ifPresent(tessEval -> {
@@ -272,7 +272,7 @@ public class ExtendedShader extends ShaderInstance implements ShaderInstanceInte
 				});
 				GLDebug.nameObject(KHRDebug.GL_SHADER, this.tessEval.getId(), name.getPath() + "_tessEval.tes");
 			} catch (IOException e) {
-				Iris.logger().error("Failed to create shader program", e);
+				CeleritasShaders.logger().error("Failed to create shader program", e);
 			}
 		});
 	}

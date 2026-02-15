@@ -4,7 +4,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.*;
-import net.irisshaders.iris.Iris;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -22,6 +21,7 @@ import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.util.DirectionUtil;
 import org.jetbrains.annotations.Nullable;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -181,7 +181,7 @@ public class ModelTextureAnalyzer {
         Stopwatch watch = Stopwatch.createStarted();
         var result = runAnalysis(blockStateIds).join();
         watch.stop();
-        Iris.logger().info("Analyzed texture materials in {}", watch);
+        CeleritasShaders.logger().info("Analyzed texture materials in {}", watch);
         return result;
     }
 
@@ -302,7 +302,7 @@ public class ModelTextureAnalyzer {
             try {
                 this.tasks.forEach(this::voteOnStates);
             } catch(Throwable e) {
-                Iris.logger().error("Exception encountered during texture analysis", e);
+                CeleritasShaders.logger().error("Exception encountered during texture analysis", e);
             } finally {
                 this.completableFuture.complete(null);
             }

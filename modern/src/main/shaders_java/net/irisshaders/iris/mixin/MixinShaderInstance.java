@@ -31,6 +31,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.Reader;
 import java.lang.invoke.MethodHandle;
@@ -110,7 +111,7 @@ public abstract class MixinShaderInstance implements ShaderInstanceInterface {
         shouldSkip = shouldSkipList.computeIfAbsent(getClass(), x -> {
             try {
                 MethodHandle iris$skipDraw = MethodHandles.lookup().findVirtual(x, "iris$skipDraw", MethodType.methodType(boolean.class));
-                Iris.logger().warn("Class " + x.getName() + " has opted out of being rendered with shaders.");
+                CeleritasShaders.logger().warn("Class " + x.getName() + " has opted out of being rendered with shaders.");
                 return iris$skipDraw;
             } catch (NoSuchMethodException | IllegalAccessException e) {
                 return NONE;

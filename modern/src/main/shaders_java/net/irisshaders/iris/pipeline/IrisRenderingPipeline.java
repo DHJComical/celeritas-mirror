@@ -106,6 +106,7 @@ import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL21C;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL43C;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -452,7 +453,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
         }
 
         watch.stop();
-        Iris.logger().info("Loaded shaders in {}", watch);
+        CeleritasShaders.logger().info("Loaded shaders in {}", watch);
 
         // We need to defer creation of the block state mappings, like Iris 1.8, because tags may not exist at launch time
         blockIdsNeedPopulation = true;

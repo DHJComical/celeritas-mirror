@@ -1,7 +1,6 @@
 package net.irisshaders.iris.texture.pbr.loader;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.mixin.texture.AnimationMetadataSectionAccessor;
 import net.irisshaders.iris.mixin.texture.TextureAtlasAccessor;
 import net.irisshaders.iris.texture.format.TextureFormat;
@@ -26,6 +25,7 @@ import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.Mth;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -96,7 +96,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		try {
 			animationMetadata = resource.metadata();
 		} catch (Exception e) {
-			Iris.logger().error("Unable to parse metadata from {}", pbrImageLocation, e);
+			CeleritasShaders.logger().error("Unable to parse metadata from {}", pbrImageLocation, e);
 			return null;
 		}
 
@@ -104,7 +104,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		try (InputStream stream = resource.open()) {
 			nativeImage = NativeImage.read(stream);
 		} catch (IOException e) {
-			Iris.logger().error("Using missing texture, unable to load {}", pbrImageLocation, e);
+			CeleritasShaders.logger().error("Using missing texture, unable to load {}", pbrImageLocation, e);
 			return null;
 		}
 
@@ -115,7 +115,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 		int frameWidth = frameSize.width();
 		int frameHeight = frameSize.height();
 		if (!Mth.isMultipleOf(imageWidth, frameWidth) || !Mth.isMultipleOf(imageHeight, frameHeight)) {
-			Iris.logger().error("Image {} size {},{} is not multiple of frame size {},{}", pbrImageLocation, imageWidth, imageHeight, frameWidth, frameHeight);
+			CeleritasShaders.logger().error("Image {} size {},{} is not multiple of frame size {},{}", pbrImageLocation, imageWidth, imageHeight, frameWidth, frameHeight);
 			nativeImage.close();
 			return null;
 		}
@@ -153,7 +153,7 @@ public class AtlasPBRLoader implements PBRTextureLoader<TextureAtlas> {
 					}
 				}
 			} catch (Exception e) {
-				Iris.logger().error("Something bad happened trying to load PBR texture " + spriteName.getPath() + pbrType.getSuffix() + "!", e);
+				CeleritasShaders.logger().error("Something bad happened trying to load PBR texture " + spriteName.getPath() + pbrType.getSuffix() + "!", e);
 				throw e;
 			}
 		}

@@ -1,7 +1,7 @@
 package net.irisshaders.iris.shaderpack.option;
 
 import com.google.common.collect.ImmutableMap;
-import net.irisshaders.iris.Iris;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,7 +69,7 @@ public class OptionSet {
 
 				if (merged == null) {
 					// TODO: Warn about ambiguous options better
-					Iris.logger().warn("Ignoring ambiguous boolean option " + option.getName());
+					CeleritasShaders.logger().warn("Ignoring ambiguous boolean option " + option.getName());
 					booleanOptions.remove(option.getName());
 					return;
 				}
@@ -95,7 +95,7 @@ public class OptionSet {
 
 				if (merged == null) {
 					// TODO: Warn about ambiguous options better
-					Iris.logger().warn("Ignoring ambiguous string option " + option.getName());
+					CeleritasShaders.logger().warn("Ignoring ambiguous string option " + option.getName());
 					stringOptions.remove(option.getName());
 					return;
 				}
