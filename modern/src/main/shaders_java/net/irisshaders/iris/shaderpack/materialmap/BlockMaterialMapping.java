@@ -1,5 +1,6 @@
 package net.irisshaders.iris.shaderpack.materialmap;
 
+import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.*;
 import net.irisshaders.iris.Iris;
@@ -7,7 +8,9 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -19,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class BlockMaterialMapping {
 	public static Object2IntMap<BlockState> createBlockStateIdMap(Int2ObjectMap<List<BlockEntry>> blockPropertiesMap) {
@@ -86,9 +90,30 @@ public class BlockMaterialMapping {
         return IS_APPEARANCE_CHANGING.get(block.getClass());
     }
 
+    private static Iterable<BlockEntry> getTagEntryBlocks(BlockEntry tagEntry) {
+        //? if >=1.19.3 {
+        var tag = TagKey.create(Registries.BLOCK, ResourceLocationUtil.make(tagEntry.id().getNamespace().toLowerCase(Locale.ROOT), tagEntry.id().getName().toLowerCase(Locale.ROOT)));
+        var tagOpt = BuiltInRegistries.BLOCK.getTag(tag);
+        //?} else {
+        /*var tag = TagKey.create(Registry.BLOCK_REGISTRY, ResourceLocationUtil.make(tagEntry.id().getNamespace().toLowerCase(Locale.ROOT), tagEntry.id().getName().toLowerCase(Locale.ROOT)));
+        var tagOpt = Registry.BLOCK.getTag(tag);
+        *///?}
+
+        if (!tagOpt.isPresent()) {
+            Iris.logger.warn("Failed to find the block tag {}", tag.location());
+            return Collections.emptyList();
+        }
+
+        var holderSet = tagOpt.orElseThrow();
+        return () -> Iterators.transform(holderSet.iterator(), holder -> {
+            var location = holder.unwrapKey().orElseThrow().location();
+            return new BlockEntry(new NamespacedId(location.getNamespace(), location.getPath()), tagEntry.propertyPredicates(), false);
+        });
+    }
+
 	private static void addBlockStates(BlockEntry entry, Object2IntMap<BlockState> idMap, int intId) {
         if (entry.isTag()) {
-            entry.expandEntries().forEach(nested -> addBlockStates(nested, idMap, intId));
+            getTagEntryBlocks(entry).forEach(nested -> addBlockStates(nested, idMap, intId));
             return;
         }
 
