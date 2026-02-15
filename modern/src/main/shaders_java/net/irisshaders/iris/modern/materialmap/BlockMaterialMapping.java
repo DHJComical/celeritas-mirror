@@ -1,9 +1,12 @@
-package net.irisshaders.iris.shaderpack.materialmap;
+package net.irisshaders.iris.modern.materialmap;
 
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.objects.*;
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.shaderpack.materialmap.BlockEntry;
+import net.irisshaders.iris.shaderpack.materialmap.BlockRenderType;
+import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

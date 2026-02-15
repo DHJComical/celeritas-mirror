@@ -2,7 +2,7 @@ package net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
-import net.irisshaders.iris.shaderpack.materialmap.FallbackTextureMaterials;
+import net.irisshaders.iris.modern.materialmap.FallbackTextureMaterials;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureAtlas;

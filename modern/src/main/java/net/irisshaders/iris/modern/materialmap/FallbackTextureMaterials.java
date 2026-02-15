@@ -1,4 +1,4 @@
-package net.irisshaders.iris.shaderpack.materialmap;
+package net.irisshaders.iris.modern.materialmap;
 
 import it.unimi.dsi.fastutil.objects.Object2IntFunction;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
