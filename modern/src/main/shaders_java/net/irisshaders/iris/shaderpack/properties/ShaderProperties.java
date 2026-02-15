@@ -25,14 +25,13 @@ import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.helpers.OptionalBoolean;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.helpers.Tri;
+import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.shaderpack.ImageInformation;
 import net.irisshaders.iris.shaderpack.option.OrderBackedProperties;
 import net.irisshaders.iris.shaderpack.option.ShaderPackOptions;
 import net.irisshaders.iris.shaderpack.preprocessor.PropertiesPreprocessor;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
-import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -127,8 +126,8 @@ public class ShaderProperties {
 
 		if (Iris.getIrisConfig().areDebugOptionsEnabled()) {
 			try {
-				Files.writeString(PlatformUtil.getGameDir().resolve("preprocessed.properties"), preprocessedContents);
-				Files.writeString(PlatformUtil.getGameDir().resolve("original.properties"), contents);
+				Files.writeString(ShaderPrinter.getDebugOutDir().resolve("preprocessed.properties"), preprocessedContents);
+				Files.writeString(ShaderPrinter.getDebugOutDir().resolve("original.properties"), contents);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
