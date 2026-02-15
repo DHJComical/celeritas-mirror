@@ -15,6 +15,7 @@ public record BlockEntry(NamespacedId id, Map<String, String> propertyPredicates
 	 */
 	@NotNull
 	public static BlockEntry parse(@NotNull String entry) {
+        // TODO-embeddedt introduce interning to compensate for common logic not being able to filter registry
 		if (entry.isEmpty()) {
 			throw new IllegalArgumentException("Called BlockEntry::parse with an empty string");
 		}

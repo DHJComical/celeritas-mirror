@@ -18,10 +18,6 @@ import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.option.OrderBackedProperties;
 import net.irisshaders.iris.shaderpack.option.ShaderPackOptions;
 import net.irisshaders.iris.shaderpack.preprocessor.PropertiesPreprocessor;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.level.block.Blocks;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
-import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -111,7 +107,7 @@ public class IdMap {
 
 		if (Iris.getIrisConfig().areDebugOptionsEnabled()) {
 			ShaderPrinter.deleteIfClearing();
-			try (OutputStream os = Files.newOutputStream(PlatformUtil.getGameDir().resolve("patched_shaders").resolve(name))) {
+			try (OutputStream os = Files.newOutputStream(ShaderPrinter.getDebugOutDir().resolve(name))) {
 				properties.store(new OutputStreamWriter(os, StandardCharsets.UTF_8), "Patched version of properties");
 			} catch (IOException e) {
 				throw new RuntimeException(e);
@@ -219,14 +215,6 @@ public class IdMap {
 
 				try {
                     var parsedEntry = BlockEntry.parse(part);
-
-                    if (!parsedEntry.isTag()) {
-                        // We can skip adding block entries for blocks that aren't registered. The registry does not
-                        // change during the lifetime of a shader pack.
-                        if (BuiltInRegistries.BLOCK.get(ResourceLocationUtil.make(parsedEntry.id().getNamespace(), parsedEntry.id().getName())) == Blocks.AIR) {
-                            continue;
-                        }
-                    }
 
 					entries.add(parsedEntry);
 				} catch (Exception e) {

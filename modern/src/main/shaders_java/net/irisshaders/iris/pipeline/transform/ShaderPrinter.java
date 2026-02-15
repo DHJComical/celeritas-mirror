@@ -8,6 +8,7 @@ import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,7 @@ import java.util.stream.Stream;
  * Static class that deals with printing the patched_shader folder.
  */
 public class ShaderPrinter {
-	private static final Path debugOutDir = PlatformUtil.getGameDir().resolve("patched_shaders");
+	private static final Path debugOutDir = Paths.get(System.getProperty("java.io.tmpdir")).resolve("patched_shaders");
 	private static boolean outputLocationCleared = false;
 	private static int programCounter = 0;
 
@@ -25,6 +26,10 @@ public class ShaderPrinter {
 		outputLocationCleared = false;
 		programCounter = 0;
 	}
+
+    public static Path getDebugOutDir() {
+        return debugOutDir;
+    }
 
 	public static void deleteIfClearing() {
 		if (!outputLocationCleared) {
