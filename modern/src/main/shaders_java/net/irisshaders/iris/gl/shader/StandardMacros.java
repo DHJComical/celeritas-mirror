@@ -10,6 +10,7 @@ import net.irisshaders.iris.pathways.HandRenderer;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.texture.format.TextureFormat;
 import net.irisshaders.iris.texture.format.TextureFormatLoader;
+import net.irisshaders.iris.uniforms.BiomeUniforms;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
@@ -98,6 +99,8 @@ public class StandardMacros {
 		for (String irisDefine : getIrisDefines()) {
 			define(standardDefines, irisDefine);
 		}
+
+        BiomeUniforms.getBiomeMap().forEach((biome, id) -> define(standardDefines, "BIOME_" + biome.location().getPath().toUpperCase(Locale.ROOT), String.valueOf(id)));
 
 		return ImmutableList.copyOf(standardDefines);
 	}

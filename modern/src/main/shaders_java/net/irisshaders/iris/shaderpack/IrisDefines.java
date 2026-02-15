@@ -1,10 +1,8 @@
 package net.irisshaders.iris.shaderpack;
 
 import com.google.common.collect.ImmutableList;
-import net.irisshaders.iris.gl.shader.StandardMacros;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.parsing.BiomeCategories;
-import net.irisshaders.iris.uniforms.BiomeUniforms;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +22,6 @@ public class IrisDefines {
 
 	public static ImmutableList<StringPair> createIrisReplacements() {
 		ArrayList<StringPair> s = new ArrayList<>();
-
-		BiomeUniforms.getBiomeMap().forEach((biome, id) -> define(s, "BIOME_" + biome.location().getPath().toUpperCase(Locale.ROOT), String.valueOf(id)));
 
 		BiomeCategories[] categories = BiomeCategories.values();
 		for (int i = 0; i < categories.length; i++) {
