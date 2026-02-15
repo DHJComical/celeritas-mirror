@@ -31,7 +31,6 @@ import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
 import net.irisshaders.iris.gl.texture.DepthBufferFormat;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
-import net.irisshaders.iris.helpers.FakeChainedJsonException;
 import net.irisshaders.iris.helpers.OptionalBoolean;
 import net.irisshaders.iris.helpers.Tri;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
@@ -94,6 +93,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.server.ChainedJsonException;
 import org.apache.commons.lang3.StringUtils;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
@@ -436,9 +436,13 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
                     return createShader(key.getName(), resolver.resolve(key.getProgram()), key, syncExecutor);
                 }
             });
-        } catch (FakeChainedJsonException e) {
+        } catch (ChainedJsonException e) {
             destroyShaders();
-            throw e.getTrueException();
+            if (e.getCause() instanceof ShaderCompileException compileException) {
+                throw compileException;
+            } else {
+                throw new RuntimeException(e);
+            }
         } catch (IOException e) {
             destroyShaders();
             throw new RuntimeException(e);
