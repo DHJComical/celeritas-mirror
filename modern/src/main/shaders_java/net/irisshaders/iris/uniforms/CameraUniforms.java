@@ -1,8 +1,8 @@
 package net.irisshaders.iris.uniforms;
 
 import net.irisshaders.iris.gl.uniform.UniformHolder;
-import net.irisshaders.iris.helpers.JomlConversions;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
@@ -40,7 +40,8 @@ public class CameraUniforms {
 	}
 
 	public static Vector3d getUnshiftedCameraPosition() {
-		return JomlConversions.fromVec3(client.gameRenderer.getMainCamera().getPosition());
+        Vec3 vec = client.gameRenderer.getMainCamera().getPosition();
+        return new Vector3d(vec.x(), vec.y(), vec.z());
 	}
 
 	public static Vector3f getCameraPositionFract(Vector3d originalPos) {

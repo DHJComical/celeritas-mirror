@@ -4,11 +4,9 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.gl.state.FogMode;
-import net.irisshaders.iris.gl.state.StateUpdateNotifiers;
 import net.irisshaders.iris.gl.state.ValueUpdateNotifier;
 import net.irisshaders.iris.gl.uniform.DynamicUniformHolder;
 import net.irisshaders.iris.gl.uniform.UniformHolder;
-import net.irisshaders.iris.helpers.JomlConversions;
 import net.irisshaders.iris.layer.GbufferPrograms;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.irisshaders.iris.mixin.statelisteners.BooleanStateAccessor;
@@ -217,8 +215,9 @@ public final class CommonUniforms {
 			return ZERO_VECTOR_3d;
 		}
 
-		return JomlConversions.fromVec3(client.level.getSkyColor(client.cameraEntity.position(),
-			CapturedRenderingState.INSTANCE.getTickDelta()));
+        Vec3 vec = client.level.getSkyColor(client.cameraEntity.position(),
+            CapturedRenderingState.INSTANCE.getTickDelta());
+        return new Vector3d(vec.x(), vec.y(), vec.z());
 	}
 
 	static float getBlindness() {
