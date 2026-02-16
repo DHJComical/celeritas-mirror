@@ -276,7 +276,7 @@ public class ShaderPackScreen extends Screen implements HudHideable {
             //? if <1.20.6 {
 			showHideButton.setTooltipDelay(10);
             //?} else
-            /*showHideButton.setTooltipDelay(Duration.ofSeconds(10));*/
+            /*showHideButton.setTooltipDelay(java.time.Duration.ofSeconds(10));*/
 
 			this.addRenderableWidget(showHideButton);
 		}
