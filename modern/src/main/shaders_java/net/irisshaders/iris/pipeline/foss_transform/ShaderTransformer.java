@@ -13,6 +13,7 @@ import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.shader.ShaderLoader;
 import org.taumc.glsl.ShaderParser;
+import org.taumc.glsl.ShaderPrinter;
 import org.taumc.glsl.StorageCollector;
 import org.taumc.glsl.Transformer;
 import org.taumc.glsl.grammar.GLSLLexer;
@@ -427,39 +428,6 @@ public class ShaderTransformer {
     }
 
     public static String getFormattedShader(ParseTree tree, String string) {
-        StringBuilder sb = new StringBuilder(string + "\n");
-        MutableObject<String> tab = new MutableObject<>("");
-        getFormattedShader(tree, sb, tab);
-        return sb.toString();
+        return string + "\n" + ShaderPrinter.getFormattedShader(tree);
     }
-
-    private static void getFormattedShader(ParseTree tree, StringBuilder stringBuilder, MutableObject<String> tab) {
-        if (tree instanceof TerminalNode) {
-            String text = tree.getText();
-            if (text.equals("<EOF>")) {
-                return;
-            }
-            if (text.equals("#")) {
-                stringBuilder.append("\n#");
-                return;
-            }
-            stringBuilder.append(text);
-            if (text.equals("{")) {
-                stringBuilder.append(" \n\t");
-                tab.setValue("\t");
-            }
-
-            if (text.equals("}")) {
-                stringBuilder.deleteCharAt(stringBuilder.length() - 2);
-                tab.setValue("");
-            }
-            stringBuilder.append(text.equals(";") ? " \n" + tab.getValue() : " ");
-        } else {
-            for(int i = 0; i < tree.getChildCount(); ++i) {
-                getFormattedShader(tree.getChild(i), stringBuilder, tab);
-            }
-        }
-
-    }
-
 }
