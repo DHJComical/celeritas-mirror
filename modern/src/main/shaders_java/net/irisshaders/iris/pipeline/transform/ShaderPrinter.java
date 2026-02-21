@@ -28,6 +28,7 @@ public class ShaderPrinter {
 	}
 
     public static Path getDebugOutDir() {
+        deleteIfClearing();
         return debugOutDir;
     }
 
