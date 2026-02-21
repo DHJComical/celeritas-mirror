@@ -56,6 +56,11 @@ public class RenderSection extends AbstractSection {
     private boolean needsDynamicTranslucencySorting;
 
     // Pending Update State
+
+    // The in-flight build job for this section, if one exists. Serves two purposes:
+    //   1. Cancellation: allows delete() to abort a queued or executing build early.
+    //   2. Deduplication hint: VisibleChunkCollector skips re-queuing a section whose build
+    //      is already in flight. submitRebuildTasks() performs the authoritative type check.
     @Nullable
     private CancellationToken buildCancellationToken = null;
 

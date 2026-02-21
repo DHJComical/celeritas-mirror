@@ -73,6 +73,9 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
     private void addToRebuildLists(RenderSection section) {
         ChunkUpdateType type = section.getPendingUpdate();
 
+        // Skip sections with an in-flight build to avoid redundant work. This is an advisory
+        // check only: submitRebuildTasks() will validate getPendingUpdate() independently before
+        // scheduling, so a stale null read of the token here cannot cause a double submission.
         if (type != null && section.getBuildCancellationToken() == null) {
             Queue<RenderSection> queue = this.sortedRebuildLists.get(type);
 

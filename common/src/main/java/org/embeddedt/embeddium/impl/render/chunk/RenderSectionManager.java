@@ -495,6 +495,9 @@ public abstract class RenderSectionManager {
 
             var job = result.render.getBuildCancellationToken();
 
+            // Only clear the token if this result belongs to the most recently submitted build.
+            // A stale result from an earlier submission must not clear the token for a newer
+            // in-flight job, which is identified by a higher lastSubmittedFrame.
             if (job != null && result.buildTime >= result.render.getLastSubmittedFrame()) {
                 result.render.setBuildCancellationToken(null);
             }
@@ -585,8 +588,13 @@ public abstract class RenderSectionManager {
                 continue;
             }
 
-            // Because Sodium creates the update queue on the frame before it's processed,
-            // the update type might no longer match. Filter out such a scenario.
+            // The pending update type may have changed since this entry was queued. Cases:
+            //   - A SORT was promoted to REBUILD (e.g. a block changed while a sort was pending):
+            //     the section remains in the SORT queue but pendingUpdate is now REBUILD, so the
+            //     SORT pass skips it and the REBUILD pass picks it up correctly.
+            //   - The type was cleared by a prior pass in the same frame.
+            //   - The type was set to null after the async BFS generated the list (authoritative
+            //     guard against double submissions from a stale buildCancellationToken read).
             if (section.getPendingUpdate() != type) {
                 continue;
             }
