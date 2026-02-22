@@ -18,7 +18,11 @@ import org.joml.Quaternionf;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
+//? if neoforge {
+/*@Mixin(ClientHooks.class)
+*///?} else {
 @Mixin(ForgeHooksClient.class)
+//?}
 public class MixinClientHooks_Hand {
     @WrapOperation(method = "handleCameraTransforms", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/model/BakedModel;applyTransform(Lnet/minecraft/world/item/ItemDisplayContext;Lcom/mojang/blaze3d/vertex/PoseStack;Z)Lnet/minecraft/client/resources/model/BakedModel;"))
     private static BakedModel applyCameraRotDuringTransform(BakedModel instance, ItemDisplayContext itemDisplayContext, PoseStack poseStack, boolean b, Operation<BakedModel> original) {
