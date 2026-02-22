@@ -10,7 +10,7 @@ public class ChunkTracker implements ClientChunkEventListener {
     private final LongSet unloadQueue = new LongOpenHashSet();
     private final LongSet loadQueue = new LongOpenHashSet();
 
-    private final int requiredNeighborRadius;
+    private int requiredNeighborRadius;
 
     public ChunkTracker() {
         this(1);
@@ -27,9 +27,42 @@ public class ChunkTracker implements ClientChunkEventListener {
      */
     public ChunkTracker(int requiredNeighborRadius) {
         if (requiredNeighborRadius < 0) {
-            throw new IllegalArgumentException("requiredNeighborRadius must be positive");
+            throw new IllegalArgumentException("requiredNeighborRadius must be nonnegative");
         }
         this.requiredNeighborRadius = requiredNeighborRadius;
+    }
+
+    public void setRequiredNeighborRadius(int radius) {
+        if (radius < 0) {
+            throw new IllegalArgumentException("radius must be nonnegative");
+        }
+        if (this.requiredNeighborRadius == radius) {
+            return;
+        }
+        boolean fullUpdate = radius > this.requiredNeighborRadius;
+        if (fullUpdate) {
+            // The requirement is now stricter; so we must clear chunkReady
+            var readyIterator = this.chunkReady.iterator();
+            while (readyIterator.hasNext()) {
+                long key = readyIterator.nextLong();
+                if (!this.loadQueue.remove(key)) {
+                    this.unloadQueue.add(key);
+                }
+            }
+            this.chunkReady.clear();
+        }
+        this.requiredNeighborRadius = radius;
+        // Recompute status of each chunk; this will repopulate chunkReady
+        var trackedChunksIterator = this.chunkStatus.keySet().iterator();
+        while (trackedChunksIterator.hasNext()) {
+            long pos = trackedChunksIterator.nextLong();
+            if (!fullUpdate && this.chunkReady.contains(pos)) {
+                continue;
+            }
+            var x = PositionUtil.unpackChunkX(pos);
+            var z = PositionUtil.unpackChunkZ(pos);
+            this.updateMerged(x, z);
+        }
     }
 
     @Override
