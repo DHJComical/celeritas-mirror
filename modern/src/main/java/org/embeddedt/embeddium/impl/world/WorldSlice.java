@@ -107,6 +107,12 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
     // The default block state used for out-of-bounds access
     private static final BlockState EMPTY_BLOCK_STATE = Blocks.AIR.defaultBlockState();
 
+    private static final BlockState[] EMPTY_BLOCK_STATE_ARRAY = new BlockState[SECTION_BLOCK_COUNT];
+
+    static {
+        Arrays.fill(EMPTY_BLOCK_STATE_ARRAY, EMPTY_BLOCK_STATE);
+    }
+
     // The world this slice has copied data from
     public final ClientLevel world;
 
@@ -116,8 +122,12 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
     // The biome blend cache
     private final BiomeColorCache biomeColors;
 
-    // (Local Section -> Block States) table.
+    // (Local Section -> Block States) table. The inner array references point at the corresponding entry
+    // in trueBlockArrays if the section is non-empty, and EMPTY_BLOCK_STATE_ARRAY otherwise.
     private final BlockState[][] blockArrays;
+
+    // Backing store for the non-empty blockArrays.
+    private final BlockState[][] trueBlockArrays;
 
     // (Local Section -> Light Arrays) table.
     private final @Nullable DataLayer[][] lightArrays;
@@ -188,7 +198,8 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
     public WorldSlice(ClientLevel world) {
         this.world = world;
 
-        this.blockArrays = new BlockState[SECTION_ARRAY_SIZE][SECTION_BLOCK_COUNT];
+        this.blockArrays = new BlockState[SECTION_ARRAY_SIZE][];
+        this.trueBlockArrays = new BlockState[SECTION_ARRAY_SIZE][SECTION_BLOCK_COUNT];
         this.lightArrays = new DataLayer[SECTION_ARRAY_SIZE][LIGHT_TYPES.length];
 
         this.blockEntityArrays = new Int2ReferenceMap[SECTION_ARRAY_SIZE];
@@ -204,9 +215,13 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
         );
 
 
-        for (BlockState[] blockArray : this.blockArrays) {
+        for (BlockState[] blockArray : this.trueBlockArrays) {
             Arrays.fill(blockArray, EMPTY_BLOCK_STATE);
         }
+
+        // Default to all block array references pointing at the canonical empty array.
+        // They will be replaced later when section data is copied in.
+        Arrays.fill(this.blockArrays, EMPTY_BLOCK_STATE_ARRAY);
     }
 
     public void copyData(ChunkRenderContext context) {
@@ -232,7 +247,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
         Objects.requireNonNull(section, "Chunk section must be non-null");
 
         try {
-            this.unpackBlockData(this.blockArrays[sectionIndex], context, section);
+            this.unpackBlockData(sectionIndex, section);
         } catch(RuntimeException e) {
             throw new IllegalStateException("Exception copying block data for section: " + section.getPosition(), e);
         }
@@ -245,15 +260,17 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
         this.modelDataGetters[sectionIndex] = section.getModelDataGetter();
     }
 
-    private void unpackBlockData(BlockState[] blockArray, ChunkRenderContext context, ClonedChunkSection section) {
+    private void unpackBlockData(int sectionIndex, ClonedChunkSection section) {
         if (section.getBlockData() == null) {
-            Arrays.fill(blockArray, EMPTY_BLOCK_STATE);
+            // blockArrays[sectionIndex] already initialized to empty in reset() and constructor
             return;
         }
 
+        this.blockArrays[sectionIndex] = this.trueBlockArrays[sectionIndex];
+
         var container = ReadableContainerExtended.of(section.getBlockData());
 
-        container.sodium$unpack(blockArray);
+        container.sodium$unpack(this.blockArrays[sectionIndex]);
     }
 
     public void reset() {
@@ -265,6 +282,8 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
 
             this.blockEntityArrays[sectionIndex] = null;
         }
+
+        Arrays.fill(this.blockArrays, EMPTY_BLOCK_STATE_ARRAY);
 
         this.extraClonedSections.clear();
     }
