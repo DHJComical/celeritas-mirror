@@ -57,7 +57,7 @@ public class CeleritasVintage {
 
         var strings = event.getRight();
         strings.add("");
-        strings.add(String.format("%s%s Renderer (%s)", ChatFormatting.GREEN, "Celeritas", VERSION));
+        strings.add(String.format("%s%s Renderer (%s)", ChatFormatting.AQUA, "Celeritas", VERSION));
 
         // Embeddium: Show a lot less with reduced debug info
         if (Minecraft.getMinecraft().isReducedDebug()) {

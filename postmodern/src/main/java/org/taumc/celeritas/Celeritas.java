@@ -40,7 +40,7 @@ public class Celeritas {
     private void registerDebugEntry(RegisterDebugEntriesEvent event) {
         event.register(RENDERER_INFO, (displayer, level, clientChunk, serverChunk) -> {
             ArrayList<String> strings = new ArrayList<>();
-            strings.add("%s%s Renderer (%s)".formatted(ChatFormatting.GREEN, MOD_NAME, VERSION));
+            strings.add("%s%s Renderer (%s)".formatted(ChatFormatting.AQUA, MOD_NAME, VERSION));
             var renderer = CeleritasWorldRenderer.instanceNullable();
             if (renderer != null) {
                 strings.addAll(renderer.getDebugStrings());

@@ -28,7 +28,7 @@ public abstract class DebugHudMixin {
 
     private <T extends List<String>> T injectRightF3Text(T strings) {
         strings.add("");
-        strings.add("%s%s Renderer (%s)".formatted(ChatFormatting.GREEN, MODNAME, Celeritas.getVersion()));
+        strings.add("%s%s Renderer (%s)".formatted(ChatFormatting.AQUA, MODNAME, Celeritas.getVersion()));
 
         // Embeddium: Show a lot less with reduced debug info
         if(Minecraft.getInstance().showOnlyReducedInfo()) {

@@ -49,7 +49,7 @@ public class CeleritasArchaic {
 
         var strings = event.right;
         strings.add("");
-        strings.add("%s%s Renderer (%s)".formatted(EnumChatFormatting.GREEN, "Celeritas", VERSION));
+        strings.add("%s%s Renderer (%s)".formatted(EnumChatFormatting.AQUA, "Celeritas", VERSION));
 
         var renderer = CeleritasWorldRenderer.instanceNullable();
 
