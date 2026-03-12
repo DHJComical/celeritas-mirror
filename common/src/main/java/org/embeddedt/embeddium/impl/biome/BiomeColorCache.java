@@ -25,7 +25,7 @@ public abstract class BiomeColorCache<BIOME, RESOLVER> {
 
     public BiomeColorCache(PositionalSupplier<BIOME> biomeData, int blendRadius) {
         this.biomeData = biomeData;
-        this.blendRadius = Math.min(7, blendRadius);
+        this.blendRadius = Math.min(14, blendRadius);
 
         this.sizeXZ = 16 + ((NEIGHBOR_BLOCK_RADIUS + this.blendRadius) * 2);
         this.sizeY = 16 + (NEIGHBOR_BLOCK_RADIUS * 2);

@@ -6,7 +6,7 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         exclusiveContent {
-            forRepository { maven("https://maven.neoforged.net/") }
+            forRepository { maven("https://maven.neoforged.net/releases") }
             filter {
                 includeGroup("net.neoforged")
             }

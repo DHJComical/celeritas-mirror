@@ -209,7 +209,7 @@ public class SodiumGameOptionPages {
                         .setId(StandardOptions.Option.BIOME_BLEND.cast())
                         .setName(TextComponent.translatable("sodium.options.biomeBlendRadius"))
                         .setTooltip(TextComponent.translatable("sodium.options.biome_blend.tooltip"))
-                        .setControl(option -> new SliderControl(option, 0, 7, 1, ControlValueFormatter.biomeBlend()))
+                        .setControl(option -> new SliderControl(option, 0, 14, 1, ControlValueFormatter.biomeBlend()))
                         .setBinding((opts, value) -> opts.quality.legacyBiomeBlendRadius = value, opts -> opts.quality.legacyBiomeBlendRadius)
                         .setImpact(OptionImpact.LOW)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
