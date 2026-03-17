@@ -139,10 +139,14 @@ public final class QuadTree<T> extends Rect2i
             return null;
         }
 
+        var entries = this.entries;
+
         if (entries != null)
         {
-            for (Entry<T> e : entries)
+            //noinspection ForLoopReplaceableByForEach
+            for (int i = 0; i < entries.size(); i++)
             {
+                var e = entries.get(i);
                 if (e.contains(x, y))
                 {
                     return e.item;
