@@ -76,6 +76,9 @@ public class ModLogoUtil {
             }
             ResourceLocation texture = ResourceLocationUtil.make(Celeritas.MODID, "logo/" + modId);
             Minecraft.getInstance().getTextureManager().register(texture, new DynamicTexture(
+                    //? if >=1.21.11 {
+                    /*() -> modId + "_logo",
+                    *///?}
                     logo));
             return texture;
         } else {

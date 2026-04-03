@@ -77,6 +77,21 @@ stonecutter.parameters {
         phase = "first"
         replace("com.mojang.blaze3d.platform.GlStateManager", "com.mojang.blaze3d.opengl.GlStateManager")
     }
+
+    replacements.string {
+        direction = eval(current.version, ">=1.21.11")
+        replace("net.minecraft.Util", "net.minecraft.util.Util")
+    }
+
+    replacements.string {
+        direction = eval(current.version, ">=1.21.11")
+        replace("net.minecraft.resources.ResourceLocation", "net.minecraft.resources.Identifier")
+    }
+
+    replacements.regex(eval(current.version, ">=1.21.11")) {
+        replace("\\bResourceLocation\\b", "Identifier")
+        reverse("\\bIdentifier\\b", "ResourceLocation")
+    }
 }
 
 ModDependencyCollector.defineConsts(stonecutter)

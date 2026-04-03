@@ -25,7 +25,7 @@ public class DirectionUtil {
     static {
         Direction[] directions = Direction.values();
         for (int i = 0; i < directions.length; i++) {
-            Vec3i normal = directions[i].getNormal();
+            Vec3i normal = getNormal(directions[i]);
             PACKED_NORMALS[i] = NormI8.pack(normal.getX(), normal.getY(), normal.getZ());
         }
     }
@@ -33,5 +33,13 @@ public class DirectionUtil {
     // Direction#byId is slow in the absence of Lithium
     public static Direction getOpposite(Direction dir) {
         return OPPOSITE_DIRECTIONS[dir.ordinal()];
+    }
+
+    public static Vec3i getNormal(Direction direction) {
+        //? if >=1.21.11 {
+        /*return direction.getUnitVec3i();
+        *///?} else {
+        return direction.getNormal();
+        //?}
     }
 }

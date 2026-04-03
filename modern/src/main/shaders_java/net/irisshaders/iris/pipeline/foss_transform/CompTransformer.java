@@ -200,7 +200,7 @@ public class CompTransformer {
 //            TypeQualifier newQualifier = data.qualifier.cloneInto(root);
 //            newQualifier.getChildren()
 //                    .add(new LayoutQualifier(Stream.of(new NamedLayoutQualifierPart(
-//                            new Identifier("location"),
+//                            new ResourceLocation("location"),
 //                            new LiteralExpression(Type.INT32, data.number)))));
 //            ExternalDeclaration newDeclaration = layoutedOutDeclarationTemplate.getInstanceFor(root,
 //                    newQualifier,

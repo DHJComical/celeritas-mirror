@@ -8,34 +8,39 @@ import org.embeddedt.embeddium.api.EmbeddiumConstants;
 import org.embeddedt.embeddium.impl.loader.common.Distribution;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.embeddedt.embeddium.impl.mixin.SodiumMixinPlugin;
+import org.embeddedt.embeddium.impl.util.MixinClassValidator;
 
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class FabricEarlyLoaderServices implements EarlyLoaderServices {
 
     @Override
-    public Path findEarlyMixinFolder(String path) {
-        var pathOpt = FabricLoader.getInstance().getModContainer(EmbeddiumConstants.MODID).orElseThrow().findPath(path);
-        if(pathOpt.isPresent()) {
-            return pathOpt.get();
+    public List<String> findEarlyMixinClasses(String packagePath) {
+        var pathOpt = FabricLoader.getInstance().getModContainer(EmbeddiumConstants.MODID).orElseThrow().findPath(packagePath);
+        Path root = null;
+        if (pathOpt.isPresent()) {
+            root = pathOpt.get();
         } else {
             try {
-                var resource = SodiumMixinPlugin.class.getResource("/" + path);
-                if (resource == null) {
-                    return null;
+                var resource = SodiumMixinPlugin.class.getResource("/" + packagePath);
+                if (resource != null) {
+                    Path clPath = Path.of(resource.toURI());
+                    if (Files.exists(clPath)) {
+                        root = clPath;
+                    }
                 }
-                Path clPath = Path.of(resource.toURI());
-                if(Files.exists(clPath)) {
-                    return clPath;
-                }
-            } catch(URISyntaxException ignored) {
+            } catch (URISyntaxException ignored) {
             }
-            return null;
         }
+        if (root == null) {
+            return Collections.emptyList();
+        }
+        return MixinClassValidator.scanMixinFolder(root);
     }
 
     @Override

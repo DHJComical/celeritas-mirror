@@ -18,9 +18,14 @@ import net.neoforged.fml.loading.moddiscovery.ModInfo;
 
 import org.embeddedt.embeddium.impl.loader.common.Distribution;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
+import org.embeddedt.embeddium.impl.util.MixinClassValidator;
+import org.embeddedt.embeddium.impl.util.PlatformUtil;
 
+//? if <1.21.10 {
 import java.nio.file.Files;
 import java.nio.file.Path;
+//?}
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -29,46 +34,67 @@ public class FMLEarlyLoaderServices implements EarlyLoaderServices {
     private static final String JSON_KEY_SODIUM_OPTIONS = "sodium:options";
 
     @Override
-    public Path findEarlyMixinFolder(String path) {
+    public List<String> findEarlyMixinClasses(String packagePath) {
         ModFileInfo modFileInfo = FMLLoader/*? if >=1.21.10 {*//*.getCurrent()*//*?}*/.getLoadingModList().getModFileById("embeddium");
 
         if (modFileInfo == null) {
             // Probably a load error
-            return null;
+            return List.of();
         }
 
         ModFile modFile = modFileInfo.getFile();
 
+        //? if >=1.21.10 {
+        /*String startingFolder = packagePath.endsWith("/") ? packagePath.substring(0, packagePath.length() - 1) : packagePath;
+        List<String> mixins = new java.util.ArrayList<>();
+        modFile.getContents().visitContent(startingFolder, (relativePath, resource) -> {
+            relativePath = relativePath.substring(startingFolder.length() + 1);
+            if (relativePath.indexOf('$') != -1 || !relativePath.endsWith(".class")) {
+                return;
+            }
+            try {
+                if (MixinClassValidator.isMixinClass(MixinClassValidator.fromBytecode(resource.readAllBytes()))) {
+                    mixins.add(relativePath.substring(0, relativePath.length() - 6).replace('/', '.'));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        return mixins;
+        *///?} else {
         //? if >=1.17 {
-        Path mixinPackagePath = modFile.findResource(path.split("/"));
+        Path mixinPackagePath = modFile.findResource(packagePath.split("/"));
         //?} else
-        /*Path mixinPackagePath = modFile.findResource(path);*/
-        if(Files.exists(mixinPackagePath))
-            return mixinPackagePath;
-        else
-            return null;
+        /*Path mixinPackagePath = modFile.findResource(packagePath);*/
+        if (!Files.exists(mixinPackagePath)) {
+            return List.of();
+        }
+        return MixinClassValidator.scanMixinFolder(mixinPackagePath.toAbsolutePath());
+        //?}
     }
 
     @Override
     public Distribution getDistribution() {
-        return FMLLoader.getDist().isClient() ? Distribution.CLIENT : Distribution.SERVER;
+        //? if >=1.21.1 {
+        /*var dist = FMLLoader.getCurrent().getDist();
+        *///?} else {
+        var dist = FMLLoader.getDist();
+        //?}
+        return dist.isClient() ? Distribution.CLIENT : Distribution.SERVER;
     }
 
     @Override
     public boolean isLoadingNormally() {
-        //? if neoforge && >=1.20.6
-        /*return !FMLLoader.getLoadingModList().hasErrors();*/
-        //? if forge || (neoforge && <1.20.6)
-        return FMLLoader.getLoadingModList().getErrors().isEmpty();
+        return PlatformUtil.isLoadValid();
     }
 
     public List<String> getLoadedModIds() {
-        return FMLLoader.getLoadingModList().getMods().stream().map(ModInfo::getModId).toList();
+        return LoadingModList.get().getMods().stream().map(ModInfo::getModId).toList();
     }
 
     @Override
     public boolean isModLoaded(String modId) {
-        return FMLLoader.getLoadingModList().getModFileById(modId) != null;
+        return PlatformUtil.modPresent(modId);
     }
 
     @Override

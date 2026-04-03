@@ -49,7 +49,7 @@ import java.util.List;
  * When an opening parenthesis is encountered, an "unfinished argument list" is pushed to the stack. Any comma will
  * fully combine the expression on the left of the comma and push it to that list. When a closing parenthesis is
  * encountered, a similar reduction is performed if the top of the stack is an expression. Then the parser checks if
- * the top of the stack is a Identifier, if so, this is a call expression, otherwise it is simply a bracketed expression
+ * the top of the stack is a ResourceLocation, if so, this is a call expression, otherwise it is simply a bracketed expression
  * </p>
  *
  * @author Kroppeb

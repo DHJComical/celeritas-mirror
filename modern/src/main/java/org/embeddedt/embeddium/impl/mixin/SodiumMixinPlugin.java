@@ -6,21 +6,13 @@ import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.asm.AnnotationProcessingEngine;
 import org.embeddedt.embeddium.impl.asm.ClientLevelLambdaRemover;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
-import org.embeddedt.embeddium.impl.util.MixinClassValidator;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.embeddedt.embeddium.api.EmbeddiumConstants.MODNAME;
 
@@ -111,43 +103,16 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
 
     }
 
-    private static String mixinClassify(Path baseFolder, Path path) {
-        try {
-            String className = baseFolder.relativize(path).toString().replace('/', '.').replace('\\', '.');
-            return className.substring(0, className.length() - 6);
-        } catch(RuntimeException e) {
-            throw new IllegalStateException("Error relativizing " + path + " to " + baseFolder, e);
-        }
-    }
-
     @Override
     public List<String> getMixins() {
         if (!EarlyLoaderServices.INSTANCE.getDistribution().isClient()) {
             return null;
         }
 
-        Set<Path> rootPaths = new HashSet<>();
-
-        Path mixinPackagePath = EarlyLoaderServices.INSTANCE.findEarlyMixinFolder(basePackage.replace('.', '/') + "/");
-        if(mixinPackagePath != null) {
-            rootPaths.add(mixinPackagePath.toAbsolutePath());
-        }
-
-        Set<String> possibleMixinClasses = new HashSet<>();
-        for(Path rootPath : rootPaths) {
-            try(Stream<Path> mixinStream = Files.find(rootPath, Integer.MAX_VALUE, (path, attrs) -> attrs.isRegularFile() && path.getFileName().toString().endsWith(".class"))) {
-                mixinStream
-                        .map(Path::toAbsolutePath)
-                        .filter(MixinClassValidator::isMixinClass)
-                        .map(path -> mixinClassify(rootPath, path))
-                        .filter(this::isMixinEnabled)
-                        .forEach(possibleMixinClasses::add);
-            } catch(IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return new ArrayList<>(possibleMixinClasses);
+        return EarlyLoaderServices.INSTANCE.findEarlyMixinClasses(basePackage.replace('.', '/') + "/")
+                .stream()
+                .filter(this::isMixinEnabled)
+                .toList();
     }
 
     @Override

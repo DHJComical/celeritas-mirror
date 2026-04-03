@@ -5,14 +5,18 @@ package org.embeddedt.embeddium.impl.loader.common;
 //? if forgelike
 import org.embeddedt.embeddium.impl.loader.forge.FMLEarlyLoaderServices;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
 
 public interface EarlyLoaderServices {
     EarlyLoaderServices INSTANCE = /*? if forgelike {*/ new FMLEarlyLoaderServices() /*?} else {*/ /*new FabricEarlyLoaderServices() *//*?}*/;
 
-    Path findEarlyMixinFolder(String path);
+    /**
+     * Discovers all mixin class names within the given package path (slash-separated, trailing slash included).
+     * Returns names relative to that package, dot-separated, without the {@code .class} suffix
+     * (e.g. {@code "features.render.world.ClientLevelMixin"}).
+     */
+    List<String> findEarlyMixinClasses(String packagePath);
 
     Distribution getDistribution();
 
