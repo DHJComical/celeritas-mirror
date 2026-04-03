@@ -142,6 +142,16 @@ if (generateSequence(project) { it.parent }.any { it.name == "modern" }) {
             }
         }
     }
+    val platformVersionSourceDir = if((stonecutterExt?.compare(stonecutterExt.current.version, "21.11") ?: -1) >= 0) {
+        "postmodern"
+    } else {
+        "modern"
+    }
+    sourceSets {
+        main {
+            java.srcDir("src/main/${platformVersionSourceDir}_java")
+        }
+    }
 }
 
 tasks.named<ProcessResources>("processResources") {
