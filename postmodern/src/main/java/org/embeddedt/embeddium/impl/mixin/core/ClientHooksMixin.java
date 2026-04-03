@@ -1,4 +1,4 @@
-package org.taumc.celeritas.mixin.core;
+package org.embeddedt.embeddium.impl.mixin.core;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.neoforged.neoforge.client.ClientHooks;

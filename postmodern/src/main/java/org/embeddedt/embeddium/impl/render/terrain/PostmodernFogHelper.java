@@ -1,4 +1,4 @@
-package org.taumc.celeritas.render.terrain;
+package org.embeddedt.embeddium.impl.render.terrain;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.fog.FogData;
@@ -8,7 +8,7 @@ import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat4v;
 import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderComponent;
 import org.joml.Vector4f;
-import org.taumc.celeritas.mixin.terrain.GameRendererAccessor;
+import org.embeddedt.embeddium.impl.mixin.terrain.GameRendererAccessor;
 
 import java.util.Collection;
 import java.util.List;

@@ -1,20 +1,15 @@
-package org.taumc.celeritas;
+package org.embeddedt.embeddium.impl;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.components.debug.DebugScreenDisplayer;
-import net.minecraft.client.gui.components.debug.DebugScreenEntry;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.client.gui.components.debug.DebugScreenProfile;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.RegisterDebugEntriesEvent;
 import org.embeddedt.embeddium.impl.gl.device.GLRenderDevice;
-import org.jspecify.annotations.Nullable;
-import org.taumc.celeritas.render.terrain.CeleritasWorldRenderer;
+import org.embeddedt.embeddium.impl.render.terrain.CeleritasWorldRenderer;
 
 import java.util.ArrayList;
 

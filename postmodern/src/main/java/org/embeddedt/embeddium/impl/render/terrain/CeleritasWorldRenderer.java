@@ -1,4 +1,4 @@
-package org.taumc.celeritas.render.terrain;
+package org.embeddedt.embeddium.impl.render.terrain;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -6,7 +6,6 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
-import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 

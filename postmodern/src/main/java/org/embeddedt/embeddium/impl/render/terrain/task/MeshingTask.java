@@ -1,4 +1,4 @@
-package org.taumc.celeritas.render.terrain.task;
+package org.embeddedt.embeddium.impl.render.terrain.task;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -28,7 +28,7 @@ import org.embeddedt.embeddium.impl.render.chunk.occlusion.SectionVisibilityBuil
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
 import org.joml.Vector3d;
-import org.taumc.celeritas.render.terrain.PostmodernChunkBuildContext;
+import org.embeddedt.embeddium.impl.render.terrain.PostmodernChunkBuildContext;
 
 import java.util.function.Function;
 

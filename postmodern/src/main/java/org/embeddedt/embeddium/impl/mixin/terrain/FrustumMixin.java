@@ -1,4 +1,4 @@
-package org.taumc.celeritas.mixin.terrain;
+package org.embeddedt.embeddium.impl.mixin.terrain;
 
 import net.minecraft.client.renderer.culling.Frustum;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;

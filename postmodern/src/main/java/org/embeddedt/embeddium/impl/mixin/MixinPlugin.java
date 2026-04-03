@@ -1,4 +1,4 @@
-package org.taumc.celeritas.mixin;
+package org.embeddedt.embeddium.impl.mixin;
 
 import net.neoforged.fml.loading.FMLLoader;
 import org.objectweb.asm.tree.ClassNode;
@@ -41,7 +41,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
     public List<String> getMixins() {
         var file = FMLLoader.getCurrent().getLoadingModList().getModFileById("celeritas");
         List<String> mixins = new ArrayList<>();
-        String startingFolder = "org/taumc/celeritas/mixin";
+        String startingFolder = "org/embeddedt/embeddium/impl/mixin";
         file.getFile().getContents().visitContent(startingFolder, (relativePath, resource) -> {
             relativePath = relativePath.substring(startingFolder.length() + 1);
             if (relativePath.indexOf('/') == -1 || relativePath.indexOf('$') != -1) {

@@ -1,4 +1,4 @@
-package org.taumc.celeritas.render.terrain;
+package org.embeddedt.embeddium.impl.render.terrain;
 
 import com.mojang.blaze3d.opengl.GlSampler;
 import com.mojang.blaze3d.opengl.GlStateManager;
@@ -16,7 +16,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.client.renderer.chunk.RenderRegionCache;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.data.AtlasIds;
@@ -37,8 +36,8 @@ import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL32C;
 import org.lwjgl.opengl.GL33C;
-import org.taumc.celeritas.mixin.core.GlCommandEncoderAccessor;
-import org.taumc.celeritas.render.terrain.task.MeshingTask;
+import org.embeddedt.embeddium.impl.mixin.core.GlCommandEncoderAccessor;
+import org.embeddedt.embeddium.impl.render.terrain.task.MeshingTask;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;

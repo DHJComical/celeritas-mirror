@@ -1,4 +1,4 @@
-package org.taumc.celeritas.mixin.terrain;
+package org.embeddedt.embeddium.impl.mixin.terrain;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.data.AtlasIds;
@@ -30,8 +29,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.taumc.celeritas.render.terrain.CeleritasWorldRenderer;
-import org.taumc.celeritas.render.terrain.PostmodernRenderSectionManager;
+import org.embeddedt.embeddium.impl.render.terrain.CeleritasWorldRenderer;
 
 import java.util.EnumMap;
 

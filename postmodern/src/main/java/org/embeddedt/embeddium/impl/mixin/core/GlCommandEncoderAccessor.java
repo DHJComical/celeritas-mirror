@@ -1,4 +1,4 @@
-package org.taumc.celeritas.mixin.core;
+package org.embeddedt.embeddium.impl.mixin.core;
 
 import com.mojang.blaze3d.opengl.GlCommandEncoder;
 import com.mojang.blaze3d.pipeline.RenderPipeline;

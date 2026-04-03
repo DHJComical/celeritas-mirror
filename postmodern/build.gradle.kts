@@ -26,9 +26,11 @@ neoForge {
         }
     }
 
-    mods {
-        create("celeritas") {
-            sourceSet(sourceSets.main.get())
+    mods.create("celeritas") {
+        sourceSet(sourceSets.main.get())
+        val commonProj = project(":common")
+        listOf("main", "lwjgl3", "lwjglCommon").forEach {
+            sourceSet(commonProj.sourceSets.getByName(it))
         }
     }
 

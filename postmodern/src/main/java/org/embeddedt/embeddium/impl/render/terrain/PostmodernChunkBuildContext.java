@@ -1,4 +1,4 @@
-package org.taumc.celeritas.render.terrain;
+package org.embeddedt.embeddium.impl.render.terrain;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
