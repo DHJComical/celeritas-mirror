@@ -142,7 +142,7 @@ if (generateSequence(project) { it.parent }.any { it.name == "modern" }) {
             }
         }
     }
-    val platformVersionSourceDir = if((stonecutterExt?.compare(stonecutterExt.current.version, "21.11") ?: -1) >= 0) {
+    val platformVersionSourceDir = if((stonecutterExt?.compare(stonecutterExt.current.version, "1.21.11") ?: -1) >= 0) {
         "postmodern"
     } else {
         "modern"

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 @Mod(Celeritas.MOD_ID)
 public class Celeritas {
-    public static final String MOD_ID = "celeritas";
+    public static final String MOD_ID = "embeddium";
     public static final String MOD_NAME = "Celeritas";
 
     public static final Identifier RENDERER_INFO = Identifier.fromNamespaceAndPath(Celeritas.MOD_ID, "renderer_info");

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class MixinPlugin implements IMixinConfigPlugin {
+public class SodiumMixinPlugin implements IMixinConfigPlugin {
     private static final Logger LOGGER = LoggerFactory.getLogger("CeleritasMixinPlugin");
 
     @Override
@@ -39,7 +39,7 @@ public class MixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
-        var file = FMLLoader.getCurrent().getLoadingModList().getModFileById("celeritas");
+        var file = FMLLoader.getCurrent().getLoadingModList().getModFileById("embeddium");
         List<String> mixins = new ArrayList<>();
         String startingFolder = "org/embeddedt/embeddium/impl/mixin";
         file.getFile().getContents().visitContent(startingFolder, (relativePath, resource) -> {

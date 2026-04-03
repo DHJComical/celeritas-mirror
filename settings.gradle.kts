@@ -140,6 +140,7 @@ createStonecutterProject("modern", listOf(
         CeleritasTarget("1.18.2", listOf("forge")),
         //CeleritasTarget("1.20.4", listOf("neoforge")),
         CeleritasTarget("1.21.1", listOf("fabric", "neoforge")),
+        CeleritasTarget("1.21.11", listOf("neoforge"))
         //CeleritasTarget("1.19.2", listOf("forge", "fabric"))
 ), { it.friendlyName }) { targets ->
     targets.forEach {
@@ -159,5 +160,3 @@ createStonecutterProject("modern", listOf(
         }
     }
 }
-
-include("postmodern")

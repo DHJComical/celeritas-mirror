@@ -69,7 +69,7 @@ val config: MDGConfig = if (modLoader == ModLoader.NEOFORGE) {
     apply(plugin = "net.neoforged.moddev")
     val neoForge = project.extensions.getByName("neoForge") as NeoForgeExtension
     neoForge.enable {
-        version = versionedProperty("neoforge")
+        version = requireNotNull(versionedProperty("neoforge")) { "NeoForge version must be specified for $minecraftVersion" }
         isDisableRecompilation = isDecompDisabled
     }
     neoForge.unitTest.enable()
