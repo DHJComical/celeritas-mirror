@@ -1,4 +1,4 @@
-package org.embeddedt.embeddium.impl.render.terrain;
+package org.embeddedt.embeddium.impl.gl.compat;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.fog.FogData;
@@ -13,8 +13,8 @@ import org.embeddedt.embeddium.impl.mixin.terrain.GameRendererAccessor;
 import java.util.Collection;
 import java.util.List;
 
-public class PostmodernFogHelper implements FogService {
-    private static final PostmodernFogHelper INSTANCE = new PostmodernFogHelper();
+public class FogHelper implements FogService {
+    private static final FogHelper INSTANCE = new FogHelper();
 
     public interface FogDataGetter {
         FogData celeritas$getLastFogData();
@@ -87,8 +87,8 @@ public class PostmodernFogHelper implements FogService {
 
         @Override
         public void setup() {
-            this.uFogColor.set(PostmodernFogHelper.INSTANCE.getFogColor());
-            var data = PostmodernFogHelper.fogRenderer().celeritas$getLastFogData();
+            this.uFogColor.set(FogHelper.INSTANCE.getFogColor());
+            var data = FogHelper.fogRenderer().celeritas$getLastFogData();
             this.uRenderDistFogStart.set(data.renderDistanceStart);
             this.uRenderDistFogEnd.set(data.renderDistanceEnd);
             this.uEnvFogStart.set(data.environmentalStart);

@@ -8,10 +8,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.embeddedt.embeddium.impl.render.terrain.PostmodernFogHelper;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 
 @Mixin(FogRenderer.class)
-public class FogRendererMixin implements PostmodernFogHelper.FogDataGetter {
+public class FogRendererMixin implements FogHelper.FogDataGetter {
     private FogData celeritas$lastFogData = new FogData();
     private Vector4f celeritas$lastFogColor = new Vector4f();
 
