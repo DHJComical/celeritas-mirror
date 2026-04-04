@@ -10,7 +10,10 @@ import java.util.Map;
 
 @Mixin(BlockColors.class)
 public interface BlockColorsAccessor {
-    //? if <26.1 {
+    //? if <1.17 {
+    /*@Accessor("field_186725_a")
+    Map<net.minecraftforge.registries.IRegistryDelegate<Block>, net.minecraft.client.color.block.BlockColor>
+    *///?} else if <26.1 {
     @Accessor("blockColors")
     Map<net.minecraft.core.Holder.Reference<Block>, net.minecraft.client.color.block.BlockColor>
     //?} else {

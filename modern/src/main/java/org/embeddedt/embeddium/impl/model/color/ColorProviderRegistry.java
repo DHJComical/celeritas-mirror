@@ -31,7 +31,9 @@ public class ColorProviderRegistry {
 
         var overridenBlocks = new ReferenceOpenHashSet<Block>();
         for (var entry : providers.entrySet()) {
-            var block = entry.getKey()/*? if <26.1 {*/.value()/*?}*/;
+            var block = entry.getKey()
+                    /*? if >=1.17 <26.1 {*/.value()/*?}*/
+                    /*? if <1.17 {*//*.get()*//*?}*/;
             if (!DefaultColorProviders.isVanillaProvider(entry.getValue())) {
                 overridenBlocks.add(block);
             }

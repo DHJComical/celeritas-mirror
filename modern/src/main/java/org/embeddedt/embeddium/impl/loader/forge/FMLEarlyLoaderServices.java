@@ -75,7 +75,7 @@ public class FMLEarlyLoaderServices implements EarlyLoaderServices {
 
     @Override
     public Distribution getDistribution() {
-        //? if >=1.21.1 {
+        //? if >=1.21.11 {
         /*var dist = FMLLoader.getCurrent().getDist();
         *///?} else {
         var dist = FMLLoader.getDist();

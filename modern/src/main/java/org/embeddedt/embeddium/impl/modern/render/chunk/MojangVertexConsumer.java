@@ -142,6 +142,7 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
         return this;
     }
 
+    //? if >=1.18 {
     @Override
     //? if <1.21
     public VertexConsumer color(int color) {
@@ -150,6 +151,7 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
         currentVertexObj.color = ColorARGB.toABGR(color);
         return this;
     }
+    //?}
 
     @Override
     //? if <1.21
