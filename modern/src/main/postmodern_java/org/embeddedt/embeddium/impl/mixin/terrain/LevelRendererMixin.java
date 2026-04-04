@@ -18,9 +18,11 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
 import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
+import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector3d;
@@ -29,12 +31,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.embeddedt.embeddium.impl.render.terrain.CeleritasWorldRenderer;
 
 import java.util.EnumMap;
 
 @Mixin(LevelRenderer.class)
-public abstract class LevelRendererMixin implements CeleritasWorldRenderer.Holder {
+public abstract class LevelRendererMixin implements WorldRendererExtended {
     @Shadow
     @Final
     private Minecraft minecraft;
@@ -44,7 +45,7 @@ public abstract class LevelRendererMixin implements CeleritasWorldRenderer.Holde
     private SectionOcclusionGraph sectionOcclusionGraph;
 
     @Unique
-    private final CeleritasWorldRenderer celeritas$renderer = new CeleritasWorldRenderer(this.minecraft);
+    private CeleritasWorldRenderer celeritas$renderer;
 
     @Unique
     private int frame;
@@ -52,13 +53,18 @@ public abstract class LevelRendererMixin implements CeleritasWorldRenderer.Holde
     @Unique
     private final Vector3d celeritas$camera = new Vector3d();
 
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void initializeRenderer(CallbackInfo ci) {
+        this.celeritas$renderer = new CeleritasWorldRenderer(this.minecraft);
+    }
+
     /**
      * @author embeddedt
      * @reason Capture projection matrix
      */
     @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/framegraph/FramePass;executes(Ljava/lang/Runnable;)V", ordinal = 0))
     private void captureProjectionMatrix(CallbackInfo ci, @Local(ordinal = 1, argsOnly = true) Matrix4f projectionMatrix) {
-        celeritas$renderer.setProjectionMatrix(projectionMatrix);
+        celeritas$renderer.setCurrentChunkRenderProjection(projectionMatrix);
     }
 
     @Redirect(method = "allChanged()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getEffectiveRenderDistance()I", ordinal = 1))
@@ -123,7 +129,7 @@ public abstract class LevelRendererMixin implements CeleritasWorldRenderer.Holde
     @Overwrite
     private ChunkSectionsToRender prepareChunkRenders(Matrix4fc matrix, double cameraX, double cameraY, double cameraZ) {
         var blocksAtlas = this.minecraft.getTextureManager().getTexture(AtlasIds.BLOCKS).getTextureView();
-        celeritas$renderer.setPoseMatrix(matrix);
+        celeritas$renderer.setCurrentChunkRenderPose(new Matrix4f(matrix));
         celeritas$camera.set(cameraX, cameraY, cameraZ);
         return new ChunkSectionsToRender(blocksAtlas, new EnumMap<>(ChunkSectionLayer.class), 0, new GpuBufferSlice[0]);
     }
@@ -141,7 +147,7 @@ public abstract class LevelRendererMixin implements CeleritasWorldRenderer.Holde
     }
 
     @Override
-    public CeleritasWorldRenderer celeritas$getWorldRenderer() {
+    public CeleritasWorldRenderer sodium$getWorldRenderer() {
         return celeritas$renderer;
     }
 

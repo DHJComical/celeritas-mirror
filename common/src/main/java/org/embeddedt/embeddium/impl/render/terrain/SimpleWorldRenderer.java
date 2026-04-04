@@ -209,10 +209,6 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
 
     /**
      * {@return an iterator over all visible block entities}
-     * <p>
-     * Note that this method performs significantly more allocations and will generally be less efficient than
-     * {@link SimpleWorldRenderer#forEachVisibleBlockEntity(Consumer)}. It is intended only for situations where using
-     * that method is not feasible.
      */
     public Iterator<BLOCKENTITY> blockEntityIterator() {
         return MinecraftBuiltRenderSectionData.generateBlockEntityIterator(this.renderSectionManager.getRenderLists(), this.renderSectionManager.getSectionsWithGlobalEntities());
