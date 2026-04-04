@@ -14,6 +14,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+//? if >=1.21.11
+/*import net.minecraft.client.renderer.feature.ModelFeatureRenderer;*/
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.BlockDestructionProgress;
@@ -225,11 +227,11 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
         matrices.pushPose();
         matrices.translate((double) pos.getX() - context.x(), (double) pos.getY() - context.y(), (double) pos.getZ() - context.z());
 
-        MultiBufferSource immediate = context.renderBuffers().bufferSource();
-        MultiBufferSource consumer = immediate;
         SortedSet<BlockDestructionProgress> breakingInfo = context.blockBreakingProgressions().get(pos.asLong());
 
         //? if <1.21.11 {
+        MultiBufferSource immediate = context.renderBuffers().bufferSource();
+        MultiBufferSource consumer = immediate;
         if (breakingInfo != null && !breakingInfo.isEmpty()) {
             int stage = breakingInfo.last().getProgress();
 
@@ -265,7 +267,18 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
             }
         }
         //?} else {
-        //?}
+        /*ModelFeatureRenderer.CrumblingOverlay crumblingOverlay;
+        if (breakingInfo != null && !breakingInfo.isEmpty()) {
+            crumblingOverlay = new ModelFeatureRenderer.CrumblingOverlay(breakingInfo.last().getProgress(), matrices.last());
+        } else {
+            crumblingOverlay = null;
+        }
+        // intentionally block the frustum culling
+        var state = dispatcher.tryExtractRenderState(entity, context.tickDelta(), crumblingOverlay, null);
+        if (state != null) {
+            context.renderState().blockEntityRenderStates.add(state);
+        }
+        *///?}
 
         matrices.popPose();
     }
@@ -301,7 +314,10 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
 
     public record BlockEntityRenderContext(
             PoseStack pose,
+            //? if <1.21.11 {
             RenderBuffers renderBuffers,
+            //?} else
+            /*net.minecraft.client.renderer.state.LevelRenderState renderState,*/
             double x,
             double y,
             double z,

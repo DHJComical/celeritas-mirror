@@ -3,6 +3,8 @@ package org.embeddedt.embeddium.impl.mixin.terrain;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.textures.GpuSampler;
+import com.mojang.blaze3d.vertex.PoseStack;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -13,9 +15,11 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.state.LevelRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.data.AtlasIds;
+import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
@@ -33,6 +37,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.EnumMap;
+import java.util.SortedSet;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin implements WorldRendererExtended {
@@ -44,6 +49,9 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
     @Final
     private SectionOcclusionGraph sectionOcclusionGraph;
 
+    @Shadow
+    @Final
+    private Long2ObjectMap<SortedSet<BlockDestructionProgress>> destructionProgress;
     @Unique
     private CeleritasWorldRenderer celeritas$renderer;
 
@@ -143,6 +151,24 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
             }
         } finally {
             RenderDevice.exitManagedCode();
+        }
+    }
+
+    @Inject(method = "extractVisibleBlockEntities(Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/state/LevelRenderState;Lnet/minecraft/client/renderer/culling/Frustum;)V", at = @At("RETURN"))
+    private void extractCeleritasBlockEntities(Camera camera, float partialTick, LevelRenderState renderState, Frustum frustum, CallbackInfo ci, @Local(ordinal = 0) boolean showOutlines) {
+        var cameraPos = camera.position();
+        celeritas$renderer.renderBlockEntities(new CeleritasWorldRenderer.BlockEntityRenderContext(
+                new PoseStack(),
+                renderState,
+                cameraPos.x,
+                cameraPos.y,
+                cameraPos.z,
+                this.destructionProgress,
+                partialTick,
+                null
+        ));
+        if (showOutlines && celeritas$renderer.didBlockEntityRequestOutline()) {
+            renderState.haveGlowingEntities = true;
         }
     }
 
