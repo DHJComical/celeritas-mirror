@@ -2,9 +2,10 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+*///?} else
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-//? if >=1.21.11
-/*import net.minecraft.client.renderer.block.model.BlockModelPart;*/
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.level.block.AirBlock;
 import org.embeddedt.embeddium.api.render.chunk.SectionInfoBuilder;
@@ -110,7 +111,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         //?}
 
         //? if >=1.21.11 {
-        /*ObjectArrayList<BlockModelPart> partsList = new ObjectArrayList<>();
+        /*ObjectArrayList<BlockStateModelPart> partsList = new ObjectArrayList<>();
         *///?}
 
         try {
@@ -141,8 +142,9 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             long seed = blockState.getSeed(blockPos);
                             context.update(GeometryCategory.BLOCK, blockPos, modelOffset, blockState, seed);
 
-                            var model = cache.getBlockModels().getBlockModel(blockState);
+
                             //? if <1.21.11 {
+                            var model = cache.getBlockModels().getBlockModel(blockState);
                             context.model(model);
 
                             //? if forgelike {
@@ -180,12 +182,12 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                             *///?}
 
                             //?} else {
-                            /*context.random().setSeed(seed);
+                            /*var model = cache.getBlockModels().get(blockState);
+                            context.random().setSeed(seed);
                             model.collectParts(context.localSlice(), blockPos, blockState, context.random(), partsList);
                             //noinspection ForLoopReplaceableByForEach
                             for (int i = 0; i < partsList.size(); i++) {
                                 context.model(partsList.get(i));
-                                context.renderLayer(context.model().getRenderType(blockState));
                                 cache.getBlockRenderer().renderModel(context, buffers);
                             }
                             partsList.clear();
@@ -198,6 +200,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         if (!fluidState.isEmpty()) {
                             context.model(null);
                             context.update(GeometryCategory.FLUID, blockPos, modelOffset, blockState, 42L);
+                            //? if <26.1
                             context.renderLayer(ItemBlockRenderTypes.getRenderLayer(fluidState));
                             cache.getFluidRenderer().render(context, buffers);
                         }

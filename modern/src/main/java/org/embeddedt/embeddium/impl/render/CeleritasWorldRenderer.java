@@ -62,11 +62,6 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
     @Setter
     private Matrix4f currentChunkRenderPose;
 
-    //? if >=1.21.11 {
-    /*@Setter
-    private Matrix4f currentChunkRenderProjection;
-    *///?}
-
     private boolean useEntityCulling;
 
 
@@ -154,8 +149,10 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
     protected ChunkRenderMatrices createChunkRenderMatrices() {
         //? if <1.21.11 {
         return ChunkRenderMatricesBuilder.from(Objects.requireNonNull(currentChunkRenderPose, "chunk render pose not set"));
-        //?} else
-        /*return new ChunkRenderMatrices(new Matrix4f(currentChunkRenderProjection), new Matrix4f(currentChunkRenderPose));*/
+        //?} else {
+        /*var currentChunkRenderProjection = this.client.gameRenderer.getGameRenderState().levelRenderState.cameraRenderState.projectionMatrix;
+        return new ChunkRenderMatrices(new Matrix4f(currentChunkRenderProjection), new Matrix4f(currentChunkRenderPose));
+        *///?}
     }
 
     private ChunkVertexType chooseVertexType() {
@@ -317,7 +314,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
             //? if <1.21.11 {
             RenderBuffers renderBuffers,
             //?} else
-            /*net.minecraft.client.renderer.state.LevelRenderState renderState,*/
+            /*net.minecraft.client.renderer.state.level.LevelRenderState renderState,*/
             double x,
             double y,
             double z,

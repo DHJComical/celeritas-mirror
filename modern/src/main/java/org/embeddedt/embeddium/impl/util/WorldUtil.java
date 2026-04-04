@@ -101,7 +101,9 @@ public class WorldUtil {
     }
 
     public static float getShade(BlockAndTintGetter getter, Direction lightFace, boolean shade) {
-        //? if >=1.16 {
+        //? if >=1.21.11 {
+        /*return shade ? getter.cardinalLighting().byFace(lightFace) : getter.cardinalLighting().up();
+        *///?} else if >=1.16 {
         return getter.getShade(lightFace, shade);
         //?} else if forgelike && <1.16 {
         /*return shade ? LightUtil.diffuseLight(lightFace) : 1.0f;

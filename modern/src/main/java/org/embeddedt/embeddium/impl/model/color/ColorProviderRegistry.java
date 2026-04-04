@@ -2,9 +2,9 @@ package org.embeddedt.embeddium.impl.model.color;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
 import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
-import org.embeddedt.embeddium.impl.model.color.interop.BlockColorsExtended;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.world.level.block.Block;
@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import org.embeddedt.embeddium.impl.mixin.core.model.colors.BlockColorsAccessor;
 
 /**
  * The color provider registry holds the map of {@link ColorProvider}s that are currently in use by the renderer. Most
@@ -26,13 +27,18 @@ public class ColorProviderRegistry {
     private final ReferenceSet<Block> overridenBlocks;
 
     public ColorProviderRegistry(BlockColors blockColors) {
-        var providers = BlockColorsExtended.getProviders(blockColors);
+        var providers = ((BlockColorsAccessor)blockColors).celeritas$getProviders();
 
-        for (var entry : providers.reference2ReferenceEntrySet()) {
-            this.blocks.put(entry.getKey(), DefaultColorProviders.adapt(entry.getValue()));
+        var overridenBlocks = new ReferenceOpenHashSet<Block>();
+        for (var entry : providers.entrySet()) {
+            var block = entry.getKey()/*? if <26.1 {*/.value()/*?}*/;
+            if (!DefaultColorProviders.isVanillaProvider(entry.getValue())) {
+                overridenBlocks.add(block);
+            }
+            this.blocks.put(block, DefaultColorProviders.adapt(entry.getValue()));
         }
 
-        this.overridenBlocks = BlockColorsExtended.getOverridenVanillaBlocks(blockColors);
+        this.overridenBlocks = overridenBlocks;
 
         this.installOverrides();
     }

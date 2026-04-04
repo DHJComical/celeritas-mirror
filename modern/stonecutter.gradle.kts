@@ -84,6 +84,16 @@ stonecutter.parameters {
     }
 
     replacements.string {
+        direction = eval(current.version, ">=26.1")
+        replace("net.minecraft.world.level.BlockAndTintGetter", "net.minecraft.client.renderer.block.BlockAndTintGetter")
+    }
+
+    replacements.string {
+        direction = eval(current.version, ">=26.1")
+        replace("net.minecraft.client.renderer.block.model.BakedQuad", "net.minecraft.client.resources.model.geometry.BakedQuad")
+    }
+
+    replacements.string {
         direction = eval(current.version, ">=1.21.11")
         replace("net.minecraft.resources.ResourceLocation", "net.minecraft.resources.Identifier")
     }

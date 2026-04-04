@@ -1,3 +1,4 @@
+//? if <26.1 {
 package org.embeddedt.embeddium.impl.render.fluid;
 
 //? if forge && >=1.19

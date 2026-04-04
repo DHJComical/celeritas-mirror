@@ -3,6 +3,11 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 import lombok.Getter;
 //? if shaders
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
+//? if <26.1 {
+import net.minecraft.client.renderer.block.BlockModelShaper;
+//?} else
+/*import net.minecraft.client.renderer.block.BlockStateModelSet;*/
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import org.embeddedt.embeddium.impl.Celeritas;
@@ -22,7 +27,6 @@ import org.embeddedt.embeddium.impl.world.WorldSlice;
 import org.embeddedt.embeddium.impl.world.cloned.ChunkRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.block.BlockModelShaper;
 
 /**
  * Holds important caches and working data structures for a single chunk meshing thread. All objects within
@@ -40,7 +44,12 @@ public class BlockRenderCache {
     private final SpecialBlockRenderer specialBlockRenderer;
     //?}
 
+    @Getter
+    //? if <26.1 {
     private final BlockModelShaper blockModels;
+    //?} else
+    /*private final BlockStateModelSet blockModels;*/
+
     private final WorldSlice worldSlice;
 
     //? if forgelike && <1.19 {
@@ -63,7 +72,23 @@ public class BlockRenderCache {
                 directionalShadingOff ? DiffuseProvider.NONE : new DiffuseProvider() {
                     @Override
                     public float getDiffuse(float normalX, float normalY, float normalZ, boolean shade) {
-                        //? if forgelike && >=1.19 {
+                        //? if >=1.21.11 {
+                        /*var cardinalLighting = world.cardinalLighting();
+                        if (!shade) {
+                            return cardinalLighting.up();
+                        }
+                        float diffuse = 0;
+                        if (normalX != 0) {
+                            diffuse += (normalX > 0 ? cardinalLighting.east() : cardinalLighting.west()) * (normalX * normalX);
+                        }
+                        if (normalY != 0) {
+                            diffuse += (normalY > 0 ? cardinalLighting.up() : cardinalLighting.down()) * (normalY * normalY);
+                        }
+                        if (normalZ != 0) {
+                            diffuse += (normalZ > 0 ? cardinalLighting.south() : cardinalLighting.north()) * (normalZ * normalZ);
+                        }
+                        return Math.min(diffuse, 1f);
+                        *///?} else if forgelike && >=1.19 {
                         return world.getShade(normalX, normalY, normalZ, shade);
                         //?} else if forgelike && <1.19 {
                         /*if (!shade) return world.effects().constantAmbientLight() ? 0.9f : 1.0f;
@@ -91,11 +116,10 @@ public class BlockRenderCache {
         //? if shaders
         this.specialBlockRenderer = new SpecialBlockRenderer();
 
+        //? if <26.1 {
         this.blockModels = client.getModelManager().getBlockModelShaper();
-    }
-
-    public BlockModelShaper getBlockModels() {
-        return this.blockModels;
+        //?} else
+        /*this.blockModels = client.getModelManager().getBlockStateModelSet();*/
     }
 
     public BlockRenderer getBlockRenderer() {

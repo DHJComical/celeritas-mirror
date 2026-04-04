@@ -16,13 +16,13 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.util.Mth;
-import org.embeddedt.embeddium.impl.mixin.core.GlCommandEncoderAccessor;
+import org.embeddedt.embeddium.impl.blaze3d.CeleritasCommandEncoder;
+import org.embeddedt.embeddium.impl.mixin.core.GlCommandEncoderMixin;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.QuadPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.lwjgl.opengl.GL32C;
 import org.lwjgl.opengl.GL33C;
@@ -49,7 +49,7 @@ public class PostmodernRenderPassConfigurationBuilder {
 
         private static VanillaTerrainConfig fromLayer(ChunkSectionLayer layer) {
             boolean hasAlphaCutoff = getAlphaCutoff(layer).orElse(0f) > 0;
-            return new VanillaTerrainConfig(getRenderTarget(layer), layer.pipeline(), hasAlphaCutoff, layer.sortOnUpload());
+            return new VanillaTerrainConfig(getRenderTarget(layer), layer.pipeline(), hasAlphaCutoff, layer.translucent());
         }
     }
 
@@ -80,15 +80,15 @@ public class PostmodernRenderPassConfigurationBuilder {
                             rendertarget.getDepthTextureView(),
                             OptionalDouble.empty()
                     );
-            if (encoder instanceof GlCommandEncoderAccessor glEncoder) {
-                glEncoder.invokeApplyPipelineState(config.pipeline());
+            if (encoder instanceof CeleritasCommandEncoder glEncoder) {
+                glEncoder.celeritas$configureForPipeline(config.pipeline());
             } else {
                 throw new IllegalStateException("Unexpected command encoder class: " + encoder.getClass().getName());
             }
             GlStateManager._activeTexture(GL32C.GL_TEXTURE0);
             bindAndApplyConfig(Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getTextureView(), 0, terrainSampler);
             GlStateManager._activeTexture(GL32C.GL_TEXTURE2);
-            bindAndApplyConfig(Minecraft.getInstance().gameRenderer.lightTexture().getTextureView(), 2, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
+            bindAndApplyConfig(Minecraft.getInstance().gameRenderer.lightmap(), 2, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             GlStateManager._activeTexture(GL32C.GL_TEXTURE0);
         }
 

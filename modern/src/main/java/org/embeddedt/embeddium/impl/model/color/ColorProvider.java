@@ -22,4 +22,11 @@ public interface ColorProvider<T> {
      * @param output The output array of vertex colors (in ABGR format)
      */
     void getColors(EmbeddiumBlockAndTintGetter view, BlockPos pos, T state, ModelQuadView quad, int[] output);
+
+    /**
+     * Reset any cached state held by this provider.
+     */
+    default void reset() {
+
+    }
 }

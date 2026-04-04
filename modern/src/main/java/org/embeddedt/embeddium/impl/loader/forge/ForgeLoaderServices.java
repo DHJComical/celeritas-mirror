@@ -5,7 +5,8 @@ import net.minecraftforge.common.ForgeConfig;
 //? if >=1.19
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 //?} else if neoforge {
-/*import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
+/*import net.minecraft.client.Minecraft;
+import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 *///?}
 
 //? if forgelike {
@@ -19,7 +20,11 @@ import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 public final class ForgeLoaderServices implements LoaderServices {
     @Override
     public int getFluidTintColor(BlockAndTintGetter world, FluidState state, BlockPos pos) {
-        //? if >=1.19 {
+        //? if >=26.1 {
+        /*var model = Minecraft.getInstance().getModelManager().getFluidStateModelSet().get(state);
+        var tintSource = model.fluidTintSource();
+        return tintSource != null ? tintSource.colorInWorld(state, world.getBlockState(pos), world, pos) : -1;
+        *///?} else if >=1.19 {
         return IClientFluidTypeExtensions.of(state).getTintColor(state, world, pos);
         //?} else
         /*return state.getType().getAttributes().getColor(world, pos);*/

@@ -11,8 +11,6 @@ import org.embeddedt.embeddium.impl.util.WorldUtil;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 //? if >=1.15 <1.21.11
 import net.minecraft.client.renderer.RenderType;
-//? if >=1.21.11
-/*import net.minecraft.client.renderer.chunk.ChunkSectionLayer;*/
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 //? if forge && >=1.19
@@ -53,7 +51,7 @@ public class BlockRenderContext {
     //? if <1.21.11 {
     private net.minecraft.client.resources.model.BakedModel model;
     //?} else
-    /*private net.minecraft.client.renderer.block.model.BlockModelPart model;*/
+    /*private net.minecraft.client.renderer.block.dispatch.BlockStateModelPart model;*/
 
     private long seed;
 
@@ -66,12 +64,11 @@ public class BlockRenderContext {
     //? if forgelike && <1.19.1
     /*private IModelData modelData;*/
 
+    //? if <26.1 {
     @Getter
     @Setter
-    //? if <1.21.11 {
     private RenderType renderLayer;
-    //?} else
-    /*private ChunkSectionLayer renderLayer;*/
+    //?}
 
     private int lightValue = -1;
 
@@ -80,6 +77,13 @@ public class BlockRenderContext {
     private final net.minecraft.util.RandomSource random = new net.minecraft.world.level.levelgen.SingleThreadedRandomSource(42L);
     //?} else
     /*private final java.util.Random random = new org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom(42L);*/
+
+    /**
+     * Increments each time the block being rendered changes; used to efficiently avoid re-retrieving data
+     * in lower-level constructs (e.g. vertex encoder).
+     */
+    @Getter
+    private int updateVersion;
 
     @Getter
     private GeometryCategory category = GeometryCategory.BLOCK;
@@ -101,6 +105,8 @@ public class BlockRenderContext {
         this.random.setSeed(seed);
 
         this.lightValue = -1;
+
+        this.updateVersion++;
     }
 
     /**

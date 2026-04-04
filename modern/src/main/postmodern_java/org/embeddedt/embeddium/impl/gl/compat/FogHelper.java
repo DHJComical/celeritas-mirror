@@ -7,8 +7,6 @@ import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat4v;
 import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderComponent;
-import org.joml.Vector4f;
-import org.embeddedt.embeddium.impl.mixin.terrain.GameRendererAccessor;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,23 +14,18 @@ import java.util.List;
 public class FogHelper implements FogService {
     private static final FogHelper INSTANCE = new FogHelper();
 
-    public interface FogDataGetter {
-        FogData celeritas$getLastFogData();
-        Vector4f celeritas$getLastFogColor();
-    }
-
-    private static FogDataGetter fogRenderer() {
-        return (FogDataGetter)((GameRendererAccessor)Minecraft.getInstance().gameRenderer).celeritas$getFogRenderer();
+    private static FogData fogData() {
+        return Minecraft.getInstance().gameRenderer.getGameRenderState().levelRenderState.cameraRenderState.fogData;
     }
 
     @Override
     public float getFogEnd() {
-        return fogRenderer().celeritas$getLastFogData().renderDistanceEnd;
+        return fogData().renderDistanceEnd;
     }
 
     @Override
     public float getFogStart() {
-        return fogRenderer().celeritas$getLastFogData().renderDistanceStart;
+        return fogData().renderDistanceStart;
     }
 
     @Override
@@ -52,7 +45,7 @@ public class FogHelper implements FogService {
 
     @Override
     public float[] getFogColor() {
-        var colorVec = fogRenderer().celeritas$getLastFogColor();
+        var colorVec = fogData().color;
         return new float[] { colorVec.x, colorVec.y, colorVec.z, colorVec.w };
     }
 
@@ -88,7 +81,7 @@ public class FogHelper implements FogService {
         @Override
         public void setup() {
             this.uFogColor.set(FogHelper.INSTANCE.getFogColor());
-            var data = FogHelper.fogRenderer().celeritas$getLastFogData();
+            var data = Minecraft.getInstance().gameRenderer.getGameRenderState().levelRenderState.cameraRenderState.fogData;
             this.uRenderDistFogStart.set(data.renderDistanceStart);
             this.uRenderDistFogEnd.set(data.renderDistanceEnd);
             this.uEnvFogStart.set(data.environmentalStart);

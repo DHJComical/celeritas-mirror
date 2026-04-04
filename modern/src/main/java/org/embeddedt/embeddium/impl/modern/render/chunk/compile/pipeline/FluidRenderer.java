@@ -4,7 +4,10 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 /*import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;*/
 //? if shaders
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
+//? if >=26.1 {
+/*import net.minecraft.client.renderer.block.FluidModel;
+import net.minecraft.client.renderer.block.FluidStateModelSet;
+*///?}
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.block.*;
@@ -50,7 +53,7 @@ import org.apache.commons.lang3.mutable.MutableFloat;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.embeddedt.embeddium.impl.render.chunk.compile.GlobalChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkColorWriter;
-//? if forgelike
+//? if forgelike && <26.1
 import org.embeddedt.embeddium.impl.render.fluid.EmbeddiumFluidSpriteCache;
 //? if >=1.18 <1.21.11
 import org.embeddedt.embeddium.impl.tags.EmbeddiumTags;
@@ -94,13 +97,15 @@ public class FluidRenderer {
     private final ChunkVertexEncoder.Vertex[] vertices = ChunkVertexEncoder.Vertex.uninitializedQuad();
     private final ColorProviderRegistry colorProviderRegistry;
 
-    //? if forgelike
+    //? if forgelike && <26.1
     private final EmbeddiumFluidSpriteCache fluidSpriteCache = new EmbeddiumFluidSpriteCache();
 
     private final ChunkColorWriter colorEncoder;
     private final MojangVertexConsumer vertexConsumer = new MojangVertexConsumer();
 
     private final FluidOcclusionCache occlusionCache = new FluidOcclusionCache();
+
+    private final boolean useAmbientOcclusion;
 
     //? if fabric && ffapi && >=1.17
     /*private final FabricFluidRenderer fabricFluidRenderer = new FabricFluidRenderer();*/
@@ -110,14 +115,28 @@ public class FluidRenderer {
      */
     private final boolean doVanillaRenderedFluidsExist;
 
+
+    //? if <1.21.11 {
     private final TextureAtlasSprite[] lavaSprites;
     private final TextureAtlasSprite[] waterSprites;
 
-    //? if <1.21.11 {
     private static TextureAtlasSprite spriteFromMaterial(net.minecraft.client.resources.model.Material material) {
         return material.sprite();
     }
     //?}
+
+    //? if >=26.1 {
+    /*private final FluidStateModelSet fluidModels = Minecraft.getInstance().getModelManager().getFluidStateModelSet();
+    private final TextureAtlasSprite[] fluidSpriteArray = new TextureAtlasSprite[3];
+
+    private TextureAtlasSprite[] readFluidModelSprites(FluidModel fluidModel) {
+        var array = fluidSpriteArray;
+        array[0] = fluidModel.stillMaterial().sprite();
+        array[1] = fluidModel.flowingMaterial().sprite();
+        array[2] = fluidModel.overlayMaterial() != null ? fluidModel.overlayMaterial().sprite() : null;
+        return array;
+    }
+    *///?}
 
     public FluidRenderer(ColorProviderRegistry colorProviderRegistry, LightPipelineProvider lighters) {
         this.quad.setLightFace(ModelQuadFacing.POS_Y);
@@ -125,23 +144,21 @@ public class FluidRenderer {
         this.lighters = lighters;
         this.colorProviderRegistry = colorProviderRegistry;
 
+        //? if <26.1 {
+        this.useAmbientOcclusion = Minecraft.useAmbientOcclusion();
+         //?} else
+        /*this.useAmbientOcclusion = Minecraft.getInstance().options.ambientOcclusion().get();*/
+
+        //? if <1.21.11 {
         this.lavaSprites = new TextureAtlasSprite[2];
         this.waterSprites = new TextureAtlasSprite[3];
 
-        //? if <1.21.11 {
         this.lavaSprites[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.LAVA.defaultBlockState()).getParticleIcon();
         this.lavaSprites[1] = spriteFromMaterial(ModelBakery.LAVA_FLOW);
         this.waterSprites[0] = Minecraft.getInstance().getModelManager().getBlockModelShaper().getBlockModel(Blocks.WATER.defaultBlockState()).getParticleIcon();
         this.waterSprites[1] = spriteFromMaterial(ModelBakery.WATER_FLOW);
         this.waterSprites[2] = spriteFromMaterial(ModelBakery.WATER_OVERLAY);
-        //?} else {
-        /*var atlasManager = Minecraft.getInstance().getAtlasManager();
-        this.lavaSprites[0] = atlasManager.get(ModelBakery.LAVA_STILL);
-        this.lavaSprites[1] = atlasManager.get(ModelBakery.LAVA_FLOW);
-        this.waterSprites[0] = atlasManager.get(ModelBakery.WATER_STILL);
-        this.waterSprites[1] = atlasManager.get(ModelBakery.WATER_FLOW);
-        this.waterSprites[2] = atlasManager.get(ModelBakery.WATER_OVERLAY);
-        *///?}
+        //?}
 
         //? if >=1.20 <1.21.11 {
         this.doVanillaRenderedFluidsExist = net.minecraft.core.registries.BuiltInRegistries.FLUID.getTagOrEmpty(EmbeddiumTags.RENDERS_WITH_VANILLA).iterator().hasNext();
@@ -227,6 +244,7 @@ public class FluidRenderer {
         return Math.abs(a - b) <= ALIGNED_EQUALS_EPSILON;
     }
 
+    //? if <1.21.11 {
     private void renderVanilla(EmbeddiumBlockAndTintGetter world, FluidState fluidState, BlockPos blockPos, ChunkModelBuilder buffers, Material material) {
         // Call vanilla fluid renderer and capture the results
         var context = (ModernChunkBuildContext)Objects.requireNonNull(GlobalChunkBuildContext.get());
@@ -248,6 +266,7 @@ public class FluidRenderer {
 
         context.setCaptureAdditionalSprites(false);
     }
+    //?}
 
     /**
      * Optimized version of FluidState.getFlow that does a fast, allocation-free check first and avoids
@@ -283,7 +302,14 @@ public class FluidRenderer {
         var blockPos = ctx.pos();
         var world = ctx.localSlice();
         var offset = ctx.origin();
-        var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(ctx.renderLayer());
+
+        //? if >=26.1 {
+        /*var fluidModel = fluidModels.get(fluidState);
+        var renderLayer = fluidModel.layer();
+        *///?} else {
+        var renderLayer = ctx.renderLayer();
+        //?}
+        var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(renderLayer);
         var encoder = buffers.get(material).getEncoder();
         var meshBuilder = buffers.get(material);
         Fluid fluid = fluidState.getType();
@@ -338,7 +364,9 @@ public class FluidRenderer {
         final ColorProvider<FluidState> colorProvider = this.getColorProvider(fluid);
 
         TextureAtlasSprite[] sprites;
-        //? if forgelike && <1.21.11 {
+        //? if >=26.1 {
+        /*sprites = readFluidModelSprites(fluidModel);
+        *///?} else if forgelike {
         sprites = fluidSpriteCache.getSprites(world, blockPos, fluidState);
         //?} else if ffapi {
         /*sprites = fabricFluidHandler.getFluidSprites(world, blockPos, fluidState);
@@ -375,7 +403,7 @@ public class FluidRenderer {
 
         final ModelQuadViewMutable quad = this.quad;
 
-        LightMode lightMode = isWater && Minecraft.useAmbientOcclusion() ? LightMode.SMOOTH : LightMode.FLAT;
+        LightMode lightMode = isWater && this.useAmbientOcclusion ? LightMode.SMOOTH : LightMode.FLAT;
         LightPipeline lighter = this.lighters.getLighter(lightMode);
 
         //? if shaders {
@@ -573,11 +601,11 @@ public class FluidRenderer {
 
                 boolean isOverlay = false;
 
-                if (sprites.length > 2) {
+                if (sprites.length > 2 && sprites[2] != null) {
                     BlockPos adjPos = this.scratchPos.set(adjX, adjY, adjZ);
                     BlockState adjBlock = world.getBlockState(adjPos);
 
-                    if (sprites[2] != null &&
+                    if (
                             /*? if forgelike {*/
                             adjBlock.shouldDisplayFluidOverlay(world, adjPos, fluidState)
                             /*?} else if ffapi && >=1.18 {*/
@@ -624,6 +652,8 @@ public class FluidRenderer {
 
             }
         }
+
+        colorProvider.reset();
 
         if (encoder instanceof ContextAwareChunkVertexEncoder contextAwareEncoder) {
             contextAwareEncoder.finishRenderingBlock();

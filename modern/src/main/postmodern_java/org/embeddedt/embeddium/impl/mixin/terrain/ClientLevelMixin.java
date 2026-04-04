@@ -23,6 +23,11 @@ public class ClientLevelMixin implements ChunkTrackerHolder {
 
     @Inject(method = "onChunkLoaded", at = @At("RETURN"))
     private void markLoaded(ChunkPos pChunkPos, CallbackInfo ci) {
-        this.tracker.onChunkStatusAdded(pChunkPos.x, pChunkPos.z, ChunkStatus.FLAG_HAS_BLOCK_DATA);
+        this.tracker.onChunkStatusAdded(
+                //? if <26.1 {
+                pChunkPos.x, pChunkPos.z,
+                //?} else
+                /*pChunkPos.x(), pChunkPos.z(),*/
+                ChunkStatus.FLAG_HAS_BLOCK_DATA);
     }
 }

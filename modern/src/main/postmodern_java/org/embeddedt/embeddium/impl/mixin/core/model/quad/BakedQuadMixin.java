@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.mixin.core.model.quad;
 
+import com.mojang.blaze3d.platform.Transparency;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -28,19 +29,7 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     public abstract long packedUV(int index);
 
     @Shadow
-    public abstract TextureAtlasSprite sprite();
-
-    @Shadow
-    public abstract int tintIndex();
-
-    @Shadow
     public abstract Direction direction();
-
-    @Shadow
-    public abstract boolean shade();
-
-    @Shadow
-    public abstract int lightEmission();
 
     @Shadow
     public abstract BakedNormals bakedNormals();
@@ -49,9 +38,11 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     public abstract BakedColors bakedColors();
 
     @Shadow
-    @Final
-    private boolean hasAmbientOcclusion;
+    public abstract BakedQuad.MaterialInfo materialInfo();
 
+    @Shadow
+    @Final
+    private BakedQuad.MaterialInfo materialInfo;
     @Unique
     private int flags;
 
@@ -83,7 +74,7 @@ public abstract class BakedQuadMixin implements BakedQuadView {
 
     @Override
     public Object celeritas$getSprite() {
-        return this.sprite();
+        return this.materialInfo().sprite();
     }
 
     @Override
@@ -103,7 +94,7 @@ public abstract class BakedQuadMixin implements BakedQuadView {
 
     @Override
     public int getVanillaLightEmission() {
-        return this.lightEmission();
+        return this.materialInfo().lightEmission();
     }
 
     @Override
@@ -127,17 +118,19 @@ public abstract class BakedQuadMixin implements BakedQuadView {
 
     @Override
     public @Nullable SpriteTransparencyLevel getTransparencyLevel() {
-        TextureAtlasSprite s = this.sprite();
-        if (s != null && (this.flags & ModelQuadFlags.IS_TRUSTED_SPRITE) != 0) {
-            return SpriteTransparencyLevel.Holder.getTransparencyLevel(s);
+        var transparency = this.materialInfo().sprite().contents().transparency();
+        if (transparency.equals(Transparency.NONE)) {
+            return SpriteTransparencyLevel.OPAQUE;
+        } else if (transparency.hasTranslucent()) {
+            return SpriteTransparencyLevel.TRANSLUCENT;
         } else {
-            return null;
+            return SpriteTransparencyLevel.TRANSPARENT;
         }
     }
 
     @Override
     public int getColorIndex() {
-        return this.tintIndex();
+        return this.materialInfo().tintIndex();
     }
 
     @Override
@@ -166,12 +159,12 @@ public abstract class BakedQuadMixin implements BakedQuadView {
     @Override
     @Unique(silent = true) // The target class has a function with the same name in a remapped environment
     public boolean hasShade() {
-        return this.shade();
+        return this.materialInfo().shade();
     }
 
     @Override
     public boolean hasAmbientOcclusion() {
-        return this.hasAmbientOcclusion;
+        return this.materialInfo().ambientOcclusion();
     }
 
     @Override

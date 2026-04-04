@@ -312,12 +312,19 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
                 .getFluidState();
     }
 
-    //? if >=1.16 {
+    //? if >=1.16 <26.1 {
     @Override
     public float getShade(Direction direction, boolean shaded) {
         return this.world.getShade(direction, shaded);
     }
     //?}
+
+    //? if >=26.1 {
+    /*@Override
+    public net.minecraft.world.level.CardinalLighting cardinalLighting() {
+        return this.world.cardinalLighting();
+    }
+    *///?}
 
     //? if >=1.15 {
     @Override
@@ -467,7 +474,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
         return this.modelDataGetters[getLocalSectionIndex(relSX, relSY, relSZ)];
     }
 
-    //? if forgelike && >=1.19 {
+    //? if forgelike && >=1.19 && <26.1 {
     @Override
     public float getShade(float normalX, float normalY, float normalZ, boolean shade) {
         return this.world.getShade(normalX, normalY, normalZ, shade);

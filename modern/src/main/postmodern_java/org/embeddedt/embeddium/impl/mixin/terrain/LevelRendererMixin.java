@@ -6,6 +6,7 @@ import com.mojang.blaze3d.textures.GpuSampler;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -15,7 +16,7 @@ import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.state.LevelRenderState;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.data.AtlasIds;
@@ -64,15 +65,6 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
     @Inject(method = "<init>", at = @At("RETURN"))
     private void initializeRenderer(CallbackInfo ci) {
         this.celeritas$renderer = new CeleritasWorldRenderer(this.minecraft);
-    }
-
-    /**
-     * @author embeddedt
-     * @reason Capture projection matrix
-     */
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/framegraph/FramePass;executes(Ljava/lang/Runnable;)V", ordinal = 0))
-    private void captureProjectionMatrix(CallbackInfo ci, @Local(ordinal = 1, argsOnly = true) Matrix4f projectionMatrix) {
-        celeritas$renderer.setCurrentChunkRenderProjection(projectionMatrix);
     }
 
     @Redirect(method = "allChanged()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getEffectiveRenderDistance()I", ordinal = 1))
@@ -130,19 +122,24 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
         }
     }
 
+    @Inject(method = "extractLevel", at = @At("HEAD"))
+    private void captureCamera(DeltaTracker deltaTracker, Camera camera, float deltaPartialTick, CallbackInfo ci) {
+        var pos = camera.position();
+        celeritas$camera.set(pos.x, pos.y, pos.z);
+    }
+
     /**
      * @author embeddedt
      * @reason Celeritas renders the chunks itself, so we return a blank list here.
      */
     @Overwrite
-    private ChunkSectionsToRender prepareChunkRenders(Matrix4fc matrix, double cameraX, double cameraY, double cameraZ) {
+    public ChunkSectionsToRender prepareChunkRenders(Matrix4fc matrix) {
         var blocksAtlas = this.minecraft.getTextureManager().getTexture(AtlasIds.BLOCKS).getTextureView();
         celeritas$renderer.setCurrentChunkRenderPose(new Matrix4f(matrix));
-        celeritas$camera.set(cameraX, cameraY, cameraZ);
         return new ChunkSectionsToRender(blocksAtlas, new EnumMap<>(ChunkSectionLayer.class), 0, new GpuBufferSlice[0]);
     }
 
-    @Redirect(method = "lambda$addMainPass$1", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;Lcom/mojang/blaze3d/textures/GpuSampler;)V"))
+    @Redirect(method = "lambda$addMainPass$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;Lcom/mojang/blaze3d/textures/GpuSampler;)V"))
     private void renderChunksWithCeleritas(ChunkSectionsToRender sectionsToRender, ChunkSectionLayerGroup group, GpuSampler terrainSampler) {
         RenderDevice.enterManagedCode();
         try {
@@ -154,7 +151,7 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
         }
     }
 
-    @Inject(method = "extractVisibleBlockEntities(Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/state/LevelRenderState;Lnet/minecraft/client/renderer/culling/Frustum;)V", at = @At("RETURN"))
+    @Inject(method = "extractVisibleBlockEntities(Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/client/renderer/culling/Frustum;)V", at = @At("RETURN"))
     private void extractCeleritasBlockEntities(Camera camera, float partialTick, LevelRenderState renderState, Frustum frustum, CallbackInfo ci, @Local(ordinal = 0) boolean showOutlines) {
         var cameraPos = camera.position();
         celeritas$renderer.renderBlockEntities(new CeleritasWorldRenderer.BlockEntityRenderContext(
