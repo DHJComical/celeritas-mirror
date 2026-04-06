@@ -53,14 +53,14 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
     @Shadow
     @Final
     private Long2ObjectMap<SortedSet<BlockDestructionProgress>> destructionProgress;
+    @Shadow
+    @Final
+    private LevelRenderState levelRenderState;
     @Unique
     private CeleritasWorldRenderer celeritas$renderer;
 
     @Unique
     private int frame;
-
-    @Unique
-    private final Vector3d celeritas$camera = new Vector3d();
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void initializeRenderer(CallbackInfo ci) {
@@ -122,12 +122,6 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
         }
     }
 
-    @Inject(method = "extractLevel", at = @At("HEAD"))
-    private void captureCamera(DeltaTracker deltaTracker, Camera camera, float deltaPartialTick, CallbackInfo ci) {
-        var pos = camera.position();
-        celeritas$camera.set(pos.x, pos.y, pos.z);
-    }
-
     /**
      * @author embeddedt
      * @reason Celeritas renders the chunks itself, so we return a blank list here.
@@ -142,9 +136,10 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
     @Redirect(method = "lambda$addMainPass$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;Lcom/mojang/blaze3d/textures/GpuSampler;)V"))
     private void renderChunksWithCeleritas(ChunkSectionsToRender sectionsToRender, ChunkSectionLayerGroup group, GpuSampler terrainSampler) {
         RenderDevice.enterManagedCode();
+        var cameraPos = this.levelRenderState.cameraRenderState.pos;
         try {
             for (ChunkSectionLayer layer : group.layers()) {
-                celeritas$renderer.drawChunkLayer(layer, celeritas$camera.x, celeritas$camera.y, celeritas$camera.z);
+                celeritas$renderer.drawChunkLayer(layer, cameraPos.x, cameraPos.y, cameraPos.z);
             }
         } finally {
             RenderDevice.exitManagedCode();

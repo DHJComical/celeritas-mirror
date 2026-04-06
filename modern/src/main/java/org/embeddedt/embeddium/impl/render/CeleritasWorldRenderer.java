@@ -62,6 +62,11 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
     @Setter
     private Matrix4f currentChunkRenderPose;
 
+    //? if >=26.1 {
+    /*@Setter
+    private Matrix4f currentChunkRenderProjection;
+    *///?}
+
     private boolean useEntityCulling;
 
 
@@ -150,8 +155,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
         //? if <1.21.11 {
         return ChunkRenderMatricesBuilder.from(Objects.requireNonNull(currentChunkRenderPose, "chunk render pose not set"));
         //?} else {
-        /*var currentChunkRenderProjection = this.client.gameRenderer.getGameRenderState().levelRenderState.cameraRenderState.projectionMatrix;
-        return new ChunkRenderMatrices(new Matrix4f(currentChunkRenderProjection), new Matrix4f(currentChunkRenderPose));
+        /*return new ChunkRenderMatrices(new Matrix4f(currentChunkRenderProjection), new Matrix4f(currentChunkRenderPose));
         *///?}
     }
 
