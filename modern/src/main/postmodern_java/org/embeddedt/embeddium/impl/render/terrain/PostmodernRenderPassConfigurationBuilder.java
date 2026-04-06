@@ -151,7 +151,7 @@ public class PostmodernRenderPassConfigurationBuilder {
                     return AlphaCutoffParameter.valueOf(a);
                 }
             }).orElse(AlphaCutoffParameter.ZERO);
-            materialMap.put(layer, new Material(terrainPass, alphaCutoff, false));
+            materialMap.put(layer, new Material(terrainPass, alphaCutoff, true));
         }
         renderPasses.replaceAll((layer, list) -> List.copyOf(list));
         return new RenderPassConfiguration<>(materialMap, renderPasses,
