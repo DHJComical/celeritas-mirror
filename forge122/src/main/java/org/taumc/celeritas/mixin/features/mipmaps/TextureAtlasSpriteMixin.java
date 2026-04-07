@@ -1,7 +1,7 @@
 package org.taumc.celeritas.mixin.features.mipmaps;
 
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import org.embeddedt.embeddium.api.util.ColorABGR;
+import org.embeddedt.embeddium.api.util.ColorARGB;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
 import org.embeddedt.embeddium.impl.util.color.ColorSRGB;
 import org.spongepowered.asm.mixin.Final;
@@ -26,18 +26,25 @@ public abstract class TextureAtlasSpriteMixin implements SpriteExtension, Sprite
     private SpriteTransparencyLevel embeddium$transparencyLevel = SpriteTransparencyLevel.TRANSLUCENT;
 
     @Inject(method = "generateMipmaps", at = @At("HEAD"))
-    private void processSprite(int level, CallbackInfo ci) {
-        if (this.framesTextureData.isEmpty()) {
+    private void processSprite(int mipLevel, CallbackInfo ci) {
+        if (this.framesTextureData == null) {
             return;
         }
-        embeddium$processTransparentImages(this.framesTextureData.get(0)[0], level > 0 && isBlockTexture(iconName) && !iconName.contains("leaves"));
+        SpriteTransparencyLevel level = SpriteTransparencyLevel.OPAQUE;
+        boolean shouldRewriteColors = mipLevel > 0 && iconName != null && isBlockTexture(iconName) && !iconName.contains("leaves");
+        for (int[][] frame : this.framesTextureData) {
+            if (frame != null && frame[0] != null) {
+                level = embeddium$processTransparentImages(level, frame[0], shouldRewriteColors);
+            }
+        }
+        this.embeddium$transparencyLevel = level;
     }
 
     private static boolean isBlockTexture(String iconName) {
         return iconName.startsWith("block", iconName.indexOf(':') + 1);
     }
 
-    private void embeddium$processTransparentImages(int[] nativeImage, boolean shouldRewriteColors) {
+    private SpriteTransparencyLevel embeddium$processTransparentImages(SpriteTransparencyLevel prevLevel, int[] nativeImage, boolean shouldRewriteColors) {
         // Calculate an average color from all pixels that are not completely transparent.
         // This average is weighted based on the (non-zero) alpha value of the pixel.
         float r = 0.0f;
@@ -46,11 +53,11 @@ public abstract class TextureAtlasSpriteMixin implements SpriteExtension, Sprite
 
         float totalWeight = 0.0f;
 
-        SpriteTransparencyLevel level = SpriteTransparencyLevel.OPAQUE;
+        SpriteTransparencyLevel level = prevLevel;
 
         for (int y = 0; y < nativeImage.length; y++) {
             int color = nativeImage[y];
-            int alpha = ColorABGR.unpackAlpha(color);
+            int alpha = ColorARGB.unpackAlpha(color);
 
             // Ignore all fully-transparent pixels for the purposes of computing an average color.
             if (alpha > 0) {
@@ -64,9 +71,9 @@ public abstract class TextureAtlasSpriteMixin implements SpriteExtension, Sprite
                     float weight = (float) alpha;
 
                     // Make sure to convert to linear space so that we don't lose brightness.
-                    r += ColorSRGB.srgbToLinear(ColorABGR.unpackRed(color)) * weight;
-                    g += ColorSRGB.srgbToLinear(ColorABGR.unpackGreen(color)) * weight;
-                    b += ColorSRGB.srgbToLinear(ColorABGR.unpackBlue(color)) * weight;
+                    r += ColorSRGB.srgbToLinear(ColorARGB.unpackRed(color)) * weight;
+                    g += ColorSRGB.srgbToLinear(ColorARGB.unpackGreen(color)) * weight;
+                    b += ColorSRGB.srgbToLinear(ColorARGB.unpackBlue(color)) * weight;
 
                     totalWeight += weight;
                 }
@@ -75,11 +82,9 @@ public abstract class TextureAtlasSpriteMixin implements SpriteExtension, Sprite
             }
         }
 
-        this.embeddium$transparencyLevel = level;
-
         // Bail if none of the pixels are semi-transparent or we aren't supposed to rewrite colors.
         if (!shouldRewriteColors || totalWeight == 0.0f) {
-            return;
+            return level;
         }
 
         r /= totalWeight;
@@ -92,13 +97,15 @@ public abstract class TextureAtlasSpriteMixin implements SpriteExtension, Sprite
 
         for (int y = 0; y < nativeImage.length; y++) {
             int color = nativeImage[y];
-            int alpha = ColorABGR.unpackAlpha(color);
+            int alpha = ColorARGB.unpackAlpha(color);
 
             // Replace the color values of pixels which are fully transparent, since they have no color data.
             if (alpha == 0) {
                 nativeImage[y] = averageColor;
             }
         }
+
+        return level;
     }
 
     @Override
