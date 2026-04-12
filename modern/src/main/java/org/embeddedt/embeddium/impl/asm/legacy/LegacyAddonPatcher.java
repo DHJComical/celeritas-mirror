@@ -119,6 +119,7 @@ public class LegacyAddonPatcher {
             classNode.accept(new ClassRemapper(result, remapper));
 
             if (remapper.anyChange) {
+                LOGGER.warn("Attempted to update class {} for Celeritas compatibility. There may be issues", classType.getClassName());
                 // Copy everything into the original class node
                 try {
                     for (Field f : FIELDS_TO_COPY) {
