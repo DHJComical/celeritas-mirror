@@ -63,6 +63,8 @@ public class LegacyAddonPatcher {
                 .put(exactReplacement("org/embeddedt/embeddium/client/gui/options/OptionIdentifier", "org/taumc/celeritas/api/options/OptionIdentifier"))
                 .put(prefixReplacement("me/jellysquid/mods/sodium/client/gui/options/", "org/taumc/celeritas/api/options/structure/"))
                 .put(prefixReplacement("org/embeddedt/embeddium/api/eventbus/", "org/taumc/celeritas/api/eventbus/"))
+                // Hope for the best, as we changed a lot of internals since Embeddium
+                .put(prefixReplacement("me/jellysquid/mods/sodium/client/", "org/embeddedt/embeddium/impl/"))
                 .build();
 
         @Override
@@ -86,7 +88,14 @@ public class LegacyAddonPatcher {
         private static final EnumSet<Phase> GO = EnumSet.of(Phase.AFTER);
         private static final EnumSet<Phase> NOGO = EnumSet.noneOf(Phase.class);
 
-        private static final List<String> PREFIXES = List.of("nolijium/", "zume/", "dev/engine_room/flywheel/impl/compat/EmbeddiumCompat");
+        private static final List<String> PREFIXES = List.of(
+                "nolijium/",
+                "zume/",
+                "dev/engine_room/flywheel/impl/compat/EmbeddiumCompat",
+                // create pantographs & wires
+                "de/mrjulsen/paw/forge/compat/EmbeddiumCompat",
+                "de/mrjulsen/wires/render/WireRenderer"
+        );
 
         @Override
         public EnumSet<Phase> handlesClass(Type classType, boolean isEmpty) {
