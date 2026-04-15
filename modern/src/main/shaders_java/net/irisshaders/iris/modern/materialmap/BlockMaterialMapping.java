@@ -102,7 +102,7 @@ public class BlockMaterialMapping {
         *///?}
 
         if (!tagOpt.isPresent()) {
-            CeleritasShaders.logger().warn("Failed to find the block tag {}", tag.location());
+            CeleritasShaders.logger().debug("Failed to find the block tag {}", tag.location());
             return Collections.emptyList();
         }
 
