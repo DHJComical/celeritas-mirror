@@ -21,8 +21,10 @@ import org.embeddedt.embeddium.impl.render.texture.TextureAtlasExtended;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
+import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp.XHFPModelVertexType.STRIDE;
 
@@ -62,11 +64,24 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
     private static final int NORMAL_OFFSET = XHFPModelVertexType.VERTEX_FORMAT.getAttribute("iris_Normal").getPointer();
     private static final int TANGENT_OFFSET = XHFPModelVertexType.VERTEX_FORMAT.getAttribute("at_tangent").getPointer();
 
+    private static final ClassValue<AtomicBoolean> GET_APPEARANCE_CRASHED = new ClassValue<>() {
+        @Override
+        protected AtomicBoolean computeValue(Class<?> blockClass) {
+            return new AtomicBoolean(false);
+        }
+    };
+
     private void setLocalPos(BlockRenderContext ctx) {
         var pos = ctx.pos();
         this.localPosX = pos.getX();
         this.localPosY = pos.getY();
         this.localPosZ = pos.getZ();
+    }
+
+    private static void logGetAppearanceFailure(BlockState state, Exception e) {
+        if (GET_APPEARANCE_CRASHED.get(state.getBlock().getClass()).compareAndSet(false, true)) {
+            CeleritasShaders.logger().error("Exception retrieving block appearance for {}", state, e);
+        }
     }
 
     @Override
@@ -77,10 +92,14 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
         if (this.blockId == -1 && side != null) {
             // Attempt fallback using getAppearance. This is the plan B for block IDs; plan C will use the quad texture
             // to deduce a material.
-            BlockState appearanceState = state.getAppearance(ctx.localSlice(), ctx.pos(), side, null, null);
-            if (appearanceState != state && !appearanceState.isAir()) {
-                this.blockId = (short)this.blockStateIds.getOrDefault(appearanceState, -1);
-                state = appearanceState;
+            try {
+                BlockState appearanceState = state.getAppearance(ctx.localSlice(), ctx.pos(), side, null, null);
+                if (appearanceState != state && !appearanceState.isAir()) {
+                    this.blockId = (short)this.blockStateIds.getOrDefault(appearanceState, -1);
+                    state = appearanceState;
+                }
+            } catch (Exception e) {
+                logGetAppearanceFailure(state, e);
             }
         }
         //?}
