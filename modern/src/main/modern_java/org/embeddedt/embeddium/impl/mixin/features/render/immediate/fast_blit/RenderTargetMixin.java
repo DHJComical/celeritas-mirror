@@ -29,6 +29,12 @@ public class RenderTargetMixin {
     private void blitUsingGlBlit(int width, int height, boolean disableBlend, CallbackInfo ci) {
         if (disableBlend) {
             ci.cancel();
+
+            // Apply important side effects to the FFP state that vanilla would have applied.
+            // This fixes the panorama not showing on the title screen in 1.16.5.
+            GlStateManager._disableBlend();
+            GlStateManager._disableDepthTest();
+
             GlStateManager._glBindFramebuffer(GL32C.GL_READ_FRAMEBUFFER, this.frameBufferId);
             GlStateManager._glBlitFrameBuffer(0, 0, this.width, this.height, 0, 0, width, height, GL32C.GL_COLOR_BUFFER_BIT, GL32C.GL_NEAREST);
             GlStateManager._glBindFramebuffer(GL32C.GL_READ_FRAMEBUFFER, 0);
