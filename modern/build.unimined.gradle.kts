@@ -44,10 +44,9 @@ val generatedATPath = layout.buildDirectory.file("generated/accesstransformer.cf
 generatedATPath.parentFile.mkdirs()
 
 unimined.minecraft {
-    combineWith(
-            project(":common"),
-            project(":common").sourceSets.getByName("main")
-    )
+    listOf("main", "lwjglCommon", "lwjgl3").forEach {
+        combineWith(project(":common"), project(":common").sourceSets.getByName(it))
+    }
 
     version(minecraftVersion)
 
