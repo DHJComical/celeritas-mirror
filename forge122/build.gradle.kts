@@ -75,6 +75,7 @@ repositories {
             includeGroupAndSubgroups("org.taumc")
         }
     }
+    mavenCentral()
 }
 
 val forgePatchDeps by configurations.creating {
