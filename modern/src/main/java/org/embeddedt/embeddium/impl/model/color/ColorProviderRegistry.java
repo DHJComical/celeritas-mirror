@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
-import net.minecraft.core.registries.BuiltInRegistries;
 import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.BiomeColors;
@@ -42,8 +41,8 @@ public class ColorProviderRegistry {
             this.blocks.put(block, DefaultColorProviders.adapt(entry.getValue()));
         }
         //?} else {
-        /*for (var block : BuiltInRegistries.BLOCK) {
-            var provider = providers.byId(BuiltInRegistries.BLOCK.getId(block));
+        /*for (var block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
+            var provider = providers.byId(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getId(block));
             if (provider == null) {
                 continue;
             }
