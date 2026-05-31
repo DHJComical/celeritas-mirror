@@ -84,7 +84,7 @@ includeBuild("plugins/celeritas-mdg-plugin")
 includeBuild("plugins/celeritas-unimined-plugin")
 include("common")
 
-val versionFilter: ((String) -> Boolean)? =
+val versionFilter: (String) -> Boolean =
     if (extra.has("celeritas_target_versions")) {
         val versions: List<String> = extra["celeritas_target_versions"].toString().split(",")
         val pred: (String) -> Boolean = { ver -> versions.any { stonecutter.eval(ver, it) } }
@@ -94,7 +94,7 @@ val versionFilter: ((String) -> Boolean)? =
         val pred: (String) -> Boolean = { ver -> regex.containsMatchIn(ver) }
         pred
     } else {
-        null
+        { _ -> false }
     }
 
 val subprojectFilter: ((String) -> Boolean)? =
@@ -111,15 +111,19 @@ val subprojectFilter: ((String) -> Boolean)? =
     }
 
 fun isVersionIncluded(ver: String): Boolean {
-    return versionFilter?.invoke(ver.substringBefore('-')) ?: true
+    return versionFilter(ver.substringBefore('-'))
 }
+
+var includedProjectCount = 0
 
 if(file("forge1710").exists() && isVersionIncluded("1.7.10")) {
     include("forge1710")
+    includedProjectCount++
 }
 
 if(file("forge122").exists() && isVersionIncluded("1.12.2")) {
     include("forge122")
+    includedProjectCount++
 }
 
 fun <T> createStonecutterProject(subprojectFolder: String, versions: List<T>, mcVersionGetter: (version: T) -> String = { v -> v.toString() }, action: TreeBuilder.(versions: List<T>) -> Unit) {
@@ -131,12 +135,12 @@ fun <T> createStonecutterProject(subprojectFolder: String, versions: List<T>, mc
         return
     }
     if (!versions.any { isVersionIncluded(mcVersionGetter.invoke(it)) }) {
-        println("Skipping project $subprojectFolder as it does not contain any desired versions")
         return
     }
     val filteredVersions = versions.filter { versions[0] == it || isVersionIncluded(mcVersionGetter.invoke(it)) }
     val subprojectPath = ":$subprojectFolder"
     include(subprojectPath)
+    includedProjectCount++
     stonecutter {
         create(subprojectPath) {
             action.invoke(this, filteredVersions)
@@ -176,4 +180,8 @@ createStonecutterProject("modern", listOf(
             versionConfig.buildscript = "build.${buildscriptType}.gradle.kts"
         }
     }
+}
+
+if (includedProjectCount == 0) {
+    println("WARNING: No projects were selected. Set celeritas_target_versions or celeritas_target_versions_pattern to target specific versions.")
 }
