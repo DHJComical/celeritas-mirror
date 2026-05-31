@@ -26,16 +26,19 @@ consume it without rebuilding the entire project from source. However, the produ
 
 ## How to build
 
+**`celeritas_target_versions` must be set when building locally, as no projects are configured by default.**
+You may want to set it in your user properties file (e.g. `~/.gradle/gradle.properties`) to avoid specifying
+it in every command-line Gradle invocation or modifying the checked-in `gradle.properties`.
+
 The fastest way to build for exactly one version target is to run `./gradlew -Pceleritas_target_versions=<version> packageJar`.
-This command avoids configuring as many Minecraft targets as possible. The resulting jar file will be available
+The resulting jar file will be available
 in `build/libs/<celeritas version>`.
 
 Note: the `celeritas_target_versions` property accepts a standard Stonecutter predicate, so you can also use syntax like
 `./gradlew -Pceleritas_target_versions="<1.8.9"`.
-You can also explicitly target a project with regular Gradle syntax, e.g. `./gradlew :forge122:1.12.2:packageJar`
-or `./gradlew :forge1710:packageJar`, but this will configure other subprojects even if they're not used.
 
-To build for every Minecraft version at once, execute `./gradlew packageJar`.
+Alternatively, `celeritas_target_versions_pattern` accepts a Java regex, e.g.
+`./gradlew -Pceleritas_target_versions_pattern=.* packageJar` to build every Minecraft version at once.
 
 ## How to use
 
