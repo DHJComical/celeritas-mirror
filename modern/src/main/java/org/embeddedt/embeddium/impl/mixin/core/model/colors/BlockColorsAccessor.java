@@ -16,9 +16,12 @@ public interface BlockColorsAccessor {
     *///?} else if forge && <26.1 {
     @Accessor("blockColors")
     Map<net.minecraft.core.Holder.Reference<Block>, net.minecraft.client.color.block.BlockColor>
-    //?} else if <26.1 {
+    //?} else if neoforge && <26.1 {
     /*@Accessor("blockColors")
     Map<Block, net.minecraft.client.color.block.BlockColor>
+    *///?} else if fabric && <26.1 {
+    /*@Accessor("blockColors")
+    net.minecraft.core.IdMapper<net.minecraft.client.color.block.BlockColor>
     *///?} else {
     /*@Accessor("sources")
     Map<Block, List<net.minecraft.client.color.block.BlockTintSource>>

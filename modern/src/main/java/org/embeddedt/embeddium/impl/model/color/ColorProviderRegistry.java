@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceSet;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.embeddedt.embeddium.impl.loader.common.LoaderServices;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.BiomeColors;
@@ -30,6 +31,7 @@ public class ColorProviderRegistry {
         var providers = ((BlockColorsAccessor)blockColors).celeritas$getProviders();
 
         var overridenBlocks = new ReferenceOpenHashSet<Block>();
+        //? if (forgelike && <26.1) || >=26.1 {
         for (var entry : providers.entrySet()) {
             var block = entry.getKey()
                     /*? if forge && >=1.17 && <26.1 {*/.value()/*?}*/
@@ -39,6 +41,18 @@ public class ColorProviderRegistry {
             }
             this.blocks.put(block, DefaultColorProviders.adapt(entry.getValue()));
         }
+        //?} else {
+        /*for (var block : BuiltInRegistries.BLOCK) {
+            var provider = providers.byId(BuiltInRegistries.BLOCK.getId(block));
+            if (provider == null) {
+                continue;
+            }
+            if (!DefaultColorProviders.isVanillaProvider(provider)) {
+                overridenBlocks.add(block);
+            }
+            this.blocks.put(block, DefaultColorProviders.adapt(provider));
+        }
+        *///?}
 
         this.overridenBlocks = overridenBlocks;
 
