@@ -84,17 +84,34 @@ includeBuild("plugins/celeritas-mdg-plugin")
 includeBuild("plugins/celeritas-unimined-plugin")
 include("common")
 
-val includedVersionsProp = if(extra.has("target_versions")) extra["target_versions"].toString().split(",") else null
-val includedSubprojectsProp = if(extra.has("target_subprojects")) extra["target_subprojects"].toString().split(",") else null
-
-fun isVersionIncluded(ver: String): Boolean {
-    if (includedVersionsProp == null) {
-        return true
+val versionFilter: ((String) -> Boolean)? =
+    if (extra.has("celeritas_target_versions")) {
+        val versions: List<String> = extra["celeritas_target_versions"].toString().split(",")
+        val pred: (String) -> Boolean = { ver -> versions.any { stonecutter.eval(ver, it) } }
+        pred
+    } else if (extra.has("celeritas_target_versions_pattern")) {
+        val regex = Regex(extra["celeritas_target_versions_pattern"].toString())
+        val pred: (String) -> Boolean = { ver -> regex.containsMatchIn(ver) }
+        pred
+    } else {
+        null
     }
 
-    val testVer = ver.substringBefore('-')
+val subprojectFilter: ((String) -> Boolean)? =
+    if (extra.has("celeritas_target_subprojects")) {
+        val subprojects: List<String> = extra["celeritas_target_subprojects"].toString().split(",")
+        val pred: (String) -> Boolean = { name -> subprojects.contains(name) }
+        pred
+    } else if (extra.has("celeritas_target_subprojects_pattern")) {
+        val regex = Regex(extra["celeritas_target_subprojects_pattern"].toString())
+        val pred: (String) -> Boolean = { name -> regex.containsMatchIn(name) }
+        pred
+    } else {
+        null
+    }
 
-    return includedVersionsProp.any { stonecutter.eval(testVer, it) }
+fun isVersionIncluded(ver: String): Boolean {
+    return versionFilter?.invoke(ver.substringBefore('-')) ?: true
 }
 
 if(file("forge1710").exists() && isVersionIncluded("1.7.10")) {
@@ -106,7 +123,7 @@ if(file("forge122").exists() && isVersionIncluded("1.12.2")) {
 }
 
 fun <T> createStonecutterProject(subprojectFolder: String, versions: List<T>, mcVersionGetter: (version: T) -> String = { v -> v.toString() }, action: TreeBuilder.(versions: List<T>) -> Unit) {
-    if (includedSubprojectsProp != null && !includedSubprojectsProp.contains(subprojectFolder)) {
+    if (subprojectFilter != null && !subprojectFilter(subprojectFolder)) {
         println("Skipping project $subprojectFolder by request")
         return
     }
