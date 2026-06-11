@@ -28,6 +28,7 @@ jobs:
         run: |
           git pull
           echo "commit_hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
       - name: Get previous commit hash from storage file
         id: get_previous
         run: |
@@ -36,6 +37,7 @@ jobs:
           else
             echo "commit_hash=first-run" >> $GITHUB_OUTPUT
           fi
+
       - name: Compare hashes and decide whether to run
         id: checker
         run: |
@@ -71,10 +73,8 @@ jobs:
             17
             21
 
-      - name: Grant execute permission to gradlew
-        if: steps.checker.outputs.should_run == 'true'
-        working-directory: ./celeritas
-        run: chmod +x gradlew
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4.4.4
 
 #      - name: Build for 1.21.10
 #        if: steps.checker.outputs.should_run == 'true'
