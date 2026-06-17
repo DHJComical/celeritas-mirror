@@ -1,8 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.lists;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.Reference2IntArrayMap;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkUpdateType;
@@ -23,17 +21,17 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
 
     private final int frame;
 
-    private final boolean ignoreQueueSizeLimit;
+    private final int targetQueueSize;
 
     private boolean hasAdditionalUpdates;
 
-    public VisibleChunkCollector(int frame, int regionIdsLength, boolean ignoreQueueSizeLimit) {
+    public VisibleChunkCollector(int frame, int regionIdsLength, int targetQueueSize) {
         this.frame = frame;
 
         this.sortedRenderLists = new ObjectArrayList<>();
         this.sortedRebuildLists = new EnumMap<>(ChunkUpdateType.class);
         this.rebuildQueueOverflowCounts = new int[ChunkUpdateType.values().length];
-        this.ignoreQueueSizeLimit = ignoreQueueSizeLimit;
+        this.targetQueueSize = targetQueueSize;
         this.renderListsByRegion = new ChunkRenderList[regionIdsLength];
 
         for (var type : ChunkUpdateType.values()) {
@@ -79,7 +77,8 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
         if (type != null && section.getBuildCancellationToken() == null) {
             Queue<RenderSection> queue = this.sortedRebuildLists.get(type);
 
-            if (this.ignoreQueueSizeLimit || queue.size() < type.getMaximumQueueSize()) {
+            // Do not limit the queue size for rebuilds
+            if (type != ChunkUpdateType.INITIAL_BUILD || queue.size() < this.targetQueueSize) {
                 queue.add(section);
             } else {
                 this.rebuildQueueOverflowCounts[type.ordinal()]++;

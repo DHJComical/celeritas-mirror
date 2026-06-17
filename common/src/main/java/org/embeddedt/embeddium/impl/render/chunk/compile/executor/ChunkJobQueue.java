@@ -14,6 +14,10 @@ class ChunkJobQueue {
 
     private final AtomicBoolean isRunning = new AtomicBoolean(true);
 
+    // Set by a worker whenever it has to block waiting for work, i.e. the queue ran dry. Read and cleared once
+    // per frame by the scheduling controller to detect under-provisioning of the in-flight target.
+    private final AtomicBoolean workerBlocked = new AtomicBoolean(false);
+
     public boolean isRunning() {
         return this.isRunning.get();
     }
@@ -47,9 +51,22 @@ class ChunkJobQueue {
             return null;
         }
 
-        this.semaphore.acquire();
+        if (!this.semaphore.tryAcquire()) {
+            // No work was immediately available, so we are about to block. Record this so the scheduler can grow
+            // the in-flight target and keep us fed on subsequent frames.
+            this.workerBlocked.set(true);
+            this.semaphore.acquire();
+        }
 
         return this.getNextTask();
+    }
+
+    /**
+     * {@return whether a worker has blocked on an empty queue since this method was last called, atomically
+     * clearing the flag for the next window}
+     */
+    public boolean checkAndClearWorkerBlocked() {
+        return this.workerBlocked.getAndSet(false);
     }
 
     public boolean stealJob(ChunkJob job) {

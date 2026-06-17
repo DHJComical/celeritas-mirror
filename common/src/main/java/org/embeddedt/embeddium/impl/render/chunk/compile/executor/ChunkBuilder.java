@@ -21,19 +21,60 @@ public class ChunkBuilder {
      * threads when the game is given a small heap.
      */
     private static final int MBS_PER_CHUNK_BUILDER = 64;
+
     /**
      * The number of tasks to allow in the queue per available worker thread. This value should be kept conservative
      * to avoid the threads becoming backlogged and failing to keep up with changes in chunk visibility (e.g.
      * camera movement). However, it also needs to be large enough that the thread is not spending part of the
      * frame doing nothing. 2 seems to be a decent value, and is what Sodium 0.2 used.
+     * <p></p>
+     * With adaptive scheduling, this is used to set the floor of the target queue size.
      */
     private static final int TASK_QUEUE_LIMIT_PER_WORKER = 2;
+
+    /**
+     * Estimate of how many tasks to allow into the queue when the chunk builder starts. The adaptive scheduling
+     * controller will adjust from here as needed based on actual worker throughput.
+     */
+    private static final int WARM_START_PER_WORKER = 32;
+
+    /**
+     * Controls how aggressively the target queue size adjusts to overprovisioning (when the workers are unable to keep
+     * up). In this situation the target queue size will reduce toward the floor by 1/N of the remaining gap, rather than
+     * all at once, so a correction settles over roughly 1-3 frames instead of a single frame.
+     */
+    private static final int TARGET_DECAY_DAMPING = 2;
+
+    /**
+     * Whether the adaptive scheduling controller is enabled. When disabled, the in-flight target stays pinned at
+     * the floor and the scheduler falls back to the legacy fixed per-frame budget of
+     * {@link #TASK_QUEUE_LIMIT_PER_WORKER} tasks per worker.
+     */
+    private static final boolean ENABLE_ADAPTIVE_SCHEDULING = true;
+
+    /**
+     * Whether changes to the adaptive in-flight target are logged. Intended for tuning only.
+     */
+    private static final boolean DEBUG_ADAPTIVE_SCHEDULING = false;
 
     private final ChunkJobQueue queue = new ChunkJobQueue();
 
     private final List<WorkerThread> threads = new ArrayList<>();
 
     private final AtomicInteger busyThreadCount = new AtomicInteger();
+
+    /**
+     * The current target number of in-flight tasks. Adapted each frame by {@link #tickSchedulingBudget()} to keep
+     * the workers saturated independent of frame rate. Bounded below by the floor but otherwise unbounded; the
+     * controller's equilibrium is self-limiting to actual worker throughput.
+     */
+    private int targetInFlight;
+
+    /**
+     * Tracks whether the previous frame stopped submitting tasks because it hit the scheduling budget while work
+     * was still remaining. The in-flight target is only grown if this is true.
+     */
+    private boolean lastDispatchBudgetLimited;
 
     private final ChunkBuildContext localContext;
 
@@ -62,14 +103,97 @@ public class ChunkBuilder {
         this.localContext = contextSupplier.get();
 
         this.managedBlocker = managedBlocker;
+
+        if (ENABLE_ADAPTIVE_SCHEDULING && !this.threads.isEmpty()) {
+            // A freshly initialized builder always starts out with a full backlog of initial builds (world join,
+            // dimension change, render-distance change, or resource reload), so begin with an estimated target
+            // rather than spending several frames ramping up.
+            this.targetInFlight = Math.max(this.getSchedulingFloor(), WARM_START_PER_WORKER * this.threads.size());
+        } else {
+            // When threading or adaptive scheduling are disabled, the target should always be the smallest queue size.
+            this.targetInFlight = this.getSchedulingFloor();
+        }
     }
 
     /**
-     * Returns the remaining number of build tasks which should be scheduled this frame. If an attempt is made to
-     * spawn more tasks than the budget allows, it will block until resources become available.
+     * {@return the steady-state floor for the in-flight target, i.e. the small queue depth that keeps the workers
+     * fed at high frame rates while preserving the freshest camera ordering}
+     */
+    private int getSchedulingFloor() {
+        return Math.max(1, this.threads.size()) * TASK_QUEUE_LIMIT_PER_WORKER;
+    }
+
+    /**
+     * Advances the adaptive scheduling controller by one frame. Must be called exactly once per frame, before the
+     * per-frame dispatch reads {@link #getSchedulingBudget()}.
+     *
+     * <p>The controller keeps the worker threads saturated regardless of frame rate by sizing the in-flight target
+     * to actual worker demand rather than a fixed depth:</p>
+     * <ul>
+     *     <li>If a worker blocked on an empty queue while we were holding back dispatchable work
+     *     ({@code lastDispatchBudgetLimited}), the target is doubled. Gating on
+     *     "budget-limited" prevents the target from ratcheting up when the workers merely ran out of work to do.</li>
+     *     <li>If the workers left comfortable slack, the target decays gently toward the floor.</li>
+     *     <li>Otherwise (remaining slack < minimum queue size) the target is left unchanged.</li>
+     * </ul>
+     */
+    public void tickSchedulingBudget() {
+        if (!ENABLE_ADAPTIVE_SCHEDULING) {
+            // Legacy behavior: the target stays pinned at the floor, so getSchedulingBudget() yields the fixed
+            // per-worker budget.
+            return;
+        }
+
+        int floor = this.getSchedulingFloor();
+        int queued = this.queue.size();
+        boolean starved = this.queue.checkAndClearWorkerBlocked();
+        int previousTarget = this.targetInFlight;
+
+        if (starved && this.lastDispatchBudgetLimited) {
+            // Workers ran dry while we were sitting on dispatchable work: grow aggressively to escape starvation.
+            this.targetInFlight = (int) Math.min(Integer.MAX_VALUE, (long) this.targetInFlight * 2);
+        } else if (queued > floor) {
+            // Over-provisioned: the workers left more than the deadband's worth of slack. The ideal target is
+            // (queued - floor). We close only a damped fraction (1/TARGET_DECAY_DAMPING, at least 1) of that gap per
+            // frame, so a correction settles over a few frames instead of snapping in one, which smooths tracking
+            // when worker consumption rate is fluctuating.
+            int gap = queued - floor;
+            int decayStep = Math.max(1, gap / TARGET_DECAY_DAMPING);
+            this.targetInFlight = this.targetInFlight - decayStep;
+        }
+
+        // Keep the target at or above the floor (the decay may have stepped it below).
+        this.targetInFlight = Math.max(floor, this.targetInFlight);
+
+        if (DEBUG_ADAPTIVE_SCHEDULING && this.targetInFlight != previousTarget) {
+            LOGGER.info("Adaptive scheduling target {} {} -> {} (queued={}, starved={}, budgetLimited={})",
+                    this.targetInFlight > previousTarget ? "grew" : "shrank",
+                    previousTarget, this.targetInFlight, queued, starved, this.lastDispatchBudgetLimited);
+        }
+    }
+
+    /**
+     * Returns the current ideal number of tasks the chunk builder would like in the queue.
+     */
+    public int getTargetQueueSize() {
+        return this.targetInFlight;
+    }
+
+    /**
+     * Returns the remaining number of build tasks which should be scheduled this frame, i.e. the gap between the
+     * current in-flight target (see {@link #tickSchedulingBudget()}) and the tasks already queued. This is a pure
+     * read with no side effects and may be called multiple times per frame.
      */
     public int getSchedulingBudget() {
-        return Math.max(0, (Math.max(1, this.threads.size()) * TASK_QUEUE_LIMIT_PER_WORKER) - this.queue.size());
+        return Math.max(0, this.targetInFlight - this.queue.size());
+    }
+
+    /**
+     * Records whether the most recent dispatch was limited by the scheduling budget rather than by a lack of work.
+     * Consumed by the next {@link #tickSchedulingBudget()} call.
+     */
+    public void setDispatchBudgetLimited(boolean budgetLimited) {
+        this.lastDispatchBudgetLimited = budgetLimited;
     }
 
     /**

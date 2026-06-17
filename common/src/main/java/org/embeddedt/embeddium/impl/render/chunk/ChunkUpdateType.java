@@ -6,32 +6,30 @@ package org.embeddedt.embeddium.impl.render.chunk;
 public enum ChunkUpdateType {
     /**
      * Chunk is being built for the first time.
+     *
+     * <p>The maximum queue size is somewhat arbritarily chosen. It needs to be large enough to keep a reasonably sized
+     * worker pool saturated with initial builds during world load, while bounding the per-frame snapshot burst on
+     * the render thread.</p>
      */
-    INITIAL_BUILD(128),
+    INITIAL_BUILD,
     /**
      * Chunk geometry is being sorted based on camera position change.
      */
-    SORT(Integer.MAX_VALUE),
+    SORT,
     /**
      * Like {@link ChunkUpdateType#SORT}, but will block the main thread if the camera is near enough to guarantee
      * the sort results are reflected quickly.
      */
-    IMPORTANT_SORT(Integer.MAX_VALUE),
+    IMPORTANT_SORT,
     /**
      * Chunk data has changed and remeshing is required.
      */
-    REBUILD(Integer.MAX_VALUE),
+    REBUILD,
     /**
      * Like {@link ChunkUpdateType#REBUILD}, but will block the main thread if the camera is near enough to guarantee
      * the rebuild is seen quickly.
      */
-    IMPORTANT_REBUILD(Integer.MAX_VALUE);
-
-    private final int maximumQueueSize;
-
-    ChunkUpdateType(int maximumQueueSize) {
-        this.maximumQueueSize = maximumQueueSize;
-    }
+    IMPORTANT_REBUILD;
 
     @Deprecated
     public static boolean canPromote(ChunkUpdateType prev, ChunkUpdateType next) {
@@ -52,13 +50,6 @@ public enum ChunkUpdateType {
             return IMPORTANT_REBUILD;
         }
         return null;
-    }
-
-    /**
-     * {@return the maximum size the rebuild queue should be allowed to grow to for this update type}
-     */
-    public int getMaximumQueueSize() {
-        return this.maximumQueueSize;
     }
 
     /**
