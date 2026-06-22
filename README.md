@@ -1,4 +1,4 @@
-<img src="icon.png" width="128">
+<img src="modern/src/main/resources/icon.png" width="128">
 
 # Celeritas
 
@@ -26,19 +26,22 @@ consume it without rebuilding the entire project from source. However, the produ
 
 ## How to build
 
-The fastest way to build for exactly one version target is to run `./gradlew -Ptarget_versions=<version> packageJar`.
-This command avoids configuring as many Minecraft targets as possible. The resulting jar file will be available
+**`celeritas_target_versions` must be set when building locally, as no projects are configured by default.**
+You may want to set it in your user properties file (e.g. `~/.gradle/gradle.properties`) to avoid specifying
+it in every command-line Gradle invocation or modifying the checked-in `gradle.properties`.
+
+The fastest way to build for exactly one version target is to run `./gradlew -Pceleritas_target_versions=<version> packageJar`.
+The resulting jar file will be available
 in `build/libs/<celeritas version>`.
 
-Note: the `target_versions` property accepts a standard Stonecutter predicate, so you can also use syntax like
-`./gradlew -Ptarget_versions="<1.8.9"`.
+Note: the `celeritas_target_versions` property accepts a standard Stonecutter predicate, so you can also use syntax like
+`./gradlew -Pceleritas_target_versions="<1.8.9"`.
 
-You can also explicitly target a project with regular Gradle syntax, e.g. `./gradlew :forge122:1.12.2:packageJar`
-or `./gradlew :forge1710:packageJar`, but this will configure other subprojects even if they're not used.
-
-To build for every Minecraft version at once, execute `./gradlew packageJar`.
+Alternatively, `celeritas_target_versions_pattern` accepts a Java regex, e.g.
+`./gradlew -Pceleritas_target_versions_pattern=.* packageJar` to build every Minecraft version at once.
 
 ## Version Archive
+
 Some versions that are now removed from buildable versions
 - [1.21.8[NeoForge]](https://github.com/DHJComical/celeritas-mirror/releases/tag/stonecutter-snapshot-20250916-119)
 - [1.21.9-pre1[NeoForge/Fabric]](https://github.com/DHJComical/celeritas-mirror/releases/tag/stonecutter-snapshot-20250924-138)
@@ -47,17 +50,12 @@ Some versions that are now removed from buildable versions
 ## How to use
 
 Celeritas generally requires a "modernized" environment on older Minecraft versions, and will not run out-of-the-box
-with a default modded Minecraft instance. Newer Minecraft versions ship with the necessary dependencies and will not
+with a default modded Minecraft instance. Newer versions ship with the necessary dependencies and will not
 require any custom setup.
 
-For legacy (pre-1.13) versions, your game instance must provide LWJGL 3, and in some cases must also be running Java 21.
-Most of these versions do not have a ready-to-download launcher profile available that meets these requirements out of
-the box, except for Forge 1.7.10 (lwjgl3ify) and Forge 1.12.2 (lwjgl3ify or Cleanroom Loader).
-
-The Ornithe versions (pre-1.7) are especially experimental and have not yet been tested outside of a development environment
-at all.
-
-For modern (1.13+) versions, the final mod jar should run as-is in a standard instance for that version (e.g. Java 17
+* Forge 1.12.2 is supported out of the box on Java 8 + LWJGL 2.
+* Older versions of Minecraft require lwjgl3ify (or an equivalent) & Java 21. (This requirement will begin being relaxed in the near future.)
+* For modern (1.13+) versions, the final mod jar should run as-is in a standard instance for that version (e.g. Java 17
 or 21 are not required, unless the underlying Minecraft version itself requires them).
 
 ## License
