@@ -1,7 +1,7 @@
 package net.irisshaders.iris.uniforms.custom.cached;
 
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
-import net.irisshaders.iris.parsing.MatrixType;
+import org.taumc.celeritas.shaders.parse.eval.MatrixType;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL21;
 

@@ -19,7 +19,7 @@ import net.irisshaders.iris.gl.uniform.LocationalUniformHolder;
 import net.irisshaders.iris.gl.uniform.UniformHolder;
 import net.irisshaders.iris.parsing.IrisFunctions;
 import net.irisshaders.iris.parsing.IrisOptions;
-import net.irisshaders.iris.parsing.VectorType;
+import org.taumc.celeritas.shaders.parse.eval.VectorType;
 import net.irisshaders.iris.uniforms.custom.cached.CachedUniform;
 import org.taumc.celeritas.shaders.CeleritasShaders;
 

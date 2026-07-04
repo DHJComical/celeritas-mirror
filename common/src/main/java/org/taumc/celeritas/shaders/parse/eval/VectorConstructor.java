@@ -1,4 +1,4 @@
-package net.irisshaders.iris.parsing;
+package org.taumc.celeritas.shaders.parse.eval;
 
 import kroppeb.stareval.Util;
 import kroppeb.stareval.expression.Expression;
@@ -6,6 +6,8 @@ import kroppeb.stareval.function.AbstractTypedFunction;
 import kroppeb.stareval.function.FunctionContext;
 import kroppeb.stareval.function.FunctionReturn;
 import kroppeb.stareval.function.Type;
+
+import org.taumc.celeritas.shaders.parse.eval.VectorType;
 
 import java.util.Arrays;
 

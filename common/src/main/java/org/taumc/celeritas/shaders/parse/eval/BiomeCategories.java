@@ -1,4 +1,4 @@
-package net.irisshaders.iris.parsing;
+package org.taumc.celeritas.shaders.parse.eval;
 
 public enum BiomeCategories {
 	NONE,
