@@ -563,6 +563,11 @@ public record LWJGL2Service(
     // ===================== DRAW OPERATIONS =====================
 
     @Override
+    public void glDrawArrays(int mode, int first, int count) {
+        GL11.glDrawArrays(mode, first, count);
+    }
+
+    @Override
     public void glDrawElementsBaseVertex(int mode, int count, int type, long indices, int basevertex) {
         GL32.glDrawElementsBaseVertex(mode, count, type, indices, basevertex);
     }
@@ -727,6 +732,16 @@ public record LWJGL2Service(
         GL11.glPixelStorei(pname, param);
     }
 
+    @Override
+    public void glTexImage2D(int target, int level, int internalFormat, int width, int height, int border, int format, int type, ByteBuffer pixels) {
+        GL11.glTexImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
+    }
+
+    @Override
+    public void glTexParameteri(int target, int pname, int param) {
+        GL11.glTexParameteri(target, pname, param);
+    }
+
     // ===================== FRAMEBUFFER OPERATIONS =====================
 
     @Override
@@ -752,6 +767,18 @@ public record LWJGL2Service(
     @Override
     public void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level) {
         GL30.glFramebufferTexture2D(target, attachment, textarget, texture, level);
+    }
+
+    @Override
+    public void glDrawBuffers(int[] buffers) {
+        IntBuffer buf = MemoryUtilities.memAllocInt(buffers.length).put(buffers).flip();
+        GL20.glDrawBuffers(buf);
+        MemoryUtilities.memFree(buf);
+    }
+
+    @Override
+    public void glBlitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1, int mask, int filter) {
+        GL30.glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
     }
 
     // ===================== STATE OPERATIONS =====================

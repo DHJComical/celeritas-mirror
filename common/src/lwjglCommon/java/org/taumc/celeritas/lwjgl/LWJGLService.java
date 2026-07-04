@@ -95,6 +95,7 @@ public interface LWJGLService {
 
     // ===================== DRAW OPERATIONS =====================
 
+    void glDrawArrays(int mode, int first, int count);
     void glDrawElementsBaseVertex(int mode, int count, int type, long indices, int basevertex);
     void glMultiDrawElementsBaseVertex(int mode, long pCount, int type, long pIndices, int drawcount, long pBaseVertex);
     void glMultiDrawElementsIndirect(int mode, int type, long indirect, int drawcount, int stride);
@@ -134,6 +135,8 @@ public interface LWJGLService {
     int glGetTexLevelParameteri(int target, int level, int pname);
     void glCopyTexSubImage2D(int target, int level, int xoffset, int yoffset, int x, int y, int width, int height);
     void glPixelStorei(int pname, int param);
+    void glTexImage2D(int target, int level, int internalFormat, int width, int height, int border, int format, int type, ByteBuffer pixels);
+    void glTexParameteri(int target, int pname, int param);
 
     // ===================== FRAMEBUFFER OPERATIONS =====================
 
@@ -142,6 +145,8 @@ public interface LWJGLService {
     void glBindFramebuffer(int target, int framebuffer);
     int glCheckFramebufferStatus(int target);
     void glFramebufferTexture2D(int target, int attachment, int textarget, int texture, int level);
+    void glDrawBuffers(int[] buffers);
+    void glBlitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1, int mask, int filter);
 
     // ===================== STATE OPERATIONS =====================
 
