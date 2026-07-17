@@ -8,7 +8,9 @@
 out vec4 v_Color;
 out vec2 v_TexCoord;
 
+#if defined(USE_FOG) && defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0
 out float v_ChunkAgeMs;
+#endif
 
 out float v_MaterialMipBias;
 #ifdef USE_FRAGMENT_DISCARD
@@ -34,7 +36,9 @@ vec4 _sample_lightmap(sampler2D lightMap, ivec2 uv) {
 }
 #endif
 
+#if defined(USE_FOG) && defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0
 uniform float celeritas_ChunkAges[REGION_SIZE];
+#endif
 
 void main() {
     _vert_init();
@@ -65,5 +69,7 @@ void main() {
 #ifdef USE_FRAGMENT_DISCARD
     v_MaterialAlphaCutoff = _material_alpha_cutoff(_material_params);
 #endif
+#if defined(USE_FOG) && defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0
     v_ChunkAgeMs = celeritas_ChunkAges[_draw_id];
+#endif
 }

@@ -5,7 +5,9 @@
 in vec4 v_Color;
 in vec2 v_TexCoord;
 
+#if defined(USE_FOG) && defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0
 in float v_ChunkAgeMs;
+#endif
 
 in float v_MaterialMipBias;
 #ifdef USE_FRAGMENT_DISCARD
