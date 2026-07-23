@@ -7,6 +7,7 @@ import org.taumc.celeritas.lwjgl.GL43;
 import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 import org.embeddedt.embeddium.impl.gl.GlObject;
+import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniform;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformBlock;
@@ -121,6 +122,16 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
 
         public Builder bindAttribute(String name, int index) {
             LWJGL.glBindAttribLocation(this.program, index, name);
+
+            return this;
+        }
+
+        public Builder bindAttributes(GlVertexFormat format, int firstAttributeIndex) {
+            int index = firstAttributeIndex;
+
+            for (var attribute : format.getAttributes()) {
+                this.bindAttribute(attribute.getName(), index++);
+            }
 
             return this;
         }

@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.impl.render.chunk;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.gl.array.GlVertexArray;
-import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeBinding;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
@@ -270,20 +269,9 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         return tessellation;
     }
 
-    private GlVertexAttributeBinding[] generateVertexAttributeBindings() {
-        var attributes = this.currentVertexFormat.getAttributes();
-        var bindings = new GlVertexAttributeBinding[attributes.size()];
-        int i = 0;
-        for (var attr : attributes) {
-            bindings[i] = new GlVertexAttributeBinding(i, attr);
-            i++;
-        }
-        return bindings;
-    }
-
     protected TessellationBinding[] makeTessellationBindingArray(CommandList commandList, RenderRegion.DeviceResources resources) {
         return new TessellationBinding[] {
-                TessellationBinding.forVertexBuffer(resources.getVertexBuffer(), this.generateVertexAttributeBindings()),
+                TessellationBinding.forVertexBuffer(resources.getVertexBuffer(), this.currentVertexFormat),
                 TessellationBinding.forElementBuffer(this.currentRenderPass.isSorted() ? resources.getIndexBuffer() : this.getSharedIndexBuffer(this.renderPassConfiguration.getPrimitiveTypeForPass(this.currentRenderPass), commandList).getBufferObject())
         };
     }

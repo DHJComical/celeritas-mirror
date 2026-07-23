@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.APPLEVertexArrayObject;
 import org.lwjgl.opengl.ARBBufferStorage;
+import org.lwjgl.opengl.ARBInstancedArrays;
 import org.lwjgl.opengl.ARBTimerQuery;
 import org.lwjgl.opengl.ARBVertexArrayObject;
 import org.lwjgl.opengl.ContextCapabilities;
@@ -44,6 +45,7 @@ public record LWJGL2Service(
         TimerQueryMode timerQueryMode,
         DebugMode debugMode,
         VertexAttribIMode vertexAttribIMode,
+        VertexAttribDivisorMode vertexAttribDivisorMode,
         Long2ObjectOpenHashMap<GLSync> syncObjects) implements LWJGLService {
     private static final Logger LOGGER = LogManager.getLogger("Celeritas/LWJGL2Service");
     private static final LWJGL2DebugSupport debugSupport = new LWJGL2DebugSupport();
@@ -130,6 +132,26 @@ public record LWJGL2Service(
         public abstract void vertexAttribIPointer(int index, int size, int type, int stride, long pointer);
     }
 
+    private enum VertexAttribDivisorMode {
+        CORE {
+            @Override public void vertexAttribDivisor(int index, int divisor) {
+                GL33.glVertexAttribDivisor(index, divisor);
+            }
+        },
+        ARB {
+            @Override public void vertexAttribDivisor(int index, int divisor) {
+                ARBInstancedArrays.glVertexAttribDivisorARB(index, divisor);
+            }
+        },
+        NONE {
+            @Override public void vertexAttribDivisor(int index, int divisor) {
+                throw new UnsupportedOperationException("glVertexAttribDivisor not supported");
+            }
+        };
+
+        public abstract void vertexAttribDivisor(int index, int divisor);
+    }
+
     public static LWJGL2Service create() {
         ContextCapabilities caps = GLContext.getCapabilities();
 
@@ -170,7 +192,17 @@ public record LWJGL2Service(
             vertexAttribIMode = VertexAttribIMode.NONE;
         }
 
-        return new LWJGL2Service(vaoMode, timerQueryMode, debugMode, vertexAttribIMode, new Long2ObjectOpenHashMap<>());
+        VertexAttribDivisorMode vertexAttribDivisorMode;
+        if (caps.OpenGL33) {
+            vertexAttribDivisorMode = VertexAttribDivisorMode.CORE;
+        } else if (caps.GL_ARB_instanced_arrays) {
+            vertexAttribDivisorMode = VertexAttribDivisorMode.ARB;
+        } else {
+            vertexAttribDivisorMode = VertexAttribDivisorMode.NONE;
+        }
+
+        return new LWJGL2Service(vaoMode, timerQueryMode, debugMode, vertexAttribIMode, vertexAttribDivisorMode,
+                new Long2ObjectOpenHashMap<>());
     }
 
     // ===================== CAPABILITIES =====================
@@ -338,6 +370,11 @@ public record LWJGL2Service(
     @Override
     public void glEnableVertexAttribArray(int index) {
         GL20.glEnableVertexAttribArray(index);
+    }
+
+    @Override
+    public void glVertexAttribDivisor(int index, int divisor) {
+        vertexAttribDivisorMode.vertexAttribDivisor(index, divisor);
     }
 
     // ===================== SHADER OPERATIONS =====================

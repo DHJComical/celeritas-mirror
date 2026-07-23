@@ -24,7 +24,8 @@ public record LWJGL3Service(
         VAOMode vaoMode,
         TimerQueryMode timerQueryMode,
         DebugMode debugMode,
-        VertexAttribIMode vertexAttribIMode) implements LWJGLService {
+        VertexAttribIMode vertexAttribIMode,
+        VertexAttribDivisorMode vertexAttribDivisorMode) implements LWJGLService {
     private static final Logger LOGGER = LogManager.getLogger("Celeritas/LWJGL3Service");
     private static final LWJGL3DebugSupport debugSupport = new LWJGL3DebugSupport();
 
@@ -198,6 +199,7 @@ public record LWJGL3Service(
     private enum TimerQueryMode { CORE, ARB, NONE }
     private enum DebugMode { KHR, NONE }
     private enum VertexAttribIMode { CORE, EXT, NONE }
+    private enum VertexAttribDivisorMode { CORE, ARB, NONE }
 
 
     // Cached function addresses for APPLE VAO extensions
@@ -248,7 +250,16 @@ public record LWJGL3Service(
             vertexAttribIMode = VertexAttribIMode.NONE;
         }
 
-        return new LWJGL3Service(vaoMode, timerQueryMode, debugMode, vertexAttribIMode);
+        VertexAttribDivisorMode vertexAttribDivisorMode;
+        if (caps.OpenGL33) {
+            vertexAttribDivisorMode = VertexAttribDivisorMode.CORE;
+        } else if (caps.GL_ARB_instanced_arrays) {
+            vertexAttribDivisorMode = VertexAttribDivisorMode.ARB;
+        } else {
+            vertexAttribDivisorMode = VertexAttribDivisorMode.NONE;
+        }
+
+        return new LWJGL3Service(vaoMode, timerQueryMode, debugMode, vertexAttribIMode, vertexAttribDivisorMode);
     }
 
     @Override
@@ -283,6 +294,15 @@ public record LWJGL3Service(
     @Override
     public void glEnableVertexAttribArray(int index) {
         GL20C.glEnableVertexAttribArray(index);
+    }
+
+    @Override
+    public void glVertexAttribDivisor(int index, int divisor) {
+        switch (vertexAttribDivisorMode) {
+            case CORE -> GL33C.glVertexAttribDivisor(index, divisor);
+            case ARB -> ARBInstancedArrays.glVertexAttribDivisorARB(index, divisor);
+            case NONE -> throw new UnsupportedOperationException("glVertexAttribDivisor not supported");
+        }
     }
 
     // ===================== SHADER OPERATIONS =====================
