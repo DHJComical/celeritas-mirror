@@ -34,13 +34,13 @@ public class GlFence {
     }
 
     public void sync() {
-        this.checkDisposed();
-        this.sync(Long.MAX_VALUE);
+        this.sync(GL32.GL_TIMEOUT_IGNORED);
     }
 
+    @Deprecated
     public void sync(long timeout) {
         this.checkDisposed();
-        LWJGL.glWaitSync(this.id, GL32.GL_SYNC_FLUSH_COMMANDS_BIT, timeout);
+        LWJGL.glWaitSync(this.id, 0, timeout);
     }
 
     public void delete() {
