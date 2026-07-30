@@ -1,6 +1,6 @@
 package net.irisshaders.iris.gl.uniform;
 
-import org.taumc.celeritas.shaders.parse.eval.UniformType;
+import net.irisshaders.iris.parsing.UniformType;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector2i;

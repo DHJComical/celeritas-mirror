@@ -1,7 +1,7 @@
 package net.irisshaders.iris.uniforms.custom.cached;
 
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
-import org.taumc.celeritas.shaders.parse.eval.VectorType;
+import net.irisshaders.iris.parsing.VectorType;
 import org.joml.Vector3i;
 import org.lwjgl.opengl.GL21;
 

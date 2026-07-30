@@ -1,4 +1,4 @@
-package org.taumc.celeritas.shaders.parse.eval;
+package net.irisshaders.iris.parsing;
 
 import kroppeb.stareval.expression.Expression;
 import kroppeb.stareval.function.AbstractTypedFunction;
@@ -30,8 +30,6 @@ import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.joml.Vector4f;
 import org.joml.Vector4i;
-import org.taumc.celeritas.shaders.parse.eval.MatrixType;
-import org.taumc.celeritas.shaders.parse.eval.VectorType;
 
 import java.util.Arrays;
 import java.util.Random;

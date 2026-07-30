@@ -6,7 +6,7 @@ import kroppeb.stareval.function.FunctionContext;
 import kroppeb.stareval.function.FunctionReturn;
 import kroppeb.stareval.function.Type;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
-import org.taumc.celeritas.shaders.parse.eval.VectorType;
+import net.irisshaders.iris.parsing.VectorType;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;

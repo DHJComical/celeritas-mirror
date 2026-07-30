@@ -1,4 +1,4 @@
-package org.taumc.celeritas.shaders.parse.eval;
+package net.irisshaders.iris.parsing;
 
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
 

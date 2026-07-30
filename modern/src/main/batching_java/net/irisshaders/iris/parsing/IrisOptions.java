@@ -1,4 +1,4 @@
-package org.taumc.celeritas.shaders.parse.eval;
+package net.irisshaders.iris.parsing;
 
 import kroppeb.stareval.parser.BinaryOp;
 import kroppeb.stareval.parser.ParserOptions;

@@ -1,4 +1,4 @@
-package org.taumc.celeritas.shaders.parse.eval;
+package net.irisshaders.iris.parsing;
 
 public enum UniformType {
 	INT,

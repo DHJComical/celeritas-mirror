@@ -6,7 +6,7 @@ import kroppeb.stareval.function.Type;
 import net.irisshaders.iris.gl.uniform.FloatSupplier;
 import net.irisshaders.iris.gl.uniform.UniformHolder;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
-import org.taumc.celeritas.shaders.parse.eval.UniformType;
+import net.irisshaders.iris.parsing.UniformType;
 import net.irisshaders.iris.uniforms.custom.cached.BooleanCachedUniform;
 import net.irisshaders.iris.uniforms.custom.cached.CachedUniform;
 import net.irisshaders.iris.uniforms.custom.cached.Float2VectorCachedUniform;

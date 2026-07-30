@@ -1,4 +1,4 @@
-package org.taumc.celeritas.shaders.parse.eval;
+package net.irisshaders.iris.parsing;
 
 import kroppeb.stareval.expression.Expression;
 import kroppeb.stareval.expression.VariableExpression;
@@ -6,43 +6,34 @@ import kroppeb.stareval.function.FunctionContext;
 import kroppeb.stareval.function.FunctionReturn;
 import kroppeb.stareval.function.Type;
 import kroppeb.stareval.function.TypedFunction;
-import org.taumc.celeritas.shaders.parse.eval.VectorType;
 
 import java.util.Collection;
 
-public class VectorizedFunction implements TypedFunction {
+public class BooleanVectorizedFunction implements TypedFunction {
 	final TypedFunction inner;
 	final int size;
-	final VectorType.ArrayVector returnType;
 	final Parameter[] parameters;
 
 	private final ElementAccessExpression[] vectorAccessors;
 	private int index;
-	private final VectorType.ArrayVector.IntObjectObjectObjectConsumer<VectorizedFunction, FunctionContext, FunctionReturn> mapper =
-		(i, self, ctx, fr) -> {
-			self.index = i;
-			self.inner.evaluateTo(self.vectorAccessors, ctx, fr);
-		};
 
-	public VectorizedFunction(TypedFunction inner, int size) {
+	public BooleanVectorizedFunction(TypedFunction inner, int size) {
 		this.inner = inner;
 		this.size = size;
-
-		this.returnType = new VectorType.ArrayVector(inner.getReturnType(), size);
 
 		Parameter[] innerTypes = inner.getParameters();
 		this.parameters = new Parameter[innerTypes.length];
 		this.vectorAccessors = new ElementAccessExpression[innerTypes.length];
 
 		for (int i = 0; i < innerTypes.length; i++) {
-			this.parameters[i] = new Parameter(new VectorType.ArrayVector(innerTypes[i].type(), size));
+			this.parameters[i] = new Parameter(VectorType.of((Type.Primitive) innerTypes[i].type(), size));
 			this.vectorAccessors[i] = new ElementAccessExpression(innerTypes[i].type());
 		}
 	}
 
 	@Override
 	public Type getReturnType() {
-		return this.returnType;
+		return Type.Boolean;
 	}
 
 	@Override
@@ -58,7 +49,14 @@ public class VectorizedFunction implements TypedFunction {
 			this.vectorAccessors[p].vector = functionReturn.objectReturn;
 		}
 
-		returnType.map(this, context, functionReturn, this.mapper);
+		for (int i = 0; i < this.size; i++) {
+			this.index = i;
+			this.inner.evaluateTo(this.vectorAccessors, context, functionReturn);
+			if (!functionReturn.booleanReturn)
+				return; // if false -> return false
+		}
+
+		// if all true (and thus the last one was true) -> return true
 	}
 
 	class ElementAccessExpression implements Expression {
@@ -74,7 +72,6 @@ public class VectorizedFunction implements TypedFunction {
 		public void evaluateTo(FunctionContext context, FunctionReturn functionReturn) {
 			parameterType.getValueFromArray(vector, index, functionReturn);
 		}
-
 
 		@Override
 		public void listVariables(Collection<? super VariableExpression> variables) {

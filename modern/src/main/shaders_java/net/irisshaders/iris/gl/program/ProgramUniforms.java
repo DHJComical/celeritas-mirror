@@ -8,7 +8,7 @@ import net.irisshaders.iris.gl.uniform.DynamicLocationalUniformHolder;
 import net.irisshaders.iris.gl.uniform.Uniform;
 import net.irisshaders.iris.gl.uniform.UniformHolder;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
-import org.taumc.celeritas.shaders.parse.eval.UniformType;
+import net.irisshaders.iris.parsing.UniformType;
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.BufferUtils;

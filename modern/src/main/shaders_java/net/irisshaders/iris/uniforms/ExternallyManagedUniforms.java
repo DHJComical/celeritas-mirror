@@ -1,7 +1,7 @@
 package net.irisshaders.iris.uniforms;
 
 import net.irisshaders.iris.gl.uniform.UniformHolder;
-import org.taumc.celeritas.shaders.parse.eval.UniformType;
+import net.irisshaders.iris.parsing.UniformType;
 
 public class ExternallyManagedUniforms {
 	private ExternallyManagedUniforms() {

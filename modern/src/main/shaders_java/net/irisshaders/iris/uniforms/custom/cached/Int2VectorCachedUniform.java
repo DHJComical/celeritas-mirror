@@ -2,7 +2,7 @@ package net.irisshaders.iris.uniforms.custom.cached;
 
 import kroppeb.stareval.function.FunctionReturn;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
-import org.taumc.celeritas.shaders.parse.eval.VectorType;
+import net.irisshaders.iris.parsing.VectorType;
 import org.joml.Vector2i;
 import org.lwjgl.opengl.GL21;
 
