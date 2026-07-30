@@ -7,14 +7,16 @@ import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.functions.BufferCopyFunctions;
 import org.embeddedt.embeddium.impl.gl.functions.BufferMapRangeFunctions;
-import org.embeddedt.embeddium.impl.gl.functions.BufferStorageFunctions;
 import org.embeddedt.embeddium.impl.gl.sync.GlFence;
 import org.embeddedt.embeddium.impl.gl.util.EnumBitField;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
+import org.taumc.celeritas.lwjgl.GLExtension;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 public class MappedStagingBuffer implements StagingBuffer {
     private static final EnumBitField<GlBufferStorageFlags> STORAGE_FLAGS =
@@ -51,7 +53,8 @@ public class MappedStagingBuffer implements StagingBuffer {
 
     public static boolean isSupported(RenderDevice instance) {
         var functions = instance.getDeviceFunctions();
-        return functions.bufferStorageFunctions() != BufferStorageFunctions.NONE
+        return (LWJGL.isOpenGLVersionSupported(4, 4)
+                || LWJGL.isExtensionSupported(GLExtension.ARB_buffer_storage))
                 && functions.bufferCopyFunctions() != BufferCopyFunctions.PIXEL_PACK
                 && functions.bufferMapRangeFunctions() == BufferMapRangeFunctions.CORE;
     }

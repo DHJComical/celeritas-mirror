@@ -9,6 +9,7 @@ import org.embeddedt.embeddium.impl.gl.tessellation.*;
 import org.embeddedt.embeddium.impl.gl.util.EnumBitField;
 import org.jetbrains.annotations.Nullable;
 import org.taumc.celeritas.lwjgl.GL32;
+import org.taumc.celeritas.lwjgl.GLExtension;
 
 import java.nio.ByteBuffer;
 
@@ -254,8 +255,7 @@ public class GLRenderDevice implements RenderDevice {
             GlImmutableBuffer buffer = new GlImmutableBuffer(flags);
 
             this.bindBuffer(GlBufferTarget.ARRAY_BUFFER, buffer);
-            GLRenderDevice.this.functions.bufferStorageFunctions()
-                    .createBufferStorage(GlBufferTarget.ARRAY_BUFFER, bufferSize, flags);
+            LWJGL.glBufferStorage(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), bufferSize, flags.getBitField());
 
             return buffer;
         }
@@ -268,7 +268,7 @@ public class GLRenderDevice implements RenderDevice {
 
         @Override
         public void multiDrawElementsBaseVertex(MultiDrawBatch batch, GlPrimitiveType primitiveType, GlIndexType indexType) {
-            GLRenderDevice.this.functions.multidrawFunctions().multiDrawElementsBaseVertex(primitiveType.getId(),
+            LWJGL.glMultiDrawElementsBaseVertex(primitiveType.getId(),
                     batch.pElementCount,
                     indexType.getFormatId(),
                     batch.pElementPointer,

@@ -27,19 +27,28 @@ public enum BufferCopyFunctions {
             }
             commandList.bindBuffer(GlBufferTarget.PIXEL_PACK_BUFFER, src);
             commandList.bindBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER, dst);
-            long srcBufPtr = LWJGL.nglMapBuffer(GlBufferTarget.PIXEL_PACK_BUFFER.getTargetParameter(), GL15.GL_READ_ONLY);
-            if (srcBufPtr == 0L) {
-                throw new IllegalStateException("Source buffer could not be mapped");
+            long srcBufPtr = 0L;
+            long dstBufPtr = 0L;
+            try {
+                srcBufPtr = LWJGL.nglMapBuffer(GlBufferTarget.PIXEL_PACK_BUFFER.getTargetParameter(), GL15.GL_READ_ONLY);
+                if (srcBufPtr == 0L) {
+                    throw new IllegalStateException("Source buffer could not be mapped");
+                }
+                dstBufPtr = LWJGL.nglMapBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER.getTargetParameter(), GL15.GL_WRITE_ONLY);
+                if (dstBufPtr == 0L) {
+                    throw new IllegalStateException("Destination buffer could not be mapped");
+                }
+                LWJGL.memCopy(srcBufPtr + readOffset, dstBufPtr + writeOffset, bytes);
+            } finally {
+                if (srcBufPtr != 0L) {
+                    LWJGL.glUnmapBuffer(GlBufferTarget.PIXEL_PACK_BUFFER.getTargetParameter());
+                }
+                if (dstBufPtr != 0L) {
+                    LWJGL.glUnmapBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER.getTargetParameter());
+                }
+                commandList.bindBuffer(GlBufferTarget.PIXEL_PACK_BUFFER, null);
+                commandList.bindBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER, null);
             }
-            long dstBufPtr = LWJGL.nglMapBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER.getTargetParameter(), GL15.GL_WRITE_ONLY);
-            if (dstBufPtr == 0L) {
-                throw new IllegalStateException("Destination buffer could not be mapped");
-            }
-            LWJGL.memCopy(srcBufPtr + readOffset, dstBufPtr + writeOffset, bytes);
-            LWJGL.glUnmapBuffer(GlBufferTarget.PIXEL_PACK_BUFFER.getTargetParameter());
-            LWJGL.glUnmapBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER.getTargetParameter());
-            commandList.bindBuffer(GlBufferTarget.PIXEL_PACK_BUFFER, null);
-            commandList.bindBuffer(GlBufferTarget.PIXEL_UNPACK_BUFFER, null);
         }
     };
 

@@ -35,6 +35,9 @@ public enum BufferMapRangeFunctions {
                 access = GL15.GL_READ_ONLY;
             }
             ByteBuffer buf = LWJGL.glMapBuffer(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), access);
+            if (buf == null) {
+                return null;
+            }
             // Avoid slicing the buffer if we can prove that the full buffer is being mapped
             if (buffer instanceof GlMutableBuffer mutBuffer && mutBuffer.getSize() == length && offset == 0) {
                 return buf;
