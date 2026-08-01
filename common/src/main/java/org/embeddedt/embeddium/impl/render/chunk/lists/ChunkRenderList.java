@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.impl.render.chunk.lists;
 import org.embeddedt.embeddium.impl.render.chunk.LocalSectionIndex;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.util.iterator.ByteIterator;
-import org.embeddedt.embeddium.impl.util.iterator.ReversibleByteArrayIterator;
 import org.embeddedt.embeddium.impl.util.iterator.ByteArrayIterator;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.jetbrains.annotations.Nullable;
@@ -46,12 +45,12 @@ public class ChunkRenderList {
         this.sectionsWithEntitiesCount += (flags >>> RenderVisualsService.HAS_BLOCK_ENTITIES) & 1;
     }
 
-    public @Nullable ByteIterator sectionsWithGeometryIterator(boolean reverse) {
+    public @Nullable ByteIterator sectionsWithGeometryIterator() {
         if (this.sectionsWithGeometryCount == 0) {
             return null;
         }
 
-        return new ReversibleByteArrayIterator(this.sectionsWithGeometry, this.sectionsWithGeometryCount, reverse);
+        return new ByteArrayIterator(this.sectionsWithGeometry, this.sectionsWithGeometryCount);
     }
 
     public @Nullable ByteIterator sectionsWithSpritesIterator() {
@@ -68,6 +67,17 @@ public class ChunkRenderList {
         }
 
         return new ByteArrayIterator(this.sectionsWithEntities, this.sectionsWithEntitiesCount);
+    }
+
+    /**
+     * {@return the backing array of local section indices which have block geometry}
+     * <p>
+     * Only the first {@link #getSectionsWithGeometryCount()} entries are meaningful, and each index is stored narrowed
+     * to a byte, so mask with {@code 0xFF} before use. Exposed so that draw-command assembly can walk the list without
+     * allocating a {@link ByteIterator} or paying a virtual call per section. Callers must not mutate it.
+     */
+    public byte[] getSectionsWithGeometry() {
+        return this.sectionsWithGeometry;
     }
 
     public int getSectionsWithGeometryCount() {
@@ -92,7 +102,7 @@ public class ChunkRenderList {
 
     @Override
     public String toString() {
-        var iterator = this.sectionsWithGeometryIterator(false);
+        var iterator = this.sectionsWithGeometryIterator();
         if (iterator == null) {
             return "[]";
         }

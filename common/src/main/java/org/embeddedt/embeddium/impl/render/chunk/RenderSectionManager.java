@@ -215,7 +215,7 @@ public abstract class RenderSectionManager {
             if (!region.hasSectionsInPass(translucentPass)) {
                 continue;
             }
-            ByteIterator sectionIterator = entry.sectionsWithGeometryIterator(false);
+            ByteIterator sectionIterator = entry.sectionsWithGeometryIterator();
             if (sectionIterator == null) {
                 continue;
             }
@@ -847,7 +847,7 @@ public abstract class RenderSectionManager {
         for (Iterator<ChunkRenderList> it = this.getCurrentRenderListManager().getRenderLists().iterator(); it.hasNext(); ) {
             var renderList = it.next();
             var region = renderList.getRegion();
-            var listIter = renderList.sectionsWithGeometryIterator(false);
+            var listIter = renderList.sectionsWithGeometryIterator();
             if(listIter != null) {
                 while(listIter.hasNext()) {
                     RenderSection section = region.getSection(listIter.nextByteAsInt());

@@ -17,6 +17,8 @@ public final class MultiDrawBatch {
 
     public int size;
 
+    public int maxElementCount;
+
     public MultiDrawBatch(int capacity) {
         this.pElementPointer = LWJGL.nmemAlignedAlloc(32, (long) capacity * LWJGL.getPointerSize());
         if (this.pElementPointer == LWJGLServiceProvider.NULL) {
@@ -49,6 +51,7 @@ public final class MultiDrawBatch {
 
     public void clear() {
         this.size = 0;
+        this.maxElementCount = 0;
     }
 
     public void delete() {
@@ -62,12 +65,6 @@ public final class MultiDrawBatch {
     }
 
     public int getIndexBufferSize() {
-        int elements = 0;
-
-        for (var index = 0; index < this.size; index++) {
-            elements = Math.max(elements, LWJGL.memGetInt(this.pElementCount + ((long) index * Integer.BYTES)));
-        }
-
-        return elements;
+        return this.maxElementCount;
     }
 }

@@ -5,11 +5,11 @@ import org.embeddedt.embeddium.impl.gl.buffer.GlBufferUsage;
 import org.embeddedt.embeddium.impl.gl.buffer.GlMutableBuffer;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.DrawCommandList;
+import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatch;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlIndexType;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
-import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
-import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataUnsafe;
+
 import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 import org.taumc.celeritas.lwjgl.LWJGLServiceProvider;
 
@@ -28,7 +28,6 @@ public class IndirectMultiDrawEmitter implements MultiDrawEmitter {
     private static final int BUFFER_SIZE = MultiDrawEmitter.MAX_COMMAND_COUNT * COMMAND_SIZE;
 
     private final long indirectBuffer;
-    private int numCommands;
     private final GlMutableBuffer indirectBufferGpu;
 
     public IndirectMultiDrawEmitter() {
@@ -50,28 +49,34 @@ public class IndirectMultiDrawEmitter implements MultiDrawEmitter {
         }
     }
 
-    @Override
-    public void addDrawCommands(long pMeshData, int facingMask, int indexPointerMask) {
-        int size = this.numCommands;
+    /**
+     * Copies the data out of a MultiDrawBatch assembled for direct multidraw into the indirect buffer that will
+     * be uploaded to the GPU.
+     */
+    private int buildCommands(MultiDrawBatch batch) {
+        int numCommands = batch.size;
 
-        long basePtr = this.indirectBuffer;
+        long pBaseVertex = batch.pBaseVertex;
+        long pElementCount = batch.pElementCount;
+        long pElementPointer = batch.pElementPointer;
 
-        for (int facing = 0; facing < ModelQuadFacing.COUNT; facing++) {
-            long ptr = basePtr + (long)size * COMMAND_SIZE;
-            LWJGL.memPutInt(ptr + 0L, SectionRenderDataUnsafe.getElementCount(pMeshData, facing)); // count
-            int indexOffset = SectionRenderDataUnsafe.getIndexOffset(pMeshData, facing) & indexPointerMask;
-            LWJGL.memPutInt(ptr + 8L, indexOffset / 4);
-            LWJGL.memPutInt(ptr + 12L, SectionRenderDataUnsafe.getVertexOffset(pMeshData, facing)); // baseVertex
+        long ptr = this.indirectBuffer;
 
-            size += (facingMask >> facing) & 1;
+        for (int i = 0; i < numCommands; i++) {
+            LWJGL.memPutInt(ptr + 0L, LWJGL.memGetInt(pElementCount + ((long) i * Integer.BYTES))); // count
+            LWJGL.memPutInt(ptr + 8L, (int) (LWJGL.memGetAddress(pElementPointer + ((long) i * 8L)) / 4L)); // firstIndex
+            LWJGL.memPutInt(ptr + 12L, LWJGL.memGetInt(pBaseVertex + ((long) i * Integer.BYTES))); // baseVertex
+            ptr += COMMAND_SIZE;
         }
 
-        this.numCommands = size;
+        return numCommands;
     }
 
     @Override
-    public void executeBatch(CommandList commandList, GlTessellation tessellation, GlPrimitiveType primitiveType) {
-        commandList.uploadData(this.indirectBufferGpu, this.indirectBuffer, (long)this.numCommands * COMMAND_SIZE,
+    public void executeBatch(CommandList commandList, GlTessellation tessellation, GlPrimitiveType primitiveType, MultiDrawBatch batch) {
+        int numCommands = this.buildCommands(batch);
+
+        commandList.uploadData(this.indirectBufferGpu, this.indirectBuffer, (long)numCommands * COMMAND_SIZE,
                 GlBufferUsage.STREAM_DRAW);
 
         commandList.bindBuffer(GlBufferTarget.DRAW_INDIRECT_BUFFER, this.indirectBufferGpu);
@@ -79,30 +84,6 @@ public class IndirectMultiDrawEmitter implements MultiDrawEmitter {
             drawCommandList.multiDrawElementsIndirect(indirectBufferGpu, numCommands, primitiveType, GlIndexType.UNSIGNED_INT);
         }
         commandList.bindBuffer(GlBufferTarget.DRAW_INDIRECT_BUFFER, null);
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return this.numCommands == 0;
-    }
-
-    @Override
-    public int getIndexBufferSize() {
-        int elements = 0;
-
-        long pElementCount = this.indirectBuffer;
-
-        for (var index = 0; index < this.numCommands; index++) {
-            elements = Math.max(elements, LWJGL.memGetInt(pElementCount));
-            pElementCount += COMMAND_SIZE;
-        }
-
-        return elements;
-    }
-
-    @Override
-    public void clear() {
-        this.numCommands = 0;
     }
 
     @Override

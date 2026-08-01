@@ -315,7 +315,7 @@ public class RenderListManager {
             for (TerrainRenderPass pass : region.getPasses()) {
                 int numToAdd = 0;
                 var storage = region.getStorage(pass);
-                var iter = Objects.requireNonNull(renderList.sectionsWithGeometryIterator(false));
+                var iter = Objects.requireNonNull(renderList.sectionsWithGeometryIterator());
 
                 while (iter.hasNext()) {
                     int sectionIndex = iter.nextByteAsInt();
@@ -332,7 +332,7 @@ public class RenderListManager {
             }
 
             if (isSorting) {
-                var iter = Objects.requireNonNull(renderList.sectionsWithGeometryIterator(false));
+                var iter = Objects.requireNonNull(renderList.sectionsWithGeometryIterator());
 
                 while (iter.hasNext()) {
                     int sectionIndex = iter.nextByteAsInt();
