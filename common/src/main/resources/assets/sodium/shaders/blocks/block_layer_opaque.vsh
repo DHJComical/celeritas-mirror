@@ -6,6 +6,9 @@
 #import <sodium:include/chunk_material.glsl>
 
 out vec4 v_Color;
+out vec4 v_RdhFactor;
+out vec2 v_QuadCoord;
+out vec3 v_LightColor;
 out vec2 v_TexCoord;
 
 #if defined(USE_FOG) && defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0
@@ -60,9 +63,16 @@ void main() {
     // Add the light color to the vertex color, and pass the texture coordinates to the fragment shader
 #ifdef CELERITAS_NO_LIGHTMAP
     v_Color = _vert_color;
+    v_LightColor = vec3(1.0);
 #else
-    v_Color = _vert_color * _sample_lightmap(u_LightTex, _vert_tex_light_coord);
+    vec4 lightColor = _sample_lightmap(u_LightTex, _vert_tex_light_coord);
+    v_Color = _vert_color * lightColor;
+    v_LightColor = lightColor.rgb;
 #endif
+    v_RdhFactor = _vert_rdh_factor * 2.0;
+    int corner = gl_VertexID & 3;
+    v_QuadCoord = vec2(corner >= 2 ? 1.0 : 0.0,
+            corner == 1 || corner == 2 ? 1.0 : 0.0);
     v_TexCoord = _vert_tex_diffuse_coord;
 
     v_MaterialMipBias = _material_mip_bias(_material_params);

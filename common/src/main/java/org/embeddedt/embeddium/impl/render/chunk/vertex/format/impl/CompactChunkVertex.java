@@ -10,14 +10,15 @@ import java.util.List;
 import java.util.Map;
 
 public class CompactChunkVertex implements ChunkVertexType {
-    public static final GlVertexFormat VERTEX_FORMAT = GlVertexFormat.builder(20)
+    public static final GlVertexFormat VERTEX_FORMAT = GlVertexFormat.builder(24)
             .addElement("a_PosId", 0, GlVertexAttributeFormat.UNSIGNED_SHORT, 4, false, true)
             .addElement("a_Color", 8, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true, false)
             .addElement("a_TexCoord", 12, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, false)
             .addElement("a_LightCoord", 16, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, true)
+            .addElement("a_RdhFactor", 20, GlVertexAttributeFormat.BYTE, 4, true, false)
             .build();
 
-    public static final int STRIDE = 20;
+    public static final int STRIDE = 24;
 
     private static final int POSITION_MAX_VALUE = 65536;
     private static final int TEXTURE_MAX_VALUE = 32768;
@@ -65,6 +66,7 @@ public class CompactChunkVertex implements ChunkVertexType {
             LWJGL.memPutShort(ptr + 14, encodeTexture(vertex.v));
 
             LWJGL.memPutInt(ptr + 16, vertex.light);
+            LWJGL.memPutInt(ptr + 20, vertex.rdhFactor);
 
             return ptr + STRIDE;
         };

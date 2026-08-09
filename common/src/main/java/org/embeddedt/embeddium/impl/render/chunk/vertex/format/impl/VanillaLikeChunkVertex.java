@@ -12,13 +12,14 @@ import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
  * compatible with mods & resource packs that need high precision for models.
  */
 public class VanillaLikeChunkVertex implements ChunkVertexType {
-    public static final int STRIDE = 28;
+    public static final int STRIDE = 32;
 
     public static final GlVertexFormat VERTEX_FORMAT = GlVertexFormat.builder(STRIDE)
             .addElement("a_PosId", 0, GlVertexAttributeFormat.FLOAT, 3, false, false)
             .addElement("a_Color", 12, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true, false)
             .addElement("a_TexCoord", 16, GlVertexAttributeFormat.FLOAT, 2, false, false)
             .addElement("a_LightCoord", 24, GlVertexAttributeFormat.UNSIGNED_INT, 1, false, true)
+            .addElement("a_RdhFactor", 28, GlVertexAttributeFormat.BYTE, 4, true, false)
             .build();
 
     @Override
@@ -51,6 +52,7 @@ public class VanillaLikeChunkVertex implements ChunkVertexType {
             LWJGL.memPutFloat(ptr + 16, encodeTexture(vertex.u));
             LWJGL.memPutFloat(ptr + 20, encodeTexture(vertex.v));
             LWJGL.memPutInt(ptr + 24, (encodeDrawParameters(material, sectionIndex) << 0) | (encodeLight(vertex.light) << 16));
+            LWJGL.memPutInt(ptr + 28, vertex.rdhFactor);
 
             return ptr + STRIDE;
         };

@@ -72,7 +72,11 @@ public class GlVertexFormat {
         }
 
         public Builder addAllElements(GlVertexFormat otherFormat) {
-            for (var attribute : otherFormat.getAttributes()) {
+            return this.addElements(otherFormat.getAttributes());
+        }
+
+        public Builder addElements(Collection<GlVertexAttribute> attributes) {
+            for (var attribute : attributes) {
                 this.addElement(new GlVertexAttribute(attribute.getFormat(), attribute.getName(), attribute.getCount(), attribute.isNormalized(), attribute.getPointer(), this.stride, attribute.isIntType()));
             }
             return this;

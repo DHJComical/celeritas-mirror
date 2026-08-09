@@ -10,6 +10,9 @@ ivec2 _vert_tex_light_coord;
 // The color of the vertex
 vec4 _vert_color;
 
+// The "rdh factor" of the vertex, used when applying AO correction
+vec4 _vert_rdh_factor;
+
 // The index of the draw command which this vertex belongs to
 uint _draw_id;
 
@@ -32,6 +35,7 @@ in uvec4 a_PosId;
 in vec4 a_Color;
 in vec2 a_TexCoord;
 in ivec2 a_LightCoord;
+in vec4 a_RdhFactor;
 
 #if !defined(VERT_POS_SCALE)
 #error "VERT_POS_SCALE not defined"
@@ -46,6 +50,7 @@ void _vert_init() {
     _vert_tex_diffuse_coord = (a_TexCoord * VERT_TEX_SCALE);
     _vert_tex_light_coord = a_LightCoord;
     _vert_color = a_Color;
+    _vert_rdh_factor = a_RdhFactor;
 
     _draw_id = (a_PosId.w >> 8u) & 0xFFu;
     _material_params = (a_PosId.w >> 0u) & 0xFFu;
@@ -57,11 +62,13 @@ in vec3 a_PosId;
 in vec4 a_Color;
 in vec2 a_TexCoord;
 in uint a_LightCoord;
+in vec4 a_RdhFactor;
 
 void _vert_init() {
     _vert_position = a_PosId;
     _vert_tex_diffuse_coord = a_TexCoord;
     _vert_color = a_Color;
+    _vert_rdh_factor = a_RdhFactor;
 
     uint packed_draw_params = (a_LightCoord & 0xFFFFu);
     // Vertex Material

@@ -14,7 +14,8 @@ public class XHFPModelVertexType implements ChunkVertexType {
 
 	public static final int STRIDE = 48;
 	public static final GlVertexFormat VERTEX_FORMAT = GlVertexFormat.builder(STRIDE)
-		.addAllElements(BASE_VERTEX_TYPE.getVertexFormat())
+         // Exclude the rdh factor as shaders cannot use it
+		.addElements(BASE_VERTEX_TYPE.getVertexFormat().getAttributes().stream().filter(a -> !a.getName().equals("a_RdhFactor")).toList())
 		.addElement("mc_midTexCoord", GlVertexFormat.NEXT_ALIGNED_POINTER, GlVertexAttributeFormat.UNSIGNED_SHORT, 2, false, false)
 		.addElement("at_tangent", GlVertexFormat.NEXT_ALIGNED_POINTER, GlVertexAttributeFormat.BYTE, 4, true, false)
 		.addElement("iris_Normal", GlVertexFormat.NEXT_ALIGNED_POINTER, GlVertexAttributeFormat.BYTE, 3, true, false)

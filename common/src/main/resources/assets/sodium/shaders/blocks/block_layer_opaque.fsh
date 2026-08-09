@@ -3,6 +3,9 @@
 #import <sodium:include/fog.glsl>
 
 in vec4 v_Color;
+in vec4 v_RdhFactor;
+in vec2 v_QuadCoord;
+in vec3 v_LightColor;
 in vec2 v_TexCoord;
 
 #if defined(USE_FOG) && defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0
@@ -57,6 +60,12 @@ void main() {
 #endif
 
     vec4 m_color = v_Color;
+    // Apply correction factor to make the resulting color very close to what true bilinear interpolation would obtain
+    float correctionWeight = min(v_QuadCoord.x, v_QuadCoord.y)
+            * (1.0 - max(v_QuadCoord.x, v_QuadCoord.y));
+    vec4 correction = v_RdhFactor * correctionWeight;
+    correction.rgb *= v_LightColor;
+    m_color += correction;
 
 #ifdef USE_VANILLA_COLOR_FORMAT
     // Apply per-vertex color. AO shade is applied ahead of time on the CPU.
