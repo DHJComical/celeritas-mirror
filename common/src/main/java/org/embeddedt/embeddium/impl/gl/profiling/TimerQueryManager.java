@@ -17,16 +17,13 @@ public class TimerQueryManager implements Closeable {
      */
     private static final int QUERY_FRAME_LAG_COUNT = 3;
 
-    private record InFlightQuery(int startTime, int endTime) {
+    private record InFlightQuery(int id) {
         long getTimeDelta() {
-            long startTime = LWJGL.glGetQueryObjectui64(this.startTime, GL32.GL_QUERY_RESULT);
-            long endTime = LWJGL.glGetQueryObjectui64(this.endTime, GL32.GL_QUERY_RESULT);
-            return endTime - startTime;
+            return LWJGL.glGetQueryObjectui64(this.id, GL32.GL_QUERY_RESULT);
         }
 
         void delete() {
-            releaseQuery(startTime);
-            releaseQuery(endTime);
+            releaseQuery(id);
         }
     }
 
@@ -55,7 +52,7 @@ public class TimerQueryManager implements Closeable {
             throw new IllegalStateException("Query already started but not ended");
         }
         int id = allocateQuery();
-        LWJGL.glQueryCounter(id, GL33.GL_TIMESTAMP);
+        LWJGL.glBeginQuery(GL33.GL_TIME_ELAPSED, id);
         startQueryId = id;
     }
 
@@ -63,9 +60,8 @@ public class TimerQueryManager implements Closeable {
         if (startQueryId == INVALID_ID) {
             throw new IllegalStateException("Trying to end query that hasn't started yet");
         }
-        int id = allocateQuery();
-        LWJGL.glQueryCounter(id, GL33.GL_TIMESTAMP);
-        inFlightQueries.enqueue(new InFlightQuery(startQueryId, id));
+        LWJGL.glEndQuery(GL33.GL_TIME_ELAPSED);
+        inFlightQueries.enqueue(new InFlightQuery(startQueryId));
         startQueryId = -1;
     }
 
@@ -84,6 +80,7 @@ public class TimerQueryManager implements Closeable {
             inFlightQueries.dequeue().delete();
         }
         if (startQueryId != -1) {
+            LWJGL.glEndQuery(GL33.GL_TIME_ELAPSED);
             releaseQuery(startQueryId);
             startQueryId = -1;
         }

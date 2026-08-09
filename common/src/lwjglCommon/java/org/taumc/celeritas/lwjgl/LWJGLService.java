@@ -112,7 +112,8 @@ public interface LWJGLService {
 
     int glGenQueries();
     void glDeleteQueries(int query);
-    void glQueryCounter(int id, int target);
+    void glBeginQuery(int target, int id);
+    void glEndQuery(int target);
     long glGetQueryObjectui64(int id, int pname);
 
     // ===================== DEBUG OPERATIONS =====================

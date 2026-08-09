@@ -196,7 +196,7 @@ public record LWJGL3Service(
         public abstract void delete(int array);
         public abstract void bind(int array);
     }
-    private enum TimerQueryMode { CORE, ARB, NONE }
+    private enum TimerQueryMode { CORE, ARB, EXT, NONE }
     private enum DebugMode { KHR, NONE }
     private enum VertexAttribIMode { CORE, EXT, NONE }
     private enum VertexAttribDivisorMode { CORE, ARB, NONE }
@@ -228,9 +228,11 @@ public record LWJGL3Service(
             timerQueryMode = TimerQueryMode.CORE;
         } else if (caps.GL_ARB_timer_query) {
             timerQueryMode = TimerQueryMode.ARB;
+        } else if (caps.GL_EXT_timer_query) {
+            timerQueryMode = TimerQueryMode.EXT;
         } else {
             timerQueryMode = TimerQueryMode.NONE;
-            LOGGER.warn("ARB_timer_query extension not available - GPU profiling will be disabled");
+            LOGGER.warn("Timer query support not available - GPU profiling will be disabled");
         }
 
         DebugMode debugMode;
@@ -531,11 +533,16 @@ public record LWJGL3Service(
     }
 
     @Override
-    public void glQueryCounter(int id, int target) {
-        switch (timerQueryMode) {
-            case CORE -> GL33C.glQueryCounter(id, target);
-            case ARB -> ARBTimerQuery.glQueryCounter(id, target);
-            case NONE -> { /* no-op */ }
+    public void glBeginQuery(int target, int id) {
+        if (timerQueryMode != TimerQueryMode.NONE) {
+            GL15C.glBeginQuery(target, id);
+        }
+    }
+
+    @Override
+    public void glEndQuery(int target) {
+        if (timerQueryMode != TimerQueryMode.NONE) {
+            GL15C.glEndQuery(target);
         }
     }
 
@@ -544,6 +551,7 @@ public record LWJGL3Service(
         return switch (timerQueryMode) {
             case CORE -> GL33C.glGetQueryObjectui64(id, pname);
             case ARB -> ARBTimerQuery.glGetQueryObjectui64(id, pname);
+            case EXT -> EXTTimerQuery.glGetQueryObjectui64EXT(id, pname);
             case NONE -> 0L;
         };
     }

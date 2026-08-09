@@ -17,6 +17,7 @@ import org.lwjgl.opengl.ARBTimerQuery;
 import org.lwjgl.opengl.ARBVertexArrayObject;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.EXTGpuShader4;
+import org.lwjgl.opengl.EXTTimerQuery;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL14;
@@ -79,19 +80,18 @@ public record LWJGL2Service(
 
     private enum TimerQueryMode {
         CORE {
-            @Override public void queryCounter(int id, int target) { GL33.glQueryCounter(id, target); }
             @Override public long getQueryObjectui64(int id, int pname) { return GL33.glGetQueryObjectui64(id, pname); }
         },
         ARB {
-            @Override public void queryCounter(int id, int target) { ARBTimerQuery.glQueryCounter(id, target); }
             @Override public long getQueryObjectui64(int id, int pname) { return ARBTimerQuery.glGetQueryObjectui64(id, pname); }
         },
+        EXT {
+            @Override public long getQueryObjectui64(int id, int pname) { return EXTTimerQuery.glGetQueryObjectuEXT(id, pname); }
+        },
         NONE {
-            @Override public void queryCounter(int id, int target) { /* no-op */ }
             @Override public long getQueryObjectui64(int id, int pname) { return 0L; }
         };
 
-        public abstract void queryCounter(int id, int target);
         public abstract long getQueryObjectui64(int id, int pname);
     }
 
@@ -171,9 +171,11 @@ public record LWJGL2Service(
             timerQueryMode = TimerQueryMode.CORE;
         } else if (caps.GL_ARB_timer_query) {
             timerQueryMode = TimerQueryMode.ARB;
+        } else if (caps.GL_EXT_timer_query) {
+            timerQueryMode = TimerQueryMode.EXT;
         } else {
             timerQueryMode = TimerQueryMode.NONE;
-            LOGGER.warn("ARB_timer_query extension not available - GPU profiling will be disabled");
+            LOGGER.warn("Timer query support not available - GPU profiling will be disabled");
         }
 
         DebugMode debugMode;
@@ -641,8 +643,17 @@ public record LWJGL2Service(
     }
 
     @Override
-    public void glQueryCounter(int id, int target) {
-        timerQueryMode.queryCounter(id, target);
+    public void glBeginQuery(int target, int id) {
+        if (timerQueryMode != TimerQueryMode.NONE) {
+            GL15.glBeginQuery(target, id);
+        }
+    }
+
+    @Override
+    public void glEndQuery(int target) {
+        if (timerQueryMode != TimerQueryMode.NONE) {
+            GL15.glEndQuery(target);
+        }
     }
 
     @Override
