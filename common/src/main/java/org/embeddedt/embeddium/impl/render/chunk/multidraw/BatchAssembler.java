@@ -277,6 +277,8 @@ public final class BatchAssembler {
 
         for (int i = 0; i < sectionCount; i++, cursor += step) {
             long pMeshData = pBase + ((sections[cursor] & 0xFF) * stride);
+            int sectionStart = batch.size;
+            int previousEnd = 0;
 
             for (int run = 0; run < runCount; run++) {
                 int firstFacing = runFirst(runs, run);
@@ -285,7 +287,7 @@ public final class BatchAssembler {
                 int start = SectionRenderDataUnsafe.Strategy.COMPACT.getVertexOffset(pMeshData, firstFacing);
                 int end = SectionRenderDataUnsafe.Strategy.COMPACT.getRunVertexEnd(pMeshData, lastFacing, primitiveType);
 
-                write(batch, start, SectionRenderDataUnsafe.elementsForVertices(end - start, primitiveType), 0L);
+                previousEnd = writeUnsorted(batch, start, end, primitiveType, sectionStart, previousEnd);
             }
         }
     }
@@ -321,6 +323,8 @@ public final class BatchAssembler {
                     originZ + LocalSectionIndex.unpackZ(sectionIndex));
 
             long pMeshData = pBase + (sectionIndex * stride);
+            int sectionStart = batch.size;
+            int previousEnd = 0;
 
             // A do-while loop is chosen because UNASSIGNED is always marked as visible by getVisibleFaces, so the mask
             // is never zero and there is always an attempt to emit at least one run.
@@ -331,7 +335,7 @@ public final class BatchAssembler {
                 int start = SectionRenderDataUnsafe.Strategy.COMPACT.getVertexOffset(pMeshData, firstFacing);
                 int end = SectionRenderDataUnsafe.Strategy.COMPACT.getRunVertexEnd(pMeshData, lastFacing, primitiveType);
 
-                write(batch, start, SectionRenderDataUnsafe.elementsForVertices(end - start, primitiveType), 0L);
+                previousEnd = writeUnsorted(batch, start, end, primitiveType, sectionStart, previousEnd);
 
                 // Runs are found in ascending order, so clear all bits below what we just consumed.
                 mask &= -1 << (lastFacing + 1);
@@ -366,6 +370,27 @@ public final class BatchAssembler {
     }
 
     private static final int POINTER_SHIFT = Integer.numberOfTrailingZeros(LWJGL.getPointerSize());
+
+    private static int writeUnsorted(MultiDrawBatch batch, int baseVertex, int endVertex,
+                                     ChunkPrimitiveType primitiveType, int sectionStart, int previousEnd) {
+        int elementCount = SectionRenderDataUnsafe.elementsForVertices(endVertex - baseVertex, primitiveType);
+
+        if (elementCount == 0) {
+            return previousEnd;
+        }
+
+        if (batch.size > sectionStart && previousEnd == baseVertex) {
+            long countPointer = batch.pElementCount + ((long) (batch.size - 1) << 2);
+            int mergedCount = LWJGL.memGetInt(countPointer) + elementCount;
+
+            LWJGL.memPutInt(countPointer, mergedCount);
+            batch.maxElementCount = Math.max(batch.maxElementCount, mergedCount);
+        } else {
+            write(batch, baseVertex, elementCount, 0L);
+        }
+
+        return endVertex;
+    }
 
     /**
      * Appends a command to the batch and maintains the running maximum element count that
