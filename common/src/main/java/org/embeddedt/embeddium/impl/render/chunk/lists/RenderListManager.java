@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.Setter;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
-import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataUnsafe;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionCuller;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionNode;
@@ -319,9 +318,8 @@ public class RenderListManager {
 
                 while (iter.hasNext()) {
                     int sectionIndex = iter.nextByteAsInt();
-                    var pMeshData = storage.getDataPointer(sectionIndex);
 
-                    if (SectionRenderDataUnsafe.getSliceMask(pMeshData) != 0) {
+                    if (storage.getSliceMask(sectionIndex) != 0) {
                         numToAdd++;
                     }
                 }

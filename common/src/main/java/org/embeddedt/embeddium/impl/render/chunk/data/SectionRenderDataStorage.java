@@ -59,7 +59,8 @@ public class SectionRenderDataStorage {
         int vertexOffset = allocation.getOffset();
         int indexOffset = indexAllocation != null ? indexAllocation.getOffset() * 4 : 0;
 
-        this.storageStrategy.writeMeshes(pMeshData, vertexOffset, indexOffset, ranges, this.primitiveType);
+        int sliceMask = this.storageStrategy.writeMeshes(pMeshData, vertexOffset, indexOffset, ranges, this.primitiveType);
+        this.storageStrategy.setSliceMask(this.pMeshDataArray, localSectionIndex, sliceMask);
     }
 
     public void removeMeshes(int localSectionIndex) {
@@ -67,6 +68,7 @@ public class SectionRenderDataStorage {
             this.allocations[localSectionIndex].delete();
             this.allocations[localSectionIndex] = null;
 
+            this.storageStrategy.setSliceMask(this.pMeshDataArray, localSectionIndex, 0);
             this.storageStrategy.clear(this.getDataPointer(localSectionIndex));
 
             this.numAllocations--;
@@ -129,7 +131,11 @@ public class SectionRenderDataStorage {
      * through {@link #getDataPointer} once per section.
      */
     public long getBasePointer() {
-        return this.pMeshDataArray;
+        return this.storageStrategy.getBasePointer(this.pMeshDataArray);
+    }
+
+    public int getSliceMask(int sectionIndex) {
+        return this.storageStrategy.getSliceMask(this.pMeshDataArray, sectionIndex);
     }
 
     public void delete() {

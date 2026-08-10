@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.render.chunk.data;
 import org.embeddedt.embeddium.impl.gl.util.VertexRange;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
+import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 
 import java.util.Map;
 
@@ -23,13 +24,9 @@ import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 public class SectionRenderDataUnsafe {
     private static final int NUM_FACINGS = ModelQuadFacing.COUNT; // 6 directions + UNASSIGNED
 
-    /**
-     * The slice mask lives at offset 0 in <em>every</em> layout, so code which only needs to know which facings are
-     * populated (e.g. the render list culling pass) can read it without knowing which {@link Strategy} produced the row.
-     */
     private static final long OFFSET_SLICE_MASK = 0;
 
-    public static int getSliceMask(long ptr) {
+    private static int getSliceMask(long ptr) {
         return LWJGL.memGetInt(ptr + OFFSET_SLICE_MASK);
     }
 
@@ -111,8 +108,8 @@ public class SectionRenderDataUnsafe {
             }
 
             @Override
-            public void writeMeshes(long ptr, int vertexOffset, int indexOffset,
-                                    Map<ModelQuadFacing, VertexRange> ranges, ChunkPrimitiveType primitiveType) {
+            public int writeMeshes(long ptr, int vertexOffset, int indexOffset,
+                                   Map<ModelQuadFacing, VertexRange> ranges, ChunkPrimitiveType primitiveType) {
                 int sliceMask = 0;
 
                 for (int facing = 0; facing < NUM_FACINGS; facing++) {
@@ -131,7 +128,7 @@ public class SectionRenderDataUnsafe {
                     indexOffset += elementCount * 4;
                 }
 
-                setSliceMask(ptr, sliceMask);
+                return sliceMask;
             }
 
             @Override
@@ -157,24 +154,39 @@ public class SectionRenderDataUnsafe {
         /**
          * The "fence post" layout, valid only for unsorted passes.
          * <pre>
-         * u32 slice_mask;
          * u32 posts[8];
          * </pre>
+         * Slice masks are stored separately in one byte per section, followed by the aligned post rows.
          * It drops index offsets entirely (unnecessary for unsorted passes) and compresses vertex info by exploiting
          * the fact that facing vertex ranges are always contiguous in memory (in facing order), with empty facings having
          * zero-length spans.
          */
         COMPACT {
-            private static final long OFFSET_POSTS = 4;
+            private static final long DATA_OFFSET = RenderRegion.REGION_SIZE;
             private static final int NUM_POSTS = NUM_FACINGS + 1;
 
             private static long pPost(long ptr, int post) {
-                return ptr + OFFSET_POSTS + ((long) post << 2);
+                return ptr + ((long) post << 2);
             }
 
             @Override
             public long getStride() {
-                return OFFSET_POSTS + (4L * NUM_POSTS);
+                return Integer.BYTES * (long) NUM_POSTS;
+            }
+
+            @Override
+            public long getBasePointer(long heap) {
+                return heap + DATA_OFFSET;
+            }
+
+            @Override
+            public int getSliceMask(long heap, int index) {
+                return LWJGL.memGetByte(heap + index) & 0xFF;
+            }
+
+            @Override
+            public void setSliceMask(long heap, int index, int value) {
+                LWJGL.memPutByte(heap + index, (byte) value);
             }
 
             @Override
@@ -202,8 +214,8 @@ public class SectionRenderDataUnsafe {
             }
 
             @Override
-            public void writeMeshes(long ptr, int vertexOffset, int indexOffset,
-                                    Map<ModelQuadFacing, VertexRange> ranges, ChunkPrimitiveType primitiveType) {
+            public int writeMeshes(long ptr, int vertexOffset, int indexOffset,
+                                   Map<ModelQuadFacing, VertexRange> ranges, ChunkPrimitiveType primitiveType) {
                 int sliceMask = 0;
 
                 for (int facing = 0; facing < NUM_FACINGS; facing++) {
@@ -220,7 +232,7 @@ public class SectionRenderDataUnsafe {
 
                 LWJGL.memPutInt(pPost(ptr, NUM_FACINGS), vertexOffset);
 
-                setSliceMask(ptr, sliceMask);
+                return sliceMask;
             }
 
             @Override
@@ -240,6 +252,23 @@ public class SectionRenderDataUnsafe {
                     long pPost = pPost(ptr, post);
                     LWJGL.memPutInt(pPost, LWJGL.memGetInt(pPost) + delta);
                 }
+            }
+
+            @Override
+            public long allocateHeap(int count) {
+                long size = DATA_OFFSET + (count * this.getStride());
+                long pointer = LWJGL.nmemAlignedAlloc(64, size);
+
+                if (pointer != 0) {
+                    LWJGL.memSet(pointer, 0, size);
+                }
+
+                return pointer;
+            }
+
+            @Override
+            public void freeHeap(long pointer) {
+                LWJGL.nmemAlignedFree(pointer);
             }
         };
 
@@ -267,15 +296,15 @@ public class SectionRenderDataUnsafe {
         public abstract int getRunVertexEnd(long ptr, int lastFacing, ChunkPrimitiveType primitiveType);
 
         /**
-         * Populates an entire row, including its slice mask, from a freshly uploaded mesh. {@code ranges} must be
+         * Populates an entire row from a freshly uploaded mesh and returns its slice mask. {@code ranges} must be
          * contiguous in facing order starting at zero, as produced by the chunk build buffers.
          *
          * @param vertexOffset the section's base offset into the vertex arena, in vertices
          * @param indexOffset  the section's base offset into its index buffer, in bytes; layouts which draw from the
          *                     shared index buffer ignore this
          */
-        public abstract void writeMeshes(long ptr, int vertexOffset, int indexOffset,
-                                         Map<ModelQuadFacing, VertexRange> ranges, ChunkPrimitiveType primitiveType);
+        public abstract int writeMeshes(long ptr, int vertexOffset, int indexOffset,
+                                        Map<ModelQuadFacing, VertexRange> ranges, ChunkPrimitiveType primitiveType);
 
         /**
          * Rewrites every facing's index offset against a newly allocated index buffer, preserving element counts.
@@ -290,11 +319,23 @@ public class SectionRenderDataUnsafe {
          */
         public abstract void rebase(long ptr, int vertexOffset, int indexOffset, ChunkPrimitiveType primitiveType);
 
-        public final long allocateHeap(int count) {
+        public int getSliceMask(long heap, int index) {
+            return SectionRenderDataUnsafe.getSliceMask(this.heapPointer(heap, index));
+        }
+
+        public void setSliceMask(long heap, int index, int value) {
+            SectionRenderDataUnsafe.setSliceMask(this.heapPointer(heap, index), value);
+        }
+
+        public long getBasePointer(long heap) {
+            return heap;
+        }
+
+        public long allocateHeap(int count) {
             return LWJGL.nmemCalloc(count, this.getStride());
         }
 
-        public final void freeHeap(long pointer) {
+        public void freeHeap(long pointer) {
             LWJGL.nmemFree(pointer);
         }
 
@@ -303,7 +344,7 @@ public class SectionRenderDataUnsafe {
         }
 
         public final long heapPointer(long ptr, int index) {
-            return ptr + (index * this.getStride());
+            return this.getBasePointer(ptr) + (index * this.getStride());
         }
 
         private static int vertexCountOf(Map<ModelQuadFacing, VertexRange> ranges, int facing) {
