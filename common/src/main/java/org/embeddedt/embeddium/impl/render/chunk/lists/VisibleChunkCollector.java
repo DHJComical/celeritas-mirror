@@ -30,11 +30,11 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
 
         this.sortedRenderLists = new ObjectArrayList<>();
         this.sortedRebuildLists = new EnumMap<>(ChunkUpdateType.class);
-        this.rebuildQueueOverflowCounts = new int[ChunkUpdateType.values().length];
+        this.rebuildQueueOverflowCounts = new int[ChunkUpdateType.VALUES.length];
         this.targetQueueSize = targetQueueSize;
         this.renderListsByRegion = new ChunkRenderList[regionIdsLength];
 
-        for (var type : ChunkUpdateType.values()) {
+        for (var type : ChunkUpdateType.VALUES) {
             this.sortedRebuildLists.put(type, new ArrayDeque<>());
         }
     }
@@ -94,7 +94,7 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
     public ChunkRebuildLists getRebuildLists() {
         EnumMap<ChunkUpdateType, Integer> overflowCounts = new EnumMap<>(ChunkUpdateType.class);
         if (this.hasAdditionalUpdates) {
-            var values = ChunkUpdateType.values();
+            var values = ChunkUpdateType.VALUES;
             for (int i = 0; i < values.length; i++) {
                 if (this.rebuildQueueOverflowCounts[i] != 0) {
                     overflowCounts.put(values[i], this.rebuildQueueOverflowCounts[i]);

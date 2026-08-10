@@ -31,6 +31,8 @@ public enum ChunkUpdateType {
      */
     IMPORTANT_REBUILD;
 
+    public static final ChunkUpdateType[] VALUES = values();
+
     @Deprecated
     public static boolean canPromote(ChunkUpdateType prev, ChunkUpdateType next) {
         return prev == null || (prev == REBUILD && next == IMPORTANT_REBUILD);
