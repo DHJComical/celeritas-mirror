@@ -22,7 +22,7 @@ public class SectionRenderDataStorage {
 
     public SectionRenderDataStorage(ChunkPrimitiveType primitiveType, boolean sorted) {
         this.storageStrategy = sorted ? SectionRenderDataUnsafe.Strategy.FULL : SectionRenderDataUnsafe.Strategy.COMPACT;
-        this.pMeshDataArray = this.storageStrategy.allocateHeap(RenderRegion.REGION_SIZE);
+        this.pMeshDataArray = this.storageStrategy.allocateHeap();
         if (this.pMeshDataArray == 0) {
             throw new OutOfMemoryError("Failed to allocate mesh data array");
         }

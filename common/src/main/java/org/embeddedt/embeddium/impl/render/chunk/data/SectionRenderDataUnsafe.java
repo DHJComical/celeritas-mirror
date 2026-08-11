@@ -318,8 +318,8 @@ public class SectionRenderDataUnsafe {
             return heap + this.getHeaderSize();
         }
 
-        public final long allocateHeap(int count) {
-            long size = this.getHeaderSize() + (count * this.getStride());
+        public final long allocateHeap() {
+            long size = this.getHeaderSize() + (RenderRegion.REGION_SIZE * this.getStride());
             long pointer = LWJGL.nmemAlignedAlloc(64, size);
 
             if (pointer != 0) {
@@ -331,10 +331,6 @@ public class SectionRenderDataUnsafe {
 
         public final void freeHeap(long pointer) {
             LWJGL.nmemAlignedFree(pointer);
-        }
-
-        public final void clear(long pointer) {
-            LWJGL.memSet(pointer, 0x0, this.getStride());
         }
 
         public final long heapPointer(long ptr, int index) {
@@ -362,7 +358,7 @@ public class SectionRenderDataUnsafe {
          */
         public final void clearRow(long heap, int index) {
             this.setSliceMask(heap, index, 0);
-            this.clear(this.heapPointer(heap, index));
+            LWJGL.memSet(this.heapPointer(heap, index), 0x0, this.getStride());
         }
 
         private static int vertexCountOf(Map<ModelQuadFacing, VertexRange> ranges, int facing) {
