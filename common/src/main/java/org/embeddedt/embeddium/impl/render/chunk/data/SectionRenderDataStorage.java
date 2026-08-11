@@ -54,13 +54,10 @@ public class SectionRenderDataStorage {
         this.indexAllocations[localSectionIndex] = indexAllocation;
         this.numAllocations++;
 
-        var pMeshData = this.getDataPointer(localSectionIndex);
-
         int vertexOffset = allocation.getOffset();
         int indexOffset = indexAllocation != null ? indexAllocation.getOffset() * 4 : 0;
 
-        int sliceMask = this.storageStrategy.writeMeshes(pMeshData, vertexOffset, indexOffset, ranges, this.primitiveType);
-        this.storageStrategy.setSliceMask(this.pMeshDataArray, localSectionIndex, sliceMask);
+        this.storageStrategy.writeMeshesAndSliceMask(this.pMeshDataArray, localSectionIndex, vertexOffset, indexOffset, ranges, this.primitiveType);
     }
 
     public void removeMeshes(int localSectionIndex) {
@@ -68,8 +65,7 @@ public class SectionRenderDataStorage {
             this.allocations[localSectionIndex].delete();
             this.allocations[localSectionIndex] = null;
 
-            this.storageStrategy.setSliceMask(this.pMeshDataArray, localSectionIndex, 0);
-            this.storageStrategy.clear(this.getDataPointer(localSectionIndex));
+            this.storageStrategy.clearRow(this.pMeshDataArray, localSectionIndex);
 
             this.numAllocations--;
         }
@@ -130,8 +126,8 @@ public class SectionRenderDataStorage {
      * statically, so that they can hoist the base and stride and index the array themselves rather than dispatching
      * through {@link #getDataPointer} once per section.
      */
-    public long getBasePointer() {
-        return this.storageStrategy.getBasePointer(this.pMeshDataArray);
+    public long getRowBasePointer() {
+        return this.storageStrategy.getRowBasePointer(this.pMeshDataArray);
     }
 
     public int getSliceMask(int sectionIndex) {

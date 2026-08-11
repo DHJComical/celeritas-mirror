@@ -245,7 +245,7 @@ public final class BatchAssembler {
                                       byte[] sections, int sectionCount, boolean reverse,
                                       ChunkPrimitiveType primitiveType,
                                       int firstFacing, int lastFacing) {
-        final long pBase = storage.getBasePointer();
+        final long pBase = storage.getRowBasePointer();
         final long stride = SectionRenderDataUnsafe.Strategy.COMPACT.getStride();
 
         int cursor = reverse ? sectionCount - 1 : 0;
@@ -269,7 +269,7 @@ public final class BatchAssembler {
                                         byte[] sections, int sectionCount, boolean reverse,
                                         ChunkPrimitiveType primitiveType,
                                         long runs, int runCount) {
-        final long pBase = storage.getBasePointer();
+        final long pBase = storage.getRowBasePointer();
         final long stride = SectionRenderDataUnsafe.Strategy.COMPACT.getStride();
 
         int cursor = reverse ? sectionCount - 1 : 0;
@@ -302,7 +302,7 @@ public final class BatchAssembler {
                                            byte[] sections, int sectionCount, boolean reverse,
                                            ChunkPrimitiveType primitiveType,
                                            CameraTransform camera) {
-        final long pBase = storage.getBasePointer();
+        final long pBase = storage.getRowBasePointer();
         final long stride = SectionRenderDataUnsafe.Strategy.COMPACT.getStride();
 
         final int originX = region.getChunkX();
@@ -350,7 +350,7 @@ public final class BatchAssembler {
                                    SectionRenderDataStorage storage,
                                    byte[] sections, int sectionCount, boolean reverse,
                                    ChunkPrimitiveType primitiveType) {
-        final long pBase = storage.getBasePointer();
+        final long pBase = storage.getRowBasePointer();
         final long stride = SectionRenderDataUnsafe.Strategy.FULL.getStride();
 
         int cursor = reverse ? sectionCount - 1 : 0;
