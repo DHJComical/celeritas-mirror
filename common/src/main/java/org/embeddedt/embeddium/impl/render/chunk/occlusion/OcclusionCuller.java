@@ -2,8 +2,10 @@ package org.embeddedt.embeddium.impl.render.chunk.occlusion;
 
 import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
+import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
+import org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.embeddedt.embeddium.impl.util.collections.DoubleBufferedQueue;
 import org.embeddedt.embeddium.impl.util.collections.ReadQueue;
@@ -16,7 +18,10 @@ import org.embeddedt.embeddium.api.render.chunk.RenderSectionDistanceFilterEvent
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3ic;
 
+import java.util.Arrays;
 import java.util.Objects;
+
+import static org.embeddedt.embeddium.impl.common.util.MathUtil.nearestToZero;
 
 public class OcclusionCuller {
     private final Long2ReferenceMap<OcclusionNode> sections;
@@ -24,7 +29,10 @@ public class OcclusionCuller {
 
     private final DoubleBufferedQueue<OcclusionNode> queue = new DoubleBufferedQueue<>();
 
+    private final RegionCullCache regionCullCache = new RegionCullCache();
+
     private boolean isCameraInUnloadedSection;
+
 
     public OcclusionCuller(Long2ReferenceMap<OcclusionNode> sections, int minSectionY, int maxSectionY) {
         this.sections = sections;
@@ -35,11 +43,16 @@ public class OcclusionCuller {
     public void findVisible(Visitor visitor,
                             Viewport viewport,
                             float searchDistance,
+                            int numRegions,
                             boolean useOcclusionCulling,
                             int frame)
     {
         final var queues = this.queue;
         queues.reset();
+
+        final var cache = this.regionCullCache;
+
+        cache.begin(viewport, searchDistance, numRegions);
 
         this.isCameraInUnloadedSection = false;
         this.init(visitor, queues.write(), viewport, searchDistance, useOcclusionCulling, frame);
@@ -48,7 +61,7 @@ public class OcclusionCuller {
         }
 
         while (queues.flip()) {
-            processQueue(visitor, viewport, searchDistance, useOcclusionCulling, frame, queues.read(), queues.write());
+            processQueue(visitor, viewport, searchDistance, useOcclusionCulling, frame, queues.read(), queues.write(), cache);
         }
     }
 
@@ -58,12 +71,21 @@ public class OcclusionCuller {
                                      boolean useOcclusionCulling,
                                      int frame,
                                      ReadQueue<OcclusionNode> readQueue,
-                                     WriteQueue<OcclusionNode> writeQueue)
+                                     WriteQueue<OcclusionNode> writeQueue,
+                                     RegionCullCache regionCullCache)
     {
         OcclusionNode section;
 
         while ((section = readQueue.dequeue()) != null) {
-            boolean visible = isSectionVisible(section, viewport, searchDistance);
+            int classification = regionCullCache.classify(section.getRenderRegionId(), section.getRegionOriginX(), section.getRegionOriginY(), section.getRegionOriginZ());
+            boolean visible;
+
+            if (classification == Frustum.PARTIALLY_INSIDE) {
+                visible = isWithinRenderDistance(viewport.getTransform(), section, searchDistance) && isWithinFrustum(viewport, section);
+            } else {
+                visible = classification == Frustum.FULLY_INSIDE;
+            }
+
             visitor.visit(section, visible);
 
             if (!visible) {
@@ -90,10 +112,6 @@ public class OcclusionCuller {
 
             visitNeighbors(writeQueue, section, connections, frame);
         }
-    }
-
-    private static boolean isSectionVisible(OcclusionNode section, Viewport viewport, float maxDistance) {
-        return isWithinRenderDistance(viewport.getTransform(), section, maxDistance) && isWithinFrustum(viewport, section);
     }
 
     private static void visitNeighbors(final WriteQueue<OcclusionNode> queue, OcclusionNode section, int outgoing, int frame) {
@@ -177,15 +195,6 @@ public class OcclusionCuller {
 
         return ((((dx * dx) + (dz * dz)) < (maxDistance * maxDistance)) && (Math.abs(dy) < maxDistance));
         //return DistanceFilterHolder.INSTANCE.isWithinDistance(dx, dy, dz, maxDistance);
-    }
-
-    @SuppressWarnings("ManualMinMaxCalculation") // we know what we are doing.
-    private static int nearestToZero(int min, int max) {
-        // this compiles to slightly better code than Math.min(Math.max(0, min), max)
-        int clamped = 0;
-        if (min > 0) { clamped = min; }
-        if (max < 0) { clamped = max; }
-        return clamped;
     }
 
     // The bounding box of a chunk section must be large enough to contain all possible geometry within it. Block models

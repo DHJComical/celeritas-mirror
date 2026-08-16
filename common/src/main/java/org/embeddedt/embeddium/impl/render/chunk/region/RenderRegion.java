@@ -24,13 +24,17 @@ public class RenderRegion {
     public static final int REGION_HEIGHT = 4;
     public static final int REGION_LENGTH = 8;
 
+    public static final int REGION_BLOCK_WIDTH = REGION_WIDTH * 16;
+    public static final int REGION_BLOCK_HEIGHT = REGION_HEIGHT * 16;
+    public static final int REGION_BLOCK_LENGTH = REGION_LENGTH * 16;
+
     private static final int REGION_WIDTH_M = RenderRegion.REGION_WIDTH - 1;
     private static final int REGION_HEIGHT_M = RenderRegion.REGION_HEIGHT - 1;
     private static final int REGION_LENGTH_M = RenderRegion.REGION_LENGTH - 1;
 
-    protected static final int REGION_WIDTH_SH = Integer.bitCount(REGION_WIDTH_M);
-    protected static final int REGION_HEIGHT_SH = Integer.bitCount(REGION_HEIGHT_M);
-    protected static final int REGION_LENGTH_SH = Integer.bitCount(REGION_LENGTH_M);
+    public static final int REGION_WIDTH_SH = Integer.bitCount(REGION_WIDTH_M);
+    public static final int REGION_HEIGHT_SH = Integer.bitCount(REGION_HEIGHT_M);
+    public static final int REGION_LENGTH_SH = Integer.bitCount(REGION_LENGTH_M);
 
     public static final int REGION_SIZE = REGION_WIDTH * REGION_HEIGHT * REGION_LENGTH;
 

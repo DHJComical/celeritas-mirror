@@ -37,4 +37,18 @@ public class MathUtil {
     public static boolean roughlyEqual(float a, float b) {
         return Math.abs(b - a) < 0.00001f;
     }
+
+    /**
+     * Returns the value nearest to zero in [min, max].
+     * <p>
+     * In other words, if zero is inside [min, max], returns 0. Otherwise, returns whichever endpoint is closer to zero.
+     */
+    @SuppressWarnings("ManualMinMaxCalculation") // we know what we are doing.
+    public static int nearestToZero(int min, int max) {
+        // this compiles to slightly better code than Math.min(Math.max(0, min), max)
+        int clamped = 0;
+        if (min > 0) { clamped = min; }
+        if (max < 0) { clamped = max; }
+        return clamped;
+    }
 }

@@ -106,7 +106,7 @@ public class RenderListManager {
         var visitor = new VisibleChunkCollector(frame, regionIdsLength, targetQueueSize);
 
         Supplier<VisibleChunkCollector> occlusionTask = () -> {
-            this.occlusionCuller.findVisible(visitor, viewport, searchDistance, useOcclusionCulling, frame);
+            this.occlusionCuller.findVisible(visitor, viewport, searchDistance, regionIdsLength, useOcclusionCulling, frame);
 
             // WARNING: when asyncGraphExecutor != null, this runs on the async thread.
             // SectionTicker.onRenderListUpdated() must be safe to call off the render thread.

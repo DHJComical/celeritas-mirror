@@ -4,8 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.embeddedt.embeddium.impl.render.chunk.AbstractSection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
+import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 
-public class OcclusionNode extends AbstractSection {
+public final class OcclusionNode extends AbstractSection {
     private int incomingDirections;
     private int lastVisibleFrame = -1;
 
@@ -91,5 +92,17 @@ public class OcclusionNode extends AbstractSection {
 
     public RenderSection getRenderSection() {
         return this.section;
+    }
+
+    public int getRegionOriginX() {
+        return (this.getChunkX() >> RenderRegion.REGION_WIDTH_SH) * RenderRegion.REGION_BLOCK_WIDTH;
+    }
+
+    public int getRegionOriginY() {
+        return (this.getChunkY() >> RenderRegion.REGION_HEIGHT_SH) * RenderRegion.REGION_BLOCK_HEIGHT;
+    }
+
+    public int getRegionOriginZ() {
+        return (this.getChunkZ() >> RenderRegion.REGION_LENGTH_SH) * RenderRegion.REGION_BLOCK_LENGTH;
     }
 }
