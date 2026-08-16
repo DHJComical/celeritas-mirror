@@ -58,6 +58,10 @@ public final class Viewport {
         );
     }
 
+    public int intersectCameraRelativeBox(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        return this.frustum.intersectAab(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+
     public CameraTransform getTransform() {
         return this.transform;
     }
