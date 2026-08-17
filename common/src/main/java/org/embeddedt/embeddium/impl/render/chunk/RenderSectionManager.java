@@ -88,6 +88,10 @@ public abstract class RenderSectionManager {
     @Nullable
     protected final RenderListManager shadowRenderListManager;
 
+    // Shared by every section (one allocation, not one per section); installed on each RenderSection so its
+    // packedMetadata changes fan out to the list manager mirror(s).
+    private final RenderSection.MetadataSink metadataSink = this::pushSectionMetadata;
+
     protected final ReferenceSet<RenderSection> sectionsWithGlobalEntities = new ReferenceOpenHashSet<>();
 
     private final Object2ObjectOpenHashMap<TerrainRenderPass, TimerQueryManager> renderPassDrawTimers = new Object2ObjectOpenHashMap<>();
@@ -317,6 +321,7 @@ public abstract class RenderSectionManager {
 
         RenderSection renderSection = new RenderSection(region, x, y, z);
         region.addSection(renderSection);
+        renderSection.setMetadataSink(this.metadataSink);
 
         this.sectionByPosition.put(key, renderSection);
 
@@ -548,17 +553,21 @@ public abstract class RenderSectionManager {
         render.setTranslucencySortStates(sortStates.isEmpty() ? Collections.emptyMap() : sortStates);
     }
 
+    // Section MetadataSink: mirrors a section's packed metadata into the graph-search lattice(s) on every
+    // packedMetadata mutation (visibility/visuals via setInfo, pending update, build-in-flight).
+    private void pushSectionMetadata(RenderSection section) {
+        long packed = section.getPackedMetadata();
+        this.renderListManager.updateSectionMetadata(section.getChunkX(), section.getChunkY(), section.getChunkZ(), packed);
+        if (this.shadowRenderListManager != null) {
+            this.shadowRenderListManager.updateSectionMetadata(section.getChunkX(), section.getChunkY(), section.getChunkZ(), packed);
+        }
+    }
+
     @MustBeInvokedByOverriders
     protected boolean updateSectionInfo(RenderSection render, @Nullable BuiltRenderSectionData info) {
         boolean changed = render.setInfo(info);
 
         if (changed) {
-            long visibilityData = info != null ? info.visibilityData : VisibilityEncoding.NULL;
-            this.renderListManager.updateVisibilityData(render.getChunkX(), render.getChunkY(), render.getChunkZ(), visibilityData);
-            if (this.shadowRenderListManager != null) {
-                this.shadowRenderListManager.updateVisibilityData(render.getChunkX(), render.getChunkY(), render.getChunkZ(), visibilityData);
-            }
-
             if (!(info instanceof MinecraftBuiltRenderSectionData<?, ?> data)) {
                 this.sectionsWithGlobalEntities.remove(render);
             } else if (!data.globalBlockEntities.isEmpty()) {

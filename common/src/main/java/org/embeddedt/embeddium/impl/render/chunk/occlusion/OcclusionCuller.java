@@ -1,45 +1,133 @@
 package org.embeddedt.embeddium.impl.render.chunk.occlusion;
 
-import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
+import org.embeddedt.embeddium.impl.render.chunk.LocalSectionIndex;
+import org.embeddedt.embeddium.impl.render.chunk.PackedSectionMetadata;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum;
-import org.embeddedt.embeddium.impl.util.PositionUtil;
-import org.embeddedt.embeddium.impl.util.collections.DoubleBufferedQueue;
-import org.embeddedt.embeddium.impl.util.collections.ReadQueue;
-import org.embeddedt.embeddium.impl.util.collections.WriteQueue;
-// TODO reintroduce
-/*
-import org.embeddedt.embeddium.api.render.chunk.RenderSectionDistanceFilter;
-import org.embeddedt.embeddium.api.render.chunk.RenderSectionDistanceFilterEvent;
- */
-import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3ic;
 
-import java.util.Arrays;
-import java.util.Objects;
-
 import static org.embeddedt.embeddium.impl.common.util.MathUtil.nearestToZero;
+import static org.embeddedt.embeddium.impl.render.chunk.occlusion.SectionLattice.DIR_MASK;
+import static org.embeddedt.embeddium.impl.render.chunk.occlusion.SectionLattice.XYZ_STEP;
+import static org.embeddedt.embeddium.impl.render.chunk.occlusion.SectionLattice.XYZ_SHIFT;
+import static org.embeddedt.embeddium.impl.render.chunk.occlusion.SectionLattice.XYZ_LOCAL_MASK;
 
+/**
+ * Performs a visibility search over the installed cells of a
+ * {@link SectionLattice}.
+ *
+ * <p>A search has four phases:
+ * <ol>
+ *   <li>prepare reusable queues, visitation storage, and the region cull cache;</li>
+ *   <li>seed the search from the camera section, or scan the appropriate
+ *       world-height plane when the camera is outside the world or unloaded;</li>
+ *   <li>process the queue in traversal order, applying region/frustum and
+ *       render-distance tests before expanding visible cells through the
+ *       occlusion graph; and</li>
+ *   <li>replay compact visitation records to the {@link Visitor}.</li>
+ * </ol>
+ *
+ * <p>Occlusion traversal accumulates the directions through which each cell
+ * was reached, then asks {@link VisibilityEncoding} which outgoing directions
+ * are possible. Expansion is additionally restricted to directions pointing
+ * away from the camera, preventing paths from backtracking through the search
+ * origin. If the camera is in an unloaded section, the search remains useful
+ * as a frustum/render-distance scan but disables graph occlusion for that
+ * search.
+ *
+ * <p>The queue and visitation buffers are reused between searches. A single
+ * invocation must run at a time, and the lattice's dimensions, coordinates,
+ * installed membership, and metadata must remain stable until the invocation
+ * completes. The owning {@code RenderListManager} provides that coordination.
+ */
 public class OcclusionCuller {
-    private final Long2ReferenceMap<OcclusionNode> sections;
+    private final SectionLattice lattice;
     private final int minSectionY, maxSectionY;
 
-    private final DoubleBufferedQueue<OcclusionNode> queue = new DoubleBufferedQueue<>();
+    // When stepping from a cell in dir, the neighbour is entered from the opposite face.
+    private static final int[] INCOMING = new int[GraphDirection.COUNT];
+
+    static {
+        for (int dir = 0; dir < GraphDirection.COUNT; dir++) {
+            INCOMING[dir] = GraphDirectionSet.of(GraphDirection.opposite(dir));
+        }
+    }
+
+    /*
+     * Single flat BFS queue. Each entry is
+     * (packedLocalXYZ << 32) | latticeIndex, where packedLocalXYZ contains
+     * the three 10-bit local coordinates used by SectionLattice. A live cell
+     * is enqueued at most once per search, so tail never exceeds
+     * lattice.installedCount and the queue needs no capacity check in the hot
+     * loop after it has been sized for the search.
+     */
+    private long[] queue = new long[256];
+    private int tail;
+
+    /*
+     * Deferred visitation buffer. The hot loop records primitive data without
+     * touching section objects; replay() invokes the visitor afterwards.
+     * Each installed cell is recorded at most once, so this buffer is also
+     * bounded by installedCount.
+     *
+     * Entry representation:
+     * 31                    9 8        1 0
+     * +----------------------+----------+-+
+     * |    lattice index     | section  |V|
+     * +----------------------+----------+-+
+     *
+     * The section field is the 8-bit section index within its render region;
+     * V is the final visible flag.
+     */
+    private static final int VISIT_INDEX_SHIFT = 9;
+    private static final int VISIT_SECTION_SHIFT = 1;
+    private static final int VISIT_SECTION_MASK = 0xFF;
+
+    private int[] visitBuffer = new int[256];
+    private int vtail;
+
+    private static int packVisit(int latticeIndex, int sectionIndex, boolean visible) {
+        return (latticeIndex << VISIT_INDEX_SHIFT) | (sectionIndex << VISIT_SECTION_SHIFT) | (visible ? 1 : 0);
+    }
+
+    private static int visitIndex(int entry) {
+        return entry >>> VISIT_INDEX_SHIFT;
+    }
+
+    private static int visitSection(int entry) {
+        return (entry >>> VISIT_SECTION_SHIFT) & VISIT_SECTION_MASK;
+    }
+
+    private static boolean visitVisible(int entry) {
+        return (entry & 1) != 0;
+    }
 
     private final RegionCullCache regionCullCache = new RegionCullCache();
 
     private boolean isCameraInUnloadedSection;
 
-
-    public OcclusionCuller(Long2ReferenceMap<OcclusionNode> sections, int minSectionY, int maxSectionY) {
-        this.sections = sections;
+    public OcclusionCuller(SectionLattice lattice, int minSectionY, int maxSectionY) {
+        this.lattice = lattice;
         this.minSectionY = minSectionY;
         this.maxSectionY = maxSectionY;
     }
 
+    /**
+     * Search the current lattice and report each reached section to
+     * {@code visitor} in traversal order.
+     *
+     * <p>Reached sections are reported even when {@code visible} is false;
+     * the flag controls whether the section contributes renderable work and
+     * whether traversal expands through it. The caller must have prepared the
+     * lattice with {@link SectionLattice#ensureWindowCovers} and must not
+     * mutate its structure or metadata until this method returns.
+     *
+     * @param useOcclusionCulling whether section visibility metadata should
+     *                             restrict graph expansion
+     */
     public void findVisible(Visitor visitor,
                             Viewport viewport,
                             float searchDistance,
@@ -47,46 +135,104 @@ public class OcclusionCuller {
                             boolean useOcclusionCulling,
                             int frame)
     {
-        final var queues = this.queue;
-        queues.reset();
+        // Pre-size so enqueue/record are bare stores: at most one entry per installed cell.
+        int installed = this.lattice.installedCount;
+        if (this.queue.length < installed) {
+            this.queue = new long[Math.max(installed, this.queue.length * 2)];
+        }
+        if (this.visitBuffer.length < installed) {
+            this.visitBuffer = new int[Math.max(installed, this.visitBuffer.length * 2)];
+        }
+        this.tail = 0;
+        this.vtail = 0;
 
-        final var cache = this.regionCullCache;
-
-        cache.begin(viewport, searchDistance, numRegions);
+        this.regionCullCache.begin(viewport, searchDistance, numRegions);
 
         this.isCameraInUnloadedSection = false;
-        this.init(visitor, queues.write(), viewport, searchDistance, useOcclusionCulling, frame);
-        if(this.isCameraInUnloadedSection) {
+        this.init(viewport, searchDistance, useOcclusionCulling, frame);
+        if (this.isCameraInUnloadedSection) {
             useOcclusionCulling = false;
         }
 
-        while (queues.flip()) {
-            processQueue(visitor, viewport, searchDistance, useOcclusionCulling, frame, queues.read(), queues.write(), cache);
+        this.process(viewport, searchDistance, useOcclusionCulling, frame);
+
+        this.replay(visitor);
+    }
+
+    // Replay records in the same order in which cells were processed. The
+    // visitor runs after the search so the hot loop need not resolve section
+    // objects. It must not feed changes back into this already-completed search.
+    private void replay(Visitor visitor) {
+        final int[] visitBuffer = this.visitBuffer;
+        final int[] regionOfCell = this.lattice.regionOfCell;
+        final long[] sectionMeta = this.lattice.sectionMeta;
+
+        int count = this.vtail;
+
+        for (int i = 0; i < count; i++) {
+            int entry = visitBuffer[i];
+            int idx = visitIndex(entry);
+
+            visitor.visit(idx, regionOfCell[idx], visitSection(entry), sectionMeta[idx], visitVisible(entry));
         }
     }
 
-    private static void processQueue(Visitor visitor,
-                                     Viewport viewport,
-                                     float searchDistance,
-                                     boolean useOcclusionCulling,
-                                     int frame,
-                                     ReadQueue<OcclusionNode> readQueue,
-                                     WriteQueue<OcclusionNode> writeQueue,
-                                     RegionCullCache regionCullCache)
+    /**
+     * Process the BFS queue. Each queued cell is classified once, recorded for
+     * replay, and expanded only when it is visible. Occlusion metadata selects
+     * the possible exits; the outward-direction mask then prevents moving back
+     * toward the camera.
+     */
+    private void process(Viewport viewport,
+                         float searchDistance,
+                         boolean useOcclusionCulling,
+                         int frame)
     {
-        OcclusionNode section;
+        final long[] visitState = this.lattice.visitState;
+        final long[] sectionMeta = this.lattice.sectionMeta;
+        final int[] regionOfCell = this.lattice.regionOfCell;
+        final int[] delta = this.lattice.delta;
+        final long[] queue = this.queue;
+        final int[] visitBuffer = this.visitBuffer;
+        final int baseX = this.lattice.baseX, baseY = this.lattice.baseY, baseZ = this.lattice.baseZ;
 
-        while ((section = readQueue.dequeue()) != null) {
-            int classification = regionCullCache.classify(section.getRenderRegionId(), section.getRegionOriginX(), section.getRegionOriginY(), section.getRegionOriginZ());
+        final RegionCullCache cache = this.regionCullCache;
+        final CameraTransform transform = viewport.getTransform();
+        final Vector3ic camera = viewport.getChunkCoord();
+        final int camX = camera.x(), camY = camera.y(), camZ = camera.z();
+        final long frameStamp = SectionLattice.frameStamp(frame);
+
+        int head = 0;
+        int vtail = this.vtail;
+
+        while (head < this.tail) {
+            long entry = queue[head++];
+            int idx = (int) entry;
+            int xyz = (int) (entry >>> 32);
+
+            int chunkX = baseX + ((xyz >>> (2 * XYZ_SHIFT)) & XYZ_LOCAL_MASK);
+            int chunkY = baseY + ((xyz >>> XYZ_SHIFT) & XYZ_LOCAL_MASK);
+            int chunkZ = baseZ + (xyz & XYZ_LOCAL_MASK);
+
+            int classification = cache.classify(regionOfCell[idx],
+                    regionOrigin(chunkX, RenderRegion.REGION_WIDTH_SH, RenderRegion.REGION_BLOCK_WIDTH),
+                    regionOrigin(chunkY, RenderRegion.REGION_HEIGHT_SH, RenderRegion.REGION_BLOCK_HEIGHT),
+                    regionOrigin(chunkZ, RenderRegion.REGION_LENGTH_SH, RenderRegion.REGION_BLOCK_LENGTH));
+
+            // Fully-inside regions need no per-section frustum test. Sections
+            // in a partial region are checked individually for both distance
+            // and frustum visibility; outside regions are not traversed.
             boolean visible;
 
             if (classification == Frustum.PARTIALLY_INSIDE) {
-                visible = isWithinRenderDistance(viewport.getTransform(), section, searchDistance) && isWithinFrustum(viewport, section);
+                visible = isWithinRenderDistance(transform, chunkX, chunkY, chunkZ, searchDistance)
+                        && isWithinFrustum(viewport, chunkX, chunkY, chunkZ);
             } else {
                 visible = classification == Frustum.FULLY_INSIDE;
             }
 
-            visitor.visit(section, visible);
+            int sectionIndex = LocalSectionIndex.pack(chunkX, chunkY, chunkZ);
+            visitBuffer[vtail++] = packVisit(idx, sectionIndex, visible);
 
             if (!visible) {
                 continue;
@@ -94,121 +240,119 @@ public class OcclusionCuller {
 
             int connections;
 
-            {
-                if (useOcclusionCulling) {
-                    // When using occlusion culling, we can only traverse into neighbors for which there is a path of
-                    // visibility through this chunk. This is determined by taking all the incoming paths to this chunk and
-                    // creating a union of the outgoing paths from those.
-                    connections = VisibilityEncoding.getConnections(section.getVisibilityData(), section.getIncomingDirections());
-                } else {
-                    // Not using any occlusion culling, so traversing in any direction is legal.
-                    connections = GraphDirectionSet.ALL;
-                }
-
-                // We can only traverse *outwards* from the center of the graph search, so mask off any invalid
-                // directions.
-                connections &= getOutwardDirections(viewport.getChunkCoord(), section);
+            if (useOcclusionCulling) {
+                // Merge the outgoing paths reachable from every incoming path
+                // accumulated in this cell.
+                int incoming = (int) (visitState[idx] & DIR_MASK);
+                connections = VisibilityEncoding.getConnections(
+                        sectionMeta[idx] & PackedSectionMetadata.VISIBILITY_MASK, incoming);
+            } else {
+                connections = GraphDirectionSet.ALL;
             }
 
-            visitNeighbors(writeQueue, section, connections, frame);
+            // We can only traverse outwards from the centre of the search.
+            connections &= getOutwardDirections(chunkX, chunkY, chunkZ, camX, camY, camZ);
+
+            this.visitNeighbors(visitState, queue, delta, idx, xyz, connections, frameStamp);
+        }
+
+        this.vtail = vtail;
+    }
+
+    // Visit each selected neighbour using both its linear array offset and
+    // its packed-coordinate offset. The lattice border makes idx + delta safe.
+    private void visitNeighbors(long[] visitState, long[] queue, int[] delta, int idx, int xyz, int outgoing, long frameStamp) {
+        while (outgoing != 0) {
+            int dir = Integer.numberOfTrailingZeros(outgoing);
+            outgoing &= outgoing - 1;
+
+            this.visitNode(visitState, queue, idx + delta[dir], xyz + XYZ_STEP[dir], INCOMING[dir], frameStamp);
         }
     }
 
-    private static void visitNeighbors(final WriteQueue<OcclusionNode> queue, OcclusionNode section, int outgoing, int frame) {
-        // Only traverse into neighbors which are actually present.
-        // This avoids a null-check on each invocation to enqueue, and since the compiler will see that a null
-        // is never encountered (after profiling), it will optimize it away.
-        outgoing &= section.getAdjacentMask();
+    /*
+     * Ordered-compare visit gate. A slot is enqueued only on its first visit
+     * this frame, while incoming directions are OR-ed even on later visits so
+     * the cell sees the union of all reachable entry paths. SENTINEL cells,
+     * including the border ring, never compare below frameStamp and therefore
+     * need no separate occupancy check.
+     */
+    private void visitNode(long[] visitState, long[] queue, int idx, int xyz, int incoming, long frameStamp) {
+        long state = visitState[idx];
 
-        // Check if there are any valid connections left, and if not, early-exit.
-        if (outgoing == GraphDirectionSet.NONE) {
-            return;
-        }
-
-        // This helps the compiler move the checks for some invariants upwards.
-        queue.ensureCapacity(6);
-
-        if (GraphDirectionSet.contains(outgoing, GraphDirection.DOWN)) {
-            visitNode(queue, section.adjacentDown, GraphDirectionSet.of(GraphDirection.UP), frame);
-        }
-
-        if (GraphDirectionSet.contains(outgoing, GraphDirection.UP)) {
-            visitNode(queue, section.adjacentUp, GraphDirectionSet.of(GraphDirection.DOWN), frame);
-        }
-
-        if (GraphDirectionSet.contains(outgoing, GraphDirection.NORTH)) {
-            visitNode(queue, section.adjacentNorth, GraphDirectionSet.of(GraphDirection.SOUTH), frame);
-        }
-
-        if (GraphDirectionSet.contains(outgoing, GraphDirection.SOUTH)) {
-            visitNode(queue, section.adjacentSouth, GraphDirectionSet.of(GraphDirection.NORTH), frame);
-        }
-
-        if (GraphDirectionSet.contains(outgoing, GraphDirection.WEST)) {
-            visitNode(queue, section.adjacentWest, GraphDirectionSet.of(GraphDirection.EAST), frame);
-        }
-
-        if (GraphDirectionSet.contains(outgoing, GraphDirection.EAST)) {
-            visitNode(queue, section.adjacentEast, GraphDirectionSet.of(GraphDirection.WEST), frame);
+        if (state < frameStamp) {
+            visitState[idx] = frameStamp | incoming;
+            queue[this.tail++] = ((long) xyz << 32) | (idx & 0xFFFFFFFFL);
+        } else {
+            visitState[idx] = state | incoming;
         }
     }
 
-    private static void visitNode(final WriteQueue<OcclusionNode> queue, @NotNull OcclusionNode render, int incoming, int frame) {
-        if (render.getLastVisibleFrame() != frame) {
-            // This is the first time we are visiting this section during the given frame, so we must
-            // reset the state.
-            render.setLastVisibleFrame(frame);
-            render.setIncomingDirections(GraphDirectionSet.NONE);
-
-            queue.enqueue(render);
-        }
-
-        render.addIncomingDirections(incoming);
-    }
-
-    private static int getOutwardDirections(Vector3ic origin, OcclusionNode section) {
+    // Allow movement only away from the camera on each axis. A coordinate
+    // equal to the camera coordinate permits both directions on that axis.
+    private static int getOutwardDirections(int chunkX, int chunkY, int chunkZ, int camX, int camY, int camZ) {
         int planes = 0;
 
-        planes |= section.getChunkX() <= origin.x() ? 1 << GraphDirection.WEST  : 0;
-        planes |= section.getChunkX() >= origin.x() ? 1 << GraphDirection.EAST  : 0;
+        planes |= chunkX <= camX ? 1 << GraphDirection.WEST  : 0;
+        planes |= chunkX >= camX ? 1 << GraphDirection.EAST  : 0;
 
-        planes |= section.getChunkY() <= origin.y() ? 1 << GraphDirection.DOWN  : 0;
-        planes |= section.getChunkY() >= origin.y() ? 1 << GraphDirection.UP    : 0;
+        planes |= chunkY <= camY ? 1 << GraphDirection.DOWN  : 0;
+        planes |= chunkY >= camY ? 1 << GraphDirection.UP    : 0;
 
-        planes |= section.getChunkZ() <= origin.z() ? 1 << GraphDirection.NORTH : 0;
-        planes |= section.getChunkZ() >= origin.z() ? 1 << GraphDirection.SOUTH : 0;
+        planes |= chunkZ <= camZ ? 1 << GraphDirection.NORTH : 0;
+        planes |= chunkZ >= camZ ? 1 << GraphDirection.SOUTH : 0;
 
         return planes;
     }
 
-    private static boolean isWithinRenderDistance(CameraTransform camera, OcclusionNode section, float maxDistance) {
-        // origin point of the chunk's bounding box (in view space)
-        int ox = section.getOriginX() - camera.intX;
-        int oy = section.getOriginY() - camera.intY;
-        int oz = section.getOriginZ() - camera.intZ;
+    // Convert a section coordinate to the origin of its containing render
+    // region, in block coordinates.
+    private static int regionOrigin(int chunkCoord, int shift, int blockSize) {
+        return (chunkCoord >> shift) * blockSize;
+    }
 
-        // coordinates of the point to compare (in view space)
-        // this is the closest point within the bounding box to the center (0, 0, 0)
+    /**
+     * Test the search's render-distance shape against a section bounding box.
+     * Horizontal distance is circular in X/Z, while vertical distance is
+     * tested independently so tall searches do not use a spherical cutoff.
+     */
+    private static boolean isWithinRenderDistance(CameraTransform camera, int chunkX, int chunkY, int chunkZ, float maxDistance) {
+        // Origin point of the chunk's bounding box in view space.
+        int ox = (chunkX << 4) - camera.intX;
+        int oy = (chunkY << 4) - camera.intY;
+        int oz = (chunkZ << 4) - camera.intZ;
+
+        // Closest point within the bounding box to the camera at (0, 0, 0).
+        // Testing the closest point avoids rejecting a section whose near face
+        // is within range even when its origin is farther away.
         float dx = nearestToZero(ox, ox + 16) - camera.fracX;
         float dy = nearestToZero(oy, oy + 16) - camera.fracY;
         float dz = nearestToZero(oz, oz + 16) - camera.fracZ;
 
         return ((((dx * dx) + (dz * dz)) < (maxDistance * maxDistance)) && (Math.abs(dy) < maxDistance));
-        //return DistanceFilterHolder.INSTANCE.isWithinDistance(dx, dy, dz, maxDistance);
     }
 
-    // The bounding box of a chunk section must be large enough to contain all possible geometry within it. Block models
-    // can extend outside a block volume by +/- 1.0 blocks on all axis. Additionally, we make use of a small epsilon
-    // to deal with floating point imprecision during a frustum check (see GH#2132).
-    private static final float CHUNK_SECTION_SIZE = 8.0f /* chunk bounds */ + 1.0f /* maximum model extent */ + 0.125f /* epsilon */;
+    // isBoxVisible takes a section centre and half-size. The half-size is
+    // 8 blocks for the section, plus model overhang and a small precision
+    // epsilon (see GH#2132).
+    private static final float CHUNK_SECTION_SIZE = 8.0f /* section half-size */
+            + 1.0f /* maximum model extent */
+            + 0.125f /* epsilon */;
 
-    public static boolean isWithinFrustum(Viewport viewport, OcclusionNode section) {
-        return viewport.isBoxVisible(section.getCenterX(), section.getCenterY(), section.getCenterZ(), CHUNK_SECTION_SIZE);
+    /**
+     * Test a section's conservatively expanded bounding box against the
+     * viewport frustum.
+     */
+    public static boolean isWithinFrustum(Viewport viewport, int chunkX, int chunkY, int chunkZ) {
+        return viewport.isBoxVisible((chunkX << 4) + 8, (chunkY << 4) + 8, (chunkZ << 4) + 8, CHUNK_SECTION_SIZE);
     }
 
-    private void init(Visitor visitor,
-                      WriteQueue<OcclusionNode> queue,
-                      Viewport viewport,
+    /**
+     * Choose the search seed. A loaded in-world camera section is processed
+     * inline; an out-of-height or unloaded camera is handled by scanning a
+     * horizontal plane of nearby loaded sections.
+     */
+    private void init(Viewport viewport,
                       float searchDistance,
                       boolean useOcclusionCulling,
                       int frame)
@@ -216,131 +360,155 @@ public class OcclusionCuller {
         var origin = viewport.getChunkCoord();
 
         if (origin.y() < this.minSectionY) {
-            // below the world
-            this.initOutsideWorldHeight(queue, viewport, searchDistance, frame,
+            // Below the world: seed the lowest section with an incoming path
+            // from below so traversal can proceed upward from the boundary.
+            this.initOutsideWorldHeight(viewport, searchDistance, frame,
                     this.minSectionY, GraphDirectionSet.of(GraphDirection.DOWN));
         } else if (origin.y() >= this.maxSectionY) {
-            // above the world
-            this.initOutsideWorldHeight(queue, viewport, searchDistance, frame,
+            // Above the world: seed the highest section with an incoming path
+            // from above so traversal can proceed downward from the boundary.
+            this.initOutsideWorldHeight(viewport, searchDistance, frame,
                     this.maxSectionY - 1, GraphDirectionSet.of(GraphDirection.UP));
-        } else if(this.getRenderSection(origin.x(), origin.y(), origin.z()) == null) {
-            // inside the world height-wise, but in an unloaded section
-            this.initOutsideWorldHeight(queue, viewport, searchDistance, frame,
+        } else if (this.lattice.getRenderSection(origin.x(), origin.y(), origin.z()) == null) {
+            // Inside the world height-wise, but in an unloaded section. Seed
+            // both vertical entry paths and disable occlusion below because
+            // there is no camera section from which to obtain visibility data.
+            this.initOutsideWorldHeight(viewport, searchDistance, frame,
                     origin.y(), GraphDirectionSet.of(GraphDirection.UP) | GraphDirectionSet.of(GraphDirection.DOWN));
             this.isCameraInUnloadedSection = true;
         } else {
-            this.initWithinWorld(visitor, queue, viewport, useOcclusionCulling, frame);
+            this.initWithinWorld(viewport, useOcclusionCulling, frame);
         }
     }
 
-    private void initWithinWorld(Visitor visitor, WriteQueue<OcclusionNode> queue, Viewport viewport, boolean useOcclusionCulling, int frame) {
+    // The loaded camera section is the root: it is recorded immediately, not
+    // queued, and its visible paths seed the BFS with no incoming direction.
+    private void initWithinWorld(Viewport viewport, boolean useOcclusionCulling, int frame) {
+        final long[] visitState = this.lattice.visitState;
+        final long[] queue = this.queue;
+        final int[] delta = this.lattice.delta;
+
         var origin = viewport.getChunkCoord();
-        var section = this.getRenderSection(origin.x(), origin.y(), origin.z());
+        int idx = this.lattice.indexOf(origin.x(), origin.y(), origin.z());
 
-        Objects.requireNonNull(section);
+        // The camera section is loaded and, after ensureWindowCovers, installed
+        // in the lattice interior.
+        long frameStamp = SectionLattice.frameStamp(frame);
+        visitState[idx] = frameStamp;
 
-        section.setLastVisibleFrame(frame);
-        section.setIncomingDirections(GraphDirectionSet.NONE);
-
-        visitor.visit(section, true);
+        // Record the origin as visited; it is processed inline rather than
+        // enqueued so the BFS starts with its neighbours.
+        int sectionIndex = LocalSectionIndex.pack(origin.x(), origin.y(), origin.z());
+        this.visitBuffer[this.vtail++] = packVisit(idx, sectionIndex, true);
 
         int outgoing;
 
         if (useOcclusionCulling) {
-            // Since the camera is located inside this chunk, there are no "incoming" directions. So we need to instead
-            // find any possible paths out of this chunk and enqueue those neighbors.
-            outgoing = VisibilityEncoding.getConnections(section.getVisibilityData());
+            // The camera is inside this chunk, so there are no incoming directions; enqueue any path out.
+            outgoing = VisibilityEncoding.getConnections(
+                    this.lattice.sectionMeta[idx] & PackedSectionMetadata.VISIBILITY_MASK);
         } else {
-            // Occlusion culling is disabled, so we can traverse into any neighbor.
             outgoing = GraphDirectionSet.ALL;
         }
 
-        visitNeighbors(queue, section, outgoing, frame);
+        int xyz = this.lattice.packXyz(origin.x(), origin.y(), origin.z());
+        this.visitNeighbors(visitState, queue, delta, idx, xyz, outgoing, frameStamp);
     }
 
-    // Enqueues sections that are inside the viewport using diamond spiral iteration to avoid sorting and ensure a
-    // consistent order. Innermost layers are enqueued first. Within each layer, iteration starts at the northernmost
-    // section and proceeds counterclockwise (N->W->S->E).
-    private void initOutsideWorldHeight(WriteQueue<OcclusionNode> queue,
-                                        Viewport viewport,
+    /**
+     * Seed a boundary plane with nearby loaded sections in deterministic
+     * diamond-spiral order. The complete inner layers cover Manhattan distance
+     * through {@code radius}; the remaining layers fill the surrounding square
+     * out to the same X/Z radius without sorting. Each accepted section is
+     * given the supplied incoming direction set before normal BFS processing.
+     */
+    private void initOutsideWorldHeight(Viewport viewport,
                                         float searchDistance,
                                         int frame,
                                         int height,
                                         int direction)
     {
+        final long[] visitState = this.lattice.visitState;
+        final long[] queue = this.queue;
+
         var origin = viewport.getChunkCoord();
         var radius = MathUtil.mojfloor(searchDistance / 16.0f);
+        long frameStamp = SectionLattice.frameStamp(frame);
 
-        // Layer 0
-        this.tryVisitNode(queue, origin.x(), height, origin.z(), direction, frame, viewport);
+        // Layer 0: the section directly below/above the camera, if loaded and visible.
+        this.tryVisitNode(visitState, queue, origin.x(), height, origin.z(), direction, frameStamp, viewport);
 
-        // Complete layers, excluding layer 0
+        // Complete inner layers, excluding layer 0.
         for (int layer = 1; layer <= radius; layer++) {
             for (int z = -layer; z < layer; z++) {
                 int x = Math.abs(z) - layer;
-                this.tryVisitNode(queue, origin.x() + x, height, origin.z() + z, direction, frame, viewport);
+                this.tryVisitNode(visitState, queue, origin.x() + x, height, origin.z() + z, direction, frameStamp, viewport);
             }
 
             for (int z = layer; z > -layer; z--) {
                 int x = layer - Math.abs(z);
-                this.tryVisitNode(queue, origin.x() + x, height, origin.z() + z, direction, frame, viewport);
+                this.tryVisitNode(visitState, queue, origin.x() + x, height, origin.z() + z, direction, frameStamp, viewport);
             }
         }
 
-        // Incomplete layers
+        // Complete the surrounding square with the outer portions of the
+        // remaining diamond layers.
         for (int layer = radius + 1; layer <= 2 * radius; layer++) {
             int l = layer - radius;
 
             for (int z = -radius; z <= -l; z++) {
                 int x = -z - layer;
-                this.tryVisitNode(queue, origin.x() + x, height, origin.z() + z, direction, frame, viewport);
+                this.tryVisitNode(visitState, queue, origin.x() + x, height, origin.z() + z, direction, frameStamp, viewport);
             }
 
             for (int z = l; z <= radius; z++) {
                 int x = z - layer;
-                this.tryVisitNode(queue, origin.x() + x, height, origin.z() + z, direction, frame, viewport);
+                this.tryVisitNode(visitState, queue, origin.x() + x, height, origin.z() + z, direction, frameStamp, viewport);
             }
 
             for (int z = radius; z >= l; z--) {
                 int x = layer - z;
-                this.tryVisitNode(queue, origin.x() + x, height, origin.z() + z, direction, frame, viewport);
+                this.tryVisitNode(visitState, queue, origin.x() + x, height, origin.z() + z, direction, frameStamp, viewport);
             }
 
             for (int z = -l; z >= -radius; z--) {
                 int x = layer + z;
-                this.tryVisitNode(queue, origin.x() + x, height, origin.z() + z, direction, frame, viewport);
+                this.tryVisitNode(visitState, queue, origin.x() + x, height, origin.z() + z, direction, frameStamp, viewport);
             }
         }
     }
 
-    private void tryVisitNode(WriteQueue<OcclusionNode> queue, int x, int y, int z, int direction, int frame, Viewport viewport) {
-        OcclusionNode section = this.getRenderSection(x, y, z);
+    // Seed-only visit: reject unloaded/out-of-window cells before doing a
+    // frustum test, then pass the accepted cell through the normal visit gate.
+    private void tryVisitNode(long[] visitState, long[] queue, int x, int y, int z, int direction, long frameStamp, Viewport viewport) {
+        int idx = this.lattice.indexOf(x, y, z);
 
-        if (section == null || !isWithinFrustum(viewport, section)) {
+        // Out of the window or empty: visitNode would reject SENTINEL anyway,
+        // but avoid the frustum test for cells that cannot be searched.
+        if (idx < 0 || visitState[idx] == SectionLattice.SENTINEL) {
             return;
         }
 
-        visitNode(queue, section, direction, frame);
-    }
-
-    private OcclusionNode getRenderSection(int x, int y, int z) {
-        return this.sections.get(PositionUtil.packSection(x, y, z));
-    }
-
-    public interface Visitor {
-        void visit(OcclusionNode section, boolean visible);
-    }
-
-    /*
-    private static class DistanceFilterHolder {
-        private static final RenderSectionDistanceFilter INSTANCE;
-
-        static {
-            var event = new RenderSectionDistanceFilterEvent();
-            RenderSectionDistanceFilterEvent.BUS.post(event);
-            INSTANCE = event.getFilter();
+        if (!isWithinFrustum(viewport, x, y, z)) {
+            return;
         }
+
+        this.visitNode(visitState, queue, idx, this.lattice.packXyz(x, y, z), direction, frameStamp);
     }
 
+    /**
+     * Receives one record for each section reached by a search, in traversal
+     * order. A record can be non-visible: such a section is reported for
+     * ordering/region bookkeeping but does not expand the search.
      */
+    public interface Visitor {
+        /**
+         * @param latticeIndex installed {@link SectionLattice} slot for the section
+         * @param regionId owning render-region identifier
+         * @param sectionIndex section's compact local index within its region
+         * @param metaBits packed section metadata mirrored by the lattice
+         * @param visible whether the section passed the visibility tests
+         */
+        void visit(int latticeIndex, int regionId, int sectionIndex, long metaBits, boolean visible);
+    }
 }

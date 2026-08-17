@@ -25,15 +25,12 @@ public class ChunkRenderList {
         this.region = region;
     }
 
-    public void add(RenderSection render) {
+    public void add(int index, int flags) {
         if (this.size >= RenderRegion.REGION_SIZE) {
             throw new ArrayIndexOutOfBoundsException("Render list is full");
         }
 
         this.size++;
-
-        int index = render.getSectionIndex();
-        int flags = render.getVisualsServiceFlags();
 
         this.sectionsWithGeometry[this.sectionsWithGeometryCount] = (byte) index;
         this.sectionsWithGeometryCount += (flags >>> RenderVisualsService.HAS_BLOCK_GEOMETRY) & 1;

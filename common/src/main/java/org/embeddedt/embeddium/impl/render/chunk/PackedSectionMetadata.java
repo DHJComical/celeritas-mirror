@@ -9,9 +9,9 @@ import org.jetbrains.annotations.Nullable;
  * <h2>Why</h2>
  * The search walks tens of thousands of sections per frame. Every field it needs off a {@link RenderSection}
  * (visibility encoding, "does this have anything to render", pending update type, "is a build already in
- * flight") used to be a load off a randomly-placed object, chased through a second randomly-placed
- * {@code OcclusionNode}. Packed into one word they are a single load out of a flat array the traversal already
- * has the index for - see {@code OcclusionCuller}'s lattice - and the visitor can be handed plain ints.
+ * flight") used to be a load off a randomly-placed object. Packed into one word they are a single load out of a
+ * flat array the traversal already has the index for - the lattice's {@code sectionMeta}, see
+ * {@code SectionLattice} - and the visitor can be handed plain ints.
  *
  * <h2>Layout</h2>
  * <pre>
@@ -31,10 +31,9 @@ import org.jetbrains.annotations.Nullable;
  * <h2>The small "meta bits" form</h2>
  * Bits 46..52 - everything except the visibility encoding - are what the visitor actually consumes.
  *
- * <p>Note: {@link RenderSection} keeps this whole word in sync (including the visibility encoding) via
- * {@code updateCachedContextDataFlags()}, but nothing reads it back out for traversal yet - {@code OcclusionNode}
- * still keeps its own separate copy of the visibility encoding that the search actually consumes, until the
- * traversal is migrated onto the flat lattice described above.</p>
+ * <p>Note: {@link RenderSection} is the source of truth - it keeps this whole word in sync (including the
+ * visibility encoding) via {@code updateCachedContextDataFlags()} and notifies {@code SectionLattice}, which
+ * mirrors it into the flat {@code sectionMeta} array the search reads.</p>
  */
 public final class PackedSectionMetadata {
     private PackedSectionMetadata() {
@@ -47,6 +46,12 @@ public final class PackedSectionMetadata {
     // Bits 46..48: visuals flags (RenderVisualsService.HAS_*)
     private static final int VISUALS_FLAGS_SHIFT = 46;
     private static final long VISUALS_FLAGS_MASK = 0b111L;
+
+    // The bits whose change alters a graph search's output (which sections traverse, which end up in the render
+    // list): the visibility encoding plus the visuals flags. Changes confined outside this mask (pending update
+    // type, build-in-flight) do not by themselves require re-running the search - their callers mark the graph
+    // dirty separately.
+    public static final long GRAPH_INPUT_MASK = VISIBILITY_MASK | (VISUALS_FLAGS_MASK << VISUALS_FLAGS_SHIFT);
 
     // Bits 49..51: pending update type; 0 = none, otherwise ChunkUpdateType.ordinal() + 1
     private static final int PENDING_UPDATE_SHIFT = 49;

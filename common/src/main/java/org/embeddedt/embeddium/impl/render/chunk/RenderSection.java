@@ -37,10 +37,18 @@ public class RenderSection extends AbstractSection {
     private BuiltRenderSectionData contextData;
 
     // Packed encoding of the visibility encoding, visuals flags, pending update type, and build-in-flight bit;
-    // see PackedSectionMetadata for the bit layout. Kept in sync with contextData in updateCachedContextDataFlags().
-    // Note: OcclusionNode still keeps its own separate copy of the visibility encoding for the graph traversal -
-    // this field isn't consumed by the traversal yet, it's just populated ahead of that migration.
+    // see PackedSectionMetadata for the bit layout. The graph search reads a mirror of this in SectionLattice, so
+    // mutate it only through writeMetadata(), which notifies the mirror.
     private long packedMetadata;
+
+    // Notified on every packedMetadata change to keep the lattice mirror in sync. Null until the section is
+    // attached to its manager (the initial constructor write predates attachment).
+    @Nullable
+    private MetadataSink metadataSink;
+
+    public interface MetadataSink {
+        void onMetadataChanged(RenderSection section);
+    }
 
     /**
      * A mapping from translucent render passes to the sort state for that particular pass (which contains data needed
@@ -136,8 +144,24 @@ public class RenderSection extends AbstractSection {
         int flags = this.contextData != null ? this.contextData.getVisualBitmaskForSection() : 0;
         long visibilityData = this.contextData != null ? this.contextData.visibilityData : VisibilityEncoding.NULL;
 
-        this.packedMetadata = PackedSectionMetadata.withVisibilityData(
-                PackedSectionMetadata.withVisualsFlags(this.packedMetadata, flags), visibilityData);
+        this.writeMetadata(PackedSectionMetadata.withVisibilityData(
+                PackedSectionMetadata.withVisualsFlags(this.packedMetadata, flags), visibilityData));
+    }
+
+    // The sole writer of packedMetadata: stores the new word and notifies the mirror.
+    private void writeMetadata(long packed) {
+        this.packedMetadata = packed;
+        if (this.metadataSink != null) {
+            this.metadataSink.onMetadataChanged(this);
+        }
+    }
+
+    public long getPackedMetadata() {
+        return this.packedMetadata;
+    }
+
+    public void setMetadataSink(@Nullable MetadataSink sink) {
+        this.metadataSink = sink;
     }
 
     public int getVisualsServiceFlags() {
@@ -176,7 +200,7 @@ public class RenderSection extends AbstractSection {
 
     public void setBuildCancellationToken(@Nullable CancellationToken token) {
         this.buildCancellationToken = token;
-        this.packedMetadata = PackedSectionMetadata.withBuildInFlight(this.packedMetadata, token != null);
+        this.writeMetadata(PackedSectionMetadata.withBuildInFlight(this.packedMetadata, token != null));
     }
 
     public @Nullable ChunkUpdateType getPendingUpdate() {
@@ -184,7 +208,7 @@ public class RenderSection extends AbstractSection {
     }
 
     public void setPendingUpdate(@Nullable ChunkUpdateType type) {
-        this.packedMetadata = PackedSectionMetadata.withPendingUpdate(this.packedMetadata, type);
+        this.writeMetadata(PackedSectionMetadata.withPendingUpdate(this.packedMetadata, type));
     }
 
     /**

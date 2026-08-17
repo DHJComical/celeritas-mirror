@@ -1,18 +1,13 @@
 package org.embeddedt.embeddium.impl.render.chunk.lists;
 
-import it.unimi.dsi.fastutil.longs.Long2ReferenceMap;
-import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.Setter;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
-import org.embeddedt.embeddium.impl.render.chunk.occlusion.GraphDirection;
-import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionCuller;
-import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionNode;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.SectionLattice;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
-import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,12 +26,10 @@ public class RenderListManager {
     @NotNull
     private ChunkRebuildLists rebuildLists;
 
-    private final OcclusionCuller occlusionCuller;
-
-    private final Long2ReferenceMap<OcclusionNode> occlusionNodes = new Long2ReferenceOpenHashMap<>();
+    private final SectionLattice lattice;
 
     // Non-null for the duration of an in-progress async graph search. Acts as a flag:
-    // structural mutations to occlusionNodes (attach/detach/rewire) are forbidden while set,
+    // structural mutations to the lattice (attach/detach/rewire) are forbidden while set,
     // and visibilityData updates are deferred to updateTasks rather than applied immediately.
     private CompletableFuture<VisibleChunkCollector> currentOcclusionFuture;
 
@@ -93,7 +86,7 @@ public class RenderListManager {
         } else {
             this.asyncGraphExecutor = null;
         }
-        this.occlusionCuller = new OcclusionCuller(this.occlusionNodes, minSectionY, maxSectionY);
+        this.lattice = new SectionLattice(minSectionY, maxSectionY);
         this.renderLists = SortedRenderLists.empty();
         this.rebuildLists = ChunkRebuildLists.EMPTY;
     }
@@ -103,10 +96,12 @@ public class RenderListManager {
             throw new IllegalStateException("Occlusion work in progress while trying to submit next task");
         }
 
-        var visitor = new VisibleChunkCollector(frame, regionIdsLength, targetQueueSize);
+        var visitor = new VisibleChunkCollector(this.lattice, frame, regionIdsLength, targetQueueSize);
+
+        this.lattice.ensureWindowCovers(viewport.getChunkCoord(), searchDistance);
 
         Supplier<VisibleChunkCollector> occlusionTask = () -> {
-            this.occlusionCuller.findVisible(visitor, viewport, searchDistance, regionIdsLength, useOcclusionCulling, frame);
+            this.lattice.findVisible(visitor, viewport, searchDistance, regionIdsLength, useOcclusionCulling, frame);
 
             // WARNING: when asyncGraphExecutor != null, this runs on the async thread.
             // SectionTicker.onRenderListUpdated() must be safe to call off the render thread.
@@ -143,7 +138,7 @@ public class RenderListManager {
         }
 
         // Run tasks deferred during the async search. The join() above establishes happens-before,
-        // so writes to OcclusionNode fields by the async thread are visible here.
+        // so the async thread's writes to the lattice arrays are visible here.
         Runnable task;
 
         while ((task = updateTasks.poll()) != null) {
@@ -170,36 +165,8 @@ public class RenderListManager {
         }
     }
 
-    private OcclusionNode getOcclusionNode(int x, int y, int z) {
-        return this.occlusionNodes.get(PositionUtil.packSection(x, y, z));
-    }
-
-    private void connectNeighborNodes(OcclusionNode render) {
-        for (int direction = 0; direction < GraphDirection.COUNT; direction++) {
-            OcclusionNode adj = this.getOcclusionNode(render.getChunkX() + GraphDirection.x(direction),
-                    render.getChunkY() + GraphDirection.y(direction),
-                    render.getChunkZ() + GraphDirection.z(direction));
-
-            if (adj != null) {
-                adj.setAdjacentNode(GraphDirection.opposite(direction), render);
-                render.setAdjacentNode(direction, adj);
-            }
-        }
-    }
-
-    private void disconnectNeighborNodes(OcclusionNode render) {
-        for (int direction = 0; direction < GraphDirection.COUNT; direction++) {
-            OcclusionNode adj = render.getAdjacent(direction);
-
-            if (adj != null) {
-                adj.setAdjacentNode(GraphDirection.opposite(direction), null);
-                render.setAdjacentNode(direction, null);
-            }
-        }
-    }
-
-    // Structural mutations to occlusionNodes (adding/removing nodes, rewiring neighbor links)
-    // are unsafe while the async thread holds a reference to the map via OcclusionCuller.
+    // Structural mutations to the lattice (adding/removing nodes, rewiring neighbor links)
+    // are unsafe while the async search holds a reference to it via SectionLattice.
     private void assertOcclusionNotRunning() {
         if (this.currentOcclusionFuture != null) {
             throw new IllegalStateException("Attempted to update occlusion graph during occlusion!");
@@ -209,37 +176,19 @@ public class RenderListManager {
     public void attachRenderSection(RenderSection section) {
         this.assertOcclusionNotRunning();
 
-        var key = section.positionAsLong();
-
-        OcclusionNode occlusionNode = this.occlusionNodes.get(key);
-
-        if (occlusionNode != null) {
-            throw new IllegalStateException("Occlusion node already exists for section " + section);
-        }
-
-        var node = new OcclusionNode(section);
-        this.occlusionNodes.put(key, node);
-        this.connectNeighborNodes(node);
+        this.lattice.attach(section);
         this.needsUpdate = true;
     }
 
     public void detachRenderSection(RenderSection section) {
         this.assertOcclusionNotRunning();
 
-        var key = section.positionAsLong();
-
-        OcclusionNode occlusionNode = this.occlusionNodes.remove(key);
-
-        if (occlusionNode == null) {
-            throw new IllegalStateException("Occlusion node does not exist for section " + section);
-        }
-
-        this.disconnectNeighborNodes(occlusionNode);
+        this.lattice.detach(section);
         this.needsUpdate = true;
     }
 
     // Runs the task immediately if no async search is active, otherwise defers it to
-    // finishPreviousGraphUpdate() to prevent concurrent writes to OcclusionNode fields.
+    // finishPreviousGraphUpdate() to prevent concurrent writes to the lattice arrays.
     private void submitUpdateTask(Runnable runnable) {
         if (this.currentOcclusionFuture == null) {
             runnable.run();
@@ -248,28 +197,20 @@ public class RenderListManager {
         }
     }
 
-    public void updateVisibilityData(int x, int y, int z, long visibilityData) {
+    public void updateSectionMetadata(int x, int y, int z, long packedMetadata) {
         this.submitUpdateTask(() -> {
-            var node = this.getOcclusionNode(x, y, z);
-            if (node != null) {
-                node.setVisibilityData(visibilityData);
+            if (this.lattice.updateSectionMetadata(x, y, z, packedMetadata)) {
                 this.needsUpdate = true;
             }
         });
     }
 
     public boolean isSectionVisible(int x, int y, int z) {
-        OcclusionNode render = this.getOcclusionNode(x, y, z);
-
-        if (render == null) {
-            return false;
-        }
-
         // lastUpdatedFrame only advances in finishPreviousGraphUpdate(), so during an in-progress
         // async search this reflects the previous frame's committed result. A section can appear
         // visible slightly early (if the async thread has already written its lastVisibleFrame for
         // the new frame), but can never appear invisible too early.
-        return render.getLastVisibleFrame() >= this.lastUpdatedFrame;
+        return this.lattice.isSectionVisible(x, y, z, this.lastUpdatedFrame);
     }
 
     public void tickVisibleRenders() {

@@ -4,12 +4,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkUpdateType;
+import org.embeddedt.embeddium.impl.render.chunk.PackedSectionMetadata;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import java.util.ArrayDeque;
 import java.util.EnumMap;
 import java.util.Queue;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionCuller;
-import org.embeddedt.embeddium.impl.render.chunk.occlusion.OcclusionNode;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.SectionLattice;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 
 public class VisibleChunkCollector implements OcclusionCuller.Visitor {
@@ -23,9 +24,12 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
 
     private final int targetQueueSize;
 
+    private final SectionLattice lattice;
+
     private boolean hasAdditionalUpdates;
 
-    public VisibleChunkCollector(int frame, int regionIdsLength, int targetQueueSize) {
+    public VisibleChunkCollector(SectionLattice lattice, int frame, int regionIdsLength, int targetQueueSize) {
+        this.lattice = lattice;
         this.frame = frame;
 
         this.sortedRenderLists = new ObjectArrayList<>();
@@ -47,43 +51,41 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
     }
 
     @Override
-    public void visit(OcclusionNode node, boolean visible) {
-        var section = node.getRenderSection();
-
+    public void visit(int latticeIndex, int regionId, int sectionIndex, long metaBits, boolean visible) {
         // Note: even if a section does not have render objects, we must ensure the render list is initialized and put
         // into the sorted queue of lists, so that we maintain the correct order of draw calls.
-        int regionId = node.getRenderRegionId();
         ChunkRenderList renderList = this.renderListsByRegion[regionId];
 
         if (renderList == null) {
-            renderList = this.createRenderList(section.getRegion());
+            renderList = this.createRenderList(this.lattice.sectionAt(latticeIndex).getRegion());
         }
 
         if (visible) {
-            if (section.hasAnythingToRender()) {
-                renderList.add(section);
+            int visualsFlags = PackedSectionMetadata.getVisualsFlags(metaBits);
+            if (visualsFlags != 0) {
+                renderList.add(sectionIndex, visualsFlags);
             }
 
-            this.addToRebuildLists(section);
+            ChunkUpdateType type = PackedSectionMetadata.getPendingUpdate(metaBits);
+
+            // Skip sections with an in-flight build to avoid redundant work. This is an advisory
+            // check only: submitRebuildTasks() will validate getPendingUpdate() independently before
+            // scheduling, so a stale read here cannot cause a double submission.
+            if (type != null && !PackedSectionMetadata.isBuildInFlight(metaBits)) {
+                this.addToRebuildLists(this.lattice.sectionAt(latticeIndex), type);
+            }
         }
     }
 
-    private void addToRebuildLists(RenderSection section) {
-        ChunkUpdateType type = section.getPendingUpdate();
+    private void addToRebuildLists(RenderSection section, ChunkUpdateType type) {
+        Queue<RenderSection> queue = this.sortedRebuildLists.get(type);
 
-        // Skip sections with an in-flight build to avoid redundant work. This is an advisory
-        // check only: submitRebuildTasks() will validate getPendingUpdate() independently before
-        // scheduling, so a stale null read of the token here cannot cause a double submission.
-        if (type != null && section.getBuildCancellationToken() == null) {
-            Queue<RenderSection> queue = this.sortedRebuildLists.get(type);
-
-            // Do not limit the queue size for rebuilds
-            if (type != ChunkUpdateType.INITIAL_BUILD || queue.size() < this.targetQueueSize) {
-                queue.add(section);
-            } else {
-                this.rebuildQueueOverflowCounts[type.ordinal()]++;
-                this.hasAdditionalUpdates = true;
-            }
+        // Do not limit the queue size for rebuilds
+        if (type != ChunkUpdateType.INITIAL_BUILD || queue.size() < this.targetQueueSize) {
+            queue.add(section);
+        } else {
+            this.rebuildQueueOverflowCounts[type.ordinal()]++;
+            this.hasAdditionalUpdates = true;
         }
     }
 
