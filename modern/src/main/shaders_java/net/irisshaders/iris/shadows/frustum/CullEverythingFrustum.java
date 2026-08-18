@@ -33,4 +33,9 @@ public class CullEverythingFrustum extends Frustum implements ViewportProvider, 
     public boolean testAab(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
         return false;
     }
+
+    @Override
+    public int intersectAab(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
+        return OUTSIDE;
+    }
 }

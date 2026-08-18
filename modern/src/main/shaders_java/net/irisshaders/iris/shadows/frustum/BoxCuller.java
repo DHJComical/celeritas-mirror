@@ -54,6 +54,16 @@ public class BoxCuller {
 		return maxZ < -this.maxDistance || minZ > this.maxDistance;
 	}
 
+	/**
+	 * Camera-relative variant of a "fully inside" test: returns true only when the entire box lies within the
+	 * allowed distance bounds on every axis, meaning no sub-box of it could ever be culled.
+	 */
+	public boolean isFullyInsideSodium(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
+		return minX >= -this.maxDistance && maxX <= this.maxDistance
+			&& minY >= -this.maxDistance && maxY <= this.maxDistance
+			&& minZ >= -this.maxDistance && maxZ <= this.maxDistance;
+	}
+
 	@Override
 	public String toString() {
 		return "Box Culling active; max distance " + maxDistance;

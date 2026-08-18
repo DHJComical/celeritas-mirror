@@ -58,4 +58,29 @@ public class ReversedAdvancedShadowCullingFrustum extends AdvancedShadowCullingF
 
 		return this.checkCornerVisibility(minX, minY, minZ, maxX, maxY, maxZ) > 0;
 	}
+
+	@Override
+	public int intersectAab(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
+		if (distanceCuller != null && distanceCuller.isCulledSodium(minX, minY, minZ, maxX, maxY, maxZ)) {
+			return OUTSIDE;
+		}
+
+		if (boxCuller != null && !boxCuller.isCulledSodium(minX, minY, minZ, maxX, maxY, maxZ)) {
+			// The box overlaps the kept voxel region, so it is visible. It is only fully inside when the entire box
+			// stays within both the voxel region and the outer distance bound, so no sub-box could be culled.
+			boolean fullyInside = boxCuller.isFullyInsideSodium(minX, minY, minZ, maxX, maxY, maxZ)
+				&& (distanceCuller == null || distanceCuller.isFullyInsideSodium(minX, minY, minZ, maxX, maxY, maxZ));
+			return fullyInside ? FULLY_INSIDE : PARTIALLY_INSIDE;
+		}
+
+		// Outside the voxel region: fall back to the shadow planes, still bounded by the distance culler.
+		int result = intersectCorners(minX, minY, minZ, maxX, maxY, maxZ);
+
+		if (result == FULLY_INSIDE && distanceCuller != null
+				&& !distanceCuller.isFullyInsideSodium(minX, minY, minZ, maxX, maxY, maxZ)) {
+			return PARTIALLY_INSIDE;
+		}
+
+		return result;
+	}
 }

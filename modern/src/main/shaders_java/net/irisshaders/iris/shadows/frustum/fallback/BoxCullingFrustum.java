@@ -50,4 +50,13 @@ public class BoxCullingFrustum extends Frustum implements ViewportProvider, org.
     public boolean testAab(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
         return !boxCuller.isCulledSodium(minX, minY, minZ, maxX, maxY, maxZ);
     }
+
+    @Override
+    public int intersectAab(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
+        if (boxCuller.isCulledSodium(minX, minY, minZ, maxX, maxY, maxZ)) {
+            return OUTSIDE;
+        }
+
+        return boxCuller.isFullyInsideSodium(minX, minY, minZ, maxX, maxY, maxZ) ? FULLY_INSIDE : PARTIALLY_INSIDE;
+    }
 }

@@ -387,6 +387,53 @@ public class AdvancedShadowCullingFrustum extends Frustum implements ViewportPro
         return (boxCuller == null || !boxCuller.isCulledSodium(minX, minY, minZ, maxX, maxY, maxZ)) && this.checkCornerVisibility(minX, minY, minZ, maxX, maxY, maxZ) > 0;
     }
 
+    /**
+     * Tri-state variant of {@link #checkCornerVisibility}, ported from JOML's {@code FrustumIntersection#intersectAab}.
+     * Unlike {@link #checkCornerVisibility}, this additionally tests the near corner against each plane so that boxes
+     * lying entirely within the frustum can be reported as fully inside.
+     */
+    protected int intersectCorners(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
+        boolean inside = true;
+
+        for (int i = 0; i < planeCount; ++i) {
+            Vector4f plane = this.planes[i];
+            float px = plane.x();
+            float py = plane.y();
+            float pz = plane.z();
+            float pw = plane.w();
+
+            // If the far corner (the one furthest along the plane normal) is behind the plane, the box is fully outside.
+            if (Math.fma(px, px < 0 ? minX : maxX, Math.fma(py, py < 0 ? minY : maxY, pz * (pz < 0 ? minZ : maxZ))) < -pw) {
+                return OUTSIDE;
+            }
+
+            // If the near corner is behind the plane, the box straddles it and can be at most partially inside.
+            if (Math.fma(px, px < 0 ? maxX : minX, Math.fma(py, py < 0 ? maxY : minY, pz * (pz < 0 ? maxZ : minZ))) < -pw) {
+                inside = false;
+            }
+        }
+
+        return inside ? FULLY_INSIDE : PARTIALLY_INSIDE;
+    }
+
+    @Override
+    public int intersectAab(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
+        if (boxCuller != null && boxCuller.isCulledSodium(minX, minY, minZ, maxX, maxY, maxZ)) {
+            return OUTSIDE;
+        }
+
+        int result = intersectCorners(minX, minY, minZ, maxX, maxY, maxZ);
+
+        // A box can only be fully inside if it is also fully within the box culler's bounds; otherwise a sub-box could
+        // be culled and the region must be treated as partial.
+        if (result == FULLY_INSIDE && boxCuller != null
+                && !boxCuller.isFullyInsideSodium(minX, minY, minZ, maxX, maxY, maxZ)) {
+            return PARTIALLY_INSIDE;
+        }
+
+        return result;
+    }
+
     private final Vector3d position = new Vector3d();
 
     @Override
