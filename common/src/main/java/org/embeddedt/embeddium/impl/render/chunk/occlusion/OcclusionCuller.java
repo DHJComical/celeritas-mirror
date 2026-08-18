@@ -204,8 +204,16 @@ public class OcclusionCuller {
 
         int head = 0;
         int vtail = this.vtail;
+        int tail = this.tail;
 
-        while (head < this.tail) {
+        // Constant neighbour strides / packed-coord steps, hoisted so the unrolled expansion below uses
+        // immediates instead of per-edge array loads. delta[EAST]=+strideX, delta[SOUTH]=+strideZ, Y-stride=1.
+        final int strideX = delta[GraphDirection.EAST];
+        final int strideZ = delta[GraphDirection.SOUTH];
+        final int xStep = 1 << (2 * XYZ_SHIFT);
+        final int yStep = 1 << XYZ_SHIFT;
+
+        while (head < tail) {
             long entry = queue[head++];
             int idx = (int) entry;
             int xyz = (int) (entry >>> 32);
@@ -253,9 +261,47 @@ public class OcclusionCuller {
             // We can only traverse outwards from the centre of the search.
             connections &= getOutwardDirections(chunkX, chunkY, chunkZ, camX, camY, camZ);
 
-            this.visitNeighbors(visitState, queue, delta, idx, xyz, connections, frameStamp);
+            // Unrolled variant of visitNeighbors, with delta, step, incoming values inlined into each branch.
+            // The unrolling measurably improves performance here.
+            if ((connections & (1 << GraphDirection.DOWN)) != 0) {
+                final int n = idx - 1;
+                long ns = visitState[n];
+                if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz - yStep) << 32) | (n & 0xFFFFFFFFL); }
+                visitState[n] = ns | (1 << GraphDirection.UP);
+            }
+            if ((connections & (1 << GraphDirection.UP)) != 0) {
+                final int n = idx + 1;
+                long ns = visitState[n];
+                if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz + yStep) << 32) | (n & 0xFFFFFFFFL); }
+                visitState[n] = ns | (1 << GraphDirection.DOWN);
+            }
+            if ((connections & (1 << GraphDirection.NORTH)) != 0) {
+                final int n = idx - strideZ;
+                long ns = visitState[n];
+                if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz - 1) << 32) | (n & 0xFFFFFFFFL); }
+                visitState[n] = ns | (1 << GraphDirection.SOUTH);
+            }
+            if ((connections & (1 << GraphDirection.SOUTH)) != 0) {
+                final int n = idx + strideZ;
+                long ns = visitState[n];
+                if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz + 1) << 32) | (n & 0xFFFFFFFFL); }
+                visitState[n] = ns | (1 << GraphDirection.NORTH);
+            }
+            if ((connections & (1 << GraphDirection.WEST)) != 0) {
+                final int n = idx - strideX;
+                long ns = visitState[n];
+                if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz - xStep) << 32) | (n & 0xFFFFFFFFL); }
+                visitState[n] = ns | (1 << GraphDirection.EAST);
+            }
+            if ((connections & (1 << GraphDirection.EAST)) != 0) {
+                final int n = idx + strideX;
+                long ns = visitState[n];
+                if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz + xStep) << 32) | (n & 0xFFFFFFFFL); }
+                visitState[n] = ns | (1 << GraphDirection.WEST);
+            }
         }
 
+        this.tail = tail;
         this.vtail = vtail;
     }
 
