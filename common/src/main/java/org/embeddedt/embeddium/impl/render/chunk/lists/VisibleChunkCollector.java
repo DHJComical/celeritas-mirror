@@ -51,7 +51,7 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
     }
 
     @Override
-    public void visit(int latticeIndex, int regionId, int sectionIndex, long metaBits, boolean visible) {
+    public void visit(int latticeIndex, int regionId, int sectionIndex, int meta, boolean visible) {
         // Note: even if a section does not have render objects, we must ensure the render list is initialized and put
         // into the sorted queue of lists, so that we maintain the correct order of draw calls.
         ChunkRenderList renderList = this.renderListsByRegion[regionId];
@@ -61,17 +61,17 @@ public class VisibleChunkCollector implements OcclusionCuller.Visitor {
         }
 
         if (visible) {
-            int visualsFlags = PackedSectionMetadata.getVisualsFlags(metaBits);
+            int visualsFlags = PackedSectionMetadata.getCompactVisualsFlags(meta);
             if (visualsFlags != 0) {
                 renderList.add(sectionIndex, visualsFlags);
             }
 
-            ChunkUpdateType type = PackedSectionMetadata.getPendingUpdate(metaBits);
+            ChunkUpdateType type = PackedSectionMetadata.getCompactPendingUpdate(meta);
 
             // Skip sections with an in-flight build to avoid redundant work. This is an advisory
             // check only: submitRebuildTasks() will validate getPendingUpdate() independently before
             // scheduling, so a stale read here cannot cause a double submission.
-            if (type != null && !PackedSectionMetadata.isBuildInFlight(metaBits)) {
+            if (type != null && !PackedSectionMetadata.isCompactBuildInFlight(meta)) {
                 this.addToRebuildLists(this.lattice.sectionAt(latticeIndex), type);
             }
         }

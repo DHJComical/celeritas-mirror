@@ -125,6 +125,41 @@ public final class PackedSectionMetadata {
         return (packed & BUILD_IN_FLIGHT_FLAG) != 0;
     }
 
+    /*
+     * Compact collector metadata: includes only the info the VisibleChunkCollector cares about.
+     *
+     *   6  5     3 2       0
+     *   +--+-------+--------+
+     *   |IF|pending|visuals |
+     *   +--+-------+--------+
+     */
+    private static final int COMPACT_META_SHIFT = VISUALS_FLAGS_SHIFT;
+    private static final long COMPACT_META_FIELDS =
+            (VISUALS_FLAGS_MASK << VISUALS_FLAGS_SHIFT)
+                    | (PENDING_UPDATE_MASK << PENDING_UPDATE_SHIFT)
+                    | BUILD_IN_FLIGHT_FLAG;
+    private static final int COMPACT_META_MASK = (int) (COMPACT_META_FIELDS >>> COMPACT_META_SHIFT);
+    private static final int COMPACT_PENDING_SHIFT = PENDING_UPDATE_SHIFT - COMPACT_META_SHIFT;
+    private static final int COMPACT_BUILD_IN_FLIGHT_BIT = BUILD_IN_FLIGHT_BIT - COMPACT_META_SHIFT;
+
+    public static int toCompactMeta(long packed) {
+        return (int) (packed >>> COMPACT_META_SHIFT) & COMPACT_META_MASK;
+    }
+
+    public static int getCompactVisualsFlags(int meta) {
+        return meta & (int) VISUALS_FLAGS_MASK;
+    }
+
+    /** @return the pending update type, or {@code null} when the field is zero */
+    public static @Nullable ChunkUpdateType getCompactPendingUpdate(int meta) {
+        int encoded = (meta >>> COMPACT_PENDING_SHIFT) & (int) PENDING_UPDATE_MASK;
+        return encoded == 0 ? null : ChunkUpdateType.VALUES[encoded - 1];
+    }
+
+    public static boolean isCompactBuildInFlight(int meta) {
+        return (meta & (1 << COMPACT_BUILD_IN_FLIGHT_BIT)) != 0;
+    }
+
     /**
      * Replaces the build-in-flight flag and preserves every other field.
      */

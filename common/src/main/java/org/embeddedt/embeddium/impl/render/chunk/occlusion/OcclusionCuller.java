@@ -19,15 +19,14 @@ import static org.embeddedt.embeddium.impl.render.chunk.occlusion.SectionLattice
  * Performs a visibility search over the installed cells of a
  * {@link SectionLattice}.
  *
- * <p>A search has four phases:
+ * <p>A search has three phases:
  * <ol>
- *   <li>prepare reusable queues, visitation storage, and the region cull cache;</li>
+ *   <li>prepare the reusable queue and the region cull cache;</li>
  *   <li>seed the search from the camera section, or scan the appropriate
  *       world-height plane when the camera is outside the world or unloaded;</li>
  *   <li>process the queue in traversal order, applying region/frustum and
  *       render-distance tests before expanding visible cells through the
- *       occlusion graph; and</li>
- *   <li>replay compact visitation records to the {@link Visitor}.</li>
+ *       occlusion graph, reporting each processed cell directly to the {@link Visitor}.</li>
  * </ol>
  *
  * <p>Occlusion traversal accumulates the directions through which each cell
@@ -38,7 +37,7 @@ import static org.embeddedt.embeddium.impl.render.chunk.occlusion.SectionLattice
  * as a frustum/render-distance scan but disables graph occlusion for that
  * search.
  *
- * <p>The queue and visitation buffers are reused between searches. A single
+ * <p>The queue is reused between searches. A single
  * invocation must run at a time, and the lattice's dimensions, coordinates,
  * installed membership, and metadata must remain stable until the invocation
  * completes. The owning {@code RenderListManager} provides that coordination.
@@ -67,43 +66,8 @@ public class OcclusionCuller {
     private long[] queue = new long[256];
     private int tail;
 
-    /*
-     * Deferred visitation buffer. The hot loop records primitive data without
-     * touching section objects; replay() invokes the visitor afterwards.
-     * Each installed cell is recorded at most once, so this buffer is also
-     * bounded by installedCount.
-     *
-     * Entry representation:
-     * 31                    9 8        1 0
-     * +----------------------+----------+-+
-     * |    lattice index     | section  |V|
-     * +----------------------+----------+-+
-     *
-     * The section field is the 8-bit section index within its render region;
-     * V is the final visible flag.
-     */
-    private static final int VISIT_INDEX_SHIFT = 9;
-    private static final int VISIT_SECTION_SHIFT = 1;
-    private static final int VISIT_SECTION_MASK = 0xFF;
 
-    private int[] visitBuffer = new int[256];
-    private int vtail;
 
-    private static int packVisit(int latticeIndex, int sectionIndex, boolean visible) {
-        return (latticeIndex << VISIT_INDEX_SHIFT) | (sectionIndex << VISIT_SECTION_SHIFT) | (visible ? 1 : 0);
-    }
-
-    private static int visitIndex(int entry) {
-        return entry >>> VISIT_INDEX_SHIFT;
-    }
-
-    private static int visitSection(int entry) {
-        return (entry >>> VISIT_SECTION_SHIFT) & VISIT_SECTION_MASK;
-    }
-
-    private static boolean visitVisible(int entry) {
-        return (entry & 1) != 0;
-    }
 
     private final RegionCullCache regionCullCache = new RegionCullCache();
 
@@ -135,55 +99,34 @@ public class OcclusionCuller {
                             boolean useOcclusionCulling,
                             int frame)
     {
-        // Pre-size so enqueue/record are bare stores: at most one entry per installed cell.
+        // Pre-size so enqueue is a bare store: at most one entry per installed cell.
         int installed = this.lattice.installedCount;
         if (this.queue.length < installed) {
             this.queue = new long[Math.max(installed, this.queue.length * 2)];
         }
-        if (this.visitBuffer.length < installed) {
-            this.visitBuffer = new int[Math.max(installed, this.visitBuffer.length * 2)];
-        }
         this.tail = 0;
-        this.vtail = 0;
 
         this.regionCullCache.begin(viewport, searchDistance, numRegions);
 
         this.isCameraInUnloadedSection = false;
-        this.init(viewport, searchDistance, useOcclusionCulling, frame);
+        this.init(visitor, viewport, searchDistance, useOcclusionCulling, frame);
         if (this.isCameraInUnloadedSection) {
             useOcclusionCulling = false;
         }
 
-        this.process(viewport, searchDistance, useOcclusionCulling, frame);
-
-        this.replay(visitor);
-    }
-
-    // Replay records in the same order in which cells were processed. The
-    // visitor runs after the search so the hot loop need not resolve section
-    // objects. It must not feed changes back into this already-completed search.
-    private void replay(Visitor visitor) {
-        final int[] visitBuffer = this.visitBuffer;
-        final int[] regionOfCell = this.lattice.regionOfCell;
-        final long[] sectionMeta = this.lattice.sectionMeta;
-
-        int count = this.vtail;
-
-        for (int i = 0; i < count; i++) {
-            int entry = visitBuffer[i];
-            int idx = visitIndex(entry);
-
-            visitor.visit(idx, regionOfCell[idx], visitSection(entry), sectionMeta[idx], visitVisible(entry));
-        }
+        this.process(visitor, viewport, searchDistance, useOcclusionCulling, frame);
     }
 
     /**
-     * Process the BFS queue. Each queued cell is classified once, recorded for
-     * replay, and expanded only when it is visible. Occlusion metadata selects
-     * the possible exits; the outward-direction mask then prevents moving back
-     * toward the camera.
+     * Process the BFS queue. Each queued cell is classified once, reported
+     * directly to the visitor, and expanded only when it is visible. Occlusion
+     * metadata selects the possible exits; the outward-direction mask then
+     * prevents moving back toward the camera. The visitor is invoked in
+     * traversal order, with every argument already in registers; it must not
+     * feed changes back into the running search.
      */
-    private void process(Viewport viewport,
+    private void process(Visitor visitor,
+                         Viewport viewport,
                          float searchDistance,
                          boolean useOcclusionCulling,
                          int frame)
@@ -193,7 +136,6 @@ public class OcclusionCuller {
         final int[] regionOfCell = this.lattice.regionOfCell;
         final int[] delta = this.lattice.delta;
         final long[] queue = this.queue;
-        final int[] visitBuffer = this.visitBuffer;
         final int baseX = this.lattice.baseX, baseY = this.lattice.baseY, baseZ = this.lattice.baseZ;
 
         final RegionCullCache cache = this.regionCullCache;
@@ -203,7 +145,6 @@ public class OcclusionCuller {
         final long frameStamp = SectionLattice.frameStamp(frame);
 
         int head = 0;
-        int vtail = this.vtail;
         int tail = this.tail;
 
         // Constant neighbour strides / packed-coord steps, hoisted so the unrolled expansion below uses
@@ -222,7 +163,10 @@ public class OcclusionCuller {
             int chunkY = baseY + ((xyz >>> XYZ_SHIFT) & XYZ_LOCAL_MASK);
             int chunkZ = baseZ + (xyz & XYZ_LOCAL_MASK);
 
-            int classification = cache.classify(regionOfCell[idx],
+            int regionId = regionOfCell[idx];
+            long sm = sectionMeta[idx];
+            int compactMeta = PackedSectionMetadata.toCompactMeta(sm);
+            int classification = cache.classify(regionId,
                     regionOrigin(chunkX, RenderRegion.REGION_WIDTH_SH, RenderRegion.REGION_BLOCK_WIDTH),
                     regionOrigin(chunkY, RenderRegion.REGION_HEIGHT_SH, RenderRegion.REGION_BLOCK_HEIGHT),
                     regionOrigin(chunkZ, RenderRegion.REGION_LENGTH_SH, RenderRegion.REGION_BLOCK_LENGTH));
@@ -240,7 +184,7 @@ public class OcclusionCuller {
             }
 
             int sectionIndex = LocalSectionIndex.pack(chunkX, chunkY, chunkZ);
-            visitBuffer[vtail++] = packVisit(idx, sectionIndex, visible);
+            visitor.visit(idx, regionId, sectionIndex, compactMeta, visible);
 
             if (!visible) {
                 continue;
@@ -253,7 +197,7 @@ public class OcclusionCuller {
                 // accumulated in this cell.
                 int incoming = (int) (visitState[idx] & DIR_MASK);
                 connections = VisibilityEncoding.getConnections(
-                        sectionMeta[idx] & PackedSectionMetadata.VISIBILITY_MASK, incoming);
+                        sm & PackedSectionMetadata.VISIBILITY_MASK, incoming);
             } else {
                 connections = GraphDirectionSet.ALL;
             }
@@ -302,7 +246,6 @@ public class OcclusionCuller {
         }
 
         this.tail = tail;
-        this.vtail = vtail;
     }
 
     // Visit each selected neighbour using both its linear array offset and
@@ -398,7 +341,8 @@ public class OcclusionCuller {
      * inline; an out-of-height or unloaded camera is handled by scanning a
      * horizontal plane of nearby loaded sections.
      */
-    private void init(Viewport viewport,
+    private void init(Visitor visitor,
+                      Viewport viewport,
                       float searchDistance,
                       boolean useOcclusionCulling,
                       int frame)
@@ -423,13 +367,13 @@ public class OcclusionCuller {
                     origin.y(), GraphDirectionSet.of(GraphDirection.UP) | GraphDirectionSet.of(GraphDirection.DOWN));
             this.isCameraInUnloadedSection = true;
         } else {
-            this.initWithinWorld(viewport, useOcclusionCulling, frame);
+            this.initWithinWorld(visitor, viewport, useOcclusionCulling, frame);
         }
     }
 
-    // The loaded camera section is the root: it is recorded immediately, not
+    // The loaded camera section is the root: it is visited immediately, not
     // queued, and its visible paths seed the BFS with no incoming direction.
-    private void initWithinWorld(Viewport viewport, boolean useOcclusionCulling, int frame) {
+    private void initWithinWorld(Visitor visitor, Viewport viewport, boolean useOcclusionCulling, int frame) {
         final long[] visitState = this.lattice.visitState;
         final long[] queue = this.queue;
         final int[] delta = this.lattice.delta;
@@ -442,17 +386,17 @@ public class OcclusionCuller {
         long frameStamp = SectionLattice.frameStamp(frame);
         visitState[idx] = frameStamp;
 
-        // Record the origin as visited; it is processed inline rather than
+        // Visit the origin immediately; it is processed inline rather than
         // enqueued so the BFS starts with its neighbours.
         int sectionIndex = LocalSectionIndex.pack(origin.x(), origin.y(), origin.z());
-        this.visitBuffer[this.vtail++] = packVisit(idx, sectionIndex, true);
+        long sm = this.lattice.sectionMeta[idx];
+        visitor.visit(idx, this.lattice.regionOfCell[idx], sectionIndex, PackedSectionMetadata.toCompactMeta(sm), true);
 
         int outgoing;
 
         if (useOcclusionCulling) {
             // The camera is inside this chunk, so there are no incoming directions; enqueue any path out.
-            outgoing = VisibilityEncoding.getConnections(
-                    this.lattice.sectionMeta[idx] & PackedSectionMetadata.VISIBILITY_MASK);
+            outgoing = VisibilityEncoding.getConnections(sm & PackedSectionMetadata.VISIBILITY_MASK);
         } else {
             outgoing = GraphDirectionSet.ALL;
         }
@@ -552,9 +496,9 @@ public class OcclusionCuller {
          * @param latticeIndex installed {@link SectionLattice} slot for the section
          * @param regionId owning render-region identifier
          * @param sectionIndex section's compact local index within its region
-         * @param metaBits packed section metadata mirrored by the lattice
+         * @param meta compact collector metadata
          * @param visible whether the section passed the visibility tests
          */
-        void visit(int latticeIndex, int regionId, int sectionIndex, long metaBits, boolean visible);
+        void visit(int latticeIndex, int regionId, int sectionIndex, int meta, boolean visible);
     }
 }
