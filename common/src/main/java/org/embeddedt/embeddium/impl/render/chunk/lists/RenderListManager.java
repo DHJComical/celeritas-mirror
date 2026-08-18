@@ -42,6 +42,14 @@ public class RenderListManager {
 
     private int pendingLastUpdatedFrame;
 
+    @NotNull
+    private SectionLattice.VisibilitySnapshot visibilitySnapshot = SectionLattice.VisibilitySnapshot.EMPTY;
+
+    // Snapshot produced by the in-progress search. Written on the async thread; read on the render thread
+    // in finishPreviousGraphUpdate() after join() establishes happens-before, then published to visibilitySnapshot.
+    @Nullable
+    private SectionLattice.VisibilitySnapshot pendingVisibilitySnapshot;
+
     // Tasks deferred by submitUpdateTask() while an async search is running. Drained on the
     // render thread in finishPreviousGraphUpdate() after join() establishes happens-before.
     private final ArrayDeque<Runnable> updateTasks = new ArrayDeque<>();
@@ -101,7 +109,7 @@ public class RenderListManager {
         this.lattice.ensureWindowCovers(viewport.getChunkCoord(), searchDistance);
 
         Supplier<VisibleChunkCollector> occlusionTask = () -> {
-            this.lattice.findVisible(visitor, viewport, searchDistance, regionIdsLength, useOcclusionCulling, frame);
+            this.pendingVisibilitySnapshot = this.lattice.findVisible(visitor, viewport, searchDistance, regionIdsLength, useOcclusionCulling, frame);
 
             // WARNING: when asyncGraphExecutor != null, this runs on the async thread.
             // SectionTicker.onRenderListUpdated() must be safe to call off the render thread.
@@ -130,6 +138,11 @@ public class RenderListManager {
 
             this.renderLists = visitor.createRenderLists();
             this.rebuildLists = visitor.getRebuildLists();
+
+            // Publish the finished search's snapshot before advancing lastUpdatedFrame, so any concurrent
+            // reader that observes the new frame also observes the snapshot produced for it.
+            this.visibilitySnapshot = this.pendingVisibilitySnapshot;
+            this.pendingVisibilitySnapshot = null;
 
             this.currentOcclusionFuture = null;
             this.lastUpdatedFrame = this.pendingLastUpdatedFrame;
@@ -206,11 +219,7 @@ public class RenderListManager {
     }
 
     public boolean isSectionVisible(int x, int y, int z) {
-        // lastUpdatedFrame only advances in finishPreviousGraphUpdate(), so during an in-progress
-        // async search this reflects the previous frame's committed result. A section can appear
-        // visible slightly early (if the async thread has already written its lastVisibleFrame for
-        // the new frame), but can never appear invisible too early.
-        return this.lattice.isSectionVisible(x, y, z, this.lastUpdatedFrame);
+        return this.visibilitySnapshot.isSectionVisible(x, y, z, this.lastUpdatedFrame);
     }
 
     public void tickVisibleRenders() {

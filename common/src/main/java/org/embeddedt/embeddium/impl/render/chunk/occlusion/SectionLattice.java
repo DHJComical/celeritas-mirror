@@ -147,6 +147,13 @@ public final class SectionLattice {
     // Number of sections currently installed in the lattice, not total attached sections.
     int installedCount;
 
+    // Two reusable destination buffers for VisibilitySnapshot, alternated every search. Copying into a
+    // recycled buffer avoids allocating a full visitState clone per frame. Two are needed rather than one
+    // so a search never overwrites the buffer backing the previously returned snapshot, which a reader on
+    // another thread may still hold: search k writes buffer[k % 2] while buffer[(k-1) % 2] stays readable.
+    private final long[][] snapshotBuffers = new long[2][];
+    private int snapshotParity;
+
     public SectionLattice(int minSectionY, int maxSectionY) {
         this.minSectionY = minSectionY;
         this.maxSectionY = maxSectionY;
@@ -246,15 +253,79 @@ public final class SectionLattice {
     }
 
     /**
-     * Tests whether an installed section was marked visible in or after the
-     * requested frame. Sections without an installed slot are never visible.
+     * Self-contained view of the lattice's visibility state, safe to query from
+     * a thread other than the one mutating the lattice.
+     *
+     * <p>{@link SectionLattice#findVisible} runs asynchronously and mutates the
+     * live lattice while another thread queries section visibility. Rather than
+     * read the live arrays across that boundary, a search returns a snapshot: a
+     * copy of {@code visitState} plus the window geometry that indexes it. The
+     * snapshot's array is not the live lattice, so a running search's mutations
+     * cannot race a query against it.
+     *
+     * <p>To avoid a per-frame allocation, {@code visitState} is a buffer
+     * recycled from {@code snapshotBuffers} rather than a fresh clone. The
+     * lattice alternates between two buffers so the buffer a new search
+     * overwrites is never the one backing the currently published snapshot; see
+     * {@link SectionLattice#snapshot()}.
+     *
+     * @param visitState the search's per-cell visit state; a recycled buffer
+     *                   that stays valid until the search two generations later
+     *                   overwrites it
      */
-    public boolean isSectionVisible(int x, int y, int z, int minVisibleFrame) {
-        int idx = this.installedIndex(x, y, z);
+    public record VisibilitySnapshot(long[] visitState, int baseX, int baseY, int baseZ,
+                                     int dimX, int dimY, int dimZ) {
+        /** A snapshot with no window, reporting every section as not visible. */
+        public static final VisibilitySnapshot EMPTY =
+                new VisibilitySnapshot(new long[0], 0, 0, 0, 0, 0, 0);
 
-        // The frame in which the slot was last marked visible by the search. Narrowing (int) after the logical
-        // shift recovers the 32-bit frame; an uninstalled section (idx < 0) is treated as never-visible.
-        return idx >= 0 && (int) (this.visitState[idx] >>> FRAME_SHIFT) >= minVisibleFrame;
+        /**
+         * Tests whether the section at a world position was marked visible in or
+         * after the requested frame. Positions outside the captured window, or
+         * never visited, are treated as never-visible.
+         */
+        public boolean isSectionVisible(int x, int y, int z, int minVisibleFrame) {
+            int lx = x - this.baseX;
+            int ly = y - this.baseY;
+            int lz = z - this.baseZ;
+
+            // Same interior test as SectionLattice.indexOf: only cells strictly
+            // inside the sentinel border can hold a section, so anything outside
+            // it (including an empty snapshot) is never visible.
+            if (lx < 1 || lx > this.dimX - 2
+                    || ly < 1 || ly > this.dimY - 2
+                    || lz < 1 || lz > this.dimZ - 2) {
+                return false;
+            }
+
+            int idx = (lx * this.dimZ + lz) * this.dimY + ly;
+
+            // The frame in which the slot was last marked visible by the search. Narrowing (int) after the logical
+            // shift recovers the 32-bit frame; an unvisited or empty cell holds INITIAL/SENTINEL, which decode to a
+            // value below any real frame and are therefore treated as never-visible.
+            return (int) (this.visitState[idx] >>> FRAME_SHIFT) >= minVisibleFrame;
+        }
+    }
+
+    private VisibilitySnapshot snapshot() {
+        if (this.visitState == null) {
+            return VisibilitySnapshot.EMPTY;
+        }
+
+        int parity = this.snapshotParity;
+        this.snapshotParity ^= 1;
+
+        long[] dst = this.snapshotBuffers[parity];
+
+        if (dst == null || dst.length != this.visitState.length) {
+            dst = new long[this.visitState.length];
+            this.snapshotBuffers[parity] = dst;
+        }
+
+        System.arraycopy(this.visitState, 0, dst, 0, dst.length);
+
+        return new VisibilitySnapshot(dst, this.baseX, this.baseY, this.baseZ,
+                this.dimX, this.dimY, this.dimZ);
     }
 
     /**
@@ -333,14 +404,18 @@ public final class SectionLattice {
      * Run the visibility search over the currently installed lattice cells.
      * The caller must have completed {@link #ensureWindowCovers} and must keep
      * lattice structure and metadata stable until this method returns.
+     *
+     * @return a snapshot of the visit state this search produced
      */
-    public void findVisible(OcclusionCuller.Visitor visitor,
-                            Viewport viewport,
-                            float searchDistance,
-                            int numRegions,
-                            boolean useOcclusionCulling,
-                            int frame) {
+    public VisibilitySnapshot findVisible(OcclusionCuller.Visitor visitor,
+                                          Viewport viewport,
+                                          float searchDistance,
+                                          int numRegions,
+                                          boolean useOcclusionCulling,
+                                          int frame) {
         this.culler.findVisible(visitor, viewport, searchDistance, numRegions, useOcclusionCulling, frame);
+
+        return this.snapshot();
     }
 
     private void allocate(int newDimXZ) {
