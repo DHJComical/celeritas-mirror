@@ -37,9 +37,11 @@ import java.util.Arrays;
  * describe the same cell. X and Z are camera-windowed, while Y covers the
  * entire world height. The window is allocated lazily by
  * {@link #ensureWindowCovers}. The first call allocates the arrays and then
- * establishes their base coordinates; later calls rebase when the camera
- * approaches an edge or the window grows. Each rebase re-installs every
- * attached section that falls in the new window.
+ * establishes their base coordinates. If a later camera position no longer
+ * fits, a same-sized window is normally slid in place: the overlapping cells
+ * are copied, and only the newly exposed X/Z band is looked up in
+ * {@code sections}. A resize or a move with no overlap falls back to a full
+ * {@link #rebase}.
  *
  * <p>The installable interior ({@code [1, dim-2]} on each axis) is wrapped by
  * a permanent one-cell ring of sentinel cells (index {@code 0} and
@@ -281,9 +283,12 @@ public final class SectionLattice {
      * access. {@link #SLACK} leaves room for camera movement before another
      * rebase is needed.
      *
-     * <p>The window is allocated lazily and grows when necessary. If the
-     * camera or dimensions make the current window invalid, all attached
-     * sections are reinstalled against the new base coordinates.
+     * <p>The window is allocated lazily and grows when necessary. A first
+     * allocation or resize invalidates the old coordinates and requires a full
+     * rebuild. Otherwise, when the camera makes the current window invalid,
+     * the existing window is typically slid to the centered base: overlapping cells are
+     * retained and only the newly exposed band is resolved through the
+     * authoritative section map.
      *
      * <p>Call this on the render thread before dispatching a search. The
      * asynchronous search must not observe allocation, rebasing, attachment,
@@ -308,7 +313,18 @@ public final class SectionLattice {
                 && lz - reach >= 1 && lz + reach <= this.dimZ - 2;
 
         if (!valid) {
-            this.rebase(cameraSectionPos.x() - this.dimX / 2, cameraSectionPos.z() - this.dimZ / 2);
+            int newBaseX = cameraSectionPos.x() - this.dimX / 2;
+            int newBaseZ = cameraSectionPos.z() - this.dimZ / 2;
+
+            if (this.established) {
+                // The current window is valid to slide from: reuse its retained
+                // contents and only resolve the newly exposed cells.
+                this.shiftRebase(newBaseX, newBaseZ);
+            } else {
+                // Fresh or resized arrays have no reusable contents.
+                this.rebase(newBaseX, newBaseZ);
+            }
+
             this.established = true;
         }
     }
@@ -358,9 +374,8 @@ public final class SectionLattice {
     }
 
     /**
-     * Clear the old window, move its X/Z origin, and reinstall every attached
-     * section that falls in the new interior. Sections outside the interior
-     * remain authoritative in {@link #sections} but are not traversable.
+     * Rebuilds the lattice from scratch after allocation, resizing, or a
+     * non-overlapping camera jump.
      */
     private void rebase(int newBaseX, int newBaseZ) {
         Arrays.fill(this.visitState, SENTINEL);
@@ -374,6 +389,196 @@ public final class SectionLattice {
 
         for (RenderSection section : this.sections.values()) {
             this.install(section);
+        }
+    }
+
+    /**
+     * Slide the existing window to a new X/Z origin without rebuilding it.
+     *
+     * <p>{@code dX} and {@code dZ} are the changes in world-space base
+     * coordinates.
+     *
+     * <p>Before overwriting the old array cells, {@link #dropLeaving} removes
+     * the installed-count contribution of cells outside that intersection.
+     * After the move, {@link #fillNewBand} clears the cells that entered the
+     * window and installs only sections found in the authoritative map. Thus
+     * the map is consulted only for the exposed band, rather than once for
+     * every attached section as in {@link #rebase}.
+     *
+     * <p>When the old and new interiors do not intersect, there is no useful
+     * data to preserve and this method delegates to {@link #rebase}.
+     */
+    private void shiftRebase(int newBaseX, int newBaseZ) {
+        int dX = newBaseX - this.baseX;
+        int dZ = newBaseZ - this.baseZ;
+
+        int interiorXHi = this.dimX - 2;
+        int interiorZHi = this.dimZ - 2;
+
+        int xLo = Math.max(1, 1 - dX);
+        int xHi = Math.min(interiorXHi, interiorXHi - dX);
+        int zLo = Math.max(1, 1 - dZ);
+        int zHi = Math.min(interiorZHi, interiorZHi - dZ);
+
+        if (xLo > xHi || zLo > zHi) {
+            // No overlap: sliding would move nothing, so reinstall wholesale.
+            this.rebase(newBaseX, newBaseZ);
+            return;
+        }
+
+        this.dropLeaving(xLo + dX, xHi + dX, zLo + dZ, zHi + dZ);
+
+        if (dZ == 0) {
+            this.shiftContentsXOnly(dX, xLo, xHi);
+        } else {
+            this.shiftContents(dX, dZ, xLo, xHi, zLo, zHi);
+        }
+
+        // The arrays now describe cells relative to the new origin.
+        this.baseX = newBaseX;
+        this.baseZ = newBaseZ;
+
+        this.fillNewBand(xLo, xHi, zLo, zHi);
+    }
+
+    /**
+     * Move retained contents for a pure X shift.
+     *
+     * <p>Whole X planes (including their permanent sentinel rows) translate
+     * uniformly by {@code dX}, so the retained planes form one contiguous
+     * range. A single {@link System#arraycopy} per parallel array performs the
+     * overlapping move safely.
+     */
+    private void shiftContentsXOnly(int dX, int xLo, int xHi) {
+        int destOff = xLo * this.strideX;
+        int srcOff = (xLo + dX) * this.strideX;
+        int len = (xHi - xLo + 1) * this.strideX;
+
+        System.arraycopy(this.visitState, srcOff, this.visitState, destOff, len);
+        System.arraycopy(this.sectionMeta, srcOff, this.sectionMeta, destOff, len);
+        System.arraycopy(this.regionOfCell, srcOff, this.regionOfCell, destOff, len);
+        System.arraycopy(this.latticeSection, srcOff, this.latticeSection, destOff, len);
+    }
+
+    /**
+     * Move retained contents for a shift that includes Z.
+     *
+     * <p>A Z shift cannot cross an X-plane boundary, so it moves one
+     * contiguous {@code Z/Y} block per retained X-plane. The loop direction
+     * keeps a plane's source intact until it has been copied;
+     * {@link System#arraycopy} handles overlap within that block.
+     */
+    private void shiftContents(int dX, int dZ, int xLo, int xHi, int zLo, int zHi) {
+        // Each Z within [zLo, zHi] contributes a full contiguous Y run, so the
+        // whole per-plane block is one run. The Y sentinels carried along are
+        // copied from equivalent source sentinels and stay empty.
+        int runLen = (zHi - zLo + 1) * this.strideZ;
+
+        // When data moves to lower indices (dX > 0) copy ascending so a source
+        // plane is read before a later write can reach it; descend otherwise.
+        int first = dX < 0 ? xHi : xLo;
+        int last = dX < 0 ? xLo : xHi;
+        int step = dX < 0 ? -1 : 1;
+
+        for (int lx = first; lx != last + step; lx += step) {
+            int destOff = lx * this.strideX + zLo * this.strideZ;
+            int srcOff = (lx + dX) * this.strideX + (zLo + dZ) * this.strideZ;
+
+            System.arraycopy(this.visitState, srcOff, this.visitState, destOff, runLen);
+            System.arraycopy(this.sectionMeta, srcOff, this.sectionMeta, destOff, runLen);
+            System.arraycopy(this.regionOfCell, srcOff, this.regionOfCell, destOff, runLen);
+            System.arraycopy(this.latticeSection, srcOff, this.latticeSection, destOff, runLen);
+        }
+    }
+
+    /**
+     * Account for cells that leave the window before their slots are reused.
+     *
+     * <p>The source rectangle is the old interior that supplies the retained
+     * destination rectangle. Every installed cell outside it loses its slot,
+     * so its contribution to {@link #installedCount} is decremented here.
+     * Those sections remain in {@link #sections}; their stale array entries
+     * are subsequently overwritten by {@link #shiftContentsXOnly} or
+     * {@link #shiftContents}, then cleared by {@link #fillNewBand}.
+     *
+     * <p>Because the old and new windows differ by a translation, the retained
+     * source rectangle touches an edge in each shifted axis. Its complement is
+     * therefore two non-overlapping rectangles: an X-only strip and a Z-only
+     * strip. Iterating those rectangles avoids testing rectangle membership for
+     * every cell.
+     */
+    private void dropLeaving(int srcXLo, int srcXHi, int srcZLo, int srcZHi) {
+        int interiorXHi = this.dimX - 2;
+        int interiorZHi = this.dimZ - 2;
+        int interiorYHi = this.dimY - 2;
+
+        int xBandLo = srcXLo == 1 ? srcXHi + 1 : 1;
+        int xBandHi = srcXLo == 1 ? interiorXHi : srcXLo - 1;
+        int zBandLo = srcZLo == 1 ? srcZHi + 1 : 1;
+        int zBandHi = srcZLo == 1 ? interiorZHi : srcZLo - 1;
+
+        this.dropLeavingRectangle(xBandLo, xBandHi, 1, interiorZHi, interiorYHi);
+        this.dropLeavingRectangle(srcXLo, srcXHi, zBandLo, zBandHi, interiorYHi);
+    }
+
+    private void dropLeavingRectangle(int xLo, int xHi, int zLo, int zHi, int interiorYHi) {
+        for (int lx = xLo; lx <= xHi; lx++) {
+            for (int lz = zLo; lz <= zHi; lz++) {
+                int col = lx * this.strideX + lz * this.strideZ;
+                for (int ly = 1; ly <= interiorYHi; ly++) {
+                    if (this.latticeSection[col + ly] != null) {
+                        this.installedCount--;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Clear and repopulate the L-shaped band of cells that entered the window.
+     *
+     * <p>As with {@link #dropLeaving}, the band is visited as two
+     * non-overlapping rectangles: the X-only strip outside the retained X
+     * range, followed by the Z-only strip inside the retained X range.
+     */
+    private void fillNewBand(int keepXLo, int keepXHi, int keepZLo, int keepZHi) {
+        int interiorXHi = this.dimX - 2;
+        int interiorZHi = this.dimZ - 2;
+        int interiorYHi = this.dimY - 2;
+
+        int xBandLo = keepXLo == 1 ? keepXHi + 1 : 1;
+        int xBandHi = keepXLo == 1 ? interiorXHi : keepXLo - 1;
+        int zBandLo = keepZLo == 1 ? keepZHi + 1 : 1;
+        int zBandHi = keepZLo == 1 ? interiorZHi : keepZLo - 1;
+
+        this.fillBandRectangle(xBandLo, xBandHi, 1, interiorZHi, interiorYHi);
+        this.fillBandRectangle(keepXLo, keepXHi, zBandLo, zBandHi, interiorYHi);
+    }
+
+    private void fillBandRectangle(int xLo, int xHi, int zLo, int zHi, int interiorYHi) {
+        for (int lx = xLo; lx <= xHi; lx++) {
+            int worldX = this.baseX + lx;
+
+            for (int lz = zLo; lz <= zHi; lz++) {
+                int worldZ = this.baseZ + lz;
+                int col = lx * this.strideX + lz * this.strideZ;
+
+                for (int ly = 1; ly <= interiorYHi; ly++) {
+                    int idx = col + ly;
+
+                    this.visitState[idx] = SENTINEL;
+                    this.sectionMeta[idx] = VisibilityEncoding.NULL;
+                    this.regionOfCell[idx] = -1;
+                    this.latticeSection[idx] = null;
+
+                    RenderSection section = this.sections.get(
+                            PositionUtil.packSection(worldX, this.baseY + ly, worldZ));
+
+                    if (section != null) {
+                        this.install(section);
+                    }
+                }
+            }
         }
     }
 
