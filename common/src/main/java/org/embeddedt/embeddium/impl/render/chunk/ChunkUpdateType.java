@@ -67,4 +67,11 @@ public enum ChunkUpdateType {
     public boolean isSort() {
         return this == SORT || this == IMPORTANT_SORT;
     }
+
+    static {
+        if (VALUES.length > 7) {
+            // See PackedSectionMetadata, OcclusionCuller, etc.
+            throw new AssertionError("The occlusion system currently assumes there are at most 7 update types");
+        }
+    }
 }
