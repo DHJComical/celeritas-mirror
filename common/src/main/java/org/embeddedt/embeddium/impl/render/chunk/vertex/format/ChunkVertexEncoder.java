@@ -5,6 +5,10 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 public interface ChunkVertexEncoder {
     long write(long ptr, Material material, Vertex vertex, int sectionIndex);
 
+    default boolean supportsBilinearCorrection() {
+        return true;
+    }
+
     class Vertex {
         public float x;
         public float y;

@@ -8,7 +8,6 @@
 out vec4 v_Color;
 out vec4 v_RdhFactor;
 out vec2 v_QuadCoord;
-out vec3 v_LightColor;
 out vec2 v_TexCoord;
 
 #if defined(USE_FOG) && defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0
@@ -61,15 +60,15 @@ void main() {
     gl_Position = u_ProjectionMatrix * u_ModelViewMatrix * vec4(position, 1.0);
 
     // Add the light color to the vertex color, and pass the texture coordinates to the fragment shader
+    v_RdhFactor = _vert_rdh_factor * 2.0;
 #ifdef CELERITAS_NO_LIGHTMAP
     v_Color = _vert_color;
-    v_LightColor = vec3(1.0);
 #else
     vec4 lightColor = _sample_lightmap(u_LightTex, _vert_tex_light_coord);
     v_Color = _vert_color * lightColor;
-    v_LightColor = lightColor.rgb;
+    v_RdhFactor.rgb *= lightColor.rgb;
 #endif
-    v_RdhFactor = _vert_rdh_factor * 2.0;
+    
     int corner = gl_VertexID & 3;
     v_QuadCoord = vec2(corner >= 2 ? 1.0 : 0.0,
             corner == 1 || corner == 2 ? 1.0 : 0.0);

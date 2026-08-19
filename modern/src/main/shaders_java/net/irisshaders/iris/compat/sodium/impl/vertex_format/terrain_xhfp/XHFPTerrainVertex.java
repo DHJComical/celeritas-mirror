@@ -145,12 +145,18 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
     }
 
     @Override
+	public boolean supportsBilinearCorrection() {
+		return false;
+	}
+
+    @Override
 	public long write(long ptr,
 					  Material material, Vertex vertex, int chunkId) {
 		uSum += vertex.u;
 		vSum += vertex.v;
 		vertexCount++;
 
+        vertex.rdhFactor = 0;
         this.baseEncoder.write(ptr, material, vertex, chunkId);
 
         MemoryUtil.memPutShort(ptr + MC_ENTITY_OFFSET + 2, renderType);

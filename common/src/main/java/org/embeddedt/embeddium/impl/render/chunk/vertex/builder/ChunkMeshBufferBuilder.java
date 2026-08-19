@@ -32,7 +32,9 @@ public class ChunkMeshBufferBuilder {
     }
 
     public void push(ChunkVertexEncoder.Vertex[] vertices, Material material) {
-        postprocessVertices(vertices);
+        if (this.encoder.supportsBilinearCorrection()) {
+            postprocessVertices(vertices);
+        }
 
         var vertexStart = this.count * this.stride;
         var vertexSize = vertices.length * this.stride;
