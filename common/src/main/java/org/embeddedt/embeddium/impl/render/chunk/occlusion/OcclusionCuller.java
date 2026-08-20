@@ -65,6 +65,7 @@ public class OcclusionCuller {
      */
     private long[] queue = new long[256];
     private int tail;
+    private long[] apertures = new long[0];
 
 
 
@@ -72,6 +73,7 @@ public class OcclusionCuller {
     private final RegionCullCache regionCullCache = new RegionCullCache();
 
     private boolean isCameraInUnloadedSection;
+    private boolean useFastFrustumClamping;
 
     public OcclusionCuller(SectionLattice lattice, int minSectionY, int maxSectionY) {
         this.lattice = lattice;
@@ -109,12 +111,13 @@ public class OcclusionCuller {
         this.regionCullCache.begin(viewport, searchDistance, numRegions);
 
         this.isCameraInUnloadedSection = false;
+        this.useFastFrustumClamping = false;
         this.init(visitor, viewport, searchDistance, useOcclusionCulling, frame);
         if (this.isCameraInUnloadedSection) {
             useOcclusionCulling = false;
         }
 
-        this.process(visitor, viewport, searchDistance, useOcclusionCulling, frame);
+        this.process(visitor, viewport, searchDistance, useOcclusionCulling, frame, this.useFastFrustumClamping);
     }
 
     /**
@@ -129,13 +132,15 @@ public class OcclusionCuller {
                          Viewport viewport,
                          float searchDistance,
                          boolean useOcclusionCulling,
-                         int frame)
+                         int frame,
+                         boolean useFastFrustumClamping)
     {
         final long[] visitState = this.lattice.visitState;
         final long[] sectionMeta = this.lattice.sectionMeta;
         final int[] regionOfCell = this.lattice.regionOfCell;
         final int[] delta = this.lattice.delta;
         final long[] queue = this.queue;
+        final long[] apertures = this.apertures;
         final int baseX = this.lattice.baseX, baseY = this.lattice.baseY, baseZ = this.lattice.baseZ;
 
         final RegionCullCache cache = this.regionCullCache;
@@ -205,43 +210,52 @@ public class OcclusionCuller {
             // We can only traverse outwards from the centre of the search.
             connections &= getOutwardDirections(chunkX, chunkY, chunkZ, camX, camY, camZ);
 
-            // Unrolled variant of visitNeighbors, with delta, step, incoming values inlined into each branch.
-            // The unrolling measurably improves performance here.
-            if ((connections & (1 << GraphDirection.DOWN)) != 0) {
-                final int n = idx - 1;
-                long ns = visitState[n];
-                if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz - yStep) << 32) | (n & 0xFFFFFFFFL); }
-                visitState[n] = ns | (1 << GraphDirection.UP);
-            }
-            if ((connections & (1 << GraphDirection.UP)) != 0) {
-                final int n = idx + 1;
-                long ns = visitState[n];
-                if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz + yStep) << 32) | (n & 0xFFFFFFFFL); }
-                visitState[n] = ns | (1 << GraphDirection.DOWN);
-            }
-            if ((connections & (1 << GraphDirection.NORTH)) != 0) {
-                final int n = idx - strideZ;
-                long ns = visitState[n];
-                if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz - 1) << 32) | (n & 0xFFFFFFFFL); }
-                visitState[n] = ns | (1 << GraphDirection.SOUTH);
-            }
-            if ((connections & (1 << GraphDirection.SOUTH)) != 0) {
-                final int n = idx + strideZ;
-                long ns = visitState[n];
-                if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz + 1) << 32) | (n & 0xFFFFFFFFL); }
-                visitState[n] = ns | (1 << GraphDirection.NORTH);
-            }
-            if ((connections & (1 << GraphDirection.WEST)) != 0) {
-                final int n = idx - strideX;
-                long ns = visitState[n];
-                if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz - xStep) << 32) | (n & 0xFFFFFFFFL); }
-                visitState[n] = ns | (1 << GraphDirection.EAST);
-            }
-            if ((connections & (1 << GraphDirection.EAST)) != 0) {
-                final int n = idx + strideX;
-                long ns = visitState[n];
-                if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz + xStep) << 32) | (n & 0xFFFFFFFFL); }
-                visitState[n] = ns | (1 << GraphDirection.WEST);
+            if (useFastFrustumClamping) {
+                if ((connections & (1 << GraphDirection.DOWN)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, apertures[idx], idx - 1, xyz - yStep, 1 << GraphDirection.UP, frameStamp, chunkX, chunkY - 1, chunkZ, camX, camY, camZ, tail);
+                if ((connections & (1 << GraphDirection.UP)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, apertures[idx], idx + 1, xyz + yStep, 1 << GraphDirection.DOWN, frameStamp, chunkX, chunkY + 1, chunkZ, camX, camY, camZ, tail);
+                if ((connections & (1 << GraphDirection.NORTH)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, apertures[idx], idx - strideZ, xyz - 1, 1 << GraphDirection.SOUTH, frameStamp, chunkX, chunkY, chunkZ - 1, camX, camY, camZ, tail);
+                if ((connections & (1 << GraphDirection.SOUTH)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, apertures[idx], idx + strideZ, xyz + 1, 1 << GraphDirection.NORTH, frameStamp, chunkX, chunkY, chunkZ + 1, camX, camY, camZ, tail);
+                if ((connections & (1 << GraphDirection.WEST)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, apertures[idx], idx - strideX, xyz - xStep, 1 << GraphDirection.EAST, frameStamp, chunkX - 1, chunkY, chunkZ, camX, camY, camZ, tail);
+                if ((connections & (1 << GraphDirection.EAST)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, apertures[idx], idx + strideX, xyz + xStep, 1 << GraphDirection.WEST, frameStamp, chunkX + 1, chunkY, chunkZ, camX, camY, camZ, tail);
+            } else {
+                // Unrolled variant of visitNeighbors, with delta, step, incoming values inlined into each branch.
+                // The unrolling measurably improves performance here.
+                if ((connections & (1 << GraphDirection.DOWN)) != 0) {
+                    final int n = idx - 1;
+                    long ns = visitState[n];
+                    if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz - yStep) << 32) | (n & 0xFFFFFFFFL); }
+                    visitState[n] = ns | (1 << GraphDirection.UP);
+                }
+                if ((connections & (1 << GraphDirection.UP)) != 0) {
+                    final int n = idx + 1;
+                    long ns = visitState[n];
+                    if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz + yStep) << 32) | (n & 0xFFFFFFFFL); }
+                    visitState[n] = ns | (1 << GraphDirection.DOWN);
+                }
+                if ((connections & (1 << GraphDirection.NORTH)) != 0) {
+                    final int n = idx - strideZ;
+                    long ns = visitState[n];
+                    if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz - 1) << 32) | (n & 0xFFFFFFFFL); }
+                    visitState[n] = ns | (1 << GraphDirection.SOUTH);
+                }
+                if ((connections & (1 << GraphDirection.SOUTH)) != 0) {
+                    final int n = idx + strideZ;
+                    long ns = visitState[n];
+                    if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz + 1) << 32) | (n & 0xFFFFFFFFL); }
+                    visitState[n] = ns | (1 << GraphDirection.NORTH);
+                }
+                if ((connections & (1 << GraphDirection.WEST)) != 0) {
+                    final int n = idx - strideX;
+                    long ns = visitState[n];
+                    if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz - xStep) << 32) | (n & 0xFFFFFFFFL); }
+                    visitState[n] = ns | (1 << GraphDirection.EAST);
+                }
+                if ((connections & (1 << GraphDirection.EAST)) != 0) {
+                    final int n = idx + strideX;
+                    long ns = visitState[n];
+                    if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz + xStep) << 32) | (n & 0xFFFFFFFFL); }
+                    visitState[n] = ns | (1 << GraphDirection.WEST);
+                }
             }
         }
 
@@ -275,6 +289,25 @@ public class OcclusionCuller {
         } else {
             visitState[idx] = state | incoming;
         }
+    }
+
+    private int visitFfcNode(long[] visitState, long[] apertures, long[] queue, long parentAperture, int idx, int xyz, int incoming, long frameStamp,
+                             int chunkX, int chunkY, int chunkZ, int camX, int camY, int camZ, int tail) {
+        long aperture = FastFrustumClamping.clip(parentAperture, Math.abs(chunkX - camX), Math.abs(chunkY - camY), Math.abs(chunkZ - camZ));
+        if (aperture == FastFrustumClamping.EMPTY) {
+            return tail;
+        }
+
+        long state = visitState[idx];
+        if (state < frameStamp) {
+            apertures[idx] = aperture;
+            visitState[idx] = frameStamp | incoming;
+            queue[tail++] = ((long) xyz << 32) | (idx & 0xFFFFFFFFL);
+        } else if (state != SectionLattice.SENTINEL) {
+            apertures[idx] = FastFrustumClamping.hull(apertures[idx], aperture);
+            visitState[idx] = state | incoming;
+        }
+        return tail;
     }
 
     // Allow movement only away from the camera on each axis. A coordinate
@@ -386,6 +419,14 @@ public class OcclusionCuller {
         long frameStamp = SectionLattice.frameStamp(frame);
         visitState[idx] = frameStamp;
 
+        this.useFastFrustumClamping = useOcclusionCulling;
+        if (this.useFastFrustumClamping) {
+            if (this.apertures.length < visitState.length) {
+                this.apertures = new long[visitState.length];
+            }
+            this.apertures[idx] = FastFrustumClamping.FULL;
+        }
+
         // Visit the origin immediately; it is processed inline rather than
         // enqueued so the BFS starts with its neighbours.
         int sectionIndex = LocalSectionIndex.pack(origin.x(), origin.y(), origin.z());
@@ -402,7 +443,18 @@ public class OcclusionCuller {
         }
 
         int xyz = this.lattice.packXyz(origin.x(), origin.y(), origin.z());
-        this.visitNeighbors(visitState, queue, delta, idx, xyz, outgoing, frameStamp);
+        if (this.useFastFrustumClamping) {
+            while (outgoing != 0) {
+                int dir = Integer.numberOfTrailingZeros(outgoing);
+                outgoing &= outgoing - 1;
+                this.tail = this.visitFfcNode(visitState, this.apertures, queue, FastFrustumClamping.FULL,
+                        idx + delta[dir], xyz + XYZ_STEP[dir], INCOMING[dir], frameStamp,
+                        origin.x() + GraphDirection.x(dir), origin.y() + GraphDirection.y(dir), origin.z() + GraphDirection.z(dir),
+                        origin.x(), origin.y(), origin.z(), this.tail);
+            }
+        } else {
+            this.visitNeighbors(visitState, queue, delta, idx, xyz, outgoing, frameStamp);
+        }
     }
 
     /**
