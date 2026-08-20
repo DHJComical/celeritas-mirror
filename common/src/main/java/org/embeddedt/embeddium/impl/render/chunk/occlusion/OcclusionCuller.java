@@ -211,12 +211,16 @@ public class OcclusionCuller {
             connections &= getOutwardDirections(chunkX, chunkY, chunkZ, camX, camY, camZ);
 
             if (useFastFrustumClamping) {
-                if ((connections & (1 << GraphDirection.DOWN)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, apertures[idx], idx - 1, xyz - yStep, 1 << GraphDirection.UP, frameStamp, chunkX, chunkY - 1, chunkZ, camX, camY, camZ, tail);
-                if ((connections & (1 << GraphDirection.UP)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, apertures[idx], idx + 1, xyz + yStep, 1 << GraphDirection.DOWN, frameStamp, chunkX, chunkY + 1, chunkZ, camX, camY, camZ, tail);
-                if ((connections & (1 << GraphDirection.NORTH)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, apertures[idx], idx - strideZ, xyz - 1, 1 << GraphDirection.SOUTH, frameStamp, chunkX, chunkY, chunkZ - 1, camX, camY, camZ, tail);
-                if ((connections & (1 << GraphDirection.SOUTH)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, apertures[idx], idx + strideZ, xyz + 1, 1 << GraphDirection.NORTH, frameStamp, chunkX, chunkY, chunkZ + 1, camX, camY, camZ, tail);
-                if ((connections & (1 << GraphDirection.WEST)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, apertures[idx], idx - strideX, xyz - xStep, 1 << GraphDirection.EAST, frameStamp, chunkX - 1, chunkY, chunkZ, camX, camY, camZ, tail);
-                if ((connections & (1 << GraphDirection.EAST)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, apertures[idx], idx + strideX, xyz + xStep, 1 << GraphDirection.WEST, frameStamp, chunkX + 1, chunkY, chunkZ, camX, camY, camZ, tail);
+                long parentAperture = apertures[idx];
+                int relativeX = Math.abs(chunkX - camX);
+                int relativeY = Math.abs(chunkY - camY);
+                int relativeZ = Math.abs(chunkZ - camZ);
+                if ((connections & (1 << GraphDirection.DOWN)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, parentAperture, idx - 1, xyz - yStep, 1 << GraphDirection.UP, frameStamp, relativeX, relativeY + 1, relativeZ, tail);
+                if ((connections & (1 << GraphDirection.UP)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, parentAperture, idx + 1, xyz + yStep, 1 << GraphDirection.DOWN, frameStamp, relativeX, relativeY + 1, relativeZ, tail);
+                if ((connections & (1 << GraphDirection.NORTH)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, parentAperture, idx - strideZ, xyz - 1, 1 << GraphDirection.SOUTH, frameStamp, relativeX, relativeY, relativeZ + 1, tail);
+                if ((connections & (1 << GraphDirection.SOUTH)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, parentAperture, idx + strideZ, xyz + 1, 1 << GraphDirection.NORTH, frameStamp, relativeX, relativeY, relativeZ + 1, tail);
+                if ((connections & (1 << GraphDirection.WEST)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, parentAperture, idx - strideX, xyz - xStep, 1 << GraphDirection.EAST, frameStamp, relativeX + 1, relativeY, relativeZ, tail);
+                if ((connections & (1 << GraphDirection.EAST)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, parentAperture, idx + strideX, xyz + xStep, 1 << GraphDirection.WEST, frameStamp, relativeX + 1, relativeY, relativeZ, tail);
             } else {
                 // Unrolled variant of visitNeighbors, with delta, step, incoming values inlined into each branch.
                 // The unrolling measurably improves performance here.
@@ -292,8 +296,8 @@ public class OcclusionCuller {
     }
 
     private int visitFfcNode(long[] visitState, long[] apertures, long[] queue, long parentAperture, int idx, int xyz, int incoming, long frameStamp,
-                             int chunkX, int chunkY, int chunkZ, int camX, int camY, int camZ, int tail) {
-        long aperture = FastFrustumClamping.clip(parentAperture, Math.abs(chunkX - camX), Math.abs(chunkY - camY), Math.abs(chunkZ - camZ));
+                             int relativeX, int relativeY, int relativeZ, int tail) {
+        long aperture = FastFrustumClamping.clip(parentAperture, relativeX, relativeY, relativeZ);
         if (aperture == FastFrustumClamping.EMPTY) {
             return tail;
         }
@@ -449,8 +453,7 @@ public class OcclusionCuller {
                 outgoing &= outgoing - 1;
                 this.tail = this.visitFfcNode(visitState, this.apertures, queue, FastFrustumClamping.FULL,
                         idx + delta[dir], xyz + XYZ_STEP[dir], INCOMING[dir], frameStamp,
-                        origin.x() + GraphDirection.x(dir), origin.y() + GraphDirection.y(dir), origin.z() + GraphDirection.z(dir),
-                        origin.x(), origin.y(), origin.z(), this.tail);
+                        Math.abs(GraphDirection.x(dir)), Math.abs(GraphDirection.y(dir)), Math.abs(GraphDirection.z(dir)), this.tail);
             }
         } else {
             this.visitNeighbors(visitState, queue, delta, idx, xyz, outgoing, frameStamp);

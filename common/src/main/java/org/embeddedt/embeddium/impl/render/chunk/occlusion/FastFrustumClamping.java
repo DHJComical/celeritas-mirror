@@ -15,7 +15,11 @@ final class FastFrustumClamping {
     static {
         for (int x = 0; x < TABLE_SIZE; x++) {
             for (int y = 0; y < TABLE_SIZE; y++) {
-                BOUNDS[index(x, y)] = pack(rankDown(angle(x + 1, y - 1)), rankUp(angle(x - 1, y + 1)), 0, 0, 0, 0);
+                BOUNDS[index(x, y)] = pack(
+                        rankDown(angle(x + 1, y - 1)),
+                        rankUp(angle(x - 1, y + 1)),
+                        0, 0, 0, 0
+                );
             }
         }
     }
