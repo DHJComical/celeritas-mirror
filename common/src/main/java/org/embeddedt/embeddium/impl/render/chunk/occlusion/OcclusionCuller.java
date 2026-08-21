@@ -48,6 +48,12 @@ public class OcclusionCuller {
 
     // When stepping from a cell in dir, the neighbour is entered from the opposite face.
     private static final int[] INCOMING = new int[GraphDirection.COUNT];
+    private static final long X_OPPOSITE_FACE_PAIRS = (1L << VisibilityEncoding.bit(GraphDirection.WEST, GraphDirection.EAST))
+            | (1L << VisibilityEncoding.bit(GraphDirection.EAST, GraphDirection.WEST));
+    private static final long Y_OPPOSITE_FACE_PAIRS = (1L << VisibilityEncoding.bit(GraphDirection.DOWN, GraphDirection.UP))
+            | (1L << VisibilityEncoding.bit(GraphDirection.UP, GraphDirection.DOWN));
+    private static final long Z_OPPOSITE_FACE_PAIRS = (1L << VisibilityEncoding.bit(GraphDirection.NORTH, GraphDirection.SOUTH))
+            | (1L << VisibilityEncoding.bit(GraphDirection.SOUTH, GraphDirection.NORTH));
 
     static {
         for (int dir = 0; dir < GraphDirection.COUNT; dir++) {
@@ -198,17 +204,15 @@ public class OcclusionCuller {
             int connections;
 
             if (useOcclusionCulling) {
-                // Merge the outgoing paths reachable from every incoming path
-                // accumulated in this cell.
                 int incoming = (int) (visitState[idx] & DIR_MASK);
-                connections = VisibilityEncoding.getConnections(
-                        sm & PackedSectionMetadata.VISIBILITY_MASK, incoming);
+                connections = getAngleRefinedConnections(sm & PackedSectionMetadata.VISIBILITY_MASK, incoming,
+                        getOutwardDirections(chunkX, chunkY, chunkZ, camX, camY, camZ),
+                        transform, chunkX, chunkY, chunkZ);
             } else {
                 connections = GraphDirectionSet.ALL;
+                // We can only traverse outwards from the centre of the search.
+                connections &= getOutwardDirections(chunkX, chunkY, chunkZ, camX, camY, camZ);
             }
-
-            // We can only traverse outwards from the centre of the search.
-            connections &= getOutwardDirections(chunkX, chunkY, chunkZ, camX, camY, camZ);
 
             if (useFastFrustumClamping) {
                 long parentAperture = apertures[idx];
@@ -329,6 +333,26 @@ public class OcclusionCuller {
         planes |= chunkZ >= camZ ? 1 << GraphDirection.SOUTH : 0;
 
         return planes;
+    }
+
+    static int getAngleRefinedConnections(long visibilityData, int incoming, int outward, CameraTransform camera, int chunkX, int chunkY, int chunkZ) {
+        return VisibilityEncoding.getConnections(visibilityData & getAngleRefinementMask(camera, chunkX, chunkY, chunkZ), incoming) & outward;
+    }
+
+    static long getAngleRefinementMask(CameraTransform camera, int chunkX, int chunkY, int chunkZ) {
+        double centreX = chunkX * 16.0 + 8.0;
+        double centreY = chunkY * 16.0 + 8.0;
+        double centreZ = chunkZ * 16.0 + 8.0;
+        double dx = Math.abs(camera.x - centreX);
+        double dy = Math.abs(camera.y - centreY);
+        double dz = Math.abs(camera.z - centreZ);
+        long mask = VisibilityEncoding.EVERYTHING;
+
+        if (dy > dx || dz > dx) mask &= ~X_OPPOSITE_FACE_PAIRS;
+        if (dx > dy || dz > dy) mask &= ~Y_OPPOSITE_FACE_PAIRS;
+        if (dx > dz || dy > dz) mask &= ~Z_OPPOSITE_FACE_PAIRS;
+
+        return mask;
     }
 
     // Convert a section coordinate to the origin of its containing render
