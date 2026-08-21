@@ -38,6 +38,20 @@ sourceSets {
     main {
         compileClasspath += lwjglCommon.output
     }
+    jmh {
+        compileClasspath += main.output
+        compileClasspath += main.compileClasspath
+        runtimeClasspath += main.output
+        runtimeClasspath += main.runtimeClasspath
+        runtimeClasspath += lwjglCommon.output
+        runtimeClasspath += lwjgl3.output
+    }
+}
+
+// The benchmarks run against main's code, so the jmh source set needs main's dependencies too.
+configurations {
+    jmhImplementation.extendsFrom(implementation)
+    jmhRuntimeOnly.extendsFrom(runtimeOnly)
 }
 
 def generateAbstractionLayer = tasks.register("generateLWJGLAbstraction", GenerateLWJGLAbstraction) {
@@ -49,6 +63,22 @@ def generateAbstractionLayer = tasks.register("generateLWJGLAbstraction", Genera
 tasks.named("compileLwjglCommonJava") {
     dependsOn(generateAbstractionLayer)
 }
+
+// Natives classifier for the current machine; the benchmarks need real LWJGL natives to open a GL context.
+def lwjglNatives = {
+    def os = System.getProperty("os.name").toLowerCase()
+    def arch = System.getProperty("os.arch").toLowerCase()
+
+    if (os.contains("linux")) {
+        return arch.startsWith("aarch64") ? "natives-linux-arm64" : "natives-linux"
+    } else if (os.contains("mac") || os.contains("darwin")) {
+        return arch.startsWith("aarch64") ? "natives-macos-arm64" : "natives-macos"
+    } else if (os.contains("windows")) {
+        return "natives-windows"
+    }
+
+    throw new GradleException("Unsupported platform for the benchmark GL context: $os $arch")
+}()
 
 dependencies {
     def lwjglVersion = "3.3.1"
@@ -72,6 +102,19 @@ dependencies {
 
     implementation "com.google.code.gson:gson:2.10.1"
 
+    def benchLwjglVersion = "3.3.6"
+
+    jmhImplementation(platform("org.lwjgl:lwjgl-bom:$benchLwjglVersion"))
+    jmhImplementation "org.lwjgl:lwjgl"
+    jmhImplementation "org.lwjgl:lwjgl-opengl"
+    jmhImplementation "org.lwjgl:lwjgl-egl"
+    jmhRuntimeOnly "org.lwjgl:lwjgl:$benchLwjglVersion:$lwjglNatives"
+    jmhRuntimeOnly "org.lwjgl:lwjgl-opengl:$benchLwjglVersion:$lwjglNatives"
+
+    jmhImplementation "org.openjdk.jmh:jmh-core:${jmh_version}"
+    jmhAnnotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:${jmh_version}"
+    jmhCompileOnly "org.jetbrains:annotations:24.1.0"
+
     testImplementation 'org.junit.jupiter:junit-jupiter:5.13.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
@@ -83,6 +126,26 @@ tasks.named('test', Test) {
 
     testLogging {
         events "passed"
+    }
+}
+
+// Run the benchmarks through Gradle. Any JMH argument can be passed through, e.g.
+//   ./gradlew :common:jmh -Pjmhargs="-f 1 -p renderDistance=64 OcclusionCullerBench.rotatingCamera"
+tasks.register('jmh', JavaExec) {
+    group = 'verification'
+    description = 'Runs the JMH benchmarks.'
+
+    classpath = sourceSets.jmh.runtimeClasspath
+    mainClass = 'org.openjdk.jmh.Main'
+
+    // Measured live set is ~128 MB at renderDistance=64 (424 536 sections); this is headroom for the
+    // collector's per-frame allocation, not a requirement.
+    maxHeapSize = '1g'
+
+    doFirst {
+        if (project.hasProperty('jmhargs')) {
+            args(project.property('jmhargs').toString().split('\\s+').findAll { !it.isEmpty() })
+        }
     }
 }
 
