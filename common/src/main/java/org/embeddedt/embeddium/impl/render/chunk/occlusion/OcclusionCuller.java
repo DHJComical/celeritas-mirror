@@ -107,6 +107,7 @@ public class OcclusionCuller {
     private final RegionCullCache regionCullCache = new RegionCullCache();
 
     private boolean isCameraInUnloadedSection;
+    private boolean isMultiRootSearch;
 
     public OcclusionCuller(SectionLattice lattice, int minSectionY, int maxSectionY) {
         this.lattice = lattice;
@@ -151,9 +152,13 @@ public class OcclusionCuller {
         this.regionCullCache.begin(viewport, searchDistance, numRegions);
 
         this.isCameraInUnloadedSection = false;
+        this.isMultiRootSearch = false;
         this.init(visitor, viewport, searchDistance, useOcclusionCulling, frame);
         if (this.isCameraInUnloadedSection) {
             useOcclusionCulling = false;
+        }
+        if (this.isMultiRootSearch) {
+            allowFrustumClamping = false;
         }
 
         this.process(visitor, viewport, searchDistance, useOcclusionCulling, allowFrustumClamping, frame);
@@ -513,6 +518,8 @@ public class OcclusionCuller {
         var origin = viewport.getChunkCoord();
         var radius = MathUtil.mojfloor(searchDistance / 16.0f);
         long frameStamp = SectionLattice.frameStamp(frame);
+
+        this.isMultiRootSearch = true;
 
         // Layer 0: the section directly below/above the camera, if loaded and visible.
         this.tryVisitNode(visitState, queue, origin.x(), height, origin.z(), direction, frameStamp, viewport);
