@@ -27,6 +27,9 @@ public class RenderListManager {
     private ChunkRebuildLists rebuildLists;
 
     private final SectionLattice lattice;
+    // False for orthographic passes (e.g. the Iris shadow pass), where the camera-anchored angular clamp
+    // in the occlusion search would wrongly cull geometry outside the player's view cone.
+    private final boolean allowFrustumClamping;
 
     // Non-null for the duration of an in-progress async graph search. Acts as a flag:
     // structural mutations to the lattice (attach/detach/rewire) are forbidden while set,
@@ -81,8 +84,9 @@ public class RenderListManager {
 
     private RenderListDebugStatistics debugStatistics;
 
-    public RenderListManager(int minSectionY, int maxSectionY, boolean useAsyncGraphSearch, @Nullable SectionTicker sectionTicker) {
+    public RenderListManager(int minSectionY, int maxSectionY, boolean useAsyncGraphSearch, boolean allowFrustumClamping, @Nullable SectionTicker sectionTicker) {
         this.sectionTicker = sectionTicker;
+        this.allowFrustumClamping = allowFrustumClamping;
 
         if (useAsyncGraphSearch) {
             this.asyncGraphExecutor = Executors.newSingleThreadExecutor(runnable -> {
@@ -109,7 +113,7 @@ public class RenderListManager {
         this.lattice.ensureWindowCovers(viewport.getChunkCoord(), searchDistance);
 
         Supplier<VisibleChunkCollector> occlusionTask = () -> {
-            this.pendingVisibilitySnapshot = this.lattice.findVisible(visitor, viewport, searchDistance, regionIdsLength, useOcclusionCulling, frame);
+            this.pendingVisibilitySnapshot = this.lattice.findVisible(visitor, viewport, searchDistance, regionIdsLength, useOcclusionCulling, this.allowFrustumClamping, frame);
 
             // WARNING: when asyncGraphExecutor != null, this runs on the async thread.
             // SectionTicker.onRenderListUpdated() must be safe to call off the render thread.

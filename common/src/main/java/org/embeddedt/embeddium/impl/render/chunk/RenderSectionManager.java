@@ -128,9 +128,10 @@ public abstract class RenderSectionManager {
 
         this.minSection = minSection;
         this.maxSection = maxSection;
-        this.renderListManager = new RenderListManager(this.minSection, this.maxSection, this.getAsyncOcclusionMode() == AsyncOcclusionMode.EVERYTHING, this.createSectionTicker());
+        this.renderListManager = new RenderListManager(this.minSection, this.maxSection, this.getAsyncOcclusionMode() == AsyncOcclusionMode.EVERYTHING, true, this.createSectionTicker());
         if (hasShadowPass) {
-            this.shadowRenderListManager = new RenderListManager(this.minSection, this.maxSection, this.getAsyncOcclusionMode() != AsyncOcclusionMode.NONE, this.createSectionTicker());
+            // The shadow pass is an orthographic directional view, so the camera-anchored frustum clamp is disabled for it.
+            this.shadowRenderListManager = new RenderListManager(this.minSection, this.maxSection, this.getAsyncOcclusionMode() != AsyncOcclusionMode.NONE, false, this.createSectionTicker());
         } else {
             this.shadowRenderListManager = null;
         }

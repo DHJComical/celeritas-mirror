@@ -55,9 +55,37 @@ public class OcclusionCuller {
     private static final long Z_OPPOSITE_FACE_PAIRS = (1L << VisibilityEncoding.bit(GraphDirection.NORTH, GraphDirection.SOUTH))
             | (1L << VisibilityEncoding.bit(GraphDirection.SOUTH, GraphDirection.NORTH));
 
+    /*
+     * The visibility-field extraction mask (VisibilityEncoding.EVERYTHING/PackedSectionMetadata.VISIBILITY_MASK)
+     * minus the straight-through face pairs for axes that the selector index marks as non-dominant camera
+     * directions. Precomputing this reduces the amount of conditional logic needed in the hot path.
+     */
+    private static final long[] ANGLE_REFINEMENT_MASKS = new long[8];
+
+    // Fixed-point sub-section resolution for the angle refinement's axis comparisons.
+    private static final int ANGLE_SHIFT = 8;
+
+    private static final int DOWN_BIT = 1 << GraphDirection.DOWN;
+    private static final int UP_BIT = 1 << GraphDirection.UP;
+    private static final int NORTH_BIT = 1 << GraphDirection.NORTH;
+    private static final int SOUTH_BIT = 1 << GraphDirection.SOUTH;
+    private static final int WEST_BIT = 1 << GraphDirection.WEST;
+    private static final int EAST_BIT = 1 << GraphDirection.EAST;
+
     static {
         for (int dir = 0; dir < GraphDirection.COUNT; dir++) {
             INCOMING[dir] = GraphDirectionSet.of(GraphDirection.opposite(dir));
+        }
+
+        for (int sel = 0; sel < ANGLE_REFINEMENT_MASKS.length; sel++) {
+            long mask = VisibilityEncoding.EVERYTHING;
+
+            if ((sel & 1) != 0) mask &= ~X_OPPOSITE_FACE_PAIRS;
+            if ((sel & 2) != 0) mask &= ~Y_OPPOSITE_FACE_PAIRS;
+            if ((sel & 4) != 0) mask &= ~Z_OPPOSITE_FACE_PAIRS;
+
+            // The AND here is technically a no-op today, since EVERYTHING is already a subset of VISIBILITY_MASK
+            ANGLE_REFINEMENT_MASKS[sel] = mask & PackedSectionMetadata.VISIBILITY_MASK;
         }
     }
 
@@ -79,7 +107,6 @@ public class OcclusionCuller {
     private final RegionCullCache regionCullCache = new RegionCullCache();
 
     private boolean isCameraInUnloadedSection;
-    private boolean useFastFrustumClamping;
 
     public OcclusionCuller(SectionLattice lattice, int minSectionY, int maxSectionY) {
         this.lattice = lattice;
@@ -105,6 +132,7 @@ public class OcclusionCuller {
                             float searchDistance,
                             int numRegions,
                             boolean useOcclusionCulling,
+                            boolean allowFrustumClamping,
                             int frame)
     {
         // Pre-size so enqueue is a bare store: at most one entry per installed cell.
@@ -114,16 +142,21 @@ public class OcclusionCuller {
         }
         this.tail = 0;
 
+        // One inherited aperture per cell. Only cells reached this frame are read, so the buffer needs no clearing.
+        long[] visitState = this.lattice.visitState;
+        if (visitState != null && this.apertures.length < visitState.length) {
+            this.apertures = new long[visitState.length];
+        }
+
         this.regionCullCache.begin(viewport, searchDistance, numRegions);
 
         this.isCameraInUnloadedSection = false;
-        this.useFastFrustumClamping = false;
         this.init(visitor, viewport, searchDistance, useOcclusionCulling, frame);
         if (this.isCameraInUnloadedSection) {
             useOcclusionCulling = false;
         }
 
-        this.process(visitor, viewport, searchDistance, useOcclusionCulling, frame, this.useFastFrustumClamping);
+        this.process(visitor, viewport, searchDistance, useOcclusionCulling, allowFrustumClamping, frame);
     }
 
     /**
@@ -138,8 +171,8 @@ public class OcclusionCuller {
                          Viewport viewport,
                          float searchDistance,
                          boolean useOcclusionCulling,
-                         int frame,
-                         boolean useFastFrustumClamping)
+                         boolean allowFrustumClamping,
+                         int frame)
     {
         final long[] visitState = this.lattice.visitState;
         final long[] sectionMeta = this.lattice.sectionMeta;
@@ -154,6 +187,13 @@ public class OcclusionCuller {
         final Vector3ic camera = viewport.getChunkCoord();
         final int camX = camera.x(), camY = camera.y(), camZ = camera.z();
         final long frameStamp = SectionLattice.frameStamp(frame);
+
+        // Camera position for the angle refinement, in section units scaled by ANGLE_SHIFT and measured from
+        // section centres. The refinement only compares the three axis offsets against each other, so any
+        // common scale works, and a fixed-point one keeps the comparisons in integers.
+        final int camAngleX = angleOrigin(transform.x);
+        final int camAngleY = angleOrigin(transform.y);
+        final int camAngleZ = angleOrigin(transform.z);
 
         int head = 0;
         int tail = this.tail;
@@ -182,16 +222,34 @@ public class OcclusionCuller {
                     regionOrigin(chunkY, RenderRegion.REGION_HEIGHT_SH, RenderRegion.REGION_BLOCK_HEIGHT),
                     regionOrigin(chunkZ, RenderRegion.REGION_LENGTH_SH, RenderRegion.REGION_BLOCK_LENGTH));
 
-            // Fully-inside regions need no per-section frustum test. Sections
-            // in a partial region are checked individually for both distance
-            // and frustum visibility; outside regions are not traversed.
+            // Fully-inside regions need no per-section tests and outside regions
+            // are not traversed. Sections in a partial region are checked
+            // individually, but only with the tests the region-level result
+            // left inconclusive.
             boolean visible;
 
-            if (classification == Frustum.PARTIALLY_INSIDE) {
-                visible = isWithinRenderDistance(transform, chunkX, chunkY, chunkZ, searchDistance)
-                        && isWithinFrustum(viewport, chunkX, chunkY, chunkZ);
+            if (classification == RegionCullCache.FULLY_INSIDE) {
+                visible = true;
+            } else if (classification == RegionCullCache.OUTSIDE) {
+                visible = false;
             } else {
-                visible = classification == Frustum.FULLY_INSIDE;
+                visible = isVisibleInPartialRegion(classification, viewport, transform, chunkX, chunkY, chunkZ, searchDistance);
+            }
+
+            // With clamping disabled (e.g. the orthographic shadow pass, where the camera-anchored angular
+            // cone does not model the view) the cell keeps a full aperture, so no path is ever culled by a
+            // closed aperture and children inherit FULL.
+            long aperture = FastFrustumClamping.FULL;
+
+            if (allowFrustumClamping && visible) {
+                int relX = Math.abs(chunkX - camX);
+                int relY = Math.abs(chunkY - camY);
+                int relZ = Math.abs(chunkZ - camZ);
+                int shift = FastFrustumClamping.normalizationShift(Math.max(relX, Math.max(relY, relZ)));
+
+                aperture = FastFrustumClamping.clip(apertures[idx],
+                        relX >>> shift, relY >>> shift, relZ >>> shift);
+                visible = aperture != FastFrustumClamping.EMPTY;
             }
 
             int sectionIndex = LocalSectionIndex.pack(chunkX, chunkY, chunkZ);
@@ -205,65 +263,34 @@ public class OcclusionCuller {
 
             if (useOcclusionCulling) {
                 int incoming = (int) (visitState[idx] & DIR_MASK);
-                connections = getAngleRefinedConnections(sm & PackedSectionMetadata.VISIBILITY_MASK, incoming,
-                        getOutwardDirections(chunkX, chunkY, chunkZ, camX, camY, camZ),
-                        transform, chunkX, chunkY, chunkZ);
+                connections = VisibilityEncoding.getConnections(
+                        sm & angleRefinementMask(camAngleX, camAngleY, camAngleZ, chunkX, chunkY, chunkZ), incoming);
             } else {
                 connections = GraphDirectionSet.ALL;
-                // We can only traverse outwards from the centre of the search.
-                connections &= getOutwardDirections(chunkX, chunkY, chunkZ, camX, camY, camZ);
             }
 
-            if (useFastFrustumClamping) {
-                long parentAperture = apertures[idx];
-                int relativeX = Math.abs(chunkX - camX);
-                int relativeY = Math.abs(chunkY - camY);
-                int relativeZ = Math.abs(chunkZ - camZ);
-                if ((connections & (1 << GraphDirection.DOWN)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, parentAperture, idx - 1, xyz - yStep, 1 << GraphDirection.UP, frameStamp, relativeX, relativeY + 1, relativeZ, tail);
-                if ((connections & (1 << GraphDirection.UP)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, parentAperture, idx + 1, xyz + yStep, 1 << GraphDirection.DOWN, frameStamp, relativeX, relativeY + 1, relativeZ, tail);
-                if ((connections & (1 << GraphDirection.NORTH)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, parentAperture, idx - strideZ, xyz - 1, 1 << GraphDirection.SOUTH, frameStamp, relativeX, relativeY, relativeZ + 1, tail);
-                if ((connections & (1 << GraphDirection.SOUTH)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, parentAperture, idx + strideZ, xyz + 1, 1 << GraphDirection.NORTH, frameStamp, relativeX, relativeY, relativeZ + 1, tail);
-                if ((connections & (1 << GraphDirection.WEST)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, parentAperture, idx - strideX, xyz - xStep, 1 << GraphDirection.EAST, frameStamp, relativeX + 1, relativeY, relativeZ, tail);
-                if ((connections & (1 << GraphDirection.EAST)) != 0) tail = this.visitFfcNode(visitState, apertures, queue, parentAperture, idx + strideX, xyz + xStep, 1 << GraphDirection.WEST, frameStamp, relativeX + 1, relativeY, relativeZ, tail);
-            } else {
-                // Unrolled variant of visitNeighbors, with delta, step, incoming values inlined into each branch.
-                // The unrolling measurably improves performance here.
-                if ((connections & (1 << GraphDirection.DOWN)) != 0) {
-                    final int n = idx - 1;
-                    long ns = visitState[n];
-                    if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz - yStep) << 32) | (n & 0xFFFFFFFFL); }
-                    visitState[n] = ns | (1 << GraphDirection.UP);
-                }
-                if ((connections & (1 << GraphDirection.UP)) != 0) {
-                    final int n = idx + 1;
-                    long ns = visitState[n];
-                    if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz + yStep) << 32) | (n & 0xFFFFFFFFL); }
-                    visitState[n] = ns | (1 << GraphDirection.DOWN);
-                }
-                if ((connections & (1 << GraphDirection.NORTH)) != 0) {
-                    final int n = idx - strideZ;
-                    long ns = visitState[n];
-                    if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz - 1) << 32) | (n & 0xFFFFFFFFL); }
-                    visitState[n] = ns | (1 << GraphDirection.SOUTH);
-                }
-                if ((connections & (1 << GraphDirection.SOUTH)) != 0) {
-                    final int n = idx + strideZ;
-                    long ns = visitState[n];
-                    if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz + 1) << 32) | (n & 0xFFFFFFFFL); }
-                    visitState[n] = ns | (1 << GraphDirection.NORTH);
-                }
-                if ((connections & (1 << GraphDirection.WEST)) != 0) {
-                    final int n = idx - strideX;
-                    long ns = visitState[n];
-                    if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz - xStep) << 32) | (n & 0xFFFFFFFFL); }
-                    visitState[n] = ns | (1 << GraphDirection.EAST);
-                }
-                if ((connections & (1 << GraphDirection.EAST)) != 0) {
-                    final int n = idx + strideX;
-                    long ns = visitState[n];
-                    if (ns < frameStamp) { ns = frameStamp; queue[tail++] = ((long) (xyz + xStep) << 32) | (n & 0xFFFFFFFFL); }
-                    visitState[n] = ns | (1 << GraphDirection.WEST);
-                }
+            // We can only traverse outwards from the centre of the search.
+            connections &= getOutwardDirections(chunkX, chunkY, chunkZ, camX, camY, camZ);
+
+            // Unrolled variant of the visit gate, with delta, step and incoming values inlined into each
+            // branch. The unrolling measurably improves performance here.
+            if ((connections & DOWN_BIT) != 0) {
+                tail = visit(visitState, apertures, queue, aperture, idx - 1, xyz - yStep, UP_BIT, frameStamp, tail);
+            }
+            if ((connections & UP_BIT) != 0) {
+                tail = visit(visitState, apertures, queue, aperture, idx + 1, xyz + yStep, DOWN_BIT, frameStamp, tail);
+            }
+            if ((connections & NORTH_BIT) != 0) {
+                tail = visit(visitState, apertures, queue, aperture, idx - strideZ, xyz - 1, SOUTH_BIT, frameStamp, tail);
+            }
+            if ((connections & SOUTH_BIT) != 0) {
+                tail = visit(visitState, apertures, queue, aperture, idx + strideZ, xyz + 1, NORTH_BIT, frameStamp, tail);
+            }
+            if ((connections & WEST_BIT) != 0) {
+                tail = visit(visitState, apertures, queue, aperture, idx - strideX, xyz - xStep, EAST_BIT, frameStamp, tail);
+            }
+            if ((connections & EAST_BIT) != 0) {
+                tail = visit(visitState, apertures, queue, aperture, idx + strideX, xyz + xStep, WEST_BIT, frameStamp, tail);
             }
         }
 
@@ -277,45 +304,37 @@ public class OcclusionCuller {
             int dir = Integer.numberOfTrailingZeros(outgoing);
             outgoing &= outgoing - 1;
 
-            this.visitNode(visitState, queue, idx + delta[dir], xyz + XYZ_STEP[dir], INCOMING[dir], frameStamp);
+            this.tail = visit(visitState, this.apertures, queue, FastFrustumClamping.FULL,
+                    idx + delta[dir], xyz + XYZ_STEP[dir], INCOMING[dir], frameStamp, this.tail);
         }
     }
 
     /*
-     * Ordered-compare visit gate. A slot is enqueued only on its first visit
-     * this frame, while incoming directions are OR-ed even on later visits so
-     * the cell sees the union of all reachable entry paths. SENTINEL cells,
-     * including the border ring, never compare below frameStamp and therefore
-     * need no separate occupancy check.
+     * Enqueues a new section if it has not yet been visited this frame. Successive visits record the additional
+     * incoming directions and widen the tracked aperture.
      */
-    private void visitNode(long[] visitState, long[] queue, int idx, int xyz, int incoming, long frameStamp) {
+    private static int visit(long[] visitState, long[] apertures, long[] queue, long aperture, int idx, int xyz, int incoming, long frameStamp, int tail) {
         long state = visitState[idx];
 
         if (state < frameStamp) {
-            visitState[idx] = frameStamp | incoming;
-            queue[this.tail++] = ((long) xyz << 32) | (idx & 0xFFFFFFFFL);
+            state = frameStamp;
+            queue[tail++] = ((long) xyz << 32) | (idx & 0xFFFFFFFFL);
         } else {
-            visitState[idx] = state | incoming;
+            aperture = FastFrustumClamping.hull(apertures[idx], aperture);
         }
+
+        visitState[idx] = state | incoming;
+        apertures[idx] = aperture;
+
+        return tail;
     }
 
-    private int visitFfcNode(long[] visitState, long[] apertures, long[] queue, long parentAperture, int idx, int xyz, int incoming, long frameStamp,
-                             int relativeX, int relativeY, int relativeZ, int tail) {
-        long aperture = FastFrustumClamping.clip(parentAperture, relativeX, relativeY, relativeZ);
-        if (aperture == FastFrustumClamping.EMPTY) {
-            return tail;
-        }
-
-        long state = visitState[idx];
-        if (state < frameStamp) {
-            apertures[idx] = aperture;
-            visitState[idx] = frameStamp | incoming;
-            queue[tail++] = ((long) xyz << 32) | (idx & 0xFFFFFFFFL);
-        } else if (state != SectionLattice.SENTINEL) {
-            apertures[idx] = FastFrustumClamping.hull(apertures[idx], aperture);
-            visitState[idx] = state | incoming;
-        }
-        return tail;
+    private static boolean isVisibleInPartialRegion(int classification, Viewport viewport, CameraTransform transform,
+                                                    int chunkX, int chunkY, int chunkZ, float searchDistance) {
+        return (classification == RegionCullCache.PARTIAL_DISTANCE_IN
+                        || isWithinRenderDistance(transform, chunkX, chunkY, chunkZ, searchDistance))
+                && (classification == RegionCullCache.PARTIAL_FRUSTUM_IN
+                        || isWithinFrustum(viewport, chunkX, chunkY, chunkZ));
     }
 
     // Allow movement only away from the camera on each axis. A coordinate
@@ -335,24 +354,31 @@ public class OcclusionCuller {
         return planes;
     }
 
-    static int getAngleRefinedConnections(long visibilityData, int incoming, int outward, CameraTransform camera, int chunkX, int chunkY, int chunkZ) {
-        return VisibilityEncoding.getConnections(visibilityData & getAngleRefinementMask(camera, chunkX, chunkY, chunkZ), incoming) & outward;
+    // Camera coordinate in the fixed-point section space the angle refinement compares in.
+    private static int angleOrigin(double blockCoordinate) {
+        return (int) Math.round(blockCoordinate * (1 << ANGLE_SHIFT) / 16.0) - (1 << (ANGLE_SHIFT - 1));
     }
 
-    static long getAngleRefinementMask(CameraTransform camera, int chunkX, int chunkY, int chunkZ) {
-        double centreX = chunkX * 16.0 + 8.0;
-        double centreY = chunkY * 16.0 + 8.0;
-        double centreZ = chunkZ * 16.0 + 8.0;
-        double dx = Math.abs(camera.x - centreX);
-        double dy = Math.abs(camera.y - centreY);
-        double dz = Math.abs(camera.z - centreZ);
-        long mask = VisibilityEncoding.EVERYTHING;
+    /**
+     * Drop the straight-through connection on any axis that is not the dominant one from the camera to this
+     * section. Seeing in one face and out of the opposite face means looking nearly along that axis, which the
+     * camera cannot be doing when it is further off along another.
+     *
+     * <p>The camera coordinates come from {@link #angleOrigin}; only their differences matter, so the whole
+     * test stays in integers.
+     */
+    private static long angleRefinementMask(int camAngleX, int camAngleY, int camAngleZ, int chunkX, int chunkY, int chunkZ) {
+        int dx = Math.abs((chunkX << ANGLE_SHIFT) - camAngleX);
+        int dy = Math.abs((chunkY << ANGLE_SHIFT) - camAngleY);
+        int dz = Math.abs((chunkZ << ANGLE_SHIFT) - camAngleZ);
 
-        if (dy > dx || dz > dx) mask &= ~X_OPPOSITE_FACE_PAIRS;
-        if (dx > dy || dz > dy) mask &= ~Y_OPPOSITE_FACE_PAIRS;
-        if (dx > dz || dy > dz) mask &= ~Z_OPPOSITE_FACE_PAIRS;
+        // One bit per axis, set when some other axis reaches further, taken straight from the sign of the
+        // difference so the whole selector is branchless.
+        int sel = ((dx - Math.max(dy, dz)) >>> 31)
+                | (((dy - Math.max(dx, dz)) >>> 31) << 1)
+                | (((dz - Math.max(dx, dy)) >>> 31) << 2);
 
-        return mask;
+        return ANGLE_REFINEMENT_MASKS[sel];
     }
 
     // Convert a section coordinate to the origin of its containing render
@@ -447,13 +473,7 @@ public class OcclusionCuller {
         long frameStamp = SectionLattice.frameStamp(frame);
         visitState[idx] = frameStamp;
 
-        this.useFastFrustumClamping = useOcclusionCulling;
-        if (this.useFastFrustumClamping) {
-            if (this.apertures.length < visitState.length) {
-                this.apertures = new long[visitState.length];
-            }
-            this.apertures[idx] = FastFrustumClamping.FULL;
-        }
+        this.apertures[idx] = FastFrustumClamping.FULL;
 
         // Visit the origin immediately; it is processed inline rather than
         // enqueued so the BFS starts with its neighbours.
@@ -471,17 +491,7 @@ public class OcclusionCuller {
         }
 
         int xyz = this.lattice.packXyz(origin.x(), origin.y(), origin.z());
-        if (this.useFastFrustumClamping) {
-            while (outgoing != 0) {
-                int dir = Integer.numberOfTrailingZeros(outgoing);
-                outgoing &= outgoing - 1;
-                this.tail = this.visitFfcNode(visitState, this.apertures, queue, FastFrustumClamping.FULL,
-                        idx + delta[dir], xyz + XYZ_STEP[dir], INCOMING[dir], frameStamp,
-                        Math.abs(GraphDirection.x(dir)), Math.abs(GraphDirection.y(dir)), Math.abs(GraphDirection.z(dir)), this.tail);
-            }
-        } else {
-            this.visitNeighbors(visitState, queue, delta, idx, xyz, outgoing, frameStamp);
-        }
+        this.visitNeighbors(visitState, queue, delta, idx, xyz, outgoing, frameStamp);
     }
 
     /**
@@ -552,7 +562,7 @@ public class OcclusionCuller {
     private void tryVisitNode(long[] visitState, long[] queue, int x, int y, int z, int direction, long frameStamp, Viewport viewport) {
         int idx = this.lattice.indexOf(x, y, z);
 
-        // Out of the window or empty: visitNode would reject SENTINEL anyway,
+        // Out of the window or empty: the visit gate would reject SENTINEL anyway,
         // but avoid the frustum test for cells that cannot be searched.
         if (idx < 0 || visitState[idx] == SectionLattice.SENTINEL) {
             return;
@@ -562,7 +572,8 @@ public class OcclusionCuller {
             return;
         }
 
-        this.visitNode(visitState, queue, idx, this.lattice.packXyz(x, y, z), direction, frameStamp);
+        this.tail = visit(visitState, this.apertures, queue, FastFrustumClamping.FULL,
+                idx, this.lattice.packXyz(x, y, z), direction, frameStamp, this.tail);
     }
 
     /**

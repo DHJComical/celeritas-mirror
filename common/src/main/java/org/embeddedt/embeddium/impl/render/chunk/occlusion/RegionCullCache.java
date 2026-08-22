@@ -20,22 +20,30 @@ import static org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion.*;
  *
  * <p>The classification contract is:
  * <ul>
- *   <li>{@link Frustum#OUTSIDE}: every section is guaranteed to fail the
+ *   <li>{@link #OUTSIDE}: every section is guaranteed to fail the
  *       combined render-distance/frustum visibility test;</li>
- *   <li>{@link Frustum#FULLY_INSIDE}: every section is guaranteed to pass both
- *       tests; and</li>
- *   <li>{@link Frustum#PARTIALLY_INSIDE}: the region bounds are inconclusive,
- *       so the caller must test each section exactly.</li>
+ *   <li>{@link #FULLY_INSIDE}: every section is guaranteed to pass both
+ *       tests;</li>
+ *   <li>{@link #PARTIAL_DISTANCE_IN}: every section passes the distance test,
+ *       but the caller must test each section against the frustum;</li>
+ *   <li>{@link #PARTIAL_FRUSTUM_IN}: every section passes the frustum test,
+ *       but the caller must test each section's distance; and</li>
+ *   <li>{@link #PARTIAL}: both tests are inconclusive at region level, so the
+ *       caller must run both per section.</li>
  * </ul>
- * The bounds include padding and floating-point slack, so a conclusive result
- * must never incorrectly reject or accept a section.
  *
  * <p>The cache is mutable and intended for one search at a time. Call
  * {@link #begin(Viewport, float, int)} before {@link #classify}; it resets the
  * classification array so no result leaks between searches.
  */
 final class RegionCullCache {
-    // Sentinel stored in unclassified slots; distinct from every Frustum result.
+    static final int FULLY_INSIDE = Frustum.FULLY_INSIDE;
+    static final int PARTIAL = Frustum.PARTIALLY_INSIDE;
+    static final int PARTIAL_DISTANCE_IN = 2;
+    static final int PARTIAL_FRUSTUM_IN = 3;
+    static final int OUTSIDE = 4;
+
+    // Sentinel stored in unclassified slots; distinct from every classification result.
     private static final byte UNCOMPUTED = -1;
 
     // Per-section frustum padding is 9.125 - 8 = 1.125 blocks. Add a
@@ -83,7 +91,7 @@ final class RegionCullCache {
      * @param regionOriginX block X coordinate of the region's minimum corner
      * @param regionOriginY block Y coordinate of the region's minimum corner
      * @param regionOriginZ block Z coordinate of the region's minimum corner
-     * @return one of the {@link Frustum} classification constants
+     * @return one of this cache's classification constants
      * @implNote The origin must correspond to {@code regionId}; only the first
      *           classification for an id is computed in a search.
      */
@@ -144,11 +152,11 @@ final class RegionCullCache {
         boolean distanceOut = ((nearX * nearX) + (nearZ * nearZ)) >= maxDistanceSq || nearY >= maxDistance;
 
         if (distanceOut) {
-            return Frustum.OUTSIDE;
+            return OUTSIDE;
         }
 
-        // Only claim FULLY_INSIDE when the farthest possible point is still
-        // strictly inside the distance bounds.
+        // Only claim a conclusive pass when the farthest possible point is
+        // still strictly inside the distance bounds.
         boolean distanceIn = ((farX * farX) + (farZ * farZ)) < maxDistanceSq && farY < maxDistance;
 
         int result = this.viewport.intersectCameraRelativeBox(
@@ -159,13 +167,15 @@ final class RegionCullCache {
                 (by - t.fracY) + FRUSTUM_PAD,
                 (bz - t.fracZ) + FRUSTUM_PAD);
 
-        if (result == Frustum.FULLY_INSIDE) {
-            // A fully-inside frustum result is conclusive only when distance
-            // is also conclusive for every member section.
-            return distanceIn ? Frustum.FULLY_INSIDE : Frustum.PARTIALLY_INSIDE;
-        } else {
-            return result;
+        if (result == Frustum.OUTSIDE) {
+            return OUTSIDE;
         }
+
+        if (result == Frustum.FULLY_INSIDE) {
+            return distanceIn ? FULLY_INSIDE : PARTIAL_FRUSTUM_IN;
+        }
+
+        return distanceIn ? PARTIAL_DISTANCE_IN : PARTIAL;
     }
 
     // Largest absolute value in a signed interval.

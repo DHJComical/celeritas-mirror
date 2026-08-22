@@ -194,7 +194,7 @@ public class MultiDrawBench {
 
             this.lattice.ensureWindowCovers(viewport.getChunkCoord(), this.syntheticWorld.getSearchDistance());
             this.lattice.findVisible(collector, viewport, this.syntheticWorld.getSearchDistance(),
-                    regionIds, true, frame);
+                    regionIds, true, true, frame);
 
             return collector.createRenderLists();
         }

@@ -92,7 +92,7 @@ public class OcclusionCullerBench {
 
         public void search(OcclusionCuller.Visitor visitor, Viewport viewport) {
             this.lattice.ensureWindowCovers(viewport.getChunkCoord(), this.searchDistance);
-            this.lattice.findVisible(visitor, viewport, this.searchDistance, this.numRegions, true, this.nextFrame());
+            this.lattice.findVisible(visitor, viewport, this.searchDistance, this.numRegions, true, true, this.nextFrame());
         }
 
         /** One frame through the real {@code VisibleChunkCollector}. */

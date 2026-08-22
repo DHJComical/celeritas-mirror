@@ -148,10 +148,12 @@ public final class SectionLattice {
     int installedCount;
 
     // Two reusable destination buffers for VisibilitySnapshot, alternated every search. Copying into a
-    // recycled buffer avoids allocating a full visitState clone per frame. Two are needed rather than one
+    // recycled buffer avoids allocating a fresh snapshot per frame. Two are needed rather than one
     // so a search never overwrites the buffer backing the previously returned snapshot, which a reader on
     // another thread may still hold: search k writes buffer[k % 2] while buffer[(k-1) % 2] stays readable.
-    private final long[][] snapshotBuffers = new long[2][];
+    // The buffers hold only the decoded per-cell frame stamps, not full visitState words: the snapshot
+    // answers nothing but frame queries, and copying ints halves the memory traffic of the per-search copy.
+    private final int[][] snapshotBuffers = new int[2][];
     private int snapshotParity;
 
     public SectionLattice(int minSectionY, int maxSectionY) {
@@ -259,25 +261,26 @@ public final class SectionLattice {
      * <p>{@link SectionLattice#findVisible} runs asynchronously and mutates the
      * live lattice while another thread queries section visibility. Rather than
      * read the live arrays across that boundary, a search returns a snapshot: a
-     * copy of {@code visitState} plus the window geometry that indexes it. The
-     * snapshot's array is not the live lattice, so a running search's mutations
-     * cannot race a query against it.
+     * copy of each cell's decoded frame stamp plus the window geometry that
+     * indexes it. The snapshot's array is not the live lattice, so a running
+     * search's mutations cannot race a query against it.
      *
-     * <p>To avoid a per-frame allocation, {@code visitState} is a buffer
+     * <p>To avoid a per-frame allocation, {@code visibleFrames} is a buffer
      * recycled from {@code snapshotBuffers} rather than a fresh clone. The
      * lattice alternates between two buffers so the buffer a new search
      * overwrites is never the one backing the currently published snapshot; see
      * {@link SectionLattice#snapshot()}.
      *
-     * @param visitState the search's per-cell visit state; a recycled buffer
-     *                   that stays valid until the search two generations later
-     *                   overwrites it
+     * @param visibleFrames the frame in which each cell was last reached by a
+     *                      search, already shifted down from the visitState
+     *                      encoding; a recycled buffer that stays valid until
+     *                      the search two generations later overwrites it
      */
-    public record VisibilitySnapshot(long[] visitState, int baseX, int baseY, int baseZ,
+    public record VisibilitySnapshot(int[] visibleFrames, int baseX, int baseY, int baseZ,
                                      int dimX, int dimY, int dimZ) {
         /** A snapshot with no window, reporting every section as not visible. */
         public static final VisibilitySnapshot EMPTY =
-                new VisibilitySnapshot(new long[0], 0, 0, 0, 0, 0, 0);
+                new VisibilitySnapshot(new int[0], 0, 0, 0, 0, 0, 0);
 
         /**
          * Tests whether the section at a world position was marked visible in or
@@ -300,10 +303,10 @@ public final class SectionLattice {
 
             int idx = (lx * this.dimZ + lz) * this.dimY + ly;
 
-            // The frame in which the slot was last marked visible by the search. Narrowing (int) after the logical
-            // shift recovers the 32-bit frame; an unvisited or empty cell holds INITIAL/SENTINEL, which decode to a
-            // value below any real frame and are therefore treated as never-visible.
-            return (int) (this.visitState[idx] >>> FRAME_SHIFT) >= minVisibleFrame;
+            // The frame in which the slot was last marked visible by the search. The snapshot copy already
+            // decoded the stamp; an unvisited or empty cell held INITIAL/SENTINEL, which decode to a value
+            // below any real frame and are therefore treated as never-visible.
+            return this.visibleFrames[idx] >= minVisibleFrame;
         }
     }
 
@@ -315,14 +318,21 @@ public final class SectionLattice {
         int parity = this.snapshotParity;
         this.snapshotParity ^= 1;
 
-        long[] dst = this.snapshotBuffers[parity];
+        long[] src = this.visitState;
+        int[] dst = this.snapshotBuffers[parity];
 
-        if (dst == null || dst.length != this.visitState.length) {
-            dst = new long[this.visitState.length];
+        if (dst == null || dst.length != src.length) {
+            dst = new int[src.length];
             this.snapshotBuffers[parity] = dst;
         }
 
-        System.arraycopy(this.visitState, 0, dst, 0, dst.length);
+        // Decode each cell's frame stamp while copying. Narrowing (int) after the logical shift recovers
+        // the 32-bit frame, and INITIAL/SENTINEL both truncate to -1, below every real frame. The loop
+        // auto-vectorizes on JDK 21 C2 and, being store-bound, stays cheaper than a full long[] copy even
+        // on JVMs that compile it scalar.
+        for (int i = 0; i < src.length; i++) {
+            dst[i] = (int) (src[i] >>> FRAME_SHIFT);
+        }
 
         return new VisibilitySnapshot(dst, this.baseX, this.baseY, this.baseZ,
                 this.dimX, this.dimY, this.dimZ);
@@ -412,8 +422,9 @@ public final class SectionLattice {
                                           float searchDistance,
                                           int numRegions,
                                           boolean useOcclusionCulling,
+                                          boolean allowFrustumClamping,
                                           int frame) {
-        this.culler.findVisible(visitor, viewport, searchDistance, numRegions, useOcclusionCulling, frame);
+        this.culler.findVisible(visitor, viewport, searchDistance, numRegions, useOcclusionCulling, allowFrustumClamping, frame);
 
         return this.snapshot();
     }
