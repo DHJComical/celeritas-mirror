@@ -3,21 +3,24 @@ package org.embeddedt.embeddium.impl.render.chunk.lists;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.Setter;
-import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
+import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.SectionLattice;
 import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3fc;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Owns the render lists of one pass (terrain, or the shadow pass) and the search that produces them. The lattice
+ * and search thread are shared between passes through {@link SectionGraph}.
+ */
 public class RenderListManager {
     @Getter
     @NotNull
@@ -26,14 +29,15 @@ public class RenderListManager {
     @NotNull
     private ChunkRebuildLists rebuildLists;
 
+    private final SectionGraph graph;
     private final SectionLattice lattice;
-    // False for orthographic passes (e.g. the Iris shadow pass), where the camera-anchored angular clamp
-    // in the occlusion search would wrongly cull geometry outside the player's view cone.
-    private final boolean allowFrustumClamping;
+    // Whether this manager produces the shadow pass's lists. The shadow search is orthographic and receiver-driven;
+    // the terrain search is the camera-rooted one with the angular frustum clamp.
+    private final boolean shadow;
+    // Whether this pass's searches run on the shared search thread rather than inline.
+    private final boolean async;
 
-    // Non-null for the duration of an in-progress async graph search. Acts as a flag:
-    // structural mutations to the lattice (attach/detach/rewire) are forbidden while set,
-    // and visibilityData updates are deferred to updateTasks rather than applied immediately.
+    // Non-null for the duration of an in-progress graph search (already completed when the search ran inline).
     private CompletableFuture<VisibleChunkCollector> currentOcclusionFuture;
 
     @Getter
@@ -52,12 +56,6 @@ public class RenderListManager {
     // in finishPreviousGraphUpdate() after join() establishes happens-before, then published to visibilitySnapshot.
     @Nullable
     private SectionLattice.VisibilitySnapshot pendingVisibilitySnapshot;
-
-    // Tasks deferred by submitUpdateTask() while an async search is running. Drained on the
-    // render thread in finishPreviousGraphUpdate() after join() establishes happens-before.
-    private final ArrayDeque<Runnable> updateTasks = new ArrayDeque<>();
-
-    private final ExecutorService asyncGraphExecutor;
 
     @Nullable
     private final SectionTicker sectionTicker;
@@ -84,38 +82,65 @@ public class RenderListManager {
 
     private RenderListDebugStatistics debugStatistics;
 
-    public RenderListManager(int minSectionY, int maxSectionY, boolean useAsyncGraphSearch, boolean allowFrustumClamping, @Nullable SectionTicker sectionTicker) {
+    /**
+     * @param graph  the lattice and search thread shared with the other pass's manager
+     * @param shadow whether this manager serves the shadow pass
+     * @param mode   which passes search asynchronously: {@code EVERYTHING} for both, {@code ONLY_SHADOW} for the
+     *               shadow pass alone, {@code NONE} for neither
+     */
+    public RenderListManager(SectionGraph graph, boolean shadow, AsyncOcclusionMode mode, @Nullable SectionTicker sectionTicker) {
+        this.graph = graph;
+        this.lattice = graph.getLattice();
+        this.shadow = shadow;
+        this.async = mode == AsyncOcclusionMode.EVERYTHING || (shadow && mode == AsyncOcclusionMode.ONLY_SHADOW);
         this.sectionTicker = sectionTicker;
-        this.allowFrustumClamping = allowFrustumClamping;
-
-        if (useAsyncGraphSearch) {
-            this.asyncGraphExecutor = Executors.newSingleThreadExecutor(runnable -> {
-                Thread thread = new Thread(runnable);
-                thread.setName("Celeritas chunk graph search thread");
-                thread.setDaemon(true);
-                return thread;
-            });
-        } else {
-            this.asyncGraphExecutor = null;
-        }
-        this.lattice = new SectionLattice(minSectionY, maxSectionY);
         this.renderLists = SortedRenderLists.empty();
         this.rebuildLists = ChunkRebuildLists.EMPTY;
     }
 
+    /**
+     * Start the terrain search from the camera section. Only valid on the terrain manager.
+     */
     public void startGraphUpdate(Viewport viewport, int frame, int regionIdsLength, float searchDistance, boolean useOcclusionCulling, int targetQueueSize) {
+        if (this.shadow) {
+            throw new IllegalStateException("startGraphUpdate is for the terrain pass; use startShadowGraphUpdate");
+        }
+
+        this.lattice.ensureWindowCovers(viewport.getChunkCoord(), searchDistance);
+
+        this.submitSearch(frame, regionIdsLength, targetQueueSize, visitor ->
+                this.lattice.findVisible(visitor, viewport, searchDistance, regionIdsLength, useOcclusionCulling, true, frame));
+    }
+
+    /**
+     * Start the shadow search. Only valid on the shadow manager, and only after the terrain manager has submitted
+     * its search for this frame.
+     *
+     * @param lightVector unit vector toward the shadow light, or {@code null} to run the frustum-only scan instead
+     */
+    public void startShadowGraphUpdate(Viewport shadowViewport, int frame, int regionIdsLength, float searchDistance, @Nullable Vector3fc lightVector, int targetQueueSize) {
+        if (!this.shadow) {
+            throw new IllegalStateException("startShadowGraphUpdate is for the shadow pass; use startGraphUpdate");
+        }
+
+        this.lattice.ensureWindowCovers(shadowViewport.getChunkCoord(), searchDistance);
+
+        this.submitSearch(frame, regionIdsLength, targetQueueSize, visitor ->
+                this.lattice.findShadowVisible(visitor, shadowViewport, searchDistance, regionIdsLength, lightVector, frame));
+    }
+
+    private void submitSearch(int frame, int regionIdsLength, int targetQueueSize,
+                              Function<VisibleChunkCollector, SectionLattice.VisibilitySnapshot> search) {
         if (this.currentOcclusionFuture != null) {
             throw new IllegalStateException("Occlusion work in progress while trying to submit next task");
         }
 
         var visitor = new VisibleChunkCollector(this.lattice, frame, regionIdsLength, targetQueueSize);
 
-        this.lattice.ensureWindowCovers(viewport.getChunkCoord(), searchDistance);
-
         Supplier<VisibleChunkCollector> occlusionTask = () -> {
-            this.pendingVisibilitySnapshot = this.lattice.findVisible(visitor, viewport, searchDistance, regionIdsLength, useOcclusionCulling, this.allowFrustumClamping, frame);
+            this.pendingVisibilitySnapshot = search.apply(visitor);
 
-            // WARNING: when asyncGraphExecutor != null, this runs on the async thread.
+            // WARNING: when async, this runs on the search thread.
             // SectionTicker.onRenderListUpdated() must be safe to call off the render thread.
             if (this.sectionTicker != null) {
                 this.sectionTicker.onRenderListUpdated(visitor.getSortedRenderLists());
@@ -125,11 +150,9 @@ public class RenderListManager {
         };
 
         this.pendingLastUpdatedFrame = frame;
+        this.currentOcclusionFuture = this.graph.submit(occlusionTask, this.async);
 
-        if (this.asyncGraphExecutor != null) {
-            this.currentOcclusionFuture = CompletableFuture.supplyAsync(occlusionTask, this.asyncGraphExecutor);
-        } else {
-            this.currentOcclusionFuture = CompletableFuture.completedFuture(occlusionTask.get());
+        if (!this.async) {
             this.finishPreviousGraphUpdate();
         }
 
@@ -152,74 +175,22 @@ public class RenderListManager {
             this.lastUpdatedFrame = this.pendingLastUpdatedFrame;
 
             this.debugStatistics = null;
+
+            this.graph.onSearchJoined();
         }
 
-        // Run tasks deferred during the async search. The join() above establishes happens-before,
-        // so the async thread's writes to the lattice arrays are visible here.
-        Runnable task;
-
-        while ((task = updateTasks.poll()) != null) {
-            task.run();
-        }
+        // Run tasks deferred while searches were in flight. The join() above establishes happens-before,
+        // so the search thread's writes to the lattice arrays are visible here. A no-op while the other
+        // pass's search is still running.
+        this.graph.runDeferredTasks();
     }
 
     public void destroy() {
         if (currentOcclusionFuture != null) {
             currentOcclusionFuture.join();
             currentOcclusionFuture = null;
+            this.graph.onSearchJoined();
         }
-
-        if (asyncGraphExecutor != null) {
-            asyncGraphExecutor.shutdown();
-
-            try {
-                if (!asyncGraphExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
-                    throw new InterruptedException();
-                }
-            } catch (InterruptedException e) {
-                throw new IllegalStateException("Async graph executor has somehow not shut down");
-            }
-        }
-    }
-
-    // Structural mutations to the lattice (adding/removing nodes, rewiring neighbor links)
-    // are unsafe while the async search holds a reference to it via SectionLattice.
-    private void assertOcclusionNotRunning() {
-        if (this.currentOcclusionFuture != null) {
-            throw new IllegalStateException("Attempted to update occlusion graph during occlusion!");
-        }
-    }
-
-    public void attachRenderSection(RenderSection section) {
-        this.assertOcclusionNotRunning();
-
-        this.lattice.attach(section);
-        this.needsUpdate = true;
-    }
-
-    public void detachRenderSection(RenderSection section) {
-        this.assertOcclusionNotRunning();
-
-        this.lattice.detach(section);
-        this.needsUpdate = true;
-    }
-
-    // Runs the task immediately if no async search is active, otherwise defers it to
-    // finishPreviousGraphUpdate() to prevent concurrent writes to the lattice arrays.
-    private void submitUpdateTask(Runnable runnable) {
-        if (this.currentOcclusionFuture == null) {
-            runnable.run();
-        } else {
-            this.updateTasks.add(runnable);
-        }
-    }
-
-    public void updateSectionMetadata(int x, int y, int z, long packedMetadata) {
-        this.submitUpdateTask(() -> {
-            if (this.lattice.updateSectionMetadata(x, y, z, packedMetadata)) {
-                this.needsUpdate = true;
-            }
-        });
     }
 
     public boolean isSectionVisible(int x, int y, int z) {

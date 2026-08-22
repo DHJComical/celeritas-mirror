@@ -62,6 +62,10 @@ public final class Viewport {
         return this.frustum.intersectAab(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
+    public Frustum getFrustum() {
+        return this.frustum;
+    }
+
     public CameraTransform getTransform() {
         return this.transform;
     }

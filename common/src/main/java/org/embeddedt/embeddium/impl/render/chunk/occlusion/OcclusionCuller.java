@@ -47,7 +47,7 @@ public class OcclusionCuller {
     private final int minSectionY, maxSectionY;
 
     // When stepping from a cell in dir, the neighbour is entered from the opposite face.
-    private static final int[] INCOMING = new int[GraphDirection.COUNT];
+    static final int[] INCOMING = new int[GraphDirection.COUNT];
     private static final long X_OPPOSITE_FACE_PAIRS = (1L << VisibilityEncoding.bit(GraphDirection.WEST, GraphDirection.EAST))
             | (1L << VisibilityEncoding.bit(GraphDirection.EAST, GraphDirection.WEST));
     private static final long Y_OPPOSITE_FACE_PAIRS = (1L << VisibilityEncoding.bit(GraphDirection.DOWN, GraphDirection.UP))
@@ -60,7 +60,7 @@ public class OcclusionCuller {
      * minus the straight-through face pairs for axes that the selector index marks as non-dominant camera
      * directions. Precomputing this reduces the amount of conditional logic needed in the hot path.
      */
-    private static final long[] ANGLE_REFINEMENT_MASKS = new long[8];
+    static final long[] ANGLE_REFINEMENT_MASKS = new long[8];
 
     // Fixed-point sub-section resolution for the angle refinement's axis comparisons.
     private static final int ANGLE_SHIFT = 8;
@@ -101,7 +101,15 @@ public class OcclusionCuller {
     private int tail;
     private long[] apertures = new long[0];
 
+    // The per-cell visit-state array the current search stamps: the lattice's main array, or its shadow array when
+    // this culler runs the shadow pass's frustum-only fallback. Set for the duration of findVisible().
+    private long[] visitState;
 
+    // When non-null, receives the queue entry ((packedLocalXYZ << 32) | latticeIndex) of every cell reported
+    // visible, in traversal order; the count is published to SectionLattice.visibleCount at the end of the search.
+    // Used as the root set of the shadow search.
+    private long[] visibleCells;
+    private int visibleCount;
 
 
     private final RegionCullCache regionCullCache = new RegionCullCache();
@@ -125,15 +133,20 @@ public class OcclusionCuller {
      * lattice with {@link SectionLattice#ensureWindowCovers} and must not
      * mutate its structure or metadata until this method returns.
      *
+     * @param visitState the lattice's per-cell visit-state array this search stamps
      * @param useOcclusionCulling whether section visibility metadata should
      *                             restrict graph expansion
+     * @param recordVisible whether to record the visible cells into the lattice's
+     *                      {@code visibleCells} buffer for a subsequent shadow search
      */
     public void findVisible(Visitor visitor,
                             Viewport viewport,
+                            long[] visitState,
                             float searchDistance,
                             int numRegions,
                             boolean useOcclusionCulling,
                             boolean allowFrustumClamping,
+                            boolean recordVisible,
                             int frame)
     {
         // Pre-size so enqueue is a bare store: at most one entry per installed cell.
@@ -143,11 +156,19 @@ public class OcclusionCuller {
         }
         this.tail = 0;
 
+        this.visitState = visitState;
+
         // One inherited aperture per cell. Only cells reached this frame are read, so the buffer needs no clearing.
-        long[] visitState = this.lattice.visitState;
         if (visitState != null && this.apertures.length < visitState.length) {
             this.apertures = new long[visitState.length];
         }
+
+        if (recordVisible) {
+            this.visibleCells = this.lattice.ensureVisibleCellsCapacity(installed);
+        } else {
+            this.visibleCells = null;
+        }
+        this.visibleCount = 0;
 
         this.regionCullCache.begin(viewport, searchDistance, numRegions);
 
@@ -162,6 +183,11 @@ public class OcclusionCuller {
         }
 
         this.process(visitor, viewport, searchDistance, useOcclusionCulling, allowFrustumClamping, frame);
+
+        if (recordVisible) {
+            this.lattice.visibleCount = this.visibleCount;
+        }
+        this.visitState = null;
     }
 
     /**
@@ -179,12 +205,14 @@ public class OcclusionCuller {
                          boolean allowFrustumClamping,
                          int frame)
     {
-        final long[] visitState = this.lattice.visitState;
+        final long[] visitState = this.visitState;
         final long[] sectionMeta = this.lattice.sectionMeta;
         final int[] regionOfCell = this.lattice.regionOfCell;
         final int[] delta = this.lattice.delta;
         final long[] queue = this.queue;
         final long[] apertures = this.apertures;
+        final long[] visibleCells = this.visibleCells;
+        int visibleCount = this.visibleCount;
         final int baseX = this.lattice.baseX, baseY = this.lattice.baseY, baseZ = this.lattice.baseZ;
 
         final RegionCullCache cache = this.regionCullCache;
@@ -264,6 +292,10 @@ public class OcclusionCuller {
                 continue;
             }
 
+            if (visibleCells != null) {
+                visibleCells[visibleCount++] = entry;
+            }
+
             int connections;
 
             if (useOcclusionCulling) {
@@ -300,6 +332,7 @@ public class OcclusionCuller {
         }
 
         this.tail = tail;
+        this.visibleCount = visibleCount;
     }
 
     // Visit each selected neighbour using both its linear array offset and
@@ -334,8 +367,8 @@ public class OcclusionCuller {
         return tail;
     }
 
-    private static boolean isVisibleInPartialRegion(int classification, Viewport viewport, CameraTransform transform,
-                                                    int chunkX, int chunkY, int chunkZ, float searchDistance) {
+    static boolean isVisibleInPartialRegion(int classification, Viewport viewport, CameraTransform transform,
+                                            int chunkX, int chunkY, int chunkZ, float searchDistance) {
         return (classification == RegionCullCache.PARTIAL_DISTANCE_IN
                         || isWithinRenderDistance(transform, chunkX, chunkY, chunkZ, searchDistance))
                 && (classification == RegionCullCache.PARTIAL_FRUSTUM_IN
@@ -388,7 +421,7 @@ public class OcclusionCuller {
 
     // Convert a section coordinate to the origin of its containing render
     // region, in block coordinates.
-    private static int regionOrigin(int chunkCoord, int shift, int blockSize) {
+    static int regionOrigin(int chunkCoord, int shift, int blockSize) {
         return (chunkCoord >> shift) * blockSize;
     }
 
@@ -397,7 +430,7 @@ public class OcclusionCuller {
      * Horizontal distance is circular in X/Z, while vertical distance is
      * tested independently so tall searches do not use a spherical cutoff.
      */
-    private static boolean isWithinRenderDistance(CameraTransform camera, int chunkX, int chunkY, int chunkZ, float maxDistance) {
+    static boolean isWithinRenderDistance(CameraTransform camera, int chunkX, int chunkY, int chunkZ, float maxDistance) {
         // Origin point of the chunk's bounding box in view space.
         int ox = (chunkX << 4) - camera.intX;
         int oy = (chunkY << 4) - camera.intY;
@@ -416,7 +449,7 @@ public class OcclusionCuller {
     // isBoxVisible takes a section centre and half-size. The half-size is
     // 8 blocks for the section, plus model overhang and a small precision
     // epsilon (see GH#2132).
-    private static final float CHUNK_SECTION_SIZE = 8.0f /* section half-size */
+    static final float CHUNK_SECTION_SIZE = 8.0f /* section half-size */
             + 1.0f /* maximum model extent */
             + 0.125f /* epsilon */;
 
@@ -466,7 +499,7 @@ public class OcclusionCuller {
     // The loaded camera section is the root: it is visited immediately, not
     // queued, and its visible paths seed the BFS with no incoming direction.
     private void initWithinWorld(Visitor visitor, Viewport viewport, boolean useOcclusionCulling, int frame) {
-        final long[] visitState = this.lattice.visitState;
+        final long[] visitState = this.visitState;
         final long[] queue = this.queue;
         final int[] delta = this.lattice.delta;
 
@@ -486,6 +519,12 @@ public class OcclusionCuller {
         long sm = this.lattice.sectionMeta[idx];
         visitor.visit(idx, this.lattice.regionOfCell[idx], sectionIndex, PackedSectionMetadata.toCompactMeta(sm), true);
 
+        int xyz = this.lattice.packXyz(origin.x(), origin.y(), origin.z());
+
+        if (this.visibleCells != null) {
+            this.visibleCells[this.visibleCount++] = ((long) xyz << 32) | (idx & 0xFFFFFFFFL);
+        }
+
         int outgoing;
 
         if (useOcclusionCulling) {
@@ -495,7 +534,6 @@ public class OcclusionCuller {
             outgoing = GraphDirectionSet.ALL;
         }
 
-        int xyz = this.lattice.packXyz(origin.x(), origin.y(), origin.z());
         this.visitNeighbors(visitState, queue, delta, idx, xyz, outgoing, frameStamp);
     }
 
@@ -512,7 +550,7 @@ public class OcclusionCuller {
                                         int height,
                                         int direction)
     {
-        final long[] visitState = this.lattice.visitState;
+        final long[] visitState = this.visitState;
         final long[] queue = this.queue;
 
         var origin = viewport.getChunkCoord();

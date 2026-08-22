@@ -8,6 +8,7 @@ import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3fc;
 import org.joml.Vector3ic;
 
 import java.util.Arrays;
@@ -111,6 +112,9 @@ public final class SectionLattice {
 
     private final Long2ReferenceMap<RenderSection> sections = new Long2ReferenceOpenHashMap<>();
     private final OcclusionCuller culler;
+    // Non-null only when the lattice serves a shadow pass as well.
+    @Nullable
+    private final ShadowOcclusionCuller shadowCuller;
 
     private final int minSectionY, maxSectionY;
 
@@ -128,9 +132,18 @@ public final class SectionLattice {
      * - installedCount equals the number of non-null latticeSection entries.
      */
     long[] visitState;
+    // Visit state of the shadow search, kept in lockstep with visitState (same SENTINEL/INITIAL membership) so
+    // both searches can run over the same cells with independent frame stamps. Null without a shadow pass.
+    long[] shadowVisitState;
     long[] sectionMeta;
     int[] regionOfCell;
     RenderSection[] latticeSection;
+
+    // Queue entries ((packedLocalXYZ << 32) | latticeIndex) of the cells the last main search reported visible, in
+    // traversal order; the root set of the shadow search. Written by OcclusionCuller, read by
+    // ShadowOcclusionCuller on the same search thread.
+    long[] visibleCells = new long[0];
+    int visibleCount;
 
     // Y is never windowed: the complete world height plus one sentinel cell at each vertical edge.
     final int dimY;
@@ -147,21 +160,44 @@ public final class SectionLattice {
     // Number of sections currently installed in the lattice, not total attached sections.
     int installedCount;
 
-    // Two reusable destination buffers for VisibilitySnapshot, alternated every search. Copying into a
-    // recycled buffer avoids allocating a fresh snapshot per frame. Two are needed rather than one
-    // so a search never overwrites the buffer backing the previously returned snapshot, which a reader on
+    // Two reusable destination buffers per search kind (main, shadow) for VisibilitySnapshot, alternated every
+    // search. Copying into a recycled buffer avoids allocating a fresh snapshot per frame. Two are needed rather
+    // than one so a search never overwrites the buffer backing the previously returned snapshot, which a reader on
     // another thread may still hold: search k writes buffer[k % 2] while buffer[(k-1) % 2] stays readable.
     // The buffers hold only the decoded per-cell frame stamps, not full visitState words: the snapshot
     // answers nothing but frame queries, and copying ints halves the memory traffic of the per-search copy.
-    private final int[][] snapshotBuffers = new int[2][];
-    private int snapshotParity;
+    private static final class SnapshotBuffers {
+        private final int[][] buffers = new int[2][];
+        private int parity;
 
-    public SectionLattice(int minSectionY, int maxSectionY) {
+        int[] acquire(int length) {
+            int slot = this.parity;
+            this.parity ^= 1;
+
+            int[] buffer = this.buffers[slot];
+            if (buffer == null || buffer.length != length) {
+                buffer = new int[length];
+                this.buffers[slot] = buffer;
+            }
+
+            return buffer;
+        }
+    }
+
+    private final SnapshotBuffers mainSnapshotBuffers = new SnapshotBuffers();
+    private final SnapshotBuffers shadowSnapshotBuffers = new SnapshotBuffers();
+
+    /**
+     * @param hasShadowPass whether the lattice must also support {@link #findShadowVisible}, which costs a second
+     *                      visit-state array
+     */
+    public SectionLattice(int minSectionY, int maxSectionY, boolean hasShadowPass) {
         this.minSectionY = minSectionY;
         this.maxSectionY = maxSectionY;
         this.baseY = minSectionY - 1;
         this.dimY = (maxSectionY - minSectionY) + 2;
         this.culler = new OcclusionCuller(this, minSectionY, maxSectionY);
+        this.shadowCuller = hasShadowPass ? new ShadowOcclusionCuller(this) : null;
 
         if (this.dimY > MAX_DIM) {
             throw new IllegalStateException("World height " + this.dimY + " exceeds occlusion lattice limit " + MAX_DIM);
@@ -266,7 +302,7 @@ public final class SectionLattice {
      * search's mutations cannot race a query against it.
      *
      * <p>To avoid a per-frame allocation, {@code visibleFrames} is a buffer
-     * recycled from {@code snapshotBuffers} rather than a fresh clone. The
+     * recycled from the appropriate pair of snapshot buffers rather than a fresh clone. The
      * lattice alternates between two buffers so the buffer a new search
      * overwrites is never the one backing the currently published snapshot; see
      * {@link SectionLattice#snapshot()}.
@@ -310,21 +346,12 @@ public final class SectionLattice {
         }
     }
 
-    private VisibilitySnapshot snapshot() {
-        if (this.visitState == null) {
+    private VisibilitySnapshot snapshot(long[] src, SnapshotBuffers buffers) {
+        if (src == null) {
             return VisibilitySnapshot.EMPTY;
         }
 
-        int parity = this.snapshotParity;
-        this.snapshotParity ^= 1;
-
-        long[] src = this.visitState;
-        int[] dst = this.snapshotBuffers[parity];
-
-        if (dst == null || dst.length != src.length) {
-            dst = new int[src.length];
-            this.snapshotBuffers[parity] = dst;
-        }
+        int[] dst = buffers.acquire(src.length);
 
         // Decode each cell's frame stamp while copying. Narrowing (int) after the logical shift recovers
         // the 32-bit frame, and INITIAL/SENTINEL both truncate to -1, below every real frame. The loop
@@ -424,9 +451,55 @@ public final class SectionLattice {
                                           boolean useOcclusionCulling,
                                           boolean allowFrustumClamping,
                                           int frame) {
-        this.culler.findVisible(visitor, viewport, searchDistance, numRegions, useOcclusionCulling, allowFrustumClamping, frame);
+        // Only a lattice that serves a shadow pass has a consumer for the root set, and recording it costs a store
+        // per visible cell. Without shaders there is nobody to read it, so the search does not build it.
+        this.culler.findVisible(visitor, viewport, this.visitState, searchDistance, numRegions,
+                useOcclusionCulling, allowFrustumClamping, this.shadowCuller != null, frame);
 
-        return this.snapshot();
+        return this.snapshot(this.visitState, this.mainSnapshotBuffers);
+    }
+
+    /**
+     * Run the shadow-pass search over the currently installed lattice cells, using the shadow visit-state array
+     * so the main search's state is left intact.
+     *
+     * <p>With a light vector, this is the receiver-driven search of {@link ShadowOcclusionCuller}, rooted at the
+     * cells the most recent {@link #findVisible} reported visible. Without one, it is the same frustum-and-distance
+     * scan the main culler performs with occlusion disabled, rooted at the viewport's camera section.
+     *
+     * @param lightVector unit vector toward the shadow light, or {@code null} for the frustum-only fallback
+     * @return a snapshot of the shadow visit state this search produced
+     */
+    public VisibilitySnapshot findShadowVisible(OcclusionCuller.Visitor visitor,
+                                                Viewport viewport,
+                                                float searchDistance,
+                                                int numRegions,
+                                                @Nullable Vector3fc lightVector,
+                                                int frame) {
+        if (this.shadowCuller == null) {
+            throw new IllegalStateException("Lattice was not created with shadow pass support");
+        }
+
+        if (lightVector != null) {
+            this.shadowCuller.findVisible(visitor, viewport, searchDistance, numRegions,
+                    lightVector.x(), lightVector.y(), lightVector.z(), frame);
+        } else {
+            this.culler.findVisible(visitor, viewport, this.shadowVisitState, searchDistance, numRegions,
+                    false, false, false, frame);
+        }
+
+        return this.snapshot(this.shadowVisitState, this.shadowSnapshotBuffers);
+    }
+
+    /**
+     * Returns the visible-cell buffer, grown so it can hold one entry per installed cell. The culler fills it during
+     * a main search.
+     */
+    long[] ensureVisibleCellsCapacity(int requiredCapacity) {
+        if (this.visibleCells.length < requiredCapacity) {
+            this.visibleCells = new long[Math.max(requiredCapacity, this.visibleCells.length * 2)];
+        }
+        return this.visibleCells;
     }
 
     private void allocate(int newDimXZ) {
@@ -450,6 +523,7 @@ public final class SectionLattice {
 
         int slots = (int) slotsLong;
         this.visitState = new long[slots];
+        this.shadowVisitState = this.shadowCuller != null ? new long[slots] : null;
         this.sectionMeta = new long[slots];
         this.regionOfCell = new int[slots];
         this.latticeSection = new RenderSection[slots];
@@ -465,6 +539,9 @@ public final class SectionLattice {
      */
     private void rebase(int newBaseX, int newBaseZ) {
         Arrays.fill(this.visitState, SENTINEL);
+        if (this.shadowVisitState != null) {
+            Arrays.fill(this.shadowVisitState, SENTINEL);
+        }
         Arrays.fill(this.sectionMeta, VisibilityEncoding.NULL);
         Arrays.fill(this.regionOfCell, -1);
         Arrays.fill(this.latticeSection, null);
@@ -541,6 +618,9 @@ public final class SectionLattice {
         int len = (xHi - xLo + 1) * this.strideX;
 
         System.arraycopy(this.visitState, srcOff, this.visitState, destOff, len);
+        if (this.shadowVisitState != null) {
+            System.arraycopy(this.shadowVisitState, srcOff, this.shadowVisitState, destOff, len);
+        }
         System.arraycopy(this.sectionMeta, srcOff, this.sectionMeta, destOff, len);
         System.arraycopy(this.regionOfCell, srcOff, this.regionOfCell, destOff, len);
         System.arraycopy(this.latticeSection, srcOff, this.latticeSection, destOff, len);
@@ -571,6 +651,9 @@ public final class SectionLattice {
             int srcOff = (lx + dX) * this.strideX + (zLo + dZ) * this.strideZ;
 
             System.arraycopy(this.visitState, srcOff, this.visitState, destOff, runLen);
+            if (this.shadowVisitState != null) {
+                System.arraycopy(this.shadowVisitState, srcOff, this.shadowVisitState, destOff, runLen);
+            }
             System.arraycopy(this.sectionMeta, srcOff, this.sectionMeta, destOff, runLen);
             System.arraycopy(this.regionOfCell, srcOff, this.regionOfCell, destOff, runLen);
             System.arraycopy(this.latticeSection, srcOff, this.latticeSection, destOff, runLen);
@@ -653,6 +736,9 @@ public final class SectionLattice {
                     int idx = col + ly;
 
                     this.visitState[idx] = SENTINEL;
+                    if (this.shadowVisitState != null) {
+                        this.shadowVisitState[idx] = SENTINEL;
+                    }
                     this.sectionMeta[idx] = VisibilityEncoding.NULL;
                     this.regionOfCell[idx] = -1;
                     this.latticeSection[idx] = null;
@@ -715,6 +801,9 @@ public final class SectionLattice {
         }
 
         this.visitState[idx] = INITIAL;
+        if (this.shadowVisitState != null) {
+            this.shadowVisitState[idx] = INITIAL;
+        }
         this.latticeSection[idx] = section;
         this.regionOfCell[idx] = section.getRegion().getId();
         this.sectionMeta[idx] = section.getPackedMetadata();
@@ -731,6 +820,9 @@ public final class SectionLattice {
         }
 
         this.visitState[idx] = SENTINEL;
+        if (this.shadowVisitState != null) {
+            this.shadowVisitState[idx] = SENTINEL;
+        }
         this.sectionMeta[idx] = VisibilityEncoding.NULL;
         this.regionOfCell[idx] = -1;
         this.latticeSection[idx] = null;

@@ -44,7 +44,7 @@ final class RegionCullCache {
     static final int OUTSIDE = 4;
 
     // Sentinel stored in unclassified slots; distinct from every classification result.
-    private static final byte UNCOMPUTED = -1;
+    static final byte UNCOMPUTED = -1;
 
     // Per-section frustum padding is 9.125 - 8 = 1.125 blocks. Add a
     // further 1/32 block to absorb camera-relative floating-point rounding.
@@ -105,6 +105,20 @@ final class RegionCullCache {
         }
 
         return result;
+    }
+
+    /**
+     * Return a region's classification without computing it.
+     *
+     * <p>For callers that can obtain the region origin only at a cost: the origin is needed just to compute a
+     * classification, and there are far fewer regions than sections, so testing for a hit first keeps that cost off
+     * the common path.
+     *
+     * @return one of this cache's classification constants, or {@link #UNCOMPUTED} if this search has not
+     *         classified the region yet
+     */
+    int cached(int regionId) {
+        return this.classification[regionId];
     }
 
     // Grow the classification array; contents are reset by the next begin().

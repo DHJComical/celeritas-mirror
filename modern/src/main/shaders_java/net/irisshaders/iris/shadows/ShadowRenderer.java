@@ -338,7 +338,7 @@ public class ShadowRenderer {
 				boxCuller = new BoxCuller(distance);
 			}
 
-			cullingInfo = (isReversed ? "Reversed" : "Advanced") + " Frustum Culling enabled";
+			cullingInfo = isReversed ? "Reversed Frustum Culling enabled" : "Advanced Occlusion Culling enabled";
 
 			Vector4f shadowLightPosition = new CelestialUniforms(sunPathRotation).getShadowLightPositionInWorldSpace();
 
@@ -347,16 +347,34 @@ public class ShadowRenderer {
 
 			shadowLightVectorFromOrigin.normalize();
 
+			// Legacy perspective shadow packs (fov != null) have no fixed depth range, so the planes are omitted.
+			float depthNear = Float.NaN, depthFar = Float.NaN;
+			if (this.fov == null) {
+				depthNear = this.resolvedNearPlane();
+				depthFar = this.resolvedFarPlane();
+			}
+
+			Matrix4f playerProjection = (shouldRenderDH && DHCompat.hasRenderingEnabled()) ? DHCompat.getProjection() : CapturedRenderingState.INSTANCE.getGbufferProjection();
+
 			if (isReversed) {
 				return holder.setInfo(new ReversedAdvancedShadowCullingFrustum(CapturedRenderingState.INSTANCE.getGbufferModelView(),
-					(shouldRenderDH && DHCompat.hasRenderingEnabled()) ? DHCompat.getProjection() : CapturedRenderingState.INSTANCE.getGbufferProjection(), shadowLightVectorFromOrigin, boxCuller, new BoxCuller(halfPlaneLength * renderMultiplier)), distanceInfo, cullingInfo);
+					playerProjection, shadowLightVectorFromOrigin, boxCuller, new BoxCuller(halfPlaneLength * renderMultiplier),
+					depthNear, depthFar, intervalSize), distanceInfo, cullingInfo);
 			} else {
 				return holder.setInfo(new AdvancedShadowCullingFrustum(CapturedRenderingState.INSTANCE.getGbufferModelView(),
-					(shouldRenderDH && DHCompat.hasRenderingEnabled()) ? DHCompat.getProjection() : CapturedRenderingState.INSTANCE.getGbufferProjection(), shadowLightVectorFromOrigin, boxCuller), distanceInfo, cullingInfo);
+					playerProjection, shadowLightVectorFromOrigin, boxCuller, depthNear, depthFar, intervalSize), distanceInfo, cullingInfo);
 			}
 		}
 
 		return holder;
+	}
+
+	private float resolvedNearPlane() {
+		return this.nearPlane < 0 ? -DHCompat.getRenderDistance() : this.nearPlane;
+	}
+
+	private float resolvedFarPlane() {
+		return this.farPlane < 0 ? DHCompat.getRenderDistance() : this.farPlane;
 	}
 
 	public void setupShadowViewport() {
@@ -414,12 +432,6 @@ public class ShadowRenderer {
 
 		levelRenderer.getLevel().getProfiler().pop();
 
-		// Disable chunk occlusion culling - it's a bit complex to get this properly working with shadow rendering
-		// as-is, however in the future it will be good to work on restoring it for a nice performance boost.
-		//
-		// TODO: Get chunk occlusion working with shadows
-		boolean wasChunkCullingEnabled = client.smartCull;
-		client.smartCull = false;
 
 		// Always schedule a terrain update
 		// TODO: Only schedule a terrain update if the sun / moon is moving, or the shadow map camera moved.
@@ -437,8 +449,6 @@ public class ShadowRenderer {
 		// chunks during traversal, and break rendering in concerning ways.
 		//worldRenderer.setFrameId(worldRenderer.getFrameId() + 1);
 
-		client.smartCull = wasChunkCullingEnabled;
-
 		levelRenderer.getLevel().getProfiler().popPush("terrain");
 
 
@@ -448,7 +458,7 @@ public class ShadowRenderer {
 			// If FOV is not null, the pack wants a perspective based projection matrix. (This is to support legacy packs)
 			shadowProjection = ShadowMatrices.createPerspectiveMatrix(this.fov);
 		} else {
-			shadowProjection = ShadowMatrices.createOrthoMatrix(halfPlaneLength, nearPlane < 0 ? -DHCompat.getRenderDistance() : nearPlane, farPlane < 0 ? DHCompat.getRenderDistance() : farPlane);
+			shadowProjection = ShadowMatrices.createOrthoMatrix(halfPlaneLength, this.resolvedNearPlane(), this.resolvedFarPlane());
 		}
 
 		IrisRenderSystem.setShadowProjection(shadowProjection);

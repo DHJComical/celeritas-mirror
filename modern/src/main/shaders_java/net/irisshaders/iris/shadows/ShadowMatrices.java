@@ -8,6 +8,13 @@ public class ShadowMatrices {
 	private static final float NEAR = 0.05f;
 	private static final float FAR = 256.0f;
 
+	/**
+	 * Distance the shadow camera is pulled back from the player camera along the shadow light vector, applied by
+	 * {@link #createBaselineModelViewMatrix}. Culling that reasons in light space has to place its depth planes at
+	 * the same offset.
+	 */
+	public static final float SHADOW_CAMERA_OFFSET = 100.0f;
+
 	// NB: These matrices are in column-major order, not row-major order like what you'd expect!
 
 	public static Matrix4f createOrthoMatrix(float halfPlaneLength, float nearPlane, float farPlane) {
@@ -50,7 +57,7 @@ public class ShadowMatrices {
 		target.last().normal().identity();
 		target.last().pose().identity();
 
-		target.last().pose().translate(0.0f, 0.0f, -100.0f);
+		target.last().pose().translate(0.0f, 0.0f, -SHADOW_CAMERA_OFFSET);
 		target.mulPose(Axis.XP.rotationDegrees(90.0F));
 		target.mulPose(Axis.ZP.rotationDegrees(skyAngle * -360.0f));
 		target.mulPose(Axis.XP.rotationDegrees(sunPathRotation));

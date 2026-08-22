@@ -226,7 +226,17 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         );
 
         try {
-            this.renderer.setupTerrain(viewport, cameraState, this.frame++, spectator, FlawlessFrames.isActive());
+            //? if >=1.18 {
+            if (this.renderer.isInShadowPass()) {
+                // The shadow pass hands us its own frustum; the terrain search it runs first needs the player's,
+                // which vanilla prepared before the shadow pass began.
+                var playerViewport = ((ViewportProvider) this.embeddium$getCurrentFrustum()).sodium$createViewport();
+                this.renderer.setupShadowTerrain(playerViewport, viewport, cameraState, this.frame++, spectator);
+            } else
+            //?}
+            {
+                this.renderer.setupTerrain(viewport, cameraState, this.frame++, spectator, FlawlessFrames.isActive());
+            }
         } finally {
             RenderDevice.exitManagedCode();
         }

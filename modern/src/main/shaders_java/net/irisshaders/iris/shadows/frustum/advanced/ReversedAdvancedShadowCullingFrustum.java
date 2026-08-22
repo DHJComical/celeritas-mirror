@@ -8,9 +8,17 @@ import org.joml.Vector3f;
 public class ReversedAdvancedShadowCullingFrustum extends AdvancedShadowCullingFrustum {
 	private final BoxCuller distanceCuller;
 
-	public ReversedAdvancedShadowCullingFrustum(Matrix4f playerView, Matrix4f playerProjection, Vector3f shadowLightVectorFromOrigin, BoxCuller voxelCuller, BoxCuller distanceCuller) {
-		super(playerView, playerProjection, shadowLightVectorFromOrigin, voxelCuller);
+	public ReversedAdvancedShadowCullingFrustum(Matrix4f playerView, Matrix4f playerProjection, Vector3f shadowLightVectorFromOrigin, BoxCuller voxelCuller, BoxCuller distanceCuller,
+												float nearPlane, float farPlane, float intervalSize) {
+		super(playerView, playerProjection, shadowLightVectorFromOrigin, voxelCuller, nearPlane, farPlane, intervalSize);
 		this.distanceCuller = distanceCuller;
+	}
+
+	// Everything inside the voxel distance must be rendered regardless of what the player sees, which differs from
+	// the contract of normal occlusion culling
+	@Override
+	public boolean supportsOcclusionSearch() {
+		return false;
 	}
 
 	@Override

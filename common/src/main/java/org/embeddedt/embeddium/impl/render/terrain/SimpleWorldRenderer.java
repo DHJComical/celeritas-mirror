@@ -99,6 +99,13 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
     public abstract int getEffectiveRenderDistance();
 
     /**
+     * Whether terrain is currently being set up or rendered for a shadow pass.
+     */
+    public boolean isInShadowPass() {
+        return this.renderSectionManager.isInShadowPass();
+    }
+
+    /**
      * Called prior to any chunk rendering in order to update necessary state.
      */
     public void setupTerrain(Viewport viewport,
@@ -108,22 +115,65 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
                              boolean updateChunksImmediately) {
         NativeBuffer.reclaim(false);
 
-        if (this.renderSectionManager != null) {
+        // When a shadow pass preceded this one, it joined the previous frame's searches, applied the chunk events
+        // and submitted this frame's searches; joining again here would stall on those, and chunk events must
+        // be applied while no search is in flight.
+        if (!this.renderSectionManager.didShadowPassRunThisFrame()) {
             this.renderSectionManager.finishAllGraphUpdates();
-        }
-
-        boolean isShadowPass = this.renderSectionManager.isInShadowPass();
-
-        if (!isShadowPass) {
             this.processChunkEvents();
-
-            this.renderSectionManager.runAsyncTasks();
-
-            if (getEffectiveRenderDistance() != this.renderDistance) {
-                this.reload();
-            }
         }
 
+        this.renderSectionManager.runAsyncTasks();
+
+        if (getEffectiveRenderDistance() != this.renderDistance) {
+            this.reload();
+        }
+
+        this.prepareFrame(viewport, cameraState, updateChunksImmediately);
+
+        this.renderSectionManager.uploadChunks();
+
+        if (this.renderSectionManager.needsUpdate()) {
+            this.renderSectionManager.update(viewport, frame, spectator);
+        }
+
+        if (updateChunksImmediately) {
+            this.renderSectionManager.uploadChunks();
+        }
+
+        this.renderSectionManager.tickVisibleRenders();
+    }
+
+    /**
+     * Shadow-pass counterpart of {@link #setupTerrain}. The shadow pass precedes the terrain pass in a frame, so
+     * this joins the previous frame's searches, applies chunk load/unload events while the lattice is quiescent,
+     * and runs the terrain search for {@code playerViewport} when one is due; the terrain pass then reuses it.
+     * Render-distance reloads and uploads are left to the terrain pass.
+     *
+     * @param playerViewport the player camera's viewport for this frame
+     * @param shadowViewport the shadow frustum, centred on the player camera
+     */
+    public void setupShadowTerrain(Viewport playerViewport,
+                                   Viewport shadowViewport,
+                                   CameraState cameraState,
+                                   @Deprecated(forRemoval = true) int frame,
+                                   boolean spectator) {
+        NativeBuffer.reclaim(false);
+
+        this.renderSectionManager.finishAllGraphUpdates();
+
+        this.processChunkEvents();
+
+        this.prepareFrame(shadowViewport, cameraState, false);
+
+        // The shadow search runs every frame; the terrain search only when its graph is dirty.
+        this.renderSectionManager.updateForShadowPass(playerViewport, shadowViewport, frame, spectator);
+
+        this.renderSectionManager.tickVisibleRenders();
+    }
+
+    // Steps common to both passes: camera-change detection, async task draining and chunk build scheduling.
+    private void prepareFrame(Viewport viewport, CameraState cameraState, boolean updateChunksImmediately) {
         boolean dirty = this.lastCameraState == null || !this.lastCameraState.equals(cameraState);
 
         if (dirty) {
@@ -136,21 +186,6 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
         this.renderSectionManager.runAsyncTasks();
 
         this.renderSectionManager.updateChunks(updateChunksImmediately);
-
-        // We don't need to upload chunks during shadow, they will be uploaded on the next real frame.
-        if (!isShadowPass) {
-            this.renderSectionManager.uploadChunks();
-        }
-
-        if (this.renderSectionManager.needsUpdate() || isShadowPass) {
-            this.renderSectionManager.update(viewport, frame, spectator);
-        }
-
-        if (updateChunksImmediately) {
-            this.renderSectionManager.uploadChunks();
-        }
-
-        this.renderSectionManager.tickVisibleRenders();
     }
 
     private void processChunkEvents() {
