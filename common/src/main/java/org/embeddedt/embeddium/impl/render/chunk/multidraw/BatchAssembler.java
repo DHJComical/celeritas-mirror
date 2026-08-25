@@ -32,20 +32,17 @@ public final class BatchAssembler {
      *
      * @param useBlockFaceCulling whether the caller wants face culling; already false for sorted passes
      */
-    public static void fillRegion(MultiDrawBatch batch,
-                                  RenderRegion region,
+    public static MultiDrawBatch fillRegion(RenderRegion region,
                                   SectionRenderDataStorage storage,
                                   ChunkRenderList renderList,
                                   CameraTransform camera,
                                   TerrainRenderPass pass,
                                   boolean useBlockFaceCulling) {
-        batch.clear();
-
         var sections = renderList.getSectionsWithGeometry();
         int sectionCount = renderList.getSectionsWithGeometryCount();
 
         if (sectionCount == 0) {
-            return;
+            return null;
         }
 
         boolean reverse = pass.isReverseOrder();
@@ -54,14 +51,17 @@ public final class BatchAssembler {
         if (pass.isSorted()) {
             // Sorted passes keep the FULL layout: real per-facing index offsets, so no merging is possible, and no
             // culling is applied. In practice only UNASSIGNED is ever populated.
+            // We need one command per section count and facing.
+            var batch = new MultiDrawBatch(sectionCount * ModelQuadFacing.COUNT);
             fillSorted(batch, storage, sections, sectionCount, reverse, primitiveType);
-            return;
+            return batch;
         }
 
         if (!useBlockFaceCulling) {
-            // Every facing visible everywhere: one run covering the whole section.
+            // Every facing visible everywhere: one run (and command) covering the whole section.
+            var batch = new MultiDrawBatch(sectionCount);
             fillSingleRun(batch, storage, sections, sectionCount, reverse, primitiveType, 0, ModelQuadFacing.COUNT - 1);
-            return;
+            return batch;
         }
 
         // Determine whether every section in the region will use the same cull mask. If so, the relevant runs
@@ -69,23 +69,51 @@ public final class BatchAssembler {
         int uniformMask = uniformCullMask(region, camera);
 
         if (uniformMask == MASK_NOT_UNIFORM) {
+            var batch = new MultiDrawBatch(sectionCount * ModelQuadFacing.COUNT);
             fillPerSectionRuns(batch, region, storage, sections, sectionCount, reverse, primitiveType, camera);
-            return;
+            return batch;
         }
 
         long runs = packRuns(uniformMask);
         int runCount = runCount(runs);
 
         if (runCount == 0) {
-            return;
+            return null;
         }
 
+        var batch = new MultiDrawBatch(sectionCount * runCount);
         if (runCount == 1) {
             fillSingleRun(batch, storage, sections, sectionCount, reverse, primitiveType,
                     runFirst(runs, 0), runLast(runs, 0));
         } else {
             fillUniformRuns(batch, storage, sections, sectionCount, reverse, primitiveType, runs, runCount);
         }
+        return batch;
+    }
+
+    public static CachedBatch createCachedBatch(RenderRegion region,
+                                                SectionRenderDataStorage storage,
+                                                ChunkRenderList renderList,
+                                                CameraTransform camera,
+                                                TerrainRenderPass pass,
+                                                boolean useBlockFaceCulling) {
+        var batch = fillRegion(region, storage, renderList, camera, pass, useBlockFaceCulling);
+
+        long intervalX, intervalY, intervalZ;
+
+        if (useBlockFaceCulling) {
+            intervalX = cameraValidityInterval(camera.intX, region.getChunkX(), RenderRegion.REGION_WIDTH);
+            intervalY = cameraValidityInterval(camera.intY, region.getChunkY(), RenderRegion.REGION_HEIGHT);
+            intervalZ = cameraValidityInterval(camera.intZ, region.getChunkZ(), RenderRegion.REGION_LENGTH);
+        } else {
+            intervalX = intervalY = intervalZ = (Integer.MIN_VALUE & 0xFFFFFFFFL) | ((long) Integer.MAX_VALUE << 32);
+        }
+
+        return new CachedBatch(batch,
+                renderList.getSectionsWithGeometry(), renderList.getSectionsWithGeometryCount(),
+                intervalMin(intervalX), intervalMax(intervalX),
+                intervalMin(intervalY), intervalMax(intervalY),
+                intervalMin(intervalZ), intervalMax(intervalZ));
     }
 
 
@@ -166,6 +194,49 @@ public final class BatchAssembler {
      */
     private static int runLast(long runs, int run) {
         return (int) (runs >>> ((run << 3) + 4)) & 0xF;
+    }
+
+    /**
+     * Finds how far the camera can move along one axis before block face culling would alter the assembled batch.
+     * <p>
+     * The result is a half-open interval, {@code [lower, upper)}. Every camera coordinate in that interval produces
+     * the same culling mask for every section in the region.
+     */
+    public static long cameraValidityInterval(int camera, int minChunkCoord, int sizeInChunks) {
+        int maxChunkCoord = minChunkCoord + sizeInChunks - 1;
+
+        int min = Integer.MIN_VALUE;
+        int max = Integer.MAX_VALUE;
+
+        // Check the POS-face boundary (16*k - 2) and NEG-face boundary (16*k + 19).
+        for (int offset = -2; offset <= 19; offset += 21) {
+            // Find the section whose boundary is immediately at or below the camera.
+            int lastBelow = Math.floorDiv(camera - offset, 16);
+
+            // Only that boundary and the next one can be closest to the camera.
+            for (int i = 0; i <= 1; i++) {
+                // Clamp to the region when the camera is completely before or after it.
+                int k = Math.max(minChunkCoord, Math.min(lastBelow + i, maxChunkCoord));
+                int threshold = (k << 4) + offset;
+
+                // Keep the closest boundary on each side of the camera.
+                if (threshold <= camera) {
+                    min = Math.max(min, threshold);
+                } else {
+                    max = Math.min(max, threshold);
+                }
+            }
+        }
+
+        return (min & 0xFFFFFFFFL) | ((long) max << 32);
+    }
+
+    private static int intervalMin(long interval) {
+        return (int) interval;
+    }
+
+    private static int intervalMax(long interval) {
+        return (int) (interval >>> 32);
     }
 
     private static final int MODEL_UNASSIGNED = ModelQuadFacing.UNASSIGNED.ordinal();

@@ -20,6 +20,8 @@ public final class MultiDrawBatch {
     public int maxElementCount;
 
     public MultiDrawBatch(int capacity) {
+        // Always allow room for one extra command, to allow branchless tricks
+        capacity++;
         this.pElementPointer = LWJGL.nmemAlignedAlloc(32, (long) capacity * LWJGL.getPointerSize());
         if (this.pElementPointer == LWJGLServiceProvider.NULL) {
             throw new OutOfMemoryError("Failed to allocate element pointer array");

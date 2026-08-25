@@ -4,6 +4,7 @@ import org.embeddedt.embeddium.impl.gl.arena.GlBufferSegment;
 import org.embeddedt.embeddium.impl.gl.util.VertexRange;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
+import org.embeddedt.embeddium.impl.render.chunk.multidraw.CachedBatch;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,6 +20,15 @@ public class SectionRenderDataStorage {
     private final SectionRenderDataUnsafe.Strategy storageStrategy;
 
     private int numAllocations;
+
+    public record BatchCacheParams(boolean useBlockFaceCulling) {}
+
+    // we only need to cache two batches in practice (shadow pass for shaders disables block face culling), so we unroll
+    // what would otherwise be an LRU for simplicity
+    private BatchCacheParams firstBatchParams;
+    private CachedBatch firstCachedBatch;
+    private BatchCacheParams secondBatchParams;
+    private CachedBatch secondCachedBatch;
 
     public SectionRenderDataStorage(ChunkPrimitiveType primitiveType, boolean sorted) {
         this.storageStrategy = sorted ? SectionRenderDataUnsafe.Strategy.FULL : SectionRenderDataUnsafe.Strategy.COMPACT;
@@ -58,6 +68,8 @@ public class SectionRenderDataStorage {
         int indexOffset = indexAllocation != null ? indexAllocation.getOffset() * 4 : 0;
 
         this.storageStrategy.writeMeshesAndSliceMask(this.pMeshDataArray, localSectionIndex, vertexOffset, indexOffset, ranges, this.primitiveType);
+
+        this.invalidateCachedBatches();
     }
 
     public void removeMeshes(int localSectionIndex) {
@@ -68,6 +80,8 @@ public class SectionRenderDataStorage {
             this.storageStrategy.clearRow(this.pMeshDataArray, localSectionIndex);
 
             this.numAllocations--;
+
+            this.invalidateCachedBatches();
         }
 
         removeIndexBuffer(localSectionIndex);
@@ -77,6 +91,8 @@ public class SectionRenderDataStorage {
         if (this.indexAllocations[localSectionIndex] != null) {
             this.indexAllocations[localSectionIndex].delete();
             this.indexAllocations[localSectionIndex] = null;
+
+            this.invalidateCachedBatches();
         }
     }
 
@@ -90,12 +106,16 @@ public class SectionRenderDataStorage {
         int indexOffset = indexAllocation != null ? indexAllocation.getOffset() * 4 : 0;
 
         this.storageStrategy.writeIndexOffsets(pMeshData, indexOffset, this.primitiveType);
+
+        this.invalidateCachedBatches();
     }
 
     public void onBufferResized() {
         for (int sectionIndex = 0; sectionIndex < RenderRegion.REGION_SIZE; sectionIndex++) {
             this.updateMeshes(sectionIndex);
         }
+
+        this.invalidateCachedBatches();
     }
 
     private void updateMeshes(int sectionIndex) {
@@ -134,7 +154,48 @@ public class SectionRenderDataStorage {
         return this.storageStrategy.getSliceMask(this.pMeshDataArray, sectionIndex);
     }
 
+    public @Nullable CachedBatch getCachedMultiDrawBatch(BatchCacheParams params) {
+        if (params.equals(firstBatchParams)) {
+            return firstCachedBatch;
+        } else if (params.equals(secondBatchParams)) {
+            return secondCachedBatch;
+        } else {
+            return null;
+        }
+    }
+
+    public void storeCachedMultiDrawBatch(BatchCacheParams params, CachedBatch batch) {
+        if (params.equals(firstBatchParams) || firstBatchParams == null) {
+            if (firstCachedBatch != null) {
+                firstCachedBatch.delete();
+            }
+            firstBatchParams = params;
+            firstCachedBatch = batch;
+        } else {
+            if (secondCachedBatch != null) {
+                secondCachedBatch.delete();
+            }
+            secondBatchParams = params;
+            secondCachedBatch = batch;
+        }
+    }
+
+    private void invalidateCachedBatches() {
+        if (firstCachedBatch != null) {
+            firstCachedBatch.delete();
+            firstCachedBatch = null;
+        }
+        if (secondCachedBatch != null) {
+            secondCachedBatch.delete();
+            secondCachedBatch = null;
+        }
+        firstBatchParams = null;
+        secondBatchParams = null;
+    }
+
     public void delete() {
+        this.invalidateCachedBatches();
+
         for (var allocation : this.allocations) {
             if (allocation != null) {
                 allocation.delete();
