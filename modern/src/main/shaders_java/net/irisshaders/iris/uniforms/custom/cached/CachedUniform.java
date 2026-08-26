@@ -14,7 +14,7 @@ import org.joml.Vector4f;
 public abstract class CachedUniform implements VariableExpression {
 	private final String name;
 	private final UniformUpdateFrequency updateFrequency;
-	private boolean changed = true;
+	private int version = 1;
 
 	public CachedUniform(String name, UniformUpdateFrequency updateFrequency) {
 		this.name = name;
@@ -59,26 +59,19 @@ public abstract class CachedUniform implements VariableExpression {
 		}
 	}
 
-	public void markUnchanged() {
-		this.changed = false;
+	public int getVersion() {
+		return this.version;
 	}
 
 	public void update() {
-		doUpdate();
-		// TODO: Works around a logic error / architectural flaw - there's no way to
-		//       know when a uniform has been uploaded to all programs, so we can never
-		//       safely change this to false with the current design.
-		this.changed = true;
+		if (doUpdate()) {
+			this.version++;
+		}
 	}
 
 	protected abstract boolean doUpdate();
 
 	public abstract void push(int location);
-
-	public void pushIfChanged(int location) {
-		if (this.changed)
-			push(location);
-	}
 
 	@Override
 	public void evaluateTo(FunctionContext context, FunctionReturn functionReturn) {

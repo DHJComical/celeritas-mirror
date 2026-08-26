@@ -1,6 +1,8 @@
 package net.irisshaders.iris.uniforms.custom;
 
 import com.google.common.collect.ImmutableMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
@@ -38,7 +40,7 @@ public class CustomUniforms implements FunctionContext {
 	private final CustomUniformFixedInputUniformsHolder inputHolder;
 	private final List<CachedUniform> uniforms = new ArrayList<>();
 	private final List<CachedUniform> uniformOrder;
-	private final Map<Object, Object2IntMap<CachedUniform>> locationMap = new Object2ObjectOpenHashMap<>();
+	private final Map<Object, PassUniforms> locationMap = new Object2ObjectOpenHashMap<>();
 	private final Map<CachedUniform, List<CachedUniform>> dependsOn;
 	private final Map<CachedUniform, List<CachedUniform>> requiredBy;
 
@@ -188,18 +190,20 @@ public class CustomUniforms implements FunctionContext {
 	}
 
 	public void assignTo(LocationalUniformHolder targetHolder) {
-		Object2IntMap<CachedUniform> locations = new Object2IntOpenHashMap<>();
+		List<CachedUniform> assigned = new ArrayList<>();
+		IntList locations = new IntArrayList();
 		for (CachedUniform uniform : this.uniformOrder) {
 			try {
 				OptionalInt location = targetHolder.location(uniform.getName(), Type.convert(uniform.getType()));
 				if (location.isPresent()) {
-					locations.put(uniform, location.getAsInt());
+					assigned.add(uniform);
+					locations.add(location.getAsInt());
 				}
 			} catch (Exception e) {
 				throw new RuntimeException(uniform.getName(), e);
 			}
 		}
-		this.locationMap.put(targetHolder, locations);
+		this.locationMap.put(targetHolder, new PassUniforms(assigned.toArray(new CachedUniform[0]), locations.toIntArray()));
 	}
 
 	public void mapholderToPass(LocationalUniformHolder holder, Object pass) {
@@ -214,9 +218,9 @@ public class CustomUniforms implements FunctionContext {
 	}
 
 	public void push(Object pass) {
-		Object2IntMap<CachedUniform> uniforms = this.locationMap.get(pass);
+		PassUniforms uniforms = this.locationMap.get(pass);
 		if (uniforms != null) {
-			uniforms.forEach(CachedUniform::pushIfChanged);
+			uniforms.push();
 		}
 	}
 
@@ -252,8 +256,8 @@ public class CustomUniforms implements FunctionContext {
 
 		// Count the times a pass depends on a uniform
 		// ensures they wont ever be removed
-		for (Object2IntMap<CachedUniform> map : this.locationMap.values()) {
-			for (CachedUniform cachedUniform : map.keySet()) {
+		for (PassUniforms passUniforms : this.locationMap.values()) {
+			for (CachedUniform cachedUniform : passUniforms.uniforms) {
 				dependedByCount.mergeInt(cachedUniform, 1, Integer::sum);
 			}
 		}
@@ -294,6 +298,34 @@ public class CustomUniforms implements FunctionContext {
 		if (customUniform != null)
 			return customUniform;
 		throw new RuntimeException("Unknown variable: " + name);
+	}
+
+	private static final class PassUniforms {
+		private final CachedUniform[] uniforms;
+		private final int[] locations;
+		private final int[] lastPushedVersion;
+
+		private PassUniforms(CachedUniform[] uniforms, int[] locations) {
+			this.uniforms = uniforms;
+			this.locations = locations;
+			// Versions start at 1, so a zeroed array means every uniform is pushed on the first bind.
+			this.lastPushedVersion = new int[uniforms.length];
+		}
+
+		private void push() {
+            var uniforms = this.uniforms;
+            var lastPushedVersion = this.lastPushedVersion;
+            var locations = this.locations;
+			for (int i = 0; i < uniforms.length; i++) {
+				CachedUniform uniform = uniforms[i];
+				int version = uniform.getVersion();
+
+				if (lastPushedVersion[i] != version) {
+					lastPushedVersion[i] = version;
+					uniform.push(locations[i]);
+				}
+			}
+		}
 	}
 
 	public static class Builder {
