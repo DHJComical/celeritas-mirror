@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk.multidraw.bench;
 
-import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatch;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.LocalSectionIndex;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
@@ -14,7 +13,6 @@ import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
 import org.embeddedt.embeddium.impl.render.chunk.lists.VisibleChunkCollector;
 import org.embeddedt.embeddium.impl.render.chunk.multidraw.BatchAssembler;
-import org.embeddedt.embeddium.impl.render.chunk.multidraw.MultiDrawEmitter;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.SectionLattice;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.bench.BenchPlatform;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.bench.Cameras;
@@ -76,7 +74,6 @@ public class MultiDrawBench {
 
         public SyntheticWorld syntheticWorld;
         public SectionLattice lattice;
-        public MultiDrawBatch batch;
         public CameraTransform camera;
 
         public SortedRenderLists[] frames;
@@ -92,7 +89,7 @@ public class MultiDrawBench {
             this.syntheticWorld = new SyntheticWorld(this.world, this.renderDistance, SyntheticWorld.DEFAULT_SEED,
                     this.caveWidth, true, 0.0D, false);
 
-            this.lattice = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y);
+            this.lattice = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, false);
 
             for (RenderSection section : this.syntheticWorld.getConstructionOrder()) {
                 this.lattice.attach(section);
@@ -115,7 +112,6 @@ public class MultiDrawBench {
                 this.frames[i] = this.collect(viewports[i]);
             }
 
-            this.batch = new MultiDrawBatch(MultiDrawEmitter.MAX_COMMAND_COUNT);
         }
 
         /** {@return all sections visible in any cached frame, deduplicated} */
@@ -207,10 +203,6 @@ public class MultiDrawBench {
 
         @TearDown
         public void tearDown() {
-            if (this.batch != null) {
-                this.batch.delete();
-            }
-
             if (this.buildContext != null) {
                 this.buildContext.cleanup();
             }
@@ -237,7 +229,6 @@ public class MultiDrawBench {
 
     /** {@return total draw commands emitted for one frame of a single pass} */
     private static int emit(FrameState state, TerrainRenderPass pass) {
-        var batch = state.batch;
         var camera = state.camera;
         boolean useBlockFaceCulling = state.useBlockFaceCulling && !pass.isSorted();
 
@@ -255,9 +246,12 @@ public class MultiDrawBench {
                 continue;
             }
 
-            BatchAssembler.fillRegion(batch, region, storage, renderList, camera, pass, useBlockFaceCulling);
+            var batch = BatchAssembler.fillRegion(region, storage, renderList, camera, pass, useBlockFaceCulling);
 
-            commands += batch.size;
+            if (batch != null) {
+                commands += batch.size();
+                batch.delete();
+            }
         }
 
         return commands;

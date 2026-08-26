@@ -13,8 +13,6 @@ import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderListIterable;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.multidraw.BatchAssembler;
-import org.embeddedt.embeddium.impl.render.chunk.multidraw.DirectMultiDrawEmitter;
-import org.embeddedt.embeddium.impl.render.chunk.multidraw.MultiDrawEmitter;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -22,21 +20,14 @@ import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import java.util.Iterator;
 
 public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
-    private final MultiDrawEmitter emitter;
-
     private final Reference2ReferenceMap<ChunkPrimitiveType, SharedQuadIndexBuffer> sharedIndexBuffers;
 
     private TerrainRenderPass currentRenderPass;
     private GlVertexFormat currentVertexFormat;
 
     public DefaultChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
-        this(device, renderPassConfiguration, new DirectMultiDrawEmitter());
-    }
-
-    public DefaultChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration, MultiDrawEmitter emitter) {
         super(device, renderPassConfiguration);
 
-        this.emitter = emitter;
         this.sharedIndexBuffers = new Reference2ReferenceOpenHashMap<>();
     }
 
@@ -89,8 +80,6 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
 
             long timestamp = System.nanoTime();
 
-            var emitter = this.emitter;
-
             useBlockFaceCulling = useBlockFaceCulling && !renderPass.isSorted();
             var cacheParams = new SectionRenderDataStorage.BatchCacheParams(useBlockFaceCulling);
 
@@ -112,7 +101,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
                         occlusionCamera.intX, occlusionCamera.intY, occlusionCamera.intZ)) {
                     numRebuilds++;
                     cached = BatchAssembler.createCachedBatch(region, storage, renderList, occlusionCamera, renderPass,
-                            useBlockFaceCulling);
+                            useBlockFaceCulling, commandList);
 
                     storage.storeCachedMultiDrawBatch(cacheParams, cached);
                 }
@@ -129,7 +118,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
 
                     setModelMatrixUniforms(shader, region, camera);
                     shader.setSectionAges(timestamp, region.getSectionLoadTimes());
-                    emitter.executeBatch(commandList, tessellation, primitiveType, batch);
+                    batch.execute(commandList, tessellation, primitiveType);
                 }
             }
 
@@ -190,6 +179,5 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         super.delete(commandList);
 
         this.sharedIndexBuffers.values().forEach(buffer -> buffer.delete(commandList));
-        this.emitter.delete();
     }
 }

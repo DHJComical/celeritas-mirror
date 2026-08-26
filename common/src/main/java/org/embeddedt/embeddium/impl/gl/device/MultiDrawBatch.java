@@ -1,53 +1,33 @@
 package org.embeddedt.embeddium.impl.gl.device;
 
-import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
-import org.taumc.celeritas.lwjgl.LWJGLServiceProvider;
-import java.nio.IntBuffer;
+import org.embeddedt.embeddium.impl.gl.tessellation.GlPrimitiveType;
+import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
+import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
+import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 
 /**
- * Provides a fixed-size queue for building a draw-command list usable with
- * {@link org.lwjgl.opengl.GL33#glMultiDrawElementsBaseVertex(int, IntBuffer, int, PointerBuffer, IntBuffer)}.
+ * A fixed-size queue for building a draw-command list, usable with either direct or indirect multidraw.
+ * Concrete subclasses own the storage format the underlying GL call expects, and how to execute it.
  */
-public final class MultiDrawBatch {
-    public final long pElementPointer;
-    public final long pElementCount;
-    public final long pBaseVertex;
+public abstract class MultiDrawBatch {
+    public static final int MAX_COMMAND_COUNT = (ModelQuadFacing.COUNT * RenderRegion.REGION_SIZE) + 1;
 
     private final int capacity;
 
-    public int size;
+    protected int size;
 
-    public int maxElementCount;
+    protected int maxElementCount;
 
-    public MultiDrawBatch(int capacity) {
+    protected MultiDrawBatch(int capacity) {
         // Always allow room for one extra command, to allow branchless tricks
-        capacity++;
-        this.pElementPointer = LWJGL.nmemAlignedAlloc(32, (long) capacity * LWJGL.getPointerSize());
-        if (this.pElementPointer == LWJGLServiceProvider.NULL) {
-            throw new OutOfMemoryError("Failed to allocate element pointer array");
-        }
-        LWJGL.memSet(this.pElementPointer, 0x0, (long) capacity * LWJGL.getPointerSize());
-
-        this.pElementCount = LWJGL.nmemAlignedAlloc(32, (long) capacity * Integer.BYTES);
-        if (this.pElementCount == LWJGLServiceProvider.NULL) {
-            LWJGL.nmemAlignedFree(this.pElementPointer);
-            throw new OutOfMemoryError("Failed to allocate element count array");
-        }
-        this.pBaseVertex = LWJGL.nmemAlignedAlloc(32, (long) capacity * Integer.BYTES);
-        if (this.pBaseVertex == LWJGLServiceProvider.NULL) {
-            LWJGL.nmemAlignedFree(this.pElementPointer);
-            LWJGL.nmemAlignedFree(this.pElementCount);
-            throw new OutOfMemoryError("Failed to allocate base vertex array");
-        }
-
-        this.capacity = capacity;
+        this.capacity = capacity + 1;
     }
 
-    public int size() {
+    public final int size() {
         return this.size;
     }
 
-    public int capacity() {
+    public final int capacity() {
         return this.capacity;
     }
 
@@ -56,17 +36,36 @@ public final class MultiDrawBatch {
         this.maxElementCount = 0;
     }
 
-    public void delete() {
-        LWJGL.nmemAlignedFree(this.pElementPointer);
-        LWJGL.nmemAlignedFree(this.pElementCount);
-        LWJGL.nmemAlignedFree(this.pBaseVertex);
-    }
+    public abstract void delete();
 
-    public boolean isEmpty() {
+    public final boolean isEmpty() {
         return this.size <= 0;
     }
 
-    public int getIndexBufferSize() {
+    public final int getIndexBufferSize() {
         return this.maxElementCount;
     }
+
+    /**
+     * Appends one draw command to the batch. If {@code elementCount} is 0, the command is discarded
+     * and {@link #size()} does not advance.
+     */
+    public abstract void appendDrawCommand(int baseVertex, int elementCount, long elementPointer);
+
+    /**
+     * Adds {@code additionalElementCount} elements onto the most recently appended command, for
+     * coalescing adjacent runs. Only valid when {@code size() > 0}.
+     */
+    public abstract void mergeIntoLastCommand(int additionalElementCount);
+
+    /**
+     * Must be called once assembly of the batch is complete, before the batch is {@link #execute}d for the
+     * first time (possibly repeatedly, across frames, if cached).
+     */
+    public abstract void upload(CommandList commandList);
+
+    /**
+     * Issues the multidraw call for this batch against the currently bound {@code tessellation}.
+     */
+    public abstract void execute(CommandList commandList, GlTessellation tessellation, GlPrimitiveType primitiveType);
 }

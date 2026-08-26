@@ -1,5 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.multidraw;
 
+import org.embeddedt.embeddium.impl.gl.device.CommandList;
+import org.embeddedt.embeddium.impl.gl.device.DirectMultiDrawBatch;
 import org.embeddedt.embeddium.impl.gl.device.MultiDrawBatch;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
@@ -11,8 +13,6 @@ import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.util.BitwiseMath;
-
-import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 /**
  * Turns a region's visible section list into a {@link MultiDrawBatch}.
@@ -27,8 +27,13 @@ public final class BatchAssembler {
     private BatchAssembler() {
     }
 
+    private static MultiDrawBatch createBatch(int capacity) {
+        return new DirectMultiDrawBatch(capacity);
+    }
+
     /**
      * Assembles every draw command for one region into {@code batch}, which is cleared first.
+     * The returned batch must be uploaded before being used.
      *
      * @param useBlockFaceCulling whether the caller wants face culling; already false for sorted passes
      */
@@ -52,14 +57,14 @@ public final class BatchAssembler {
             // Sorted passes keep the FULL layout: real per-facing index offsets, so no merging is possible, and no
             // culling is applied. In practice only UNASSIGNED is ever populated.
             // We need one command per section count and facing.
-            var batch = new MultiDrawBatch(sectionCount * ModelQuadFacing.COUNT);
+            var batch = createBatch(sectionCount * ModelQuadFacing.COUNT);
             fillSorted(batch, storage, sections, sectionCount, reverse, primitiveType);
             return batch;
         }
 
         if (!useBlockFaceCulling) {
             // Every facing visible everywhere: one run (and command) covering the whole section.
-            var batch = new MultiDrawBatch(sectionCount);
+            var batch = createBatch(sectionCount);
             fillSingleRun(batch, storage, sections, sectionCount, reverse, primitiveType, 0, ModelQuadFacing.COUNT - 1);
             return batch;
         }
@@ -69,7 +74,7 @@ public final class BatchAssembler {
         int uniformMask = uniformCullMask(region, camera);
 
         if (uniformMask == MASK_NOT_UNIFORM) {
-            var batch = new MultiDrawBatch(sectionCount * ModelQuadFacing.COUNT);
+            var batch = createBatch(sectionCount * ModelQuadFacing.COUNT);
             fillPerSectionRuns(batch, region, storage, sections, sectionCount, reverse, primitiveType, camera);
             return batch;
         }
@@ -81,7 +86,7 @@ public final class BatchAssembler {
             return null;
         }
 
-        var batch = new MultiDrawBatch(sectionCount * runCount);
+        var batch = createBatch(sectionCount * runCount);
         if (runCount == 1) {
             fillSingleRun(batch, storage, sections, sectionCount, reverse, primitiveType,
                     runFirst(runs, 0), runLast(runs, 0));
@@ -96,8 +101,13 @@ public final class BatchAssembler {
                                                 ChunkRenderList renderList,
                                                 CameraTransform camera,
                                                 TerrainRenderPass pass,
-                                                boolean useBlockFaceCulling) {
+                                                boolean useBlockFaceCulling,
+                                                CommandList commandList) {
         var batch = fillRegion(region, storage, renderList, camera, pass, useBlockFaceCulling);
+
+        if (batch != null) {
+            batch.upload(commandList);
+        }
 
         long intervalX, intervalY, intervalZ;
 
@@ -328,7 +338,7 @@ public final class BatchAssembler {
             int start = SectionRenderDataUnsafe.Strategy.COMPACT.getVertexOffset(pMeshData, firstFacing);
             int end = SectionRenderDataUnsafe.Strategy.COMPACT.getRunVertexEnd(pMeshData, lastFacing, primitiveType);
 
-            write(batch, start, SectionRenderDataUnsafe.elementsForVertices(end - start, primitiveType), 0L);
+            batch.appendDrawCommand(start, SectionRenderDataUnsafe.elementsForVertices(end - start, primitiveType), 0L);
         }
     }
 
@@ -348,7 +358,7 @@ public final class BatchAssembler {
 
         for (int i = 0; i < sectionCount; i++, cursor += step) {
             long pMeshData = pBase + ((sections[cursor] & 0xFF) * stride);
-            int sectionStart = batch.size;
+            int sectionStart = batch.size();
             int previousEnd = 0;
 
             for (int run = 0; run < runCount; run++) {
@@ -394,7 +404,7 @@ public final class BatchAssembler {
                     originZ + LocalSectionIndex.unpackZ(sectionIndex));
 
             long pMeshData = pBase + (sectionIndex * stride);
-            int sectionStart = batch.size;
+            int sectionStart = batch.size();
             int previousEnd = 0;
 
             // A do-while loop is chosen because UNASSIGNED is always marked as visible by getVisibleFaces, so the mask
@@ -431,8 +441,8 @@ public final class BatchAssembler {
             long pMeshData = pBase + ((sections[cursor] & 0xFF) * stride);
 
             for (int facing = 0; facing < ModelQuadFacing.COUNT; facing++) {
-                // Unconditionally write(); it skips empty commands automatically.
-                write(batch,
+                // Unconditionally append; it skips empty commands automatically.
+                batch.appendDrawCommand(
                         SectionRenderDataUnsafe.Strategy.FULL.getVertexOffset(pMeshData, facing),
                         SectionRenderDataUnsafe.Strategy.FULL.getElementCount(pMeshData, facing, primitiveType),
                         SectionRenderDataUnsafe.Strategy.FULL.getIndexOffset(pMeshData, facing));
@@ -440,8 +450,10 @@ public final class BatchAssembler {
         }
     }
 
-    private static final int POINTER_SHIFT = Integer.numberOfTrailingZeros(LWJGL.getPointerSize());
-
+    /**
+     * Appends a run to the batch, merging it into the previous command when it picks up exactly where the
+     * previous one left off (i.e. the two runs are contiguous and thus part of the same section's geometry).
+     */
     private static int writeUnsorted(MultiDrawBatch batch, int baseVertex, int endVertex,
                                      ChunkPrimitiveType primitiveType, int sectionStart, int previousEnd) {
         int elementCount = SectionRenderDataUnsafe.elementsForVertices(endVertex - baseVertex, primitiveType);
@@ -450,39 +462,12 @@ public final class BatchAssembler {
             return previousEnd;
         }
 
-        if (batch.size > sectionStart && previousEnd == baseVertex) {
-            long countPointer = batch.pElementCount + ((long) (batch.size - 1) << 2);
-            int mergedCount = LWJGL.memGetInt(countPointer) + elementCount;
-
-            LWJGL.memPutInt(countPointer, mergedCount);
-            batch.maxElementCount = Math.max(batch.maxElementCount, mergedCount);
+        if (batch.size() > sectionStart && previousEnd == baseVertex) {
+            batch.mergeIntoLastCommand(elementCount);
         } else {
-            write(batch, baseVertex, elementCount, 0L);
+            batch.appendDrawCommand(baseVertex, elementCount, 0L);
         }
 
         return endVertex;
-    }
-
-    /**
-     * Appends a command to the batch and maintains the running maximum element count that
-     * {@link MultiDrawBatch#getIndexBufferSize()} reports (used to size the shared quad index buffer).
-     * <p>
-     * Empty commands are effectively discarded.
-     * <p>
-     * There is no bounds check, since {@link MultiDrawEmitter#MAX_COMMAND_COUNT} already covers the unmerged worst case
-     * of every facing of every section in a region, and merging only ever reduces the count.
-     */
-    private static void write(MultiDrawBatch batch, int baseVertex, int elementCount, long elementPointer) {
-        int index = batch.size;
-
-        LWJGL.memPutInt(batch.pBaseVertex + ((long) index << 2), baseVertex);
-        LWJGL.memPutInt(batch.pElementCount + ((long) index << 2), elementCount);
-        LWJGL.memPutAddress(batch.pElementPointer + ((long) index << POINTER_SHIFT), elementPointer);
-
-        // Element counts are never negative, so the sign bit of the negation is set iff the command is non-empty.
-        batch.size = index + ((-elementCount) >>> 31);
-
-        // Safe to apply unconditionally: an empty command cannot raise the maximum.
-        batch.maxElementCount = Math.max(batch.maxElementCount, elementCount);
     }
 }

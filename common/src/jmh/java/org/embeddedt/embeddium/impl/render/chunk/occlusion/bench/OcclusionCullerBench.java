@@ -67,7 +67,7 @@ public class OcclusionCullerBench {
 
             this.numRegions = BenchPlatform.regionManager().getRegionIdsLength();
 
-            this.lattice = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y);
+            this.lattice = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, false);
 
             for (RenderSection section : this.syntheticWorld.getConstructionOrder()) {
                 this.lattice.attach(section);
