@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.render.chunk.compile.executor;
 
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildContext;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
@@ -9,12 +10,12 @@ public class ChunkJobTyped<TASK extends ChunkBuilderTask<OUTPUT>, OUTPUT>
         implements ChunkJob
 {
     private final TASK task;
-    private final Consumer<ChunkJobResult<OUTPUT>> consumer;
+    private final Consumer<@Nullable ChunkJobResult<OUTPUT>> consumer;
 
     private volatile boolean cancelled;
     private volatile boolean started;
 
-    ChunkJobTyped(TASK task, Consumer<ChunkJobResult<OUTPUT>> consumer) {
+    ChunkJobTyped(TASK task, Consumer<@Nullable ChunkJobResult<OUTPUT>> consumer) {
         this.task = task;
         this.consumer = consumer;
     }
@@ -31,29 +32,24 @@ public class ChunkJobTyped<TASK extends ChunkBuilderTask<OUTPUT>, OUTPUT>
 
     @Override
     public void execute(ChunkBuildContext context) {
-        // Task was cancelled before starting
-        if (this.cancelled) {
-            return;
-        }
+        ChunkJobResult<OUTPUT> result = null;
 
-        this.started = true;
+        if (!this.cancelled) {
+            this.started = true;
 
-        ChunkJobResult<OUTPUT> result;
+            long startTime = System.nanoTime();
 
-        long startTime = System.nanoTime();
+            try {
+                var output = this.task.execute(context, this);
 
-        try {
-            var output = this.task.execute(context, this);
-
-            // Task was cancelled while executing
-            if (output == null) {
-                return;
+                // A null output means the task was cancelled while executing
+                if (output != null) {
+                    result = new ChunkJobResult.Success<>(output, System.nanoTime() - startTime);
+                }
+            } catch (Throwable throwable) {
+                result = new ChunkJobResult.Failure<>(throwable);
+                ChunkBuilder.LOGGER.error("Chunk build failed", throwable);
             }
-
-            result = new ChunkJobResult.Success<>(output, System.nanoTime() - startTime);
-        } catch (Throwable throwable) {
-            result = new ChunkJobResult.Failure<>(throwable);
-            ChunkBuilder.LOGGER.error("Chunk build failed", throwable);
         }
 
         try {

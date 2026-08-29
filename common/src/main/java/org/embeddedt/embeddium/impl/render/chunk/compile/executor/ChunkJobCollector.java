@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.compile.executor;
 
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkTaskOutput;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +21,11 @@ public class ChunkJobCollector {
         this.collector = collector;
     }
 
-    public void onJobFinished(ChunkJobResult<? extends ChunkTaskOutput> result) {
+    public void onJobFinished(@Nullable ChunkJobResult<? extends ChunkTaskOutput> result) {
         this.semaphore.release(1);
-        this.collector.accept(result);
+        if (result != null) {
+            this.collector.accept(result);
+        }
     }
 
     public void awaitCompletion(ChunkBuilder builder) {
@@ -31,7 +34,8 @@ public class ChunkJobCollector {
         }
 
         for (var job : this.submitted) {
-            if (job.isStarted() || job.isCancelled()) {
+            // Don't try to steal jobs that already started (cancelled jobs are harmless to steal)
+            if (job.isStarted()) {
                 continue;
             }
 

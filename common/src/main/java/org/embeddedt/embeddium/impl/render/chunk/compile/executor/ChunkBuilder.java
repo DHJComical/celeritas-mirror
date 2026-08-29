@@ -5,6 +5,7 @@ import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.render.chunk.compile.GlobalChunkBuildContext;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -231,7 +232,7 @@ public class ChunkBuilder {
     }
 
     public <TASK extends ChunkBuilderTask<OUTPUT>, OUTPUT> ChunkJobTyped<TASK, OUTPUT> scheduleTask(TASK task, boolean important,
-                                                                                                    Consumer<ChunkJobResult<OUTPUT>> consumer)
+                                                                                                    Consumer<@Nullable ChunkJobResult<OUTPUT>> consumer)
     {
         Objects.requireNonNull(task, "Task must be non-null");
 
