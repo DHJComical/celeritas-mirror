@@ -13,8 +13,6 @@ import java.util.Map;
  * @param hasAdditionalUpdates whether there were additional updates not queued for efficiency reasons
  */
 public record ChunkRebuildLists(Map<ChunkUpdateType, ArrayDeque<RenderSection>> byUpdateType, boolean hasAdditionalUpdates, Map<ChunkUpdateType, Integer> queueOverflowCounts) {
-    public static final ChunkRebuildLists EMPTY;
-
     public int getUpdateCount(ChunkUpdateType type) {
         return byUpdateType.get(type).size() + queueOverflowCounts.getOrDefault(type, 0);
     }
@@ -31,13 +29,13 @@ public record ChunkRebuildLists(Map<ChunkUpdateType, ArrayDeque<RenderSection>> 
         return true;
     }
 
-    static {
+    public static ChunkRebuildLists empty() {
         Map<ChunkUpdateType, ArrayDeque<RenderSection>> rebuildLists = new EnumMap<>(ChunkUpdateType.class);
 
         for (var type : ChunkUpdateType.values()) {
             rebuildLists.put(type, new ArrayDeque<>());
         }
 
-        EMPTY = new ChunkRebuildLists(rebuildLists, false, new EnumMap<>(ChunkUpdateType.class));
+        return new ChunkRebuildLists(rebuildLists, false, new EnumMap<>(ChunkUpdateType.class));
     }
 }

@@ -95,7 +95,7 @@ public class RenderListManager {
         this.async = mode == AsyncOcclusionMode.EVERYTHING || (shadow && mode == AsyncOcclusionMode.ONLY_SHADOW);
         this.sectionTicker = sectionTicker;
         this.renderLists = SortedRenderLists.empty();
-        this.rebuildLists = ChunkRebuildLists.EMPTY;
+        this.rebuildLists = ChunkRebuildLists.empty();
     }
 
     /**

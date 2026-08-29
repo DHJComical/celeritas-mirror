@@ -265,8 +265,6 @@ public abstract class RenderSectionManager {
     private void scheduleTranslucencyUpdates(int camSectionX, int camSectionY, int camSectionZ) {
         var renderListManager = this.getCurrentRenderListManager();
         var rebuildLists = renderListManager.getRebuildLists().byUpdateType();
-        var sortRebuildList = rebuildLists.get(ChunkUpdateType.SORT);
-        var importantSortRebuildList = rebuildLists.get(ChunkUpdateType.IMPORTANT_SORT);
         var allowImportant = allowImportantRebuilds();
         var translucentPass = this.renderPassConfiguration.defaultTranslucentMaterial().pass;
         if (!this.hasTranslucencySortedSections()) {
@@ -313,8 +311,8 @@ public abstract class RenderSectionManager {
 
                 if (cameraChangedSection || section.isAlignedWithSectionOnGrid(camSectionX, camSectionY, camSectionZ)) {
                     section.setPendingUpdate(update);
-                    // Inject it into the rebuild lists
-                    (update == ChunkUpdateType.IMPORTANT_SORT ? importantSortRebuildList : sortRebuildList).add(section);
+                    // Inject it into the appropriate list
+                    rebuildLists.get(update).add(section);
 
                     section.lastCameraX = cameraPosition.x;
                     section.lastCameraY = cameraPosition.y;
@@ -470,10 +468,25 @@ public abstract class RenderSectionManager {
      * Inject sections that requested a rebuild between graph updates into the appropriate rebuild lists.
      */
     private void promoteInterimRebuildList() {
-        var rebuildLists = this.getCurrentRenderListManager().getRebuildLists().byUpdateType();
-        for (var section : this.sectionsRequestingUpdate) {
-            rebuildLists.get(section.getPendingUpdate()).add(section);
+        if (this.sectionsRequestingUpdate.isEmpty()) {
+            return;
         }
+
+        var rebuildLists = this.getCurrentRenderListManager().getRebuildLists().byUpdateType();
+        boolean graphUpdatePending = this.getCurrentRenderListManager().isNeedsUpdate();
+
+        for (var section : this.sectionsRequestingUpdate) {
+            var updateType = section.getPendingUpdate();
+            if (updateType == null) {
+                // should never happen, but be defensive
+                continue;
+            }
+            if (!graphUpdatePending || updateType.isImportant()) {
+                rebuildLists.get(updateType).add(section);
+            }
+        }
+
+        this.sectionsRequestingUpdate.clear();
     }
 
     public void updateChunks(boolean updateImmediately) {
@@ -489,13 +502,7 @@ public abstract class RenderSectionManager {
             this.builder.tickSchedulingBudget();
         }
 
-        // Promotion of the interim rebuild list is not required if a graph update is requested, as the graph
-        // generates a new rebuild list anyway
-        if (!this.renderListManager.isNeedsUpdate() && !sectionsRequestingUpdate.isEmpty()) {
-            this.promoteInterimRebuildList();
-        }
-
-        this.sectionsRequestingUpdate.clear();
+        this.promoteInterimRebuildList();
 
         if (!rebuildListHasUpdates()) {
             // Nothing was dispatched, so the workers cannot have been starved for lack of budget.
@@ -849,7 +856,12 @@ public abstract class RenderSectionManager {
             }
 
             if (section.requestUpdate(pendingUpdate)) {
-                if (!this.getCurrentRenderListManager().isNeedsUpdate() && this.sectionsRequestingUpdate.size() < this.builder.getSchedulingBudget()) {
+                // Check importance using the section's new update type, as it may not be exactly what we requested
+                important = section.getPendingUpdate().isImportant();
+
+                if (important ||
+                        (!this.getCurrentRenderListManager().isNeedsUpdate() &&
+                            this.sectionsRequestingUpdate.size() < this.builder.getSchedulingBudget())) {
                     this.sectionsRequestingUpdate.add(section);
                 } else {
                     this.markGraphDirty();
