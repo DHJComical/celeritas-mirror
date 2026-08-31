@@ -5,9 +5,8 @@ pluginManagement {
         mavenLocal()
         mavenCentral()
         gradlePluginPortal()
-        exclusiveContent {
-            forRepository { maven("https://maven.neoforged.net/releases") }
-            filter {
+        maven("https://maven.neoforged.net/releases") {
+            content {
                 includeGroup("net.neoforged")
             }
         }
@@ -68,8 +67,9 @@ pluginManagement {
     plugins {
         id("org.taumc.gradle.versioning") version(extra["taugradle_version"].toString())
         id("org.taumc.gradle.publishing") version(extra["taugradle_version"].toString())
-        id("net.neoforged.moddev") version "2.0.134"
-        id("net.neoforged.moddev.legacyforge") version "2.0.134"
+        // TauMC fork of ModDevGradle, which carries the 1.16.5 support.
+        id("org.taumc.moddev") version(extra["moddevgradle_version"].toString())
+        id("org.taumc.moddev.legacyforge") version(extra["moddevgradle_version"].toString())
     }
 }
 
@@ -81,6 +81,7 @@ plugins {
 rootProject.name = "celeritas"
 
 includeBuild("plugins/celeritas-mdg-plugin")
+// Still used by the ornithe and forge1710 subprojects
 includeBuild("plugins/celeritas-unimined-plugin")
 include("common")
 
@@ -168,10 +169,8 @@ createStonecutterProject("modern", listOf(
         val target = it
         it.loaders.forEach { loader ->
             val versionConfig = vers(target.friendlyName + "-" + loader, target.semanticName)
-            val buildscriptType = if (loader == "neoforge" || (loader == "forge" && stonecutter.eval(target.semanticName, ">=1.17"))) {
+            val buildscriptType = if (loader == "neoforge" || loader == "forge") {
                 "mdg"
-            } else if (loader == "forge") {
-                "unimined"
             } else if (loader == "fabric") {
                 "loom"
             } else {

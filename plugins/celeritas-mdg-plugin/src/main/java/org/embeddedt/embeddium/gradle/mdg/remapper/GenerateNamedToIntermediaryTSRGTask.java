@@ -29,6 +29,13 @@ public abstract class GenerateNamedToIntermediaryTSRGTask extends DefaultTask {
     @Input
     public abstract Property<String> getForgeVersion();
 
+    /**
+     * Whether the development environment's intermediary namespace uses official class names, which is the case
+     * from Minecraft 1.17 onwards.
+     */
+    @Input
+    public abstract Property<Boolean> getUsesOfficialClassNames();
+
     @OutputFile
     public abstract RegularFileProperty getTSRGPath();
 
@@ -94,15 +101,23 @@ public abstract class GenerateNamedToIntermediaryTSRGTask extends DefaultTask {
             try (ZipFile zf = new ZipFile(mcpZip)) {
                 obfToSrg = IMappingFile.load(zf.getInputStream(zf.getEntry("config/joined.tsrg")));
             }
-            IMappingFile srgToObf = obfToSrg.reverse();
             IMappingFile officialToObf = IMappingFile.load(mojmapMappings);
-            IMappingFile obfToOfficial = officialToObf.reverse();
-            officialToObf.chain(obfToSrg).rename(new IRenamer() {
-                @Override
-                public String rename(IMappingFile.IClass value) {
-                    return obfToOfficial.remapClass(srgToObf.remapClass(value.getMapped()));
-                }
-            }).write(getTSRGPath().getAsFile().get().toPath(), IMappingFile.Format.TSRG, false);
+            IMappingFile officialToSrg = officialToObf.chain(obfToSrg);
+            // Access transformers are applied by NeoFormRuntime while the sources still carry
+            // intermediary member names, so the class names have to match the ones the sources use at
+            // that point: the official names from 1.17 onwards (where SRG itself uses meaningless
+            // C_1234_ class names), and the MCP names before that.
+            if (getUsesOfficialClassNames().get()) {
+                IMappingFile srgToObf = obfToSrg.reverse();
+                IMappingFile obfToOfficial = officialToObf.reverse();
+                officialToSrg = officialToSrg.rename(new IRenamer() {
+                    @Override
+                    public String rename(IMappingFile.IClass value) {
+                        return obfToOfficial.remapClass(srgToObf.remapClass(value.getMapped()));
+                    }
+                });
+            }
+            officialToSrg.write(getTSRGPath().getAsFile().get().toPath(), IMappingFile.Format.TSRG, false);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

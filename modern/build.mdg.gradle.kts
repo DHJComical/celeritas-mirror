@@ -13,14 +13,15 @@ import org.embeddedt.embeddium.gradle.stonecutter.ModDependencyCollector
 import org.gradle.kotlin.dsl.named
 
 plugins {
-    // Apply the plugin. You can find the latest version at https://projects.neoforged.net/neoforged/ModDevGradle
-    id("net.neoforged.moddev") apply false
-    id("net.neoforged.moddev.legacyforge") apply false
+    // Apply the plugin. This is the TauMC fork of ModDevGradle, see maven.taumc.org.
+    id("org.taumc.moddev") apply false
+    id("org.taumc.moddev.legacyforge") apply false
     id("embeddium-mdg-remapper")
     id("celeritas.platform-conventions")
     id("celeritas.shader-conventions") apply false
     id("embeddium-fabric-module-finder")
     id("maven-publish")
+    id("xyz.wagyourtail.jvmdowngrader") version "1.1.3" apply false
 }
 
 group = "org.embeddedt"
@@ -30,6 +31,27 @@ val modLoader = ModLoader.fromProject(project)!!
 val minecraftVersion = ModLoader.getMinecraftVersion(project)!!
 
 val defaultArchiveBaseName = "celeritas-${modLoader.friendlyName}-mc${minecraftVersion.replace("^1\\.".toRegex(), "")}"
+
+// Forge versions before 1.17 predate JarJar and run on Java 8, so their dependencies have to be
+// shaded into the jar and the whole jar has to be downgraded after building.
+val isVeryLegacyForge = modLoader == ModLoader.FORGE && stonecutter.eval(minecraftVersion, "<1.17")
+
+if (isVeryLegacyForge) {
+    apply(plugin = "xyz.wagyourtail.jvmdowngrader")
+
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.ow2.asm") {
+                useVersion("9.6")
+                because("Force ASM to a modern version that supports Java 21")
+            }
+            if (requested.group == "org.lwjgl") {
+                useVersion("3.3.3")
+                because("Force LWJGL to a modern version that supports Java 21")
+            }
+        }
+    }
+}
 
 val generatedATPath = layout.buildDirectory.file("generated/accesstransformer.cfg")
 
@@ -47,6 +69,11 @@ tasks.named<Jar>("jar") {
 
 java {
     withSourcesJar()
+    if (isVeryLegacyForge) {
+        // Celeritas targets a modern Java version everywhere and downgrades the resulting jar,
+        // rather than compiling against the Java 8 that Minecraft 1.16.5 itself runs on.
+        toolchain.languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 val neoforgePr = versionedProperty("neoforge_pr")
@@ -66,7 +93,7 @@ if (neoforgePr != null) {
 val isDecompDisabled = System.getenv("CELERITAS_DISABLE_DECOMP") == "true"
 
 val config: MDGConfig = if (modLoader == ModLoader.NEOFORGE) {
-    apply(plugin = "net.neoforged.moddev")
+    apply(plugin = "org.taumc.moddev")
     val neoForge = project.extensions.getByName("neoForge") as NeoForgeExtension
     neoForge.enable {
         version = requireNotNull(versionedProperty("neoforge")) { "NeoForge version must be specified for $minecraftVersion" }
@@ -75,16 +102,22 @@ val config: MDGConfig = if (modLoader == ModLoader.NEOFORGE) {
     neoForge.unitTest.enable()
     MDGConfig(neoForge, "jar")
 } else {
-    apply(plugin = "net.neoforged.moddev.legacyforge")
+    apply(plugin = "org.taumc.moddev.legacyforge")
     val legacyForge = project.extensions.getByName("legacyForge") as LegacyForgeExtension
     legacyForge.enable {
         forgeVersion = versionedProperty("forge")
         isDisableRecompilation = isDecompDisabled
+        if (isVeryLegacyForge) {
+            // Celeritas uses official class names on every version, which Forge itself only did
+            // starting with 1.17.
+            isUseMojangClassNames = true
+        }
     }
     val obfuscation = project.extensions.getByType<ObfuscationExtension>()
     val generateNamedToIntermediary = tasks.register<GenerateNamedToIntermediaryTSRGTask>("generateNamedToIntermediaryTSRG") {
         tsrgPath = layout.buildDirectory.file("generated/namedToIntermediaryCeleritas.tsrg")
         forgeVersion = legacyForge.version
+        usesOfficialClassNames = !isVeryLegacyForge
     }
     generateAccessTransformer.configure {
         tsrgMappings = generateNamedToIntermediary.flatMap { it -> it.tsrgPath }
@@ -184,19 +217,34 @@ dependencies {
 
     compileOnly("net.fabricmc:fabric-loader:${rootProject.property("fabricloader")}")
 
+    if (isVeryLegacyForge) {
+        // Newer Minecraft versions pull this in through mcp_config, 1.16.5 does not.
+        compileOnly("org.jetbrains:annotations:24.1.0")
+    }
+
     if (modLoader != ModLoader.NEOFORGE) {
         val mixinExtrasVersion = rootProject.property("mixinextras").toString()
         compileOnly("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
 
-        implementation("io.github.llamalad7:mixinextras-${modLoader.friendlyName}:$mixinExtrasVersion")
-        "jarJar"("io.github.llamalad7:mixinextras-${modLoader.friendlyName}:$mixinExtrasVersion")
+        if (isVeryLegacyForge) {
+            // No JarJar on this Forge version, so MixinExtras is shaded (and relocated) instead.
+            implementation("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
+            shadow("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
+        } else {
+            implementation("io.github.llamalad7:mixinextras-${modLoader.friendlyName}:$mixinExtrasVersion")
+            "jarJar"("io.github.llamalad7:mixinextras-${modLoader.friendlyName}:$mixinExtrasVersion")
+        }
     }
 
     if (stonecutter.eval(minecraftVersion, "<1.19.3")) {
         val jomlDep = "org.joml:joml:${rootProject.property("joml_version")}"
         implementation(jomlDep)
-        "jarJar"(jomlDep)
-        "additionalRuntimeClasspath"(jomlDep)
+        if (isVeryLegacyForge) {
+            shadow(jomlDep)
+        } else {
+            "jarJar"(jomlDep)
+            "additionalRuntimeClasspath"(jomlDep)
+        }
     }
 
     ModDependencyCollector.obtainDeps(project) { cfg, dep ->
@@ -224,11 +272,12 @@ tasks.named<ProcessResources>("processResources") {
 
 val shadowJar = tasks.register<ShadowJar>("shadowRemapJar") {
     archiveBaseName = defaultArchiveBaseName
-    archiveClassifier = ""
+    // On very legacy Forge the shaded jar is only an intermediate step towards the downgraded jar.
+    archiveClassifier = if (isVeryLegacyForge) "pre-downgrade" else ""
     configurations = listOf(project.configurations.shadow.get())
     from(zipTree(tasks.named<Jar>(config.productionJarTask).get().archiveFile))
     manifest.inheritFrom(tasks.named<Jar>("jar").get().manifest)
-    if (modLoader == ModLoader.FORGE && stonecutter.eval(minecraftVersion, "<1.17")) {
+    if (isVeryLegacyForge) {
         relocate("com.llamalad7.mixinextras", "org.embeddedt.embeddium.impl.shadow.mixinextras")
         relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml")
     }
@@ -237,8 +286,25 @@ val shadowJar = tasks.register<ShadowJar>("shadowRemapJar") {
     from("COPYING", "COPYING.LESSER", "README.md")
 }
 
+// The jar that is actually shipped: on very legacy Forge, the classes are compiled with a modern
+// Java version and have to be downgraded to run on Java 8 first.
+val productionJar: TaskProvider<out AbstractArchiveTask> = if (isVeryLegacyForge) {
+    val downgradeJar = tasks.register<xyz.wagyourtail.jvmdg.gradle.task.DowngradeJar>("downgradeShadowRemapJar") {
+        inputFile.set(shadowJar.flatMap { it.archiveFile })
+        archiveBaseName.set(defaultArchiveBaseName)
+        archiveClassifier.set("post-downgrade")
+    }
+    tasks.register<xyz.wagyourtail.jvmdg.gradle.task.ShadeJar>("shadeDowngradedShadowRemapJar") {
+        inputFile.set(downgradeJar.flatMap { it.archiveFile })
+        archiveBaseName.set(defaultArchiveBaseName)
+        archiveClassifier.set("")
+    }
+} else {
+    shadowJar
+}
+
 val packageJar = tasks.register("packageJar", Copy::class) {
-    from(shadowJar.get().archiveFile)
+    from(productionJar.flatMap { it.archiveFile })
     into("${rootProject.layout.buildDirectory.get()}/libs/${project.version}")
 }
 
@@ -250,7 +316,7 @@ publishing {
     publications {
         create<MavenPublication>("default") {
             artifactId = defaultArchiveBaseName
-            artifact(shadowJar.map { it.archiveFile })
+            artifact(productionJar.map { it.archiveFile })
             artifact(tasks.named("sourcesJar")) {
                 classifier = "sources"
             }
