@@ -13,9 +13,9 @@ println("Celeritas: ${tau.versioning.version}")
 
 //project(":forge1710")
 
-evaluationDependsOnChildren()
-
 val modernStonecutter = if (findProject(":modern") != null) {
+    // Only :modern needs to be evaluated eagerly, to read the Stonecutter controller extension below.
+    evaluationDependsOn(":modern")
     project(":modern").extensions.getByType(StonecutterControllerExtension::class.java)
 } else {
     null
@@ -58,18 +58,15 @@ val publishTask = tau.publishing.publish {
                 return@forEach
             }
 
-            evaluationDependsOn(it.project.buildTreePath)
+            // Referenced by path so that the version project is only configured when this task actually runs.
+            val versionProject = it.project
 
-            val packageJarTask: Copy? = it.project.tasks.findByName("packageJar") as Copy?
-
-            if (packageJarTask == null) {
-                return@forEach
-            }
-
-            dependsOn(packageJarTask)
+            dependsOn("${versionProject.path}:packageJar")
 
             modArtifact {
-                files(it.project.provider { packageJarTask.inputs.files.singleFile })
+                files(versionProject.provider {
+                    versionProject.tasks.named<Copy>("packageJar").get().inputs.files.singleFile
+                })
 
                 minecraftVersionRange = bs.ModLoader.getMinecraftVersion(name)
                 javaVersions.add(JavaVersion.VERSION_21)
