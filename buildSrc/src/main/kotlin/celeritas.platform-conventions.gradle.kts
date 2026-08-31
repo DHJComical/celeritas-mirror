@@ -197,29 +197,31 @@ tasks.named<ProcessResources>("processResources") {
         exclude("META-INF/mods.toml", "META-INF/accesstransformer.cfg", "pack.mcmeta")
     }
 
+    val isNeoForge = modLoader == ModLoader.NEOFORGE
+    val isFabric = modLoader == ModLoader.FABRIC
+    val modId = rootProject.property("mod_id").toString()
+    val mixinConfigs = modMixinConfigs
+
     doLast {
-        if (modLoader == ModLoader.NEOFORGE) {
-            val modsTOMLFiles = fileTree(outputs.files.asPath) {
-                include("META-INF/mods.toml")
-            }
+        val outputDir = Path.of(outputs.files.asPath)
 
-            modsTOMLFiles.forEach { file ->
-                file.appendText("\n\n[[mixins]]\nconfig = \"${rootProject.properties["mod_id"]}.mixins.json\"")
+        if (isNeoForge) {
+            val modsTOML = outputDir.resolve("META-INF/mods.toml")
 
-                val outputPath = Path.of(outputs.files.asPath)
-                        .resolve("META-INF/neoforge.mods.toml")
+            if (Files.exists(modsTOML)) {
+                modsTOML.toFile().appendText("\n\n[[mixins]]\nconfig = \"${modId}.mixins.json\"")
 
-                Files.copy(file.toPath(), outputPath, StandardCopyOption.REPLACE_EXISTING)
+                Files.copy(modsTOML, outputDir.resolve("META-INF/neoforge.mods.toml"), StandardCopyOption.REPLACE_EXISTING)
             }
         }
-        if (modLoader == ModLoader.FABRIC) {
-            fileTree(outputs.files.asPath) {
-                include("fabric.mod.json")
-            }.forEach { file ->
-                val slurper = JsonSlurper()
-                val parse = slurper.parse(file) as MutableMap<String, Any>
+        if (isFabric) {
+            val fabricModJson = outputDir.resolve("fabric.mod.json")
 
-                parse["mixins"] = modMixinConfigs.toList()
+            if (Files.exists(fabricModJson)) {
+                val file = fabricModJson.toFile()
+                val parse = JsonSlurper().parse(file) as MutableMap<String, Any>
+
+                parse["mixins"] = mixinConfigs.toList()
 
                 file.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(parse)))
             }
