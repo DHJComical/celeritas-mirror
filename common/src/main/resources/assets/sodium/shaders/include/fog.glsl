@@ -1,5 +1,6 @@
 const int FOG_SHAPE_SPHERICAL = 0;
 const int FOG_SHAPE_CYLINDRICAL = 1;
+const int FOG_SHAPE_PLANAR = 2;
 
 vec4 _linearFog(vec4 fragColor, float fragDistance, vec4 fogColor, float fogStart, float fogEnd) {
 #ifdef USE_FOG

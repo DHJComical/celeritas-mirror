@@ -166,7 +166,6 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
 
         this.prepareFrame(shadowViewport, cameraState, false);
 
-        // The shadow search runs every frame; the terrain search only when its graph is dirty.
         this.renderSectionManager.updateForShadowPass(playerViewport, shadowViewport, frame, spectator);
 
         this.renderSectionManager.tickVisibleRenders();

@@ -25,6 +25,7 @@ in float v_FragDistance;
 
 uniform sampler2D u_BlockTex; // The block texture
 
+uniform int u_FogShape;
 uniform vec4 u_FogColor; // The color of the shader fog
 
 #ifdef USE_FOG_SMOOTH
@@ -77,22 +78,32 @@ void main() {
 #endif
 
 #ifdef USE_FOG
+
 #if defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0
     // Make chunk fade in over a short duration
     diffuseColor = vec4(mix(u_FogColor.rgb, diffuseColor.rgb, (clamp(v_ChunkAgeMs, 0, CHUNK_FADE_IN_DURATION_MS) / CHUNK_FADE_IN_DURATION_MS)), diffuseColor.a);
 #endif
 
-#ifdef USE_FOG_POSTMODERN
+#if defined(USE_FOG_POSTMODERN)
     float fogValue = max(_linearFogValue(v_CylindricalFragDistance, u_RenderDistFogStart, u_RenderDistFogEnd),
                          _linearFogValue(v_SphericalFragDistance, u_EnvFogStart, u_EnvFogEnd));
 
     fragColor = vec4(mix(diffuseColor.rgb, u_FogColor.rgb, fogValue * u_FogColor.a), diffuseColor.a);
-#elif defined(USE_FOG_EXP2)
-    fragColor = _exp2Fog(diffuseColor, v_FragDistance, u_FogColor, u_FogDensity);
+#else // Legacy fog
+    float fragDistance;
+    if (u_FogShape == FOG_SHAPE_PLANAR) {
+        fragDistance = gl_FragCoord.z / gl_FragCoord.w;
+    } else {
+        fragDistance = v_FragDistance;
+    }
+#if defined(USE_FOG_EXP2)
+    fragColor = _exp2Fog(diffuseColor, fragDistance, u_FogColor, u_FogDensity);
 #elif defined(USE_FOG_SMOOTH)
-    fragColor = _linearFog(diffuseColor, v_FragDistance, u_FogColor, u_FogStart, u_FogEnd);
+    fragColor = _linearFog(diffuseColor, fragDistance, u_FogColor, u_FogStart, u_FogEnd);
 #endif
-#else
+#endif
+
+#else // No fog
     fragColor = diffuseColor;
 #endif
 }
