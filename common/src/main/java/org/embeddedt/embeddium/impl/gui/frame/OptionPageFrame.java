@@ -94,7 +94,7 @@ public class OptionPageFrame extends AbstractFrame {
 
     @Override
     public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
-        ControlElement<?> hoveredElement = this.isMouseOver(mouseX, mouseY) ? this.controlElements.stream()
+        ControlElement<?> hoveredElement = this.getCapturedChild() == null && this.isMouseOver(mouseX, mouseY) ? this.controlElements.stream()
                 .filter(c -> c.isMouseOver(mouseX, mouseY))
                 .findFirst().orElse(null) : null;
         super.render(drawContext, mouseX, mouseY, delta);

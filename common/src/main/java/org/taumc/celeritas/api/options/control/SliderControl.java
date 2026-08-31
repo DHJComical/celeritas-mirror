@@ -79,7 +79,7 @@ public class SliderControl implements Control<Integer> {
         public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
             super.render(drawContext, mouseX, mouseY, delta);
 
-            if (this.option.isAvailable() && (this.isMouseOver(mouseX, mouseY))) {
+            if (this.option.isAvailable() && (this.sliderHeld || this.isMouseOver(mouseX, mouseY))) {
                 this.renderSlider(drawContext);
             } else {
                 this.renderStandaloneValue(drawContext);
@@ -165,11 +165,8 @@ public class SliderControl implements Control<Integer> {
 
         @Override
         public boolean mouseDragged(InteractionContext context, double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-            if (this.option.isAvailable() && button == 0 && this.sliderBounds.containsCursor(mouseX, mouseY)) {
-                if (this.sliderHeld) {
-                    this.setValueFromMouse(mouseX);
-                }
-
+            if (this.option.isAvailable() && button == 0 && this.sliderHeld) {
+                this.setValueFromMouse(mouseX);
                 return true;
             }
 
