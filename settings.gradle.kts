@@ -70,6 +70,8 @@ pluginManagement {
         // TauMC fork of ModDevGradle, which carries the 1.16.5 support.
         id("org.taumc.moddev") version(extra["moddevgradle_version"].toString())
         id("org.taumc.moddev.legacyforge") version(extra["moddevgradle_version"].toString())
+
+        id("net.fabricmc.fabric-loom-remap") version(extra["loom_version"].toString())
     }
 }
 

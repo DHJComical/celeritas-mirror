@@ -6,7 +6,7 @@ import org.embeddedt.embeddium.gradle.stonecutter.ModDependencyCollector
 import org.gradle.kotlin.dsl.register
 
 plugins {
-    id("net.fabricmc.fabric-loom-remap") version "1.15.3"
+    id("net.fabricmc.fabric-loom-remap")
     id("celeritas.platform-conventions")
     id("celeritas.shader-conventions") apply false
 }
