@@ -81,8 +81,6 @@ plugins {
 rootProject.name = "celeritas"
 
 includeBuild("plugins/celeritas-mdg-plugin")
-// Still used by the ornithe and forge1710 subprojects
-includeBuild("plugins/celeritas-unimined-plugin")
 include("common")
 
 val versionFilter: (String) -> Boolean =
