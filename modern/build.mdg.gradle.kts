@@ -183,7 +183,7 @@ modDevExtension.accessTransformers.from(generatedATPath)
 
 val modMixinConfigs = project.celeritasMixinConfigs
 
-if (stonecutter.constants.getOrDefault("shaders", false)) {
+if (stonecutter.constants.get("shaders") ?: false) {
     apply(plugin = "celeritas.shader-conventions")
 }
 

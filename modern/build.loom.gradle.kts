@@ -94,7 +94,7 @@ tasks.named<Test>("test") {
     workingDir = junitDir
 }
 
-if (stonecutter.constants.getOrDefault("shaders", false)) {
+if (stonecutter.constants.get("shaders") ?: false) {
     apply(plugin = "celeritas.shader-conventions")
 }
 

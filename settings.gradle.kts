@@ -1,4 +1,4 @@
-import dev.kikugie.stonecutter.data.tree.builder.TreeBuilder
+import dev.kikugie.stonecutter.settings.tree.TreeBuilder
 
 pluginManagement {
     repositories {
@@ -11,10 +11,12 @@ pluginManagement {
             }
         }
         exclusiveContent {
-            forRepository { maven("https://maven.kikugie.dev/releases") }
-            forRepository { maven("https://maven.kikugie.dev/snapshots") }
+            forRepositories(
+                maven("https://maven.kikugie.dev/releases"),
+                maven("https://maven.kikugie.dev/snapshots")
+            )
             filter {
-                includeGroup("dev.kikugie")
+                includeGroupAndSubgroups("dev.kikugie")
             }
         }
         exclusiveContent {

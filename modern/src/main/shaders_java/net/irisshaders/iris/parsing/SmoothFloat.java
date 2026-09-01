@@ -91,7 +91,7 @@ public class SmoothFloat {
 		// Implements the basic variant of exponential smoothing
 		// https://en.wikipedia.org/wiki/Exponential_smoothing#Basic_(simple)_exponential_smoothing_(Holt_linear)
 
-		// 𝚫t
+		// Δt
 		float lastFrameTime = SystemTimeUniforms.TIMER.getLastFrameTime();
 
 		float decay = value > this.accumulator ? cachedDecayUp : cachedDecayDown;
@@ -102,7 +102,7 @@ public class SmoothFloat {
 		}
 
 		// Compute the smoothing factor based on our
-		// α = 1 - e^(-𝚫t/τ) = 1 - e^(-k𝚫t)
+		// α = 1 - e^(-Δt/τ) = 1 - e^(-kΔt)
 		float smoothingFactor = 1.0f - exponentialDecayFactor(decay, lastFrameTime);
 
 		// sₜ = αxₜ + (1 - α)sₜ₋₁

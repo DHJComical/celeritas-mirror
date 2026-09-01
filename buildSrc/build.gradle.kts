@@ -12,7 +12,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.apache.commons:commons-compress:1.26.0")
     implementation("com.gradleup.shadow:shadow-gradle-plugin:9.3.0")
-    implementation("dev.kikugie:stonecutter:0.7.11")
+    implementation("dev.kikugie:stonecutter:0.10-alpha.8")
 }
 
 repositories {
@@ -24,9 +24,12 @@ repositories {
         }
     }
     exclusiveContent {
-        forRepository { maven("https://maven.kikugie.dev/releases") }
+        forRepositories(
+            maven("https://maven.kikugie.dev/releases"),
+            maven("https://maven.kikugie.dev/snapshots")
+        )
         filter {
-            includeGroup("dev.kikugie")
+            includeGroupAndSubgroups("dev.kikugie")
         }
     }
 }

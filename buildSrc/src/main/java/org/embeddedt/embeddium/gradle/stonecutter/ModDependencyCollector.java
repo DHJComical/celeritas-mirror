@@ -3,7 +3,6 @@ package org.embeddedt.embeddium.gradle.stonecutter;
 import bs.ModLoader;
 import dev.kikugie.stonecutter.build.StonecutterBuildExtension;
 import dev.kikugie.stonecutter.controller.StonecutterControllerExtension;
-import kotlin.Unit;
 import org.gradle.api.Project;
 
 import java.util.*;
@@ -79,7 +78,6 @@ public class ModDependencyCollector {
                    params.getConstants().put(key, false);
                 }
             }
-            return Unit.INSTANCE;
         });
     }
 

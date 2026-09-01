@@ -104,11 +104,11 @@ public class SmoothedFloat implements FloatSupplier {
 		// xₜ
 		float newValue = unsmoothed.getAsFloat();
 
-		// 𝚫t
+		// Δt
 		float lastFrameTime = SystemTimeUniforms.TIMER.getLastFrameTime();
 
 		// Compute the smoothing factor based on our
-		// α = 1 - e^(-𝚫t/τ) = 1 - e^(-k𝚫t)
+		// α = 1 - e^(-Δt/τ) = 1 - e^(-kΔt)
 		float smoothingFactor = 1.0f - exponentialDecayFactor(newValue > this.accumulator ? this.decayConstantUp : decayConstantDown, lastFrameTime);
 
 		// sₜ = αxₜ + (1 - α)sₜ₋₁
