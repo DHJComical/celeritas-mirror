@@ -1,11 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.gtnewhorizons.retrofuturagradle.mcp.ApplySourceAccessTransformersTask
+import com.gtnewhorizons.retrofuturagradle.mcp.JSTTransformerTask
 import com.gtnewhorizons.retrofuturagradle.modutils.ModUtils
 import org.embeddedt.embeddium.gradle.build.conventions.ShadowHelper
 import org.embeddedt.embeddium.gradle.mdg.remapper.ReobfuscateCodeAndMixinsTask
 
 plugins {
-    id("com.gtnewhorizons.retrofuturagradle") version "1.4.8"
+    id("com.gtnewhorizons.retrofuturagradle")
     id("com.gradleup.shadow")
     id("embeddium-mdg-remapper")
     id("maven-publish")
@@ -142,7 +142,7 @@ tasks.register<ReobfuscateCodeAndMixinsTask>("celeritasRemapJar") {
 
 ShadowHelper.createShadowRemapJar(project, "celeritasRemapJar")
 
-tasks.named<ApplySourceAccessTransformersTask>("applySourceAccessTransformers") {
+tasks.named<JSTTransformerTask>("applyJST") {
     accessTransformerFiles.from("src/main/resources/META-INF/celeritas_at.cfg")
 }
 

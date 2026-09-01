@@ -74,6 +74,8 @@ pluginManagement {
         id("org.taumc.moddev.legacyforge") version(extra["moddevgradle_version"].toString())
 
         id("net.fabricmc.fabric-loom-remap") version(extra["loom_version"].toString())
+
+        id("com.gtnewhorizons.retrofuturagradle") version(extra["rfg_version"].toString())
     }
 }
 
