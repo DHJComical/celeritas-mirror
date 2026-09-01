@@ -14,9 +14,16 @@ plugins {
 
 evaluationDependsOn(":common")
 
+val stonecutterExt = project.extensions.findByType<StonecutterBuildExtension>()
+
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        // Minecraft 26.1 and later run on (and are compiled against) Java 25.
+        languageVersion = if ((stonecutterExt?.compare(stonecutterExt.current.version, "26.1") ?: -1) >= 0) {
+            JavaLanguageVersion.of(25)
+        } else {
+            JavaLanguageVersion.of(21)
+        }
     }
 }
 
@@ -134,8 +141,6 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 
 val modLoader: ModLoader? = ModLoader.fromProject(project)
 val minecraftVersion = ModLoader.getMinecraftVersion(project)
-
-val stonecutterExt = project.extensions.findByType<StonecutterBuildExtension>()
 
 val modMixinConfigs = mutableListOf("embeddium.mixins.json")
 project.extra.set("celeritasMixinConfigs", modMixinConfigs)

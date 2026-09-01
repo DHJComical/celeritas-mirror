@@ -61,6 +61,13 @@ val publishTask = tau.publishing.publish {
             // Referenced by path so that the version project is only configured when this task actually runs.
             val versionProject = it.project
 
+            // Minecraft 26.1 and later run on Java 25.
+            val javaVersion = if (modernStonecutter.eval(it.metadata.version, ">=26.1")) {
+                JavaVersion.VERSION_25
+            } else {
+                JavaVersion.VERSION_21
+            }
+
             dependsOn("${versionProject.path}:packageJar")
 
             modArtifact {
@@ -69,7 +76,7 @@ val publishTask = tau.publishing.publish {
                 })
 
                 minecraftVersionRange = bs.ModLoader.getMinecraftVersion(name)
-                javaVersions.add(JavaVersion.VERSION_21)
+                javaVersions.add(javaVersion)
 
                 environment.set(ModEnvironment.CLIENT_ONLY)
 
