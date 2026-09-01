@@ -8,9 +8,8 @@ import org.joml.Vector3f;
 public class ReversedAdvancedShadowCullingFrustum extends AdvancedShadowCullingFrustum {
 	private final BoxCuller distanceCuller;
 
-	public ReversedAdvancedShadowCullingFrustum(Matrix4f playerView, Matrix4f playerProjection, Vector3f shadowLightVectorFromOrigin, BoxCuller voxelCuller, BoxCuller distanceCuller,
-												float nearPlane, float farPlane, float intervalSize) {
-		super(playerView, playerProjection, shadowLightVectorFromOrigin, voxelCuller, nearPlane, farPlane, intervalSize);
+	public ReversedAdvancedShadowCullingFrustum(Matrix4f playerView, Matrix4f playerProjection, Vector3f shadowLightVectorFromOrigin, BoxCuller voxelCuller, BoxCuller distanceCuller) {
+		super(playerView, playerProjection, shadowLightVectorFromOrigin, voxelCuller);
 		this.distanceCuller = distanceCuller;
 	}
 

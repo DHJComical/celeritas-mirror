@@ -1,6 +1,5 @@
 package net.irisshaders.iris.shadows.frustum.advanced;
 
-import net.irisshaders.iris.shadows.ShadowMatrices;
 import net.irisshaders.iris.shadows.frustum.BoxCuller;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.world.phys.AABB;
@@ -31,9 +30,7 @@ import org.joml.Math;
  * cost of slightly more computations.</p>
  */
 public class AdvancedShadowCullingFrustum extends Frustum implements ViewportProvider, org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum, ShadowSearchFrustum {
-	// 6 base planes + at most 5 edge planes + 2 light-space depth planes.
 	private static final int MAX_CLIPPING_PLANES = 13;
-	private static final float SQRT_3 = Math.sqrt(3.0f);
 
 	protected final BoxCuller boxCuller;
 	/**
@@ -74,14 +71,8 @@ public class AdvancedShadowCullingFrustum extends Frustum implements ViewportPro
 	private int worldMaxYDH;
 	private int planeCount = 0;
 
-	/**
-	 * @param nearPlane    resolved {@code shadowNearPlane} of the orthographic shadow projection (DH already applied)
-	 * @param farPlane     resolved {@code shadowFarPlane}; pass {@code NaN} for either to omit the depth planes
-	 * @param intervalSize {@code shadowIntervalSize}, whose grid snapping shifts the shadow camera by up to
-	 *                     1.5 × intervalSize per axis and therefore widens the depth range conservatively
-	 */
 	public AdvancedShadowCullingFrustum(Matrix4f playerView, Matrix4f playerProjection, Vector3f shadowLightVectorFromOrigin,
-										BoxCuller boxCuller, float nearPlane, float farPlane, float intervalSize) {
+										BoxCuller boxCuller) {
 		// We're overriding all of the methods, don't pass any matrices down.
 		super(new org.joml.Matrix4f(), new org.joml.Matrix4f());
 
@@ -91,25 +82,7 @@ public class AdvancedShadowCullingFrustum extends Frustum implements ViewportPro
 		boolean[] isBack = addBackPlanes(baseClippingPlanes);
 		addEdgePlanes(baseClippingPlanes, isBack);
 
-        // handle legacy perspective shadow packs
-		if (!Float.isNaN(nearPlane) && !Float.isNaN(farPlane)) {
-			addDepthPlanes(nearPlane, farPlane, intervalSize);
-		}
-
 		this.boxCuller = boxCuller;
-	}
-
-	private void addDepthPlanes(float nearPlane, float farPlane, float intervalSize) {
-		float margin = 1.5f * Math.abs(intervalSize) * SQRT_3 + 0.5f;
-		float towardLimit = ShadowMatrices.SHADOW_CAMERA_OFFSET - nearPlane + margin;
-		float awayLimit = farPlane - ShadowMatrices.SHADOW_CAMERA_OFFSET + margin;
-
-		Vector3f light = this.shadowLightVectorFromOrigin;
-
-		// Inside when dot(light, p) <= towardLimit, i.e. -dot(light, p) + towardLimit >= 0.
-		addPlane(new Vector4f(-light.x(), -light.y(), -light.z(), towardLimit));
-		// Inside when dot(light, p) >= -awayLimit, i.e. dot(light, p) + awayLimit >= 0.
-		addPlane(new Vector4f(light.x(), light.y(), light.z(), awayLimit));
 	}
 
 	private void addPlane(Vector4f plane) {

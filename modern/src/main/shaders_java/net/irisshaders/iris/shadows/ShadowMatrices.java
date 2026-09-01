@@ -10,10 +10,9 @@ public class ShadowMatrices {
 
 	/**
 	 * Distance the shadow camera is pulled back from the player camera along the shadow light vector, applied by
-	 * {@link #createBaselineModelViewMatrix}. Culling that reasons in light space has to place its depth planes at
-	 * the same offset.
+	 * {@link #createBaselineModelViewMatrix}.
 	 */
-	public static final float SHADOW_CAMERA_OFFSET = 100.0f;
+	private static final float SHADOW_CAMERA_OFFSET = 100.0f;
 
 	// NB: These matrices are in column-major order, not row-major order like what you'd expect!
 

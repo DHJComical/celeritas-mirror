@@ -347,22 +347,14 @@ public class ShadowRenderer {
 
 			shadowLightVectorFromOrigin.normalize();
 
-			// Legacy perspective shadow packs (fov != null) have no fixed depth range, so the planes are omitted.
-			float depthNear = Float.NaN, depthFar = Float.NaN;
-			if (this.fov == null) {
-				depthNear = this.resolvedNearPlane();
-				depthFar = this.resolvedFarPlane();
-			}
-
 			Matrix4f playerProjection = (shouldRenderDH && DHCompat.hasRenderingEnabled()) ? DHCompat.getProjection() : CapturedRenderingState.INSTANCE.getGbufferProjection();
 
 			if (isReversed) {
 				return holder.setInfo(new ReversedAdvancedShadowCullingFrustum(CapturedRenderingState.INSTANCE.getGbufferModelView(),
-					playerProjection, shadowLightVectorFromOrigin, boxCuller, new BoxCuller(halfPlaneLength * renderMultiplier),
-					depthNear, depthFar, intervalSize), distanceInfo, cullingInfo);
+					playerProjection, shadowLightVectorFromOrigin, boxCuller, new BoxCuller(halfPlaneLength * renderMultiplier)), distanceInfo, cullingInfo);
 			} else {
 				return holder.setInfo(new AdvancedShadowCullingFrustum(CapturedRenderingState.INSTANCE.getGbufferModelView(),
-					playerProjection, shadowLightVectorFromOrigin, boxCuller, depthNear, depthFar, intervalSize), distanceInfo, cullingInfo);
+					playerProjection, shadowLightVectorFromOrigin, boxCuller), distanceInfo, cullingInfo);
 			}
 		}
 
