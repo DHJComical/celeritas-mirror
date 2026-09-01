@@ -15,9 +15,11 @@ import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
 import org.embeddedt.embeddium.impl.gl.device.GLRenderDevice;
-import org.lwjgl.opengl.GL15C;
+import org.taumc.celeritas.lwjgl.GL20;
 import org.taumc.celeritas.command.TogglePassCommand;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
+
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 import java.lang.management.ManagementFactory;
 
@@ -31,7 +33,7 @@ public class CeleritasArchaic {
     public void onInit(FMLInitializationEvent event) {
         LOGGER.info("Hello from Forge!");
         GLRenderDevice.VANILLA_STATE_RESETTER = () -> {
-            GL15C.glBindBuffer(GL15C.GL_ARRAY_BUFFER, 0);
+            LWJGL.glBindBuffer(GL20.GL_ARRAY_BUFFER, 0);
         };
         VERSION = Loader.instance().getIndexedModList().get(MODID).getVersion();
         MinecraftForge.EVENT_BUS.register(this);
@@ -49,7 +51,7 @@ public class CeleritasArchaic {
 
         var strings = event.right;
         strings.add("");
-        strings.add("%s%s Renderer (%s)".formatted(EnumChatFormatting.AQUA, "Celeritas", VERSION));
+        strings.add(String.format("%s%s Renderer (%s)", EnumChatFormatting.AQUA, "Celeritas", VERSION));
 
         var renderer = CeleritasWorldRenderer.instanceNullable();
 

@@ -40,7 +40,7 @@ public class TogglePassCommand extends CommandBase {
 
     @Override
     public List addTabCompletionOptions(ICommandSender iCommandSender, String[] args) {
-         return new ArrayList(getAllPasses().map(TerrainRenderPass::name).toList());
+         return new ArrayList(getAllPasses().map(TerrainRenderPass::name).collect(java.util.stream.Collectors.toList()));
     }
 
     @Override

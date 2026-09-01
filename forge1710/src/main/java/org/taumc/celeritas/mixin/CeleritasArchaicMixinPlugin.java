@@ -3,7 +3,6 @@ package org.taumc.celeritas.mixin;
 import com.gtnewhorizons.retrofuturabootstrap.SharedConfig;
 import com.gtnewhorizons.retrofuturabootstrap.api.RetroFuturaBootstrap;
 import com.gtnewhorizons.retrofuturabootstrap.api.RfbClassTransformerHandle;
-import me.eigenraven.lwjgl3ify.rfb.transformers.LwjglRedirectTransformer;
 import net.minecraft.launchwrapper.Launch;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +16,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CeleritasArchaicMixinPlugin implements IMixinConfigPlugin {
@@ -25,10 +25,34 @@ public class CeleritasArchaicMixinPlugin implements IMixinConfigPlugin {
     @Override
     public void onLoad(String mixinPackage) {
         LOGGER.info("Loaded Celeritas mixin plugin");
-        // Hack for now
-        var handle = SharedConfig.getRfbTransformers().stream().filter(transformer -> transformer.id().equals("lwjgl3ify:redirect")).findFirst().orElseThrow();
-        handle.exclusions().add("org.embeddedt.embeddium");
-        handle.exclusions().add("org.taumc.celeritas");
+        if (isClassPresent("com.gtnewhorizons.retrofuturabootstrap.SharedConfig")) {
+            RfbSupport.excludeFromLwjglRedirection();
+        }
+    }
+
+    private static boolean isClassPresent(String name) {
+        try {
+            Class.forName(name, false, CeleritasArchaicMixinPlugin.class.getClassLoader());
+            return true;
+        } catch (ClassNotFoundException | LinkageError e) {
+            return false;
+        }
+    }
+
+    private static final class RfbSupport {
+        static void excludeFromLwjglRedirection() {
+            // We call LWJGL through our own abstraction, so lwjgl3ify must not rewrite our classes.
+            RfbClassTransformerHandle handle = SharedConfig.getRfbTransformers().stream()
+                    .filter(transformer -> transformer.id().equals("lwjgl3ify:redirect"))
+                    .findFirst()
+                    .orElse(null);
+            if (handle == null) {
+                // RFB without lwjgl3ify; nothing is rewriting us.
+                return;
+            }
+            handle.exclusions().add("org.embeddedt.embeddium");
+            handle.exclusions().add("org.taumc.celeritas");
+        }
     }
 
     @Override
@@ -66,19 +90,19 @@ public class CeleritasArchaicMixinPlugin implements IMixinConfigPlugin {
                     try {
                         var uri = url.toURI();
                         try {
-                            return Stream.of(Path.of(uri));
+                            return Stream.of(Paths.get(uri));
                         } catch (FileSystemNotFoundException e) {
                             Map<String, String> env = new HashMap<>();
                             env.put("create", "true");
                             fileSystemsToClose.add(FileSystems.newFileSystem(uri, env));
-                            return Stream.of(Path.of(uri));
+                            return Stream.of(Paths.get(uri));
                         }
                     } catch (Exception e) {
                         LOGGER.error("Exception making URI", e);
                         return Stream.empty();
                     }
                 })
-                .toList();
+                .collect(Collectors.toList());
         Set<String> possibleMixinClasses = new HashSet<>();
         for(Path rootPath : rootPaths) {
             try(Stream<Path> mixinStream = Files.find(rootPath, Integer.MAX_VALUE, (path, attrs) -> attrs.isRegularFile() && path.getFileName().toString().endsWith(".class"))) {
@@ -98,7 +122,7 @@ public class CeleritasArchaicMixinPlugin implements IMixinConfigPlugin {
             } catch(IOException ignored) {
             }
         }
-        return List.copyOf(possibleMixinClasses);
+        return Collections.unmodifiableList(new ArrayList<>(possibleMixinClasses));
     }
 
     @Override

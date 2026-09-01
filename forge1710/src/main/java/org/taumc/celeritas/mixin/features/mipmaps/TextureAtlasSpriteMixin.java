@@ -27,10 +27,10 @@ public abstract class TextureAtlasSpriteMixin implements SpriteExtension {
 
     @Inject(method = "generateMipmaps", at = @At("HEAD"))
     private void processSprite(int level, CallbackInfo ci) {
-        if (this.framesTextureData.isEmpty() || this.framesTextureData.getFirst() == null) {
+        if (this.framesTextureData.isEmpty() || this.framesTextureData.get(0) == null) {
             return;
         }
-        embeddium$processTransparentImages(this.framesTextureData.getFirst()[0], level > 0 && !iconName.contains("leaves"));
+        embeddium$processTransparentImages(this.framesTextureData.get(0)[0], level > 0 && !iconName.contains("leaves"));
     }
 
     private void embeddium$processTransparentImages(int[] nativeImage, boolean shouldRewriteColors) {

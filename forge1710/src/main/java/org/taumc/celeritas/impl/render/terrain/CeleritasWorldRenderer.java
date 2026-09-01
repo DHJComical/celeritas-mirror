@@ -154,7 +154,7 @@ public class CeleritasWorldRenderer {
      */
     public void setupTerrain(Viewport viewport,
                              float ticks,
-                             @Deprecated(forRemoval = true) int frame,
+                             @Deprecated int frame,
                              boolean spectator,
                              boolean updateChunksImmediately) {
         NativeBuffer.reclaim(false);

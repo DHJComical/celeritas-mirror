@@ -11,6 +11,8 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.lwjgl.opengl.GL11;
 
+import com.github.bsideup.jabel.Desugar;
+
 import java.util.Map;
 
 public class ArchaicRenderPassConfigurationBuilder {
@@ -18,6 +20,7 @@ public class ArchaicRenderPassConfigurationBuilder {
     public static final TerrainRenderPass SOLID_PASS, CUTOUT_MIPPED_PASS, TRANSLUCENT_PASS;
     public static final Material SOLID_MATERIAL, CUTOUT_MIPPED_MATERIAL, TRANSLUCENT_MATERIAL;
 
+    @Desugar
     private record ArchaicPipelineState(int pass, boolean disableBlend) implements TerrainRenderPass.PipelineState {
         @Override
         public void setup() {

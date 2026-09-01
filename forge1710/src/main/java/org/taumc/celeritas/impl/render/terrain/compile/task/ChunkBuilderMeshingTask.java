@@ -121,7 +121,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         }
 
                         if (block.hasTileEntity(section.getExtBlockMetadata(x & 15, y & 15, z & 15))) {
-                            TileEntity tileEntity = chunk.getBlockTileEntityInChunk(x & 15, y, z & 15);
+                            TileEntity tileEntity = chunk.func_150806_e(x & 15, y, z & 15);
                             if (TileEntityRendererDispatcher.instance.hasSpecialRenderer(tileEntity)) {
                                 renderData.globalBlockEntities.add(tileEntity);
                             }
@@ -177,7 +177,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
             state = slice.getBlock(pos.x, pos.y, pos.z);
             meta = slice.getBlockMetadata(pos.x, pos.y, pos.z);
         } catch (Exception ignored) {}
-        CrashReportCategory.addBlockInfo(crashReportSection, pos.x, pos.y, pos.z, state, meta);
+        CrashReportCategory.func_147153_a(crashReportSection, pos.x, pos.y, pos.z, state, meta);
 
         crashReportSection.addCrashSection("Chunk section", this.render);
         /*
