@@ -111,7 +111,7 @@ public class MixinLevelRenderer {
     //? if neoforge && >=1.21 {
     /*/^*
      * @author embeddedt
-     * @reason disable Neo's particle phasing, because we do it ourselves
+     * @reason disable particle phasing in NeoForge, because we do it ourselves
      ^/
     @ModifyArg(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/particle/ParticleEngine;render(Lnet/minecraft/client/renderer/LightTexture;Lnet/minecraft/client/Camera;FLnet/minecraft/client/renderer/culling/Frustum;Ljava/util/function/Predicate;)V"))
     private Predicate<ParticleRenderType> forceAllTypes(Predicate<ParticleRenderType> oldPredicate) {

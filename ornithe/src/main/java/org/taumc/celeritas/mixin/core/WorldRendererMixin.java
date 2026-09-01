@@ -100,8 +100,8 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
     public int render(LivingEntity viewEntity, int layer, double ticks) {
     //?} else
     //public int render(BlockLayer layer, double ticks, int anaglyphRenderPass, Entity viewEntity) {
-        // Allow FalseTweaks mixin to replace constant
         @SuppressWarnings("unused")
+        // Allow FalseTweaks mixin to replace constant
         double magicSortingConstantValue = 1.0D;
         RenderDevice.enterManagedCode();
 

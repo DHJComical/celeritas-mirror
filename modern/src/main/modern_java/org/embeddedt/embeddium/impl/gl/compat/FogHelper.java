@@ -43,10 +43,11 @@ public class FogHelper implements FogService {
     //?}
 
     public int getFogShapeIndex() {
+        // fog shape is always zero for 1.17 and older
         //? if >=1.18 {
         return RenderSystem.getShaderFogShape().getIndex();
         //?} else
-        //return 0;  always zero for 1.17 and older
+        //return 0;
     }
 
     public float getFogCutoff() {
