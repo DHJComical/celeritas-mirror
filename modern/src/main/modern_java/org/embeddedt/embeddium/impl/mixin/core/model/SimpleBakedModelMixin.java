@@ -2,15 +2,15 @@ package org.embeddedt.embeddium.impl.mixin.core.model;
 
 // TODO enable this, once we find a way to handle the fact that a cutout texture shouldn't render as solid with mips
 //? if (forge && !forge) && >=1.19 {
-
-/*import net.minecraft.client.renderer.RenderType;
+/*
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.SimpleBakedModel;
 import net.minecraft.core.Direction;
 //? if forge
 import net.minecraftforge.client.ChunkRenderTypeSet;
 //? if neoforge
-/^import net.neoforged.neoforge.client.ChunkRenderTypeSet;^/
+//import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.SpriteTransparencyLevel;
 import org.spongepowered.asm.mixin.Final;

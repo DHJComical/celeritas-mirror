@@ -1,8 +1,8 @@
 package org.embeddedt.embeddium.impl.loader.fabric;
 
 //? if fabric {
-
-/*import net.fabricmc.api.EnvType;
+/*
+import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
 import org.embeddedt.embeddium.impl.loader.common.Distribution;

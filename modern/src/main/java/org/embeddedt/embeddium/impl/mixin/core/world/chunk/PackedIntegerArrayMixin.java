@@ -4,7 +4,7 @@ import org.embeddedt.embeddium.impl.world.PaletteStorageExtended;
 //? if >=1.18 {
 import net.minecraft.util.SimpleBitStorage;
 //?} else
-/*import net.minecraft.util.BitStorage;*/
+//import net.minecraft.util.BitStorage;
 import net.minecraft.world.level.chunk.Palette;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,7 +19,7 @@ import java.util.Objects;
 //? if >=1.18 {
 @Mixin(SimpleBitStorage.class)
 //?} else
-/*@Mixin(BitStorage.class)*/
+//@Mixin(BitStorage.class)
 public class PackedIntegerArrayMixin implements PaletteStorageExtended {
     @Shadow
     @Final

@@ -38,7 +38,7 @@ public class VertexFormatDescriptionImpl implements VertexFormatDescription {
         //? if <1.21 {
         return element.getUsage() != VertexFormatElement.Usage.PADDING;
         //?} else
-        /*return true;*/
+        //return true;
     }
 
     private static boolean checkSimple(VertexFormat format) {
@@ -76,7 +76,7 @@ public class VertexFormatDescriptionImpl implements VertexFormatDescription {
             //? if <1.21
             offset = elementOffsets.getInt(elementIndex);
             //? if >=1.21
-            /*offset = format.getOffset(element);*/
+            //offset = format.getOffset(element);
 
             commonElementOffsets.put(element, offset);
         }

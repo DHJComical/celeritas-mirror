@@ -20,7 +20,7 @@ public class MixinMinecraft_PipelineManagement {
             //? if <1.20.4 {
             "clearLevel(Lnet/minecraft/client/gui/screens/Screen;)V"
             //?} else
-            /*"clearClientLevel"*/
+            //"clearClientLevel"
             , at = @At("HEAD"))
 	public void iris$trackLastDimensionOnLeave(CallbackInfo ci) {
 		Iris.lastDimension = Iris.getCurrentDimension();

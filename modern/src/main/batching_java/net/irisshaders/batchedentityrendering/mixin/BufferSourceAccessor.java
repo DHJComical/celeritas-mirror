@@ -11,5 +11,5 @@ public interface BufferSourceAccessor {
     //? if <1.21 {
     java.util.Map<RenderType, com.mojang.blaze3d.vertex.BufferBuilder> getFixedBuffers();
     //?} else
-    /*java.util.SequencedMap<RenderType, com.mojang.blaze3d.vertex.ByteBufferBuilder> getFixedBuffers();*/
+    //java.util.SequencedMap<RenderType, com.mojang.blaze3d.vertex.ByteBufferBuilder> getFixedBuffers();
 }

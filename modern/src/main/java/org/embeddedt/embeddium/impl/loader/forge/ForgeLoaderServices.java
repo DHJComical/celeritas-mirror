@@ -27,19 +27,19 @@ public final class ForgeLoaderServices implements LoaderServices {
         *///?} else if >=1.19 {
         return IClientFluidTypeExtensions.of(state).getTintColor(state, world, pos);
         //?} else
-        /*return state.getType().getAttributes().getColor(world, pos);*/
+        //return state.getType().getAttributes().getColor(world, pos);
     }
 
     @Override
     public boolean isCullableAABB(AABB box) {
         //? if forge && <1.18
-        /*return !box.equals(net.minecraftforge.common.extensions.IForgeTileEntity.INFINITE_EXTENT_AABB);*/
+        //return !box.equals(net.minecraftforge.common.extensions.IForgeTileEntity.INFINITE_EXTENT_AABB);
         //? if forge && >=1.18
         return !box.equals(net.minecraftforge.common.extensions.IForgeBlockEntity.INFINITE_EXTENT_AABB);
         //? if neoforge && >=1.20.6
-        /*return !box.equals(AABB.INFINITE);*/
+        //return !box.equals(AABB.INFINITE);
         //? if neoforge && <1.20.6
-        /*return !box.equals(net.neoforged.neoforge.client.extensions.IBlockEntityRendererExtension.INFINITE_EXTENT_AABB);*/
+        //return !box.equals(net.neoforged.neoforge.client.extensions.IBlockEntityRendererExtension.INFINITE_EXTENT_AABB);
     }
 }
 //?}

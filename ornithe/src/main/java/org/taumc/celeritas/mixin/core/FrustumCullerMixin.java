@@ -29,8 +29,8 @@ public class FrustumCullerMixin implements ViewportProvider {
         Vector3f offset = new Vector3f();
         modelMatrix.transformPosition(offset);
         //? if >=1.3 {
-        /*Frustum cullTester = (minX, minY, minZ, maxX, maxY, maxZ) -> this.frustum.contains(minX, minY, minZ, maxX, maxY, maxZ);
-        *///?} else
+        //Frustum cullTester = (minX, minY, minZ, maxX, maxY, maxZ) -> this.frustum.contains(minX, minY, minZ, maxX, maxY, maxZ);
+        //?} else
         Frustum cullTester = (minX, minY, minZ, maxX, maxY, maxZ) -> this.frustum.m_9750073(minX, minY, minZ, maxX, maxY, maxZ);
         return new Viewport(cullTester,
                 new org.joml.Vector3d(this.x + offset.x, this.y + offset.y, this.z + offset.z));

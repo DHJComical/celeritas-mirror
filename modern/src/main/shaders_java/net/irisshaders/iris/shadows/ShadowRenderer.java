@@ -572,7 +572,7 @@ public class ShadowRenderer {
             //? if <1.20.6 {
 			levelRenderer.invokeRenderChunkLayer(RenderType.translucent(), modelView, cameraX, cameraY, cameraZ, shadowProjection);
             //?} else
-            /*levelRenderer.invokeRenderChunkLayer(RenderType.translucent(), cameraX, cameraY, cameraZ, MODELVIEW, shadowProjection);*/
+            //levelRenderer.invokeRenderChunkLayer(RenderType.translucent(), cameraX, cameraY, cameraZ, MODELVIEW, shadowProjection);
 		}
 
 		// Note: Apparently tripwire isn't rendered in the shadow pass.
@@ -585,8 +585,8 @@ public class ShadowRenderer {
 		IrisRenderSystem.restorePlayerProjection();
 
         //? if >=1.20.2 {
-		/*debugStringTerrain = ((LevelRenderer) levelRenderer).getSectionStatistics();
-        *///?} else
+		//debugStringTerrain = ((LevelRenderer) levelRenderer).getSectionStatistics();
+        //?} else
         debugStringTerrain = ((LevelRenderer) levelRenderer).getChunkStatistics();
 
 		levelRenderer.getLevel().getProfiler().popPush("generate mipmaps");

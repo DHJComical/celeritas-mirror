@@ -57,8 +57,8 @@ public class IrisExclusiveUniforms {
 				return StreamSupport.stream(Minecraft.getInstance().level.entitiesForRendering().spliterator(), false).filter(bolt -> bolt instanceof LightningBolt).findAny().map(bolt -> {
 					Vector3d unshiftedCameraPosition = CameraUniforms.getUnshiftedCameraPosition();
                     //? if >=1.21 {
-                    /*float deltaFrameTime = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
-                    *///?} else {
+                    //float deltaFrameTime = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
+                    //?} else {
                     float deltaFrameTime = Minecraft.getInstance().getDeltaFrameTime();
                     //?}
 					Vec3 vec3 = bolt.getPosition(deltaFrameTime);

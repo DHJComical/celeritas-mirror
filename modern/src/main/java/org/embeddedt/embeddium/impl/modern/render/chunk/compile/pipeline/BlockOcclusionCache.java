@@ -30,7 +30,7 @@ public class BlockOcclusionCache {
         //? if <26.1 {
         this.leavesRenderingAsSolid = !org.embeddedt.embeddium.impl.mixin.features.options.render_layers.ItemBlockRenderTypesAccessor.celeritas$areLeavesFancy();
         //?} else
-        /*this.leavesRenderingAsSolid = !Minecraft.getInstance().options.cutoutLeaves().get();*/
+        //this.leavesRenderingAsSolid = !Minecraft.getInstance().options.cutoutLeaves().get();
     }
 
     private static final Direction[] OPPOSITE_CACHE = new Direction[Direction.values().length];

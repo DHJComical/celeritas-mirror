@@ -27,7 +27,7 @@ public class ClientLevelMixin implements ChunkTrackerHolder {
                 //? if <26.1 {
                 pChunkPos.x, pChunkPos.z,
                 //?} else
-                /*pChunkPos.x(), pChunkPos.z(),*/
+                //pChunkPos.x(), pChunkPos.z(),
                 ChunkStatus.FLAG_HAS_BLOCK_DATA);
     }
 }

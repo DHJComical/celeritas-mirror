@@ -17,7 +17,7 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 //?}
 //? if <1.19
-/*import net.minecraftforge.registries.IRegistryDelegate;*/
+//import net.minecraftforge.registries.IRegistryDelegate;
 //? if neoforge {
 /*import net.neoforged.fml.ModList;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
@@ -71,11 +71,11 @@ public class CCLCompat {
                 if(!customBlockRenderers.isEmpty()) {
                     Block block = ctx.state().getBlock();
                     //? if neoforge {
-                    /*var holder = block;
-                    *///?} else if >=1.19 {
+                    //var holder = block;
+                    //?} else if >=1.19 {
                     var holder = ForgeRegistries.BLOCKS.getDelegateOrThrow(block);
                     //?} else
-                    /*var holder = block.delegate;*/
+                    //var holder = block.delegate;
                     var renderer = customBlockRenderers.get(holder);
                     if (renderer != null && renderer.canHandleBlock(ctx.localSlice(), ctx.pos(), ctx.state()/*? if >=1.19 {*/, ctx.renderLayer()/*?}*/)) {
                         resultList.add(createBridge(renderer));
@@ -84,11 +84,11 @@ public class CCLCompat {
                 if(!customFluidRenderers.isEmpty()) {
                     Fluid fluid = ctx.state().getFluidState().getType();
                     //? if neoforge {
-                    /*var holder = fluid;
-                    *///?} else if >=1.19 {
+                    //var holder = fluid;
+                    //?} else if >=1.19 {
                     var holder = ForgeRegistries.FLUIDS.getDelegateOrThrow(fluid);
                     //?} else
-                    /*var holder = fluid.delegate;*/
+                    //var holder = fluid.delegate;
                     var renderer = customFluidRenderers.get(holder);
                     if (renderer != null && renderer.canHandleBlock(ctx.localSlice(), ctx.pos(), ctx.state()/*? if >=1.19 {*/, ctx.renderLayer()/*?}*/)) {
                         resultList.add(createBridge(renderer));

@@ -19,7 +19,7 @@ import java.util.List;
 //? if >=1.20
 @Mixin(SpriteContents.Ticker.class)
 //? if <1.20
-/*@Mixin(TextureAtlasSprite.AnimatedTexture.class)*/
+//@Mixin(TextureAtlasSprite.AnimatedTexture.class)
 public class SpriteContentsAnimatorImplMixin {
     @Shadow
     int subFrame;

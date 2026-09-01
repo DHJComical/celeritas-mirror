@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.longs.Long2ReferenceOpenHashMap;
 //? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelData;
 //? if neoforge
-/*import net.neoforged.neoforge.client.model.data.ModelData;*/
+//import net.neoforged.neoforge.client.model.data.ModelData;
 import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.model.ModelDataSnapshotter;
@@ -211,7 +211,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
                 //? if >=1.19 {
                 Minecraft.getInstance().options.biomeBlendRadius().get()
                 //?} else
-                /*Minecraft.getInstance().options.biomeBlendRadius*/
+                //Minecraft.getInstance().options.biomeBlendRadius
         );
 
 
@@ -444,7 +444,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
     //?}
 
     //? if neoforge && >=1.20.6
-    /*@Override*/
+    //@Override
     //? if forgelike && >=1.19 {
     public ModelData getModelData(BlockPos pos) {
         int relX = pos.getX() - this.originX;
@@ -514,7 +514,7 @@ public class WorldSlice implements EmbeddiumBlockAndTintGetter
     //? if ffapi && >=1.20.1 {
     @Override public Object getBlockEntityRenderData(BlockPos pos) { return getBlockEntityAttachment(pos); }
     //?} else if ffapi
-    /*@Override public Object getBlockEntityRenderAttachment(BlockPos pos) { return getBlockEntityAttachment(pos); }*/
+    //@Override public Object getBlockEntityRenderAttachment(BlockPos pos) { return getBlockEntityAttachment(pos); }
 
     @Nullable
     private ClonedChunkSection fetchFallbackSectionForPos(int x, int y, int z) {

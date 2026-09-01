@@ -40,14 +40,14 @@ public class MixinGameRenderer {
                                  //? if <1.21 {
                                  @Local(ordinal = 0, argsOnly = true) float tickDelta
                                  //?} else
-                                 /*@Local(ordinal = 0, argsOnly = true) net.minecraft.client.DeltaTracker deltaTracker*/
+                                 //@Local(ordinal = 0, argsOnly = true) net.minecraft.client.DeltaTracker deltaTracker
                                  ) {
         // This allows certain functions like float smoothing to function outside a world.
         CapturedRenderingState.INSTANCE.setRealTickDelta(
                 //? if <1.21 {
                 tickDelta
                 //?} else
-                /*deltaTracker.getGameTimeDeltaPartialTick(true)*/
+                //deltaTracker.getGameTimeDeltaPartialTick(true)
         );
         SystemTimeUniforms.COUNTER.beginFrame();
         SystemTimeUniforms.TIMER.beginFrame(Util.getNanos());

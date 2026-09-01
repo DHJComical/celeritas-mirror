@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 //? if >=1.19 {
 import net.minecraftforge.client.model.data.ModelData;
 //?} else
-/*import net.minecraftforge.client.model.data.IModelData;*/
+//import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model./*? if >=1.19 {*/data./*?}*/ModelDataManager;
 import org.embeddedt.embeddium.impl.model.BlockEntityImplInfo;
 import org.spongepowered.asm.mixin.Mixin;

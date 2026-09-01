@@ -13,19 +13,19 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 //? if >=1.3 {
-/*@Mixin(net.minecraft.server.world.chunk.ServerChunkCache.class)
-*///?} else
+//@Mixin(net.minecraft.server.world.chunk.ServerChunkCache.class)
+//?} else
 @Mixin(net.minecraft.world.chunk.ServerChunkCache.class)
 public class ChunkCacheMixin {
     @Shadow
     //? if <1.3 {
     private net.minecraft.world.World world;
     //?} else
-    /*private net.minecraft.server.world.ServerWorld world;*/
+    //private net.minecraft.server.world.ServerWorld world;
 
     @Inject(method = "generateChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/"
             //? if >=1.3
-            /*+ "server/"*/
+            //+ "server/"
             + "world/chunk/ServerChunkCache;loadChunk(II)Lnet/minecraft/world/chunk/WorldChunk;"))
     private void markLoaded(int x, int z, CallbackInfoReturnable<WorldChunk> cir, @Share("loaded") LocalBooleanRef didLoad) {
         didLoad.set(true);

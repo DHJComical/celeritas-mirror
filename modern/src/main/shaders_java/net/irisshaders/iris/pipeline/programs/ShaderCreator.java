@@ -236,8 +236,8 @@ public class ShaderCreator {
 
         private static PackResources fabricateResourcePack() {
             //? if >=1.20.6 {
-            /*return new PathPackResources(new PackLocationInfo("<iris shaderpack shaders>", Component.literal("iris"), PackSource.BUILT_IN, Optional.of(new KnownPack("iris", "shader", "1.0"))), PlatformUtil.getConfigDir());
-            *///?} else
+            //return new PathPackResources(new PackLocationInfo("<iris shaderpack shaders>", Component.literal("iris"), PackSource.BUILT_IN, Optional.of(new KnownPack("iris", "shader", "1.0"))), PlatformUtil.getConfigDir());
+            //?} else
             return new PathPackResources("<iris shaderpack shaders>", PlatformUtil.getConfigDir(), true);
         }
 

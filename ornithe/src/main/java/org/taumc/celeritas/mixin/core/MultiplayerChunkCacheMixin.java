@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 //? if >=1.3 {
-/*@Mixin(net.minecraft.client.world.chunk.ClientChunkCache.class)
-*///?} else
+//@Mixin(net.minecraft.client.world.chunk.ClientChunkCache.class)
+//?} else
 @Mixin(net.minecraft.client.world.chunk.MultiplayerChunkCache.class)
 public class MultiplayerChunkCacheMixin {
     @Shadow

@@ -9,8 +9,8 @@ import org.objectweb.asm.tree.MethodInsnNode;
 public class ShaderOverridePatcher {
     private static final String SHADER_INSTANCE =
             //? if fabric {
-            /*net.fabricmc.loader.api.FabricLoader.getInstance().getMappingResolver().mapClassName("intermediary", "net.minecraft.class_5944").replace('.', '/');
-            *///?} else
+            //net.fabricmc.loader.api.FabricLoader.getInstance().getMappingResolver().mapClassName("intermediary", "net.minecraft.class_5944").replace('.', '/');
+            //?} else
             "net/minecraft/client/renderer/ShaderInstance";
 
     /**

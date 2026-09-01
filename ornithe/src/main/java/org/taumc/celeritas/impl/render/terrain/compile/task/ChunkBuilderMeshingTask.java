@@ -118,15 +118,15 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         *///?}
 
                         //? if <1.2.5 {
-                        /*boolean hasBlockEntity = Block.HAS_BLOCK_ENTITY[blockId];
-                        *///?} else
+                        //boolean hasBlockEntity = Block.HAS_BLOCK_ENTITY[blockId];
+                        //?} else
                         boolean hasBlockEntity = block.hasBlockEntity();
 
                         if (hasBlockEntity) {
                             //? if <1.8 {
                             BlockEntity tileEntity = chunk.getBlockEntityAt(x & 15, y, z & 15);
                             //?} else
-                            /*BlockEntity tileEntity = chunk.getBlockEntity(blockPos, WorldChunk.BlockEntityCreationType.CHECK);*/
+                            //BlockEntity tileEntity = chunk.getBlockEntity(blockPos, WorldChunk.BlockEntityCreationType.CHECK);
                             if (BlockEntityRenderDispatcher.INSTANCE.getRenderer(tileEntity) != null) {
                                 renderData.globalBlockEntities.add(tileEntity);
                             }
@@ -150,12 +150,12 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         //? if <1.7 {
                         boolean opaque = Block.IS_OPAQUE[blockId];
                         //?} else
-                        /*boolean opaque = block.isOpaqueCube();*/
+                        //boolean opaque = block.isOpaqueCube();
 
                         if (opaque) {
                             //? if >=1.8 {
-                            /*occluder.markClosed(blockPos.getX(), blockPos.getY(), blockPos.getZ());
-                            *///?} else
+                            //occluder.markClosed(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+                            //?} else
                             occluder.markClosed(blockPos);
                         }
                     }

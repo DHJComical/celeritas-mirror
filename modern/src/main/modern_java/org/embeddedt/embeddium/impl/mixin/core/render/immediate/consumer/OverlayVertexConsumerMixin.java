@@ -122,8 +122,8 @@ public class OverlayVertexConsumerMixin implements VertexBufferWriter {
     }
 }
 //?} else if >=1.18 {
-
-/*import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
+/*
+import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.api.util.ColorABGR;
@@ -243,8 +243,8 @@ public class OverlayVertexConsumerMixin implements VertexBufferWriter {
     }
 }
 *///?} else if >=1.15 {
-
-/*import com.mojang.blaze3d.vertex.VertexConsumer;
+/*
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
@@ -301,7 +301,7 @@ public class OverlayVertexConsumerMixin implements VertexBufferWriter {
     private void onInit(CallbackInfo ci) {
         this.isFullWriter = VertexBufferWriter.tryOf(this.delegate) != null;
         //? if <1.16
-        /^this.normalInversePose = this.normalPose;^/
+        //this.normalInversePose = this.normalPose;
     }
 
     @Override

@@ -39,7 +39,7 @@ public class VanillaGuiOverlayMixin {
             //? if >=1.18
             "lambda$static$0"
             //? if <1.18
-            /^"render"^/
+            //"render"
     }, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;useFancyGraphics()Z"))
     private /^? if >=1.18 {^/ static /^?}^/ boolean redirectFancyGraphicsVignette() {
         return Celeritas.options().quality.enableVignette;

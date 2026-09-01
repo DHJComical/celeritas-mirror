@@ -1,8 +1,8 @@
 package org.taumc.celeritas.impl.render.entity;
 
 //? if >=1.8 {
-
-/*import net.minecraft.client.world.ClientWorld;
+/*
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.TypeInstanceMultiMap;
 import net.minecraft.world.chunk.WorldChunk;

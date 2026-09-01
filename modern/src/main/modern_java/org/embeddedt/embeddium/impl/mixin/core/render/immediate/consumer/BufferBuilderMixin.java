@@ -5,8 +5,8 @@ import com.mojang.blaze3d.vertex.DefaultedVertexConsumer;
 import org.embeddedt.embeddium.impl.render.vertex.buffer.ExtendedBufferBuilder;
 import org.embeddedt.embeddium.impl.render.vertex.buffer.SodiumBufferBuilder;
 //?} else if >=1.21 {
-/*import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-*///?}
+//import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+//?}
 import org.embeddedt.embeddium.api.memory.MemoryIntrinsics;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatRegistry;
@@ -129,8 +129,8 @@ public abstract class BufferBuilderMixin /*? if >=1.15 <1.21 {*/ extends Default
         //? if >=1.15 {
         var dst = MemoryUtil.memAddress(this.buffer, this.nextElementByte);
         //?} else {
-        /*var dst = MemoryUtil.memAddress(this.buffer, this.vertices * this.format.getVertexSize());
-        *///?}
+        //var dst = MemoryUtil.memAddress(this.buffer, this.vertices * this.format.getVertexSize());
+        //?}
         //?} else {
         /*var length = count * this.vertexSize;
 
@@ -192,7 +192,7 @@ public abstract class BufferBuilderMixin /*? if >=1.15 <1.21 {*/ extends Default
         //? if >=1.17 {
         return this.mode == VertexFormat.Mode.LINES || this.mode == VertexFormat.Mode.LINE_STRIP;
         //?} else
-        /*return false;*/
+        //return false;
     }
 
     @Unique

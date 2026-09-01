@@ -17,8 +17,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.server.level.progress.StoringChunkProgressListener;
 //? if >=1.20.6 {
-/*import net.minecraft.world.level.chunk.status.ChunkStatus;
-*///?} else
+//import net.minecraft.world.level.chunk.status.ChunkStatus;
+//?} else
 import net.minecraft.world.level.chunk.ChunkStatus;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL20C;
@@ -70,20 +70,20 @@ public class LevelLoadingScreenMixin {
         //? if >=1.16 {
         Matrix4f matrix = JomlHelper.copy(matrices.last().pose());
         //?} else
-        /^Matrix4f matrix = new Matrix4f();^/
+        //Matrix4f matrix = new Matrix4f();
 
         Tesselator tessellator = Tesselator.getInstance();
 
         RenderSystem.enableBlend();
         //? if <1.17
-        /^RenderSystem.disableTexture();^/
+        //RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
 
         BufferBuilder bufferBuilder = tessellator.getBuilder();
         //? if >=1.17 {
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         //?} else
-        /^bufferBuilder.begin(GL20C.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);^/
+        //bufferBuilder.begin(GL20C.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         var writer = VertexBufferWriter.of(bufferBuilder);
     *///?}

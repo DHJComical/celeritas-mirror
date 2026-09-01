@@ -6,6 +6,6 @@ public record BufferSegment(
         //? if <1.21 {
         com.mojang.blaze3d.vertex.BufferBuilder.RenderedBuffer renderedBuffer,
         //?} else
-        /*com.mojang.blaze3d.vertex.MeshData renderedBuffer,*/
+        //com.mojang.blaze3d.vertex.MeshData renderedBuffer,
         RenderType type) {
 }

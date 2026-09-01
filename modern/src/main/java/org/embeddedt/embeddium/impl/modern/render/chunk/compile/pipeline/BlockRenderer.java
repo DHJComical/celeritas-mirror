@@ -98,19 +98,19 @@ public class BlockRenderer {
         //? if <26.1 {
         this.useAmbientOcclusion = Minecraft.useAmbientOcclusion();
         //?} else
-        /*this.useAmbientOcclusion = Minecraft.getInstance().options.ambientOcclusion().get();*/
+        //this.useAmbientOcclusion = Minecraft.getInstance().options.ambientOcclusion().get();
         //? if ffapi && >=1.20 {
         this.fabricModelRenderingHandler = FRAPIRenderHandler.INDIGO_PRESENT ? new IndigoBlockRenderContext(this.occlusionCache, config.lighters.getLightData()) : null;
         //?} else if ffapi {
-        /*this.fabricModelRenderingHandler = null;
-        *///?}
+        //this.fabricModelRenderingHandler = null;
+        //?}
         this.isRenderPassOptEnabled = Celeritas.options().performance.useRenderPassOptimization;
 
         //? if shaders {
         this.colorEncoder = WorldRenderingSettings.INSTANCE.shouldUseSeparateAo() ? ChunkColorWriter.SEPARATE_AO : ChunkColorWriter.EMBEDDIUM;
         //?} else {
-        /*this.colorEncoder = ChunkColorWriter.EMBEDDIUM;
-        *///?}
+        //this.colorEncoder = ChunkColorWriter.EMBEDDIUM;
+        //?}
     }
 
     /**
@@ -150,15 +150,15 @@ public class BlockRenderer {
         Vec3 renderOffset;
 
         //? if >=1.21.11 {
-        /*renderOffset = ctx.state().getOffset(ctx.pos());
-        *///?} else if >=1.20 <1.21.11 {
+        //renderOffset = ctx.state().getOffset(ctx.pos());
+        //?} else if >=1.20 <1.21.11 {
         if (ctx.state().hasOffsetFunction()) {
             renderOffset = ctx.state().getOffset(ctx.localSlice(), ctx.pos());
         } else {
             renderOffset = Vec3.ZERO;
         }
         //?} else
-        /*renderOffset = ctx.state().getOffset(ctx.localSlice(), ctx.pos());*/
+        //renderOffset = ctx.state().getOffset(ctx.localSlice(), ctx.pos());
 
         //? if <1.21.11 {
         // Process custom renderers
@@ -215,7 +215,7 @@ public class BlockRenderer {
 
         return ctx.model().getQuads(ctx.state(), face, random/*? if forgelike && >=1.19 {*/, ctx.modelData(), ctx.renderLayer()/*?}*/ /*? if forgelike && <1.19 {*//*, ctx.modelData()*//*?}*/);
         //?} else
-        /*return ctx.model().getQuads(face);*/
+        //return ctx.model().getQuads(face);
     }
 
     private boolean isFaceVisible(BlockRenderContext ctx, Direction face) {
@@ -341,12 +341,12 @@ public class BlockRenderer {
         //? if forge && >=1.19 {
         return ctx.model().useAmbientOcclusion(ctx.state(), ctx.renderLayer());
         //?} else if forge && >=1.18 {
-        /*return ctx.model().useAmbientOcclusion(ctx.state());
-        *///?} else if forge {
-        /*return ctx.model().isAmbientOcclusion(ctx.state());
-        *///?} else {
-        /*return ctx.model().useAmbientOcclusion();
-        *///?}
+        //return ctx.model().useAmbientOcclusion(ctx.state());
+        //?} else if forge {
+        //return ctx.model().isAmbientOcclusion(ctx.state());
+        //?} else {
+        //return ctx.model().useAmbientOcclusion();
+        //?}
     }
 
     private LightMode getLightingMode(BlockRenderContext ctx) {
@@ -368,7 +368,7 @@ public class BlockRenderer {
         var state = ctx.state();
         var aoTristate = model.useAmbientOcclusion(state, ctx.modelData(), ctx.renderLayer());
         //?} else
-        /^var aoTristate = model.ambientOcclusion();^/
+        //var aoTristate = model.ambientOcclusion();
         boolean canBeSmooth = this.useAmbientOcclusion && switch(aoTristate) {
             case TRUE -> true;
             case DEFAULT -> ctx.lightEmission() == 0;

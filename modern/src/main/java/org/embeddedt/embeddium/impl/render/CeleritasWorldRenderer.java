@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 //? if >=1.21.11
-/*import net.minecraft.client.renderer.feature.ModelFeatureRenderer;*/
+//import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.BlockDestructionProgress;
@@ -50,8 +50,8 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
         //? if <1.21.11 {
         net.minecraft.client.renderer.RenderType,
         //?} else {
-        /*net.minecraft.client.renderer.chunk.ChunkSectionLayer,
-        *///?}
+        //net.minecraft.client.renderer.chunk.ChunkSectionLayer,
+        //?}
         BlockEntity, CeleritasWorldRenderer.BlockEntityRenderContext> {
     private final Minecraft client;
 
@@ -132,10 +132,10 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
         //? if >=1.19 {
         entityDistanceScale = this.client.options.entityDistanceScaling().get();
         //?} else if >=1.16 {
-        /*entityDistanceScale = this.client.options.entityDistanceScaling;
-         *///?} else {
-        /*entityDistanceScale = 1.0;
-         *///?}
+        //entityDistanceScale = this.client.options.entityDistanceScaling;
+         //?} else {
+        //entityDistanceScale = 1.0;
+         //?}
 
         Entity.setViewScale(Mth.clamp((double) getEffectiveRenderDistance() / 8.0D, 1.0D, 2.5D) * entityDistanceScale);
 
@@ -147,7 +147,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
         //? if >=1.18 {
         return Minecraft.getInstance().options.getEffectiveRenderDistance();
         //?} else
-        /*return Minecraft.getInstance().options.renderDistance;*/
+        //return Minecraft.getInstance().options.renderDistance;
     }
 
     @Override
@@ -155,8 +155,8 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
         //? if <1.21.11 {
         return ChunkRenderMatricesBuilder.from(Objects.requireNonNull(currentChunkRenderPose, "chunk render pose not set"));
         //?} else {
-        /*return new ChunkRenderMatrices(new Matrix4f(currentChunkRenderProjection), new Matrix4f(currentChunkRenderPose));
-        *///?}
+        //return new ChunkRenderMatrices(new Matrix4f(currentChunkRenderProjection), new Matrix4f(currentChunkRenderPose));
+        //?}
     }
 
     private ChunkVertexType chooseVertexType() {
@@ -191,7 +191,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
         //? if >=1.18 {
         var dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
         //?} else
-        /*var dispatcher = BlockEntityRenderDispatcher.instance;*/
+        //var dispatcher = BlockEntityRenderDispatcher.instance;
 
         for (var blockEntity : list) {
             if (blockEntityFilter != null && !blockEntityFilter.test(blockEntity)) {
@@ -242,14 +242,14 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
 
                 PoseStack.Pose entry = matrices.last();
                 //? if <1.16 {
-                /*VertexConsumer transformer = new BreakingTextureGenerator(bufferBuilder, entry);
-                 *///?} else if >=1.16 <1.20 {
-                /*VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry.pose(), entry.normal());
-                 *///?} else if >=1.20 <1.20.6 {
+                //VertexConsumer transformer = new BreakingTextureGenerator(bufferBuilder, entry);
+                 //?} else if >=1.16 <1.20 {
+                //VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry.pose(), entry.normal());
+                 //?} else if >=1.20 <1.20.6 {
                 VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry.pose(), entry.normal(), 1.0f);
                 //?} else if >=1.20.6 {
-                /*VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry, 1.0f);
-                 *///?}
+                //VertexConsumer transformer = new SheetedDecalTextureGenerator(bufferBuilder, entry, 1.0f);
+                 //?}
 
                 consumer = (layer) -> layer.affectsCrumbling() ? VertexMultiConsumer.create(transformer, immediate.getBuffer(layer)) : immediate.getBuffer(layer);
             }
@@ -318,7 +318,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
             //? if <1.21.11 {
             RenderBuffers renderBuffers,
             //?} else
-            /*net.minecraft.client.renderer.state.level.LevelRenderState renderState,*/
+            //net.minecraft.client.renderer.state.level.LevelRenderState renderState,
             double x,
             double y,
             double z,

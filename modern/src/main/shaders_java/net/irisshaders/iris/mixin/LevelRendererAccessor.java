@@ -27,7 +27,7 @@ public interface LevelRendererAccessor {
                                 PoseStack modelView,
                                 double cameraX, double cameraY, double cameraZ,
                                 //? if >=1.20.6
-                                /*Matrix4f modelView,*/
+                                //Matrix4f modelView,
                                 Matrix4f projectionMatrix);
 
 	@Invoker("setupRender")

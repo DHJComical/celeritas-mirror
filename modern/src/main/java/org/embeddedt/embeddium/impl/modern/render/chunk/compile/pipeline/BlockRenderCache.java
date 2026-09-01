@@ -6,7 +6,7 @@ import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 //? if <26.1 {
 import net.minecraft.client.renderer.block.BlockModelShaper;
 //?} else
-/*import net.minecraft.client.renderer.block.BlockStateModelSet;*/
+//import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -48,7 +48,7 @@ public class BlockRenderCache {
     //? if <26.1 {
     private final BlockModelShaper blockModels;
     //?} else
-    /*private final BlockStateModelSet blockModels;*/
+    //private final BlockStateModelSet blockModels;
 
     private final WorldSlice worldSlice;
 
@@ -66,7 +66,7 @@ public class BlockRenderCache {
         //? if shaders {
         boolean directionalShadingOff = WorldRenderingSettings.INSTANCE.shouldDisableDirectionalShading();
         //?} else
-        /*boolean directionalShadingOff = false;*/
+        //boolean directionalShadingOff = false;
 
         LightPipelineProvider lightPipelineProvider = new LightPipelineProvider(this.lightDataCache,
                 directionalShadingOff ? DiffuseProvider.NONE : new DiffuseProvider() {
@@ -94,8 +94,8 @@ public class BlockRenderCache {
                         /*if (!shade) return world.effects().constantAmbientLight() ? 0.9f : 1.0f;
                         return net.minecraftforge.client.model.pipeline.LightUtil.diffuseLight(normalX, normalY, normalZ);
                         *///?} else {
-                        /*throw new IllegalStateException();
-                        *///?}
+                        //throw new IllegalStateException();
+                        //?}
                     }
 
                     @Override
@@ -119,7 +119,7 @@ public class BlockRenderCache {
         //? if <26.1 {
         this.blockModels = client.getModelManager().getBlockModelShaper();
         //?} else
-        /*this.blockModels = client.getModelManager().getBlockStateModelSet();*/
+        //this.blockModels = client.getModelManager().getBlockStateModelSet();
     }
 
     public BlockRenderer getBlockRenderer() {

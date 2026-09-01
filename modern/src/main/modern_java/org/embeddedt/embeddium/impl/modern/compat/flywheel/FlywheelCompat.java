@@ -1,8 +1,8 @@
 package org.embeddedt.embeddium.impl.modern.compat.flywheel;
 
 //? if flywheel {
-
-/*import com.jozufozu.flywheel.backend.instancing.InstancedRenderRegistry;
+/*
+import com.jozufozu.flywheel.backend.instancing.InstancedRenderRegistry;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

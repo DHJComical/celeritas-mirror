@@ -3,8 +3,8 @@ package org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 //? if >=26.1 {
-/*import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
-*///?} else
+//import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
+//?} else
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.level.block.AirBlock;
@@ -41,9 +41,9 @@ import net.minecraft.world.level.material.FluidState;
 //? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelData;
 //? if forge && <1.19
-/*import net.minecraftforge.client.ForgeHooksClient;*/
+//import net.minecraftforge.client.ForgeHooksClient;
 //? if neoforge
-/*import net.neoforged.neoforge.client.model.data.ModelData;*/
+//import net.neoforged.neoforge.client.model.data.ModelData;
 import org.embeddedt.embeddium.api.ChunkDataBuiltEvent;
 import org.embeddedt.embeddium.impl.chunk.MeshAppenderRenderer;
 //? if forgelike
@@ -111,8 +111,8 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
         //?}
 
         //? if >=1.21.11 {
-        /*ObjectArrayList<BlockStateModelPart> partsList = new ObjectArrayList<>();
-        *///?}
+        //ObjectArrayList<BlockStateModelPart> partsList = new ObjectArrayList<>();
+        //?}
 
         try {
             for (int y = minY; y < maxY; y++) {
@@ -170,7 +170,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                                 //? if >=1.17 {
                                 ForgeHooksClient.setRenderType(layer);
                                 //?} else
-                                /^ForgeHooksClient.setRenderLayer(layer);^/
+                                //ForgeHooksClient.setRenderLayer(layer);
                                 context.renderLayer(layer);
                                 cache.getBlockRenderer()
                                         .renderModel(context, buffers);
@@ -212,7 +212,7 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                                 //? if >=1.17 {
                                 BlockEntityRenderer<BlockEntity/*? if >=1.21.11 {*/ /*, net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState *//*?}*/> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(entity);
                                 //?} else
-                                /*BlockEntityRenderer<BlockEntity> renderer = net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher.instance.getRenderer(entity);*/
+                                //BlockEntityRenderer<BlockEntity> renderer = net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher.instance.getRenderer(entity);
 
                                 if (renderer != null) {
                                     (renderer.shouldRenderOffScreen(/*? if <1.21.11 {*/ entity /*?}*/)

@@ -20,7 +20,7 @@ public class DownloadingTerrainScreenMixin {
         //? if >=1.20 {
         return BlockPos.containing
         //?} else
-        /*return new BlockPos*/
+        //return new BlockPos
                 (instance.getX(), instance.getEyeY(), instance.getZ());
     }
 }

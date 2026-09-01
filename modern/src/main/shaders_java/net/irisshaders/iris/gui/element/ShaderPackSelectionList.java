@@ -40,8 +40,8 @@ public class ShaderPackSelectionList extends IrisObjectSelectionList<ShaderPackS
         //? if <1.20.6 {
 		super(client, width, height, top, bottom, left, right, 20);
         //?} else {
-        /*super(client, width, bottom, top + 4, bottom, left, right, 20);
-        *///?}
+        //super(client, width, bottom, top + 4, bottom, left, right, 20);
+        //?}
 		WatchKey key1;
 		WatchService watcher1;
 

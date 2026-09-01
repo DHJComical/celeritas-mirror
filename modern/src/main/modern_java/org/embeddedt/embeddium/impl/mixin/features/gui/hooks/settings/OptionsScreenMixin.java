@@ -3,8 +3,8 @@ package org.embeddedt.embeddium.impl.mixin.features.gui.hooks.settings;
 //? if settings_gui {
 
 //? if >=1.21 {
-/*import net.minecraft.client.gui.screens.options.OptionsScreen;
-*///?} else
+//import net.minecraft.client.gui.screens.options.OptionsScreen;
+//?} else
 import net.minecraft.client.gui.screens.OptionsScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;

@@ -37,8 +37,8 @@ public class DirectionUtil {
 
     public static Vec3i getNormal(Direction direction) {
         //? if >=1.21.11 {
-        /*return direction.getUnitVec3i();
-        *///?} else {
+        //return direction.getUnitVec3i();
+        //?} else {
         return direction.getNormal();
         //?}
     }

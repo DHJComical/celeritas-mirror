@@ -40,10 +40,10 @@ public interface VertexConsumerMixin {
             //? if <1.20.6 {
             Matrix3f matrix,
             //?} else
-            /*PoseStack.Pose pose,*/
+            //PoseStack.Pose pose,
             float x, float y, float z) {
         //? if >=1.20.6
-        /*var matrix = pose.normal();*/
+        //var matrix = pose.normal();
         float xt = MatrixHelper.transformNormalX(matrix, x, y, z);
         float yt = MatrixHelper.transformNormalY(matrix, x, y, z);
         float zt = MatrixHelper.transformNormalZ(matrix, x, y, z);
@@ -61,8 +61,8 @@ public interface VertexConsumerMixin {
         return this.normal(xt, yt, zt);
     }
     //?} else if >=1.21 {
-
-    /*@Shadow
+/*
+    @Shadow
     VertexConsumer setNormal(float x, float y, float z);
 
     @Shadow

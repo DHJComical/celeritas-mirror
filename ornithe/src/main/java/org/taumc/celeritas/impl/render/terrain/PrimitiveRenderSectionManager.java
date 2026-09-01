@@ -39,10 +39,10 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
         //? if <1.8 {
         int idealThreadCount = -1;
         //?} else
-        /*int idealThreadCount = 0;*/
+        //int idealThreadCount = 0;
         //? if <1.2 {
-        /*int maxSection = 8;
-        *///?} else
+        //int maxSection = 8;
+        //?} else
         int maxSection = world.getHeight() / 16;
         return new PrimitiveRenderSectionManager(PrimitiveRenderPassConfigurationBuilder.build(vertexType), world, renderDistance, commandList,
                 0, maxSection,
@@ -72,11 +72,11 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
         //? if <1.8 {
         var block = this.world.getBlock(camBlockPos.x(), camBlockPos.y(), camBlockPos.z());
         //?} else
-        /*var block = this.world.getBlockState(new net.minecraft.util.math.BlockPos(camBlockPos.x(), camBlockPos.y(), camBlockPos.z())).getBlock();*/
+        //var block = this.world.getBlockState(new net.minecraft.util.math.BlockPos(camBlockPos.x(), camBlockPos.y(), camBlockPos.z())).getBlock();
 
         //? if >=1.7 {
-        /*boolean opaque = block.isOpaqueCube();
-        *///?} else
+        //boolean opaque = block.isOpaqueCube();
+        //?} else
         boolean opaque = Block.IS_OPAQUE[block];
 
         useOcclusionCulling = !spectator || !opaque;
@@ -133,7 +133,7 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
 
         // TODO: This is a workaround until we properly snapshot chunk sections as is done in 1.12
         //? if >=1.8
-        /*populateTileEntities(this.world.getChunkAt(render.getChunkX(), render.getChunkZ()), render.getChunkY());*/
+        //populateTileEntities(this.world.getChunkAt(render.getChunkX(), render.getChunkZ()), render.getChunkY());
 
         return new ChunkBuilderMeshingTask(render, context, frame, this.cameraPosition);
     }

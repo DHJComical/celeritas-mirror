@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.ShaderInstance;
 //? if >=1.20 {
 import org.joml.Matrix4f;
  //?} else
-/*import com.mojang.math.Matrix4f;*/
+//import com.mojang.math.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 //? if >=1.18 <1.21
 @Mixin(value = VertexBuffer.class, priority = 500)
 //? if >=1.21
-/*@Mixin(value = ShaderInstance.class, priority = 500)*/
+//@Mixin(value = ShaderInstance.class, priority = 500)
 public class VertexBufferMixin {
     private static final int DEFAULT_NUM_SAMPLERS = 12;
     private static String[] SAMPLER_IDS = embeddium$makeSamplerIds(DEFAULT_NUM_SAMPLERS);
@@ -34,8 +34,8 @@ public class VertexBufferMixin {
      * @reason Avoid regenerating the sampler ID strings every time a buffer is drawn
      */
     //? if <1.18 {
-    /*private int dummySetSamplers(int numSamplers) {
-    *///?} else if >=1.18 <1.21 {
+    //private int dummySetSamplers(int numSamplers) {
+    //?} else if >=1.18 <1.21 {
     @ModifyExpressionValue(method = "_drawWithShader", at = @At(value = "CONSTANT", args = "intValue=" + DEFAULT_NUM_SAMPLERS, ordinal = 0))
     private int setSamplersManually(int numSamplers, Matrix4f mat1, Matrix4f mat2, ShaderInstance shader) {
     //?} else {
@@ -43,7 +43,7 @@ public class VertexBufferMixin {
     private int setSamplersManually(int numSamplers) {
     *///?}
         //? if >=1.21
-        /*ShaderInstance shader = (ShaderInstance)(Object)this;*/
+        //ShaderInstance shader = (ShaderInstance)(Object)this;
         String[] samplerIds = SAMPLER_IDS;
         if (samplerIds.length < numSamplers) {
             samplerIds = embeddium$makeSamplerIds(numSamplers);

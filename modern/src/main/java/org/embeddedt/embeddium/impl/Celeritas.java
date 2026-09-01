@@ -33,7 +33,7 @@ import net.fabricmc.loader.api.FabricLoader;
 /*import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 //? if >=1.21.11
-/^import net.neoforged.neoforge.client.event.RegisterDebugEntriesEvent;^/
+//import net.neoforged.neoforge.client.event.RegisterDebugEntriesEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.fml.ModList;
@@ -74,7 +74,7 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
     //? if >=1.18 {
     private static final Logger LOGGER = LoggerFactory.getLogger(MODNAME);
     //?} else
-    /*private static final Logger LOGGER = LogManager.getLogger(MODNAME);*/
+    //private static final Logger LOGGER = LogManager.getLogger(MODNAME);
     private static SodiumGameOptions CONFIG = loadConfig();
 
     private static String MOD_VERSION;
@@ -99,8 +99,8 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         IEventBus mainEventBus = MinecraftForge.EVENT_BUS;
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         //?} else {
-        /*IEventBus mainEventBus = NeoForge.EVENT_BUS;
-        *///?}
+        //IEventBus mainEventBus = NeoForge.EVENT_BUS;
+        //?}
 
         modEventBus.addListener(this::onClientSetup);
         if(PlatformUtil.isDevelopmentEnvironment()) {
@@ -160,7 +160,7 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
             //? if >=1.17 <1.21.11
             com.mojang.blaze3d.vertex.BufferUploader.reset();
             //? if <1.17
-            /*com.mojang.blaze3d.vertex.VertexBuffer.unbind();*/
+            //com.mojang.blaze3d.vertex.VertexBuffer.unbind();
         };
     }
 
@@ -224,6 +224,6 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         //? if <1.21.11 {
         return Minecraft.getInstance().options.graphicsMode/*? if >=1.19 {*/().get()/*?}*/ != net.minecraft.client.GraphicsStatus.FAST;
         //?} else
-        /*return Minecraft.getInstance().options.cutoutLeaves().get();*/
+        //return Minecraft.getInstance().options.cutoutLeaves().get();
     }
 }

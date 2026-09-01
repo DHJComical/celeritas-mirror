@@ -34,7 +34,7 @@ public class BakedQuadFactoryMixin {
             //? if <1.21
             float[] uvs = face.uv.uvs;
             //? if >=1.21
-            /*float[] uvs = face.uv().uvs;*/
+            //float[] uvs = face.uv().uvs;
 
             for (float uv : uvs) {
                 minUV = Math.min(minUV, uv);
@@ -60,7 +60,7 @@ public class BakedQuadFactoryMixin {
             //? if >=1.20 {
             "fillVertex([IILorg/joml/Vector3f;Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;Lnet/minecraft/client/renderer/block/model/BlockFaceUV;)V"
             //?} else
-            /*"fillVertex"*/
+            //"fillVertex"
             , at = @At("RETURN"))
     private void undoForgeUVExpansion(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) int[] vertices, @Local(ordinal = 0, argsOnly = true) int cornerIndex, @Local(ordinal = 0, argsOnly = true) TextureAtlasSprite sprite, @Local(ordinal = 0, argsOnly = true) net.minecraft.client.renderer.block.model.BlockFaceUV element) {
         int i = cornerIndex * 8;

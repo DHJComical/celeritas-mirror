@@ -4,7 +4,7 @@ package org.embeddedt.embeddium.impl.render.fluid;
 //? if forge && >=1.19
 import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 //? if neoforge
-/*import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;*/
+//import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
 
 //? if forgelike {
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -29,7 +29,7 @@ public class EmbeddiumFluidSpriteCache {
             //? if <1.21.11 {
             sprite = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(identifier);
             //?} else
-            /*sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(TextureAtlas.LOCATION_BLOCKS).getSprite(identifier);*/
+            //sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(TextureAtlas.LOCATION_BLOCKS).getSprite(identifier);
             spriteCache.put(identifier, sprite);
         }
 

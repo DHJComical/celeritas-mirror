@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.api.vertex.buffer;
 //? if >=1.15 {
 import com.mojang.blaze3d.vertex.VertexConsumer;
 //?} else
-/*import com.mojang.blaze3d.vertex.BufferBuilder;*/
+//import com.mojang.blaze3d.vertex.BufferBuilder;
 import org.embeddedt.embeddium.api.memory.MemoryIntrinsics;
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
 import org.jetbrains.annotations.Nullable;

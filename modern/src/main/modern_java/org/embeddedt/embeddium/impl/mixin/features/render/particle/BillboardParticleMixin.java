@@ -148,8 +148,8 @@ public abstract class BillboardParticleMixin extends Particle {
             ptr += ParticleVertex.STRIDE;
 
             //?} else {
-
-            /*writeVertex(ptr, quaternion,1.0F, -1.0F, x, y, z, maxU, maxV, color, light, size);
+/*
+            writeVertex(ptr, quaternion,1.0F, -1.0F, x, y, z, maxU, maxV, color, light, size);
             ptr += ParticleVertex.STRIDE;
 
             writeVertex(ptr, quaternion,1.0F, 1.0F, x, y, z, maxU, minV, color, light, size);
@@ -174,7 +174,7 @@ public abstract class BillboardParticleMixin extends Particle {
                                     //? if >=1.20 {
                                     Quaternionf rotation,
                                     //?} else
-                                    /*Quaternion rotation,*/
+                                    //Quaternion rotation,
                                     float posX, float posY,
                                     float originX, float originY, float originZ,
                                     float u, float v, int color, int light, float size) {

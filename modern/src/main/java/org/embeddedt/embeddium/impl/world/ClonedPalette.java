@@ -1,8 +1,8 @@
 package org.embeddedt.embeddium.impl.world;
 
 //? if <1.18 {
-
-/*import net.minecraft.nbt.ListTag;
+/*
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.chunk.Palette;
 import org.jetbrains.annotations.Nullable;

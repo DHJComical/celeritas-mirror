@@ -38,7 +38,7 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
                 //? if >=1.20 {
                 new net.minecraft.client.gui.GuiGraphics(Minecraft.getInstance(), Minecraft.getInstance().renderBuffers().bufferSource()),
                 //?} else
-                /*new com.mojang.blaze3d.vertex.PoseStack(),*/
+                //new com.mojang.blaze3d.vertex.PoseStack(),
                 Minecraft.getInstance().font)) {
             @Override
             protected void createExtraTabs(Map<String, List<Tab<?>>> tabs) {
@@ -87,14 +87,14 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
     //? if >=1.20 {
     @Override public void render(net.minecraft.client.gui.GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
     //?} else if >=1.16 <1.20 {
-    /*@Override public void render(com.mojang.blaze3d.vertex.PoseStack drawContext, int mouseX, int mouseY, float delta) {
-    *///?} else
-    /*@Override public void render(int mouseX, int mouseY, float delta) {*/
+    //@Override public void render(com.mojang.blaze3d.vertex.PoseStack drawContext, int mouseX, int mouseY, float delta) {
+    //?} else
+    //@Override public void render(int mouseX, int mouseY, float delta) {
         //? if <1.20.2 {
         this.renderBackground(drawContext);
         //?} else {
-        /*this.renderBackground(drawContext, mouseX, mouseY, delta);
-        *///?}
+        //this.renderBackground(drawContext, mouseX, mouseY, delta);
+        //?}
 
         this.controller.render(new ModernDrawContext(drawContext, this.font), mouseX, mouseY, delta);
     }

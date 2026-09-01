@@ -44,7 +44,7 @@ public class MixinEntityRenderDispatcher {
             //? if >=1.19.3 {
 			ResourceLocation entityId = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
             //?} else
-            /*ResourceLocation entityId = net.minecraft.core.Registry.ENTITY_TYPE.getKey(entity.getType());*/
+            //ResourceLocation entityId = net.minecraft.core.Registry.ENTITY_TYPE.getKey(entity.getType());
 			intId = entityIds.applyAsInt(new NamespacedId(entityId.getNamespace(), entityId.getPath()));
 		}
 

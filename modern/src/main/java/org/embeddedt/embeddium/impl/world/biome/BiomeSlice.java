@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.world.biome;
 
 //? if >=1.18 <1.20
-/*import net.minecraft.data.BuiltinRegistries;*/
+//import net.minecraft.data.BuiltinRegistries;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.world.BiomeSeedProvider;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
@@ -27,7 +27,7 @@ public class BiomeSlice {
     @SuppressWarnings("unchecked")
     private final Holder<Biome>[] biomes = new Holder[SIZE * SIZE * SIZE];
     //?} else
-    /*private final Biome[] biomes = new Biome[SIZE * SIZE * SIZE];*/
+    //private final Biome[] biomes = new Biome[SIZE * SIZE * SIZE];
     private final boolean[] uniform = new boolean[SIZE * SIZE * SIZE];
     private final BiasMap bias = new BiasMap();
 
@@ -62,15 +62,15 @@ public class BiomeSlice {
         //? if >=1.18 {
         var defaultValue = world.registryAccess()
                 //? if <1.20
-                /*.registryOrThrow(BuiltinRegistries.BIOME.key()).getHolderOrThrow(Biomes.PLAINS)*/
+                //.registryOrThrow(BuiltinRegistries.BIOME.key()).getHolderOrThrow(Biomes.PLAINS)
                 //? if >=1.20 <1.21.11
                 .registryOrThrow(Registries.BIOME).getHolderOrThrow(Biomes.PLAINS)
                 //? if >=1.21.11
-                /*.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS)*/
+                //.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS)
                 ;
 
         //?} else
-        /*Object defaultValue = null;*/
+        //Object defaultValue = null;
         for (int sectionX = 0; sectionX < 3; sectionX++) {
             for (int sectionY = 0; sectionY < 3; sectionY++) {
                 for (int sectionZ = 0; sectionZ < 3; sectionZ++) {

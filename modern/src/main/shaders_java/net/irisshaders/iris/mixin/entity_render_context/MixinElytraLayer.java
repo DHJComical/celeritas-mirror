@@ -39,7 +39,7 @@ public abstract class MixinElytraLayer<T extends LivingEntity, M extends EntityM
             //? if <1.20.4 {
             var cloakTexture = player.getCloakTextureLocation();
             //?} else
-            /*var cloakTexture = player.getSkin().capeTexture();*/
+            //var cloakTexture = player.getSkin().capeTexture();
             if (cloakTexture != null && player.isModelPartShown(PlayerModelPart.CAPE)) {
                 CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getItemIds().applyAsInt(ELYTRA_CAPE_LOCATION));
                 return;
@@ -49,7 +49,7 @@ public abstract class MixinElytraLayer<T extends LivingEntity, M extends EntityM
         //? if >=1.19.3 {
         ResourceLocation location = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(Items.ELYTRA);
         //?} else
-        /*ResourceLocation location = net.minecraft.core.Registry.ITEM.getKey(Items.ELYTRA);*/
+        //ResourceLocation location = net.minecraft.core.Registry.ITEM.getKey(Items.ELYTRA);
 
 		CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getItemIds().applyAsInt(new NamespacedId(location.getNamespace(), location.getPath())));
 	}

@@ -145,8 +145,8 @@ public class CloudRenderer {
             BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
             bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
             //?} else {
-            /*BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
-            *///?}
+            //BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+            //?}
 
             this.cloudRenderMode = Minecraft.getInstance().options.getCloudsType();
 
@@ -159,7 +159,7 @@ public class CloudRenderer {
             this.vertexBuffer.bind();
             //? if <1.21 {
             //? if <1.19
-            /*bufferBuilder.end();*/
+            //bufferBuilder.end();
             this.vertexBuffer.upload(bufferBuilder /*? if >=1.19 {*/ .end() /*?}*/);
             this.hasCloudGeometry = true;
             //?} else {
@@ -210,14 +210,14 @@ public class CloudRenderer {
         RenderSystem.depthMask(true);
         RenderSystem.colorMask(false, false, false, false);
         //?} else {
-        /*RenderType.cloudsDepthOnly().setupRenderState();
-        *///?}
+        //RenderType.cloudsDepthOnly().setupRenderState();
+        //?}
 
         this.shader.prepareForDraw(modelViewMatrix, projectionMatrix, (float) color.x, (float) color.y, (float) color.z, 0.8f);
         this.drawVertexBuffer();
         this.shader.clear();
         //? if >=1.21
-        /*RenderType.cloudsDepthOnly().clearRenderState();*/
+        //RenderType.cloudsDepthOnly().clearRenderState();
 
 
         // PASS 2: Render geometry
@@ -229,15 +229,15 @@ public class CloudRenderer {
         RenderSystem.depthFunc(GL30C.GL_EQUAL);
         RenderSystem.colorMask(true, true, true, true);
         //?} else {
-        /*RenderType.clouds().setupRenderState();
-        *///?}
+        //RenderType.clouds().setupRenderState();
+        //?}
 
         this.shader.prepareForDraw(modelViewMatrix, projectionMatrix, (float) color.x, (float) color.y, (float) color.z, 0.8f);
         this.drawVertexBuffer();
         this.shader.clear();
 
         //? if >=1.21
-        /*RenderType.clouds().clearRenderState();*/
+        //RenderType.clouds().clearRenderState();
 
         VertexBuffer.unbind();
 

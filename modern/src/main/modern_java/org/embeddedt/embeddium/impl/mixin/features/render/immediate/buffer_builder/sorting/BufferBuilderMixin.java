@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 //? if >=1.20 {
 import org.joml.Vector3f;
 //?} else
-/*import com.mojang.math.Vector3f;*/
+//import com.mojang.math.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -45,7 +45,7 @@ public abstract class BufferBuilderMixin {
     //? if >=1.19 <1.21
     @Shadow private int renderedBufferPointer;
     //? if <1.19
-    /*@Shadow private int totalRenderedBytes;*/
+    //@Shadow private int totalRenderedBytes;
 
     //? if >=1.20 <1.21 {
     @Shadow
@@ -68,8 +68,8 @@ public abstract class BufferBuilderMixin {
         //? if >=1.19 {
         int renderedBufferPointer = this.renderedBufferPointer;
         //?} else {
-        /*int renderedBufferPointer = this.totalRenderedBytes;
-        *///?}
+        //int renderedBufferPointer = this.totalRenderedBytes;
+        //?}
 
         for (int index = 0; index < primitiveCount; ++index) {
             long v1 = MemoryUtil.memAddress(this.buffer, renderedBufferPointer + (((index * 4) + 0) * vertexStride));

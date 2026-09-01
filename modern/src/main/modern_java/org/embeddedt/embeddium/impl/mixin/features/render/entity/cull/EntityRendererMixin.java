@@ -4,8 +4,8 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 //? if >=1.21 {
-/*import net.minecraft.world.entity.Leashable;
-*///?}
+//import net.minecraft.world.entity.Leashable;
+//?}
 import net.minecraft.world.phys.AABB;
 import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderer;

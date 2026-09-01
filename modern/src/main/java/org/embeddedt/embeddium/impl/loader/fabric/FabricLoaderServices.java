@@ -1,8 +1,8 @@
 package org.embeddedt.embeddium.impl.loader.fabric;
 
 //? if fabric {
-
-/*//? if ffapi
+/*
+//? if ffapi
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;

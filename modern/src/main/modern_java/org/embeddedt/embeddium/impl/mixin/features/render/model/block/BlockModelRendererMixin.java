@@ -21,9 +21,9 @@ import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 //? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelData;
 //? if forge && <1.19
-/*import net.minecraftforge.client.model.data.IModelData;*/
+//import net.minecraftforge.client.model.data.IModelData;
 //? if neoforge
-/*import net.neoforged.neoforge.client.model.data.ModelData;*/
+//import net.neoforged.neoforge.client.model.data.ModelData;
 import org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -40,7 +40,7 @@ public class BlockModelRendererMixin {
     //? if >=1.19 {
     private final RandomSource random = new SingleThreadedRandomSource(42L);
      //?} else
-    /*private final Random random = new XoRoShiRoRandom(42L);*/
+    //private final Random random = new XoRoShiRoRandom(42L);
 
     /**
      * @reason Use optimized vertex writer intrinsics, avoid allocations
@@ -64,7 +64,7 @@ public class BlockModelRendererMixin {
 
         ci.cancel();
 
-        /*$ rng >>*/ RandomSource random = this.random;
+        /*$ rng >>*/RandomSource random = this.random;
 
         // Clamp color ranges
         red = Mth.clamp(red, 0.0F, 1.0F);

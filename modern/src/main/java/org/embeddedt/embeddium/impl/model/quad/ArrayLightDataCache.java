@@ -33,7 +33,7 @@ public class ArrayLightDataCache extends LightDataAccess {
                 //? if <26.1 {
                 state.getLightBlock(world, pos) != 0
                 //?} else
-                /*state.getLightDampening() != 0*/
+                //state.getLightDampening() != 0
         );
         boolean fo = state.isSolidRender(/*? if <1.21.11 {*/world, pos/*?}*/);
         boolean fc = state.isCollisionShapeFullBlock(world, pos);

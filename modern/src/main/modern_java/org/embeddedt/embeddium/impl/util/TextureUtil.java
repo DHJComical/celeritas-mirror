@@ -10,13 +10,13 @@ public class TextureUtil {
         //? if >=1.17 {
         return RenderSystem.getShaderTexture(2);
         //?} else
-        /*return 2;*/
+        //return 2;
     }
 
     public static int getBlockTextureId() {
         //? if >=1.17 {
         return RenderSystem.getShaderTexture(0);
         //?} else
-        /*return 0;*/
+        //return 0;
     }
 }

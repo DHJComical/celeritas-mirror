@@ -78,7 +78,7 @@ public class ModelPartMixin implements ModelPartData {
             //? if >=1.16
             "/<init>/"
             //? if <1.16
-            /*"<init>(Lnet/minecraft/client/model/Model;)V", "<init>(IIII)V"*/
+            //"<init>(Lnet/minecraft/client/model/Model;)V", "<init>(IIII)V"
     }, at = @At("RETURN"))
     private void onInit(CallbackInfo ci) {
         var copies = new ModelCuboid[cubes.size()];
@@ -98,7 +98,7 @@ public class ModelPartMixin implements ModelPartData {
     //? if <1.21
     private static final String RENDER = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V";
     //? if >=1.21
-    /*private static final String RENDER = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V";*/
+    //private static final String RENDER = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V";
 
     @Redirect(method = RENDER, at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V"))
     private void enableCachingBeforePush(PoseStack stack) {
@@ -171,7 +171,7 @@ public class ModelPartMixin implements ModelPartData {
         //? if >=1.19 {
         return this.skipDraw;
         //?} else
-        /*return false;*/
+        //return false;
     }
 
     @Override

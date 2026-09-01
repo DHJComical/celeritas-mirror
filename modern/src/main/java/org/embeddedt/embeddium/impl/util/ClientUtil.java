@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 //? if <1.16
-/*import net.minecraft.world.entity.EntityType;*/
+//import net.minecraft.world.entity.EntityType;
 
 public class ClientUtil {
     public static boolean shouldEntityAppearGlowing(Entity entity) {

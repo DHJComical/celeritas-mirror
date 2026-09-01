@@ -40,7 +40,7 @@ public abstract class MixinItemRenderer {
             //? if >=1.19.3 {
 			ResourceLocation location = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(pItemRenderer0.getItem());
             //?} else
-            /*ResourceLocation location = net.minecraft.core.Registry.ITEM.getKey(pItemRenderer0.getItem());*/
+            //ResourceLocation location = net.minecraft.core.Registry.ITEM.getKey(pItemRenderer0.getItem());
 
 			CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getItemIds().applyAsInt(new NamespacedId(location.getNamespace(), location.getPath())));
 		}

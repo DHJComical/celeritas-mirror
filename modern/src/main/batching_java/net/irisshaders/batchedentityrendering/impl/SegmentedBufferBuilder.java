@@ -1,8 +1,8 @@
 package net.irisshaders.batchedentityrendering.impl;
 
 //? if >=1.21 {
-
-/*import com.mojang.blaze3d.systems.RenderSystem;
+/*
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;

@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 //? if >=1.20 {
 @Mixin(SpriteContents.class)
 //?} else
-/*@Mixin(TextureAtlasSprite.class)*/
+//@Mixin(TextureAtlasSprite.class)
 public class SpriteContentsMixin implements SpriteTransparencyLevel.Holder {
     //? if >=1.20 {
     @Mutable
@@ -57,7 +57,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevel.Holder {
         //? if >=1.19 {
         return Minecraft.getInstance().options.mipmapLevels().get();
         //?} else
-        /*return Minecraft.getInstance().options.mipmapLevels;*/
+        //return Minecraft.getInstance().options.mipmapLevels;
     }
 
     // While Fabric allows us to @Inject into the constructor here, that's just a specific detail of FabricMC's mixin

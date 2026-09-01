@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 //? if forge
 import net.minecraftforge.client.model.data.ModelData;
 //? if neoforge
-/*import net.neoforged.neoforge.client.model.data.ModelData;*/
+//import net.neoforged.neoforge.client.model.data.ModelData;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.jetbrains.annotations.Nullable;
 

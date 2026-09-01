@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.taumc.celeritas.impl.extensions.RenderGlobalExtension;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 //? if <1.0.0-beta.8
-/*import org.taumc.celeritas.impl.render.terrain.compile.PrimitiveBuiltRenderSectionData;*/
+//import org.taumc.celeritas.impl.render.terrain.compile.PrimitiveBuiltRenderSectionData;
 
 @Mixin(value = WorldRenderer.class, priority = 900)
 public abstract class WorldRendererMixin implements RenderGlobalExtension {
@@ -99,7 +99,7 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
     //? if <1.8 {
     public int render(LivingEntity viewEntity, int layer, double ticks) {
     //?} else
-    /*public int render(BlockLayer layer, double ticks, int anaglyphRenderPass, Entity viewEntity) {*/
+    //public int render(BlockLayer layer, double ticks, int anaglyphRenderPass, Entity viewEntity) {
         // Allow FalseTweaks mixin to replace constant
         @SuppressWarnings("unused")
         double magicSortingConstantValue = 1.0D;
@@ -170,7 +170,7 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
     //? if <1.3 {
     private static final String ON_RELOAD = "m_6748042";
     //?} else
-    /*private static final String ON_RELOAD = "reload()V";*/
+    //private static final String ON_RELOAD = "reload()V";
 
     @Inject(method = ON_RELOAD, at = @At("RETURN"))
     private void onReload(CallbackInfo ci) {
@@ -196,8 +196,8 @@ public abstract class WorldRendererMixin implements RenderGlobalExtension {
 
     @Inject(method = "renderEntities", at = @At(value = "FIELD", target = "Lnet/minecraft/client/render/world/WorldRenderer;globalBlockEntities:"
             //? if >=1.8 {
-            /*+ "Ljava/util/Set;"
-            *///?} else
+            //+ "Ljava/util/Set;"
+            //?} else
             + "Ljava/util/List;"
             , ordinal = 0))
     public void sodium$renderTileEntities(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) float partialTicks) {

@@ -43,7 +43,7 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
         //? if <1.21 {
 		super(new com.mojang.blaze3d.vertex.BufferBuilder(0), Collections.emptyMap());
         //?} else
-        /*super(new com.mojang.blaze3d.vertex.ByteBufferBuilder(0), Object2ObjectSortedMaps.emptyMap());*/
+        //super(new com.mojang.blaze3d.vertex.ByteBufferBuilder(0), Object2ObjectSortedMaps.emptyMap());
 
 		this.renderOrderManager = new GraphTranslucencyRenderOrderManager();
 		this.builders = new SegmentedBufferBuilder[NUM_BUFFERS];
@@ -324,7 +324,7 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
             //? if <1.21 {
             super(new com.mojang.blaze3d.vertex.BufferBuilder(0), Collections.emptyMap());
              //?} else
-            /*super(new com.mojang.blaze3d.vertex.ByteBufferBuilder(0), Object2ObjectSortedMaps.emptyMap());*/
+            //super(new com.mojang.blaze3d.vertex.ByteBufferBuilder(0), Object2ObjectSortedMaps.emptyMap());
 
 			this.wrapped = wrapped;
 		}

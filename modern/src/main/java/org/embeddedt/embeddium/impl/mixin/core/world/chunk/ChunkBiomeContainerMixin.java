@@ -1,8 +1,8 @@
 package org.embeddedt.embeddium.impl.mixin.core.world.chunk;
 
 //? if <1.18 {
-
-/*//? if >=1.17 {
+/*
+//? if >=1.17 {
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.chunk.EmptyLevelChunk;
 //?}
@@ -62,8 +62,8 @@ public abstract class ChunkBiomeContainerMixin implements ChunkBiomeContainerExt
         int[] biomeIds = this.writeBiomes();
         return new ChunkBiomeContainer(this.biomeRegistry, /^? if >=1.17 {^/ this, /^?}^/ biomeIds);
         //?} else {
-        /^return new ChunkBiomeContainer(this.biomes.clone());
-        ^///?}
+        //return new ChunkBiomeContainer(this.biomes.clone());
+        //?}
     }
 }
 *///?}

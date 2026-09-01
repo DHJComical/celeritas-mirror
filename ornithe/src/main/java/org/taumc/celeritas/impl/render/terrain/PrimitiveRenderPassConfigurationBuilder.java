@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 //? if >=1.8
-/*import net.minecraft.client.render.block.BlockLayer;*/
+//import net.minecraft.client.render.block.BlockLayer;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.QuadPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
@@ -54,7 +54,7 @@ public class PrimitiveRenderPassConfigurationBuilder {
         var builder = TerrainRenderPass.builder();
         builder.pipelineState(new PrimitivePipelineState(pass, disableBlend));
         //? if <1.0.0-beta.8.1
-        /*builder.hasNoLightmap(true);*/
+        //builder.hasNoLightmap(true);
         builder.vertexType(ChunkMeshFormats.VANILLA_LIKE).primitiveType(QuadPrimitiveType.TRIANGULATED);
         return builder;
     }

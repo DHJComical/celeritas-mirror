@@ -43,11 +43,11 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
             //? if <1.20.6
             super.putBulkData(matrices, bakedQuad, r, g, b, light, overlay);
             //? if >=1.20.6 <1.21
-            /*super.putBulkData(matrices, bakedQuad, r, g, b, a, light, overlay);*/
+            //super.putBulkData(matrices, bakedQuad, r, g, b, a, light, overlay);
             //? if >=1.21 && neoforge
-            /*VertexConsumer.super.putBulkData(matrices, bakedQuad, r, g, b, a, light, overlay, colorize);*/
+            //VertexConsumer.super.putBulkData(matrices, bakedQuad, r, g, b, a, light, overlay, colorize);
             //? if >=1.21 && !neoforge
-            /*VertexConsumer.super.putBulkData(matrices, bakedQuad, r, g, b, a, light, overlay);*/
+            //VertexConsumer.super.putBulkData(matrices, bakedQuad, r, g, b, a, light, overlay);
 
             SpriteUtil.markSpriteActive((TextureAtlasSprite)quad.celeritas$getSprite());
 
@@ -82,7 +82,7 @@ public abstract class BufferBuilderMixin /*? if <1.21 {*/ extends DefaultedVerte
 
         if (!this.fastFormat) {
             //? if >=1.21
-            /*VertexConsumer.*/
+            //VertexConsumer.
             super.putBulkData(matrices, bakedQuad, brightnessTable, r, g, b, /*? if >=1.20.6 {*/ /*a, *//*?}*/ light, overlay, colorize);
 
             SpriteUtil.markSpriteActive((TextureAtlasSprite)quad.celeritas$getSprite());

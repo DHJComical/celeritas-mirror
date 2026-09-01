@@ -17,7 +17,7 @@ import org.embeddedt.embeddium.impl.world.ReadableContainerExtended;
 import org.embeddedt.embeddium.impl.world.WorldSlice;
 //? if ffapi {
 //? if <1.20
-/*import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;*/
+//import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 //? if >=1.20
 import net.fabricmc.fabric.api.blockview.v2.RenderDataBlockEntity;
 //?}
@@ -94,7 +94,7 @@ public class ClonedChunkSection {
         boolean hasRenderData;
         try {
             //? if <1.20
-            /*hasRenderData = RenderAttachmentBlockEntity.class.isAssignableFrom(BlockEntity.class);*/
+            //hasRenderData = RenderAttachmentBlockEntity.class.isAssignableFrom(BlockEntity.class);
             //? if >=1.20
             hasRenderData = RenderDataBlockEntity.class.isAssignableFrom(BlockEntity.class);
         } catch(Throwable e) {
@@ -102,8 +102,8 @@ public class ClonedChunkSection {
         }
         HAS_FABRIC_RENDER_DATA = hasRenderData;
         //?} else {
-        /*HAS_FABRIC_RENDER_DATA = false;
-        *///?}
+        //HAS_FABRIC_RENDER_DATA = false;
+        //?}
     }
 
     public ClonedChunkSection(Level world, LevelChunk chunk, @Nullable LevelChunkSection section, SectionPos pos) {
@@ -113,7 +113,7 @@ public class ClonedChunkSection {
         //? if >=1.18 {
         PalettedContainer<Holder<Biome>> biomeData = null;
         //?} else
-        /*ChunkBiomeContainer biomeData = null;*/
+        //ChunkBiomeContainer biomeData = null;
 
         Int2ReferenceMap<BlockEntity> blockEntityMap = null;
         Int2ReferenceMap<Object> blockEntityRenderDataMap = null;
@@ -137,7 +137,7 @@ public class ClonedChunkSection {
         }
 
         //? if <1.18
-        /*biomeData = ChunkBiomeContainerExtended.clone(chunk.getBiomes());*/
+        //biomeData = ChunkBiomeContainerExtended.clone(chunk.getBiomes());
 
         this.blockData = blockData;
         this.biomeData = biomeData;
@@ -161,11 +161,11 @@ public class ClonedChunkSection {
 
         // We use swapUnsafe in the loops to avoid acquiring/releasing the lock on each iteration
         //? if >=1.21.11 {
-        /*var container = level.palettedContainerFactory().createForBlockStates();
-        *///?} else if >=1.18 {
+        //var container = level.palettedContainerFactory().createForBlockStates();
+        //?} else if >=1.18 {
         var container = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
         //?} else
-        /*var container = new PalettedContainer<>(GLOBAL_STATE_PALETTE, Block.BLOCK_STATE_REGISTRY, NbtUtils::readBlockState, NbtUtils::writeBlockState, Blocks.AIR.defaultBlockState());*/
+        //var container = new PalettedContainer<>(GLOBAL_STATE_PALETTE, Block.BLOCK_STATE_REGISTRY, NbtUtils::readBlockState, NbtUtils::writeBlockState, Blocks.AIR.defaultBlockState());
 
         if (pos.getY() == 3) {
             // Set the blocks at relative Y 12 (world Y 60) to barriers
@@ -280,10 +280,10 @@ public class ClonedChunkSection {
             //? if >=1.20
             Object data = ((RenderDataBlockEntity)entry.getValue()).getRenderData();
             //? if <1.20
-            /*Object data = ((RenderAttachmentBlockEntity)entry.getValue()).getRenderAttachmentData();*/
+            //Object data = ((RenderAttachmentBlockEntity)entry.getValue()).getRenderAttachmentData();
             //?} else {
-            /*Object data = null;
-            *///?}
+            //Object data = null;
+            //?}
 
             if (data != null) {
                 if (blockEntityRenderDataMap == null) {

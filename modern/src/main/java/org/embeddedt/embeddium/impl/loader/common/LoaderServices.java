@@ -5,7 +5,7 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 //? if fabric
-/*import org.embeddedt.embeddium.impl.loader.fabric.FabricLoaderServices;*/
+//import org.embeddedt.embeddium.impl.loader.fabric.FabricLoaderServices;
 //? if forgelike
 import org.embeddedt.embeddium.impl.loader.forge.ForgeLoaderServices;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
@@ -16,7 +16,7 @@ public interface LoaderServices {
     //? if forgelike
     LoaderServices INSTANCE = new ForgeLoaderServices();
     //? if fabric
-    /*LoaderServices INSTANCE = new FabricLoaderServices();*/
+    //LoaderServices INSTANCE = new FabricLoaderServices();
 
     default boolean hasCustomLightPipeline() {
         return false;

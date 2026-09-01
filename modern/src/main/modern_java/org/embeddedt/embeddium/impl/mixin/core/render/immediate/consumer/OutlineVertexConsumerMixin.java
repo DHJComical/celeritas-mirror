@@ -50,7 +50,7 @@ public abstract class OutlineVertexConsumerMixin /*? if <1.21 {*/ extends Defaul
         //? if <1.21 {
         color = ColorABGR.pack(this.defaultR, this.defaultG, this.defaultB, this.defaultA);
         //?} else
-        /*color = ColorARGB.toABGR(this.color);*/
+        //color = ColorARGB.toABGR(this.color);
         transform(ptr, count, format, color);
 
         VertexBufferWriter.of(this.delegate)

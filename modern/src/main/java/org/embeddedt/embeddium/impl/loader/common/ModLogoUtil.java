@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.loader.common;
 
 import com.mojang.blaze3d.platform.NativeImage;
 //? if fabric
-/*import net.fabricmc.loader.api.FabricLoader;*/
+//import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.ModList;
 //?}
 //? if neoforge
-/*import net.neoforged.fml.ModList;*/
+//import net.neoforged.fml.ModList;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 
@@ -50,7 +50,7 @@ public class ModLogoUtil {
                 Path logoPath = modFile.findResource(logoFile.get());
                 var logoStream = logoPath != null ? Files.newInputStream(logoPath) : null;
                 //?} else
-                /*var logoStream = modFile.getContents().openFile(logoFile.get());*/
+                //var logoStream = modFile.getContents().openFile(logoFile.get());
                 if(logoStream != null) {
                     texture = handleIoSupplier(modId, logoStream);
                 }
@@ -77,8 +77,8 @@ public class ModLogoUtil {
             ResourceLocation texture = ResourceLocationUtil.make(Celeritas.MODID, "logo/" + modId);
             Minecraft.getInstance().getTextureManager().register(texture, new DynamicTexture(
                     //? if >=1.21.11 {
-                    /*() -> modId + "_logo",
-                    *///?}
+                    //() -> modId + "_logo",
+                    //?}
                     logo));
             return texture;
         } else {

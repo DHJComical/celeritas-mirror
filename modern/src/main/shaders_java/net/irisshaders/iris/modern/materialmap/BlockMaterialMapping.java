@@ -82,9 +82,9 @@ public class BlockMaterialMapping {
             //? if forge {
             return m.getDeclaringClass() != net.minecraftforge.common.extensions.IForgeBlock.class;
             //?} else if neoforge {
-            /*return m.getDeclaringClass() != net.neoforged.neoforge.common.extensions.IBlockExtension.class;
-             *///?} else
-            /*return false;*/
+            //return m.getDeclaringClass() != net.neoforged.neoforge.common.extensions.IBlockExtension.class;
+             //?} else
+            //return false;
         }
     };
 

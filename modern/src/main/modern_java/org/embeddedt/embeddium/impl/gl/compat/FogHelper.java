@@ -9,7 +9,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkFogMode;
 //? if <1.18
-/*import net.minecraft.client.renderer.FogRenderer;*/
+//import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.util.Mth;
 
 public class FogHelper implements FogService {
@@ -18,16 +18,16 @@ public class FogHelper implements FogService {
 
     public float getFogEnd() {
         //? if <1.17 {
-        /*return GlStateManager.FOG.end;
-        *///?} else {
+        //return GlStateManager.FOG.end;
+        //?} else {
         return RenderSystem.getShaderFogEnd();
         //?}
     }
 
     public float getFogStart() {
         //? if <1.17 {
-        /*return GlStateManager.FOG.start;
-        *///?} else {
+        //return GlStateManager.FOG.start;
+        //?} else {
         return RenderSystem.getShaderFogStart();
         //?}
     }
@@ -46,7 +46,7 @@ public class FogHelper implements FogService {
         //? if >=1.18 {
         return RenderSystem.getShaderFogShape().getIndex();
         //?} else
-        /*return 0;*/ // always zero for 1.17 and older
+        //return 0;  always zero for 1.17 and older
     }
 
     public float getFogCutoff() {
@@ -69,8 +69,8 @@ public class FogHelper implements FogService {
 
     public float[] getFogColor() {
         //? if <1.17 {
-        /*return new float[]{FogRenderer.fogRed, FogRenderer.fogGreen, FogRenderer.fogBlue, 1.0F};
-        *///?} else {
+        //return new float[]{FogRenderer.fogRed, FogRenderer.fogGreen, FogRenderer.fogBlue, 1.0F};
+        //?} else {
         return RenderSystem.getShaderFogColor();
         //?}
     }

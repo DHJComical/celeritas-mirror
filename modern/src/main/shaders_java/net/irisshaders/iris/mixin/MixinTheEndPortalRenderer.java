@@ -100,8 +100,8 @@ public class MixinTheEndPortalRenderer {
 	@Unique
 	private void quad(TheEndPortalBlockEntity entity, VertexConsumer vertexConsumer,
                       //? if >=1.20.6 {
-                      /*PoseStack.Pose pose, Matrix3f ignore,
-                      *///?} else
+                      //PoseStack.Pose pose, Matrix3f ignore,
+                      //?} else
                       PoseStack.Pose entry, Matrix3f normal,
 					  Direction direction, float progress, int overlay, int light,
 					  float x1, float y1, float z1,
@@ -119,7 +119,7 @@ public class MixinTheEndPortalRenderer {
         //? if <1.20.6
         var pose = entry.pose();
         //? if >=1.20.6
-        /*var normal = pose;*/
+        //var normal = pose;
 
         //? if <1.21 {
 		vertexConsumer.vertex(pose, x1, y1, z1).color(RED, GREEN, BLUE, 1.0f)

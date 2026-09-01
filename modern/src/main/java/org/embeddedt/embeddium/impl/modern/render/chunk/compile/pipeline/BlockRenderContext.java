@@ -16,9 +16,9 @@ import net.minecraft.world.level.block.state.BlockState;
 //? if forge && >=1.19
 import net.minecraftforge.client.model.data.ModelData;
 //? if forge && <1.19
-/*import net.minecraftforge.client.model.data.IModelData;*/
+//import net.minecraftforge.client.model.data.IModelData;
 //? if neoforge
-/*import net.neoforged.neoforge.client.model.data.ModelData;*/
+//import net.neoforged.neoforge.client.model.data.ModelData;
 //? if <1.21.11
 import org.embeddedt.embeddium.impl.render.matrix_stack.CachingPoseStack;
 import org.joml.Vector3f;
@@ -51,7 +51,7 @@ public class BlockRenderContext {
     //? if <1.21.11 {
     private net.minecraft.client.resources.model.BakedModel model;
     //?} else
-    /*private net.minecraft.client.renderer.block.dispatch.BlockStateModelPart model;*/
+    //private net.minecraft.client.renderer.block.dispatch.BlockStateModelPart model;
 
     private long seed;
 
@@ -62,7 +62,7 @@ public class BlockRenderContext {
     //? if forgelike && >=1.19.1 && <1.21.11
     private ModelData modelData;
     //? if forgelike && <1.19.1
-    /*private IModelData modelData;*/
+    //private IModelData modelData;
 
     //? if <26.1 {
     @Getter
@@ -76,7 +76,7 @@ public class BlockRenderContext {
     //? if >=1.19 {
     private final net.minecraft.util.RandomSource random = new net.minecraft.world.level.levelgen.SingleThreadedRandomSource(42L);
     //?} else
-    /*private final java.util.Random random = new org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom(42L);*/
+    //private final java.util.Random random = new org.embeddedt.embeddium.impl.util.rand.XoRoShiRoRandom(42L);
 
     /**
      * Increments each time the block being rendered changes; used to efficiently avoid re-retrieving data

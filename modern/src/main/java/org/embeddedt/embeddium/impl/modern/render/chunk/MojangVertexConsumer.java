@@ -123,7 +123,7 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
     //? if <1.21
     public VertexConsumer vertex(double x, double y, double z) {
         //? if >=1.21
-        /*public VertexConsumer addVertex(float x, float y, float z) {*/
+        //public VertexConsumer addVertex(float x, float y, float z) {
         int index = flushLastVertex();
         var vertex = this.vertices[index];
         vertex.x = xOff + (float)x;
@@ -137,7 +137,7 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
     //? if <1.21
     public VertexConsumer color(int r, int g, int b, int a) {
         //? if >=1.21
-        /*public VertexConsumer setColor(int r, int g, int b, int a) {*/
+        //public VertexConsumer setColor(int r, int g, int b, int a) {
         currentVertexObj.color = ((a & 255) << 24) | ((b & 255) << 16) | ((g & 255) << 8) | (r & 255);
         return this;
     }
@@ -147,7 +147,7 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
     //? if <1.21
     public VertexConsumer color(int color) {
     //? if >=1.21
-    /*public VertexConsumer setColor(int color) {*/
+    //public VertexConsumer setColor(int color) {
         currentVertexObj.color = ColorARGB.toABGR(color);
         return this;
     }
@@ -157,7 +157,7 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
     //? if <1.21
     public VertexConsumer uv(float u, float v) {
         //? if >=1.21
-        /*public VertexConsumer setUv(float u, float v) {*/
+        //public VertexConsumer setUv(float u, float v) {
         var vertex = currentVertexObj;
         vertex.u = u;
         vertex.v = v;
@@ -168,7 +168,7 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
     //? if <1.21
     public VertexConsumer overlayCoords(int p_350815_, int p_350629_) {
         //? if >=1.21
-        /*public VertexConsumer setUv1(int p_350815_, int p_350629_) {*/
+        //public VertexConsumer setUv1(int p_350815_, int p_350629_) {
         return this;
     }
 
@@ -176,7 +176,7 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
     //? if <1.21
     public VertexConsumer uv2(int p_350859_, int p_351004_) {
         //? if >=1.21
-        /*public VertexConsumer setUv2(int p_350859_, int p_351004_) {*/
+        //public VertexConsumer setUv2(int p_350859_, int p_351004_) {
         currentVertexObj.light = (p_351004_ << 16) | (p_350859_ & 0xFFFF);
         return this;
     }
@@ -185,7 +185,7 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
     //? if <1.21
     public VertexConsumer normal(float p_350429_, float p_350286_, float p_350836_) {
         //? if >=1.21
-        /*public VertexConsumer setNormal(float p_350429_, float p_350286_, float p_350836_) {*/
+        //public VertexConsumer setNormal(float p_350429_, float p_350286_, float p_350836_) {
         currentVertexObj.vanillaNormal = NormI8.pack(p_350429_, p_350286_, p_350836_);
         return this;
     }

@@ -17,7 +17,7 @@ public class MinecraftMixin {
             //? if <1.8 {
             "init"
              //?} else
-            /*"initDisplay"*/
+            //"initDisplay"
     ;
 
     /**

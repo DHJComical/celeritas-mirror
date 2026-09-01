@@ -24,13 +24,13 @@ public class ChunkRenderMatricesBuilder {
         //? if >=1.20 {
         return new ChunkRenderMatrices(new Matrix4f(RenderSystem.getProjectionMatrix()), new Matrix4f(entry.pose()));
         //?} else
-        /*return new ChunkRenderMatrices(JomlHelper.copy(getProjectionMatrix()), JomlHelper.copy(entry.pose()));*/
+        //return new ChunkRenderMatrices(JomlHelper.copy(getProjectionMatrix()), JomlHelper.copy(entry.pose()));
     }
 
     public static ChunkRenderMatrices from(Matrix4f pose) {
         //? if >=1.20 {
         return new ChunkRenderMatrices(new Matrix4f(RenderSystem.getProjectionMatrix()), pose);
         //?} else
-        /*return new ChunkRenderMatrices(JomlHelper.copy(getProjectionMatrix()), pose);*/
+        //return new ChunkRenderMatrices(JomlHelper.copy(getProjectionMatrix()), pose);
     }
 }

@@ -42,7 +42,7 @@ public class ModelPartMixin_Early {
                         //? if <1.21
                           , float red, float green, float blue, float alpha
                         //? if >=1.21
-                          /*,int color*/
+                          //,int color
     ) {
         VertexBufferWriter writer = VertexBufferWriter.tryOf(vertices);
 
@@ -52,7 +52,7 @@ public class ModelPartMixin_Early {
         //? if <1.21
         int packedColor = ColorABGR.pack(red, green, blue, alpha);
         //? if >=1.21
-        /*int packedColor = ColorARGB.toABGR(color);*/
+        //int packedColor = ColorARGB.toABGR(color);
 
         //noinspection ForLoopReplaceableByForEach
         for(int i = 0; i < cubes.size(); i++) {
@@ -65,12 +65,12 @@ public class ModelPartMixin_Early {
                 //? if >=1.17 {
                 cube.compile(
                 //?} else
-                /*compileCube(cube,*/
+                //compileCube(cube,
                         matrixPose, vertices, light, overlay,
                         //? if <1.21
                         red, green, blue, alpha
                         //? if >=1.21
-                        /*color*/
+                        //color
                 );
             }
         }

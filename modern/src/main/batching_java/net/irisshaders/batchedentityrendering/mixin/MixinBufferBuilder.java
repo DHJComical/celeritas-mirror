@@ -32,8 +32,8 @@ public class MixinBufferBuilder implements MemoryTrackingBuffer {
 	}
 }
 //?} else {
-
-/*import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+/*
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import net.irisshaders.batchedentityrendering.impl.MemoryTrackingBuffer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

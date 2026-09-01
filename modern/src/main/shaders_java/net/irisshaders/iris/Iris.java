@@ -4,7 +4,7 @@ import com.google.common.base.Throwables;
 import com.mojang.blaze3d.platform.GlDebug;
 import com.mojang.blaze3d.platform.InputConstants;
 //? if fabric
-/*import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;*/
+//import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.config.IrisConfig;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;

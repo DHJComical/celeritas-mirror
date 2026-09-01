@@ -20,5 +20,5 @@ public interface FRAPIRenderHandler {
 
     void reset();
 
-    void renderEmbeddium(BlockRenderContext ctx, ChunkBuildBuffers buffers, PoseStack mStack, /*$ rng >>*/ RandomSource random);
+    void renderEmbeddium(BlockRenderContext ctx, ChunkBuildBuffers buffers, PoseStack mStack, /*$ rng >>*/RandomSource random);
 }

@@ -18,8 +18,8 @@ import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
 //?}
 //? if forge && <1.19 {
-/*import net.minecraftforge.client.model.data.IModelData;
-*///?}
+//import net.minecraftforge.client.model.data.IModelData;
+//?}
 //? if forge && >=1.16
 import net.minecraftforge.client.model.data.MultipartModelData;
 //? if neoforge {
@@ -149,7 +149,7 @@ public class MultipartBakedModelMixin {
      * @reason Avoid expensive allocations and replace bitfield indirection
      */
     @Overwrite(/*? if forgelike && >=1.16 {*/ remap = false/*?}*/)
-    public List<BakedQuad> getQuads(BlockState state, Direction face, /*$ rng >>*/ RandomSource random/*? if forgelike && >=1.19 {*/, ModelData modelData, RenderType renderLayer /*?}*//*? if forge && >=1.16 && <1.19 {*//*, IModelData modelData *//*?}*/) {
+    public List<BakedQuad> getQuads(BlockState state, Direction face, /*$ rng >>*/RandomSource random/*? if forgelike && >=1.19 {*/, ModelData modelData, RenderType renderLayer /*?}*//*? if forge && >=1.16 && <1.19 {*//*, IModelData modelData *//*?}*/) {
         if (state == null) {
             //? if <1.19 {
             /*// Embeddium: There needs to be Map#get() and Map#put() calls in this method in order for FerriteCore 1.18

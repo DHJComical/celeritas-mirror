@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.entity.shadows;
 
 //? if <1.20
-/*import org.embeddedt.embeddium.api.math.Matrix4fExtended;*/
+//import org.embeddedt.embeddium.api.math.Matrix4fExtended;
 import org.embeddedt.embeddium.api.vertex.buffer.VertexBufferWriter;
 import org.embeddedt.embeddium.api.vertex.format.common.ModelVertex;
 import net.minecraft.client.renderer.LightTexture;
@@ -68,9 +68,9 @@ public class EntityRenderDispatcherMixin {
         //? if >=1.19 {
         float brightness = LightTexture.getBrightness(world.dimensionType(), light);
         //?} else if >=1.16 {
-        /*float brightness = world.dimensionType().brightness(light);
-        *///?} else
-        /*float brightness = world.getDimension().getBrightness(light);*/
+        //float brightness = world.dimensionType().brightness(light);
+        //?} else
+        //float brightness = world.getDimension().getBrightness(light);
         float alpha = (float) (((double) opacity - ((y - (double) pos.getY()) / 2.0)) * 0.5 * (double) brightness);
 
         if (alpha >= 0.0F) {
@@ -115,7 +115,7 @@ public class EntityRenderDispatcherMixin {
         //? if >=1.20 {
         var matPosition = matrices.pose();
         //?} else
-        /*var matPosition = Matrix4fExtended.get(matrices.pose());*/
+        //var matPosition = Matrix4fExtended.get(matrices.pose());
 
         var color = ColorABGR.withAlpha(SHADOW_COLOR, alpha);
         var normal = MatrixHelper.transformNormal(matNormal, /*? if >=1.20.6 {*/ /*matrices.trustedNormals, *//*?}*/  Direction.UP);

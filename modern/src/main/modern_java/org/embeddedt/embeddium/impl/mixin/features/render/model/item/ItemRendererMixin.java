@@ -35,7 +35,7 @@ public class ItemRendererMixin {
     //? if >=1.19 {
     private final RandomSource random = new SingleThreadedRandomSource(42L);
     //?} else
-    /*private final Random random = new XoRoShiRoRandom(42L);*/
+    //private final Random random = new XoRoShiRoRandom(42L);
 
     @Shadow
     @Final
@@ -60,7 +60,7 @@ public class ItemRendererMixin {
         //? if >=1.19 {
         RandomSource random = new SingleThreadedRandomSource(42L);
         //?} else
-        /*Random random = new XoRoShiRoRandom(42L);*/
+        //Random random = new XoRoShiRoRandom(42L);
 
         PoseStack.Pose matrices = matrixStack.last();
 
@@ -112,7 +112,7 @@ public class ItemRendererMixin {
             //? if forgelike {
             shouldReadExistingColor = true;
             //?} else
-            /*shouldReadExistingColor = false;*/
+            //shouldReadExistingColor = false;
 
             BakedModelEncoder.writeQuadVertices(writer, matrices, quad, color, light, overlay, shouldReadExistingColor);
 

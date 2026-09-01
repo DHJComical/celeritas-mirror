@@ -11,7 +11,7 @@ public class RenderSystemMixin {
             //? if >=1.20 {
             "Lcom/mojang/blaze3d/systems/RenderSystem;pollEvents()V"
             //?} else
-            /*"Lorg/lwjgl/glfw/GLFW;glfwPollEvents()V"*/
+            //"Lorg/lwjgl/glfw/GLFW;glfwPollEvents()V"
             , ordinal = 0)/*? if fabric || (forge && >=1.20) {*/, remap = false/*?}*/)
     private static void removeFirstPoll() {
         // noop

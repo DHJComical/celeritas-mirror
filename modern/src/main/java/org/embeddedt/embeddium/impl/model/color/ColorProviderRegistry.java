@@ -65,8 +65,8 @@ public class ColorProviderRegistry {
                 //? if <1.20.4 {
                 Blocks.GRASS,
                 //?} else {
-                /*Blocks.SHORT_GRASS,
-                *///?}
+                //Blocks.SHORT_GRASS,
+                //?}
                 Blocks.POTTED_FERN,
                 //? if >=1.20
                 Blocks.PINK_PETALS,

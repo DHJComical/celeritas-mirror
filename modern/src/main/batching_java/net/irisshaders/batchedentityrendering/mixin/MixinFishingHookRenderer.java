@@ -20,6 +20,6 @@ public class MixinFishingHookRenderer {
         //? if <1.21 {
 		consumer.vertex(0, 0, 0).color(0, 0, 0, 255).normal(0, 0, 0).endVertex();
         //?} else
-        /*consumer.addVertex(0, 0, 0).setColor(0, 0, 0, 255).setNormal(0, 0, 0);*/
+        //consumer.addVertex(0, 0, 0).setColor(0, 0, 0, 255).setNormal(0, 0, 0);
 	}
 }

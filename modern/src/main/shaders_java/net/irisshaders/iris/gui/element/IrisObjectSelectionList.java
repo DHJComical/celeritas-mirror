@@ -12,8 +12,8 @@ public class IrisObjectSelectionList<E extends AbstractSelectionList.Entry<E>> e
 		this.x0 = left;
 		this.x1 = right;
         //?} else {
-        /*super(client, width, height, top, itemHeight);
-        *///?}
+        //super(client, width, height, top, itemHeight);
+        //?}
 	}
 
 	@Override

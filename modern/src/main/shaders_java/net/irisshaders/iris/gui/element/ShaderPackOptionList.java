@@ -46,8 +46,8 @@ public class ShaderPackOptionList extends IrisContainerObjectSelectionList<Shade
 
 	public ShaderPackOptionList(ShaderPackScreen screen, NavigationController navigation, ShaderPack pack, Minecraft client, int width, int height, int top, int bottom, int left, int right) {
         //? if >=1.20.6 {
-		/*super(client, width, bottom, top, bottom, left, right, 24);
-        *///?} else {
+		//super(client, width, bottom, top, bottom, left, right, 24);
+        //?} else {
         super(client, width, height, top, bottom, left, right, 24);
         //?}
 		this.navigation = navigation;

@@ -46,7 +46,7 @@ public class SpriteMixin
         //? if >=1.17 {
         return this.animatedTexture != null;
         //?} else
-        /^return isAnimation();^/
+        //return isAnimation();
     }
 
     @Override

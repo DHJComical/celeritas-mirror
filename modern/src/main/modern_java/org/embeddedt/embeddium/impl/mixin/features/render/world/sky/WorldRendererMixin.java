@@ -16,7 +16,7 @@ import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 //? if >=1.20 {
 import org.joml.Matrix4f;
  //?} else
-/*import com.mojang.math.Matrix4f;*/
+//import com.mojang.math.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -75,7 +75,7 @@ public class WorldRendererMixin {
         //? if >=1.16 {
         boolean dimensionIsFoggy = this.minecraft.level.effects().isFoggyAt(Mth.floor(cameraPosition.x()), Mth.floor(cameraPosition.y()));
         //?} else
-        /^boolean dimensionIsFoggy = this.minecraft.level.getDimension().isFoggyAt(Mth.floor(cameraPosition.x()), Mth.floor(cameraPosition.y()));^/
+        //boolean dimensionIsFoggy = this.minecraft.level.getDimension().isFoggyAt(Mth.floor(cameraPosition.x()), Mth.floor(cameraPosition.y()));
         boolean useThickFog = dimensionIsFoggy || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
 
         if (isSubmersed || hasBlindness || useThickFog) {

@@ -17,7 +17,7 @@ import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
 //?}
 //? if forge && <1.19
-/*import net.minecraftforge.client.model.data.IModelData;*/
+//import net.minecraftforge.client.model.data.IModelData;
 //? if neoforge {
 /*import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 import net.neoforged.neoforge.client.model.data.ModelData;
@@ -41,12 +41,12 @@ public class WeightedBakedModelMixin {
 
     private static BakedModel getData(WeightedEntry.Wrapper<BakedModel> wrapper) {
         //? if >=1.20.6
-        /*return wrapper.data();*/
+        //return wrapper.data();
         //? if <1.20.6
         return wrapper.getData();
     }
 
-    private WeightedEntry.Wrapper<BakedModel> embeddium$readWeightedList(/*$ rng >>*/ RandomSource random) {
+    private WeightedEntry.Wrapper<BakedModel> embeddium$readWeightedList(/*$ rng >>*/RandomSource random) {
         WeightedEntry.Wrapper<BakedModel> quad = getAt(this.list, Math.abs((int) random.nextLong()) % this.totalWeight);
         return quad;
     }
@@ -56,7 +56,7 @@ public class WeightedBakedModelMixin {
      * @reason Avoid excessive object allocations
      */
     @Overwrite(/*? if forgelike {*/ remap = false/*?}*/)
-    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, /*$ rng >>*/ RandomSource random/*? if forgelike && >=1.19 {*/, ModelData modelData, RenderType renderLayer/*?}*/ /*? if forgelike && <1.19 {*//*, IModelData modelData *//*?}*/) {
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, /*$ rng >>*/RandomSource random/*? if forgelike && >=1.19 {*/, ModelData modelData, RenderType renderLayer/*?}*/ /*? if forgelike && <1.19 {*//*, IModelData modelData *//*?}*/) {
         var quad = embeddium$readWeightedList(random);
 
         if (quad != null) {

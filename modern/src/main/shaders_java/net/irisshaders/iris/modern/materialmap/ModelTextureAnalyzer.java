@@ -256,7 +256,7 @@ public class ModelTextureAnalyzer {
             //? if forge
             var attributes = net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions.of(fluid);
             //? if neoforge
-            /*var attributes = net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(fluid);*/
+            //var attributes = net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(fluid);
             for (var state : fluid.getStateDefinition().getPossibleStates()) {
                 var legacyState = state.createLegacyBlock();
                 var correctFluidId = blockStateIds.getOrDefault(legacyState, -1);
@@ -354,9 +354,9 @@ public class ModelTextureAnalyzer {
             //? if forge
             List<BakedQuad> quadList = model.getQuads(state, direction, random, net.minecraftforge.client.model.data.ModelData.EMPTY, null);
             //? if neoforge
-            /*List<BakedQuad> quadList = model.getQuads(state, direction, random, net.neoforged.neoforge.client.model.data.ModelData.EMPTY, null);*/
+            //List<BakedQuad> quadList = model.getQuads(state, direction, random, net.neoforged.neoforge.client.model.data.ModelData.EMPTY, null);
             //? if fabric
-            /*List<BakedQuad> quadList = model.getQuads(state, direction, random);*/
+            //List<BakedQuad> quadList = model.getQuads(state, direction, random);
 
             var votingMap = this.votingMap;
 

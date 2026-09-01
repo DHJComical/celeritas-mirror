@@ -65,7 +65,7 @@ public class FMLEarlyLoaderServices implements EarlyLoaderServices {
         //? if >=1.17 {
         Path mixinPackagePath = modFile.findResource(packagePath.split("/"));
         //?} else
-        /*Path mixinPackagePath = modFile.findResource(packagePath);*/
+        //Path mixinPackagePath = modFile.findResource(packagePath);
         if (!Files.exists(mixinPackagePath)) {
             return List.of();
         }
@@ -76,8 +76,8 @@ public class FMLEarlyLoaderServices implements EarlyLoaderServices {
     @Override
     public Distribution getDistribution() {
         //? if >=1.21.11 {
-        /*var dist = FMLLoader.getCurrent().getDist();
-        *///?} else {
+        //var dist = FMLLoader.getCurrent().getDist();
+        //?} else {
         var dist = FMLLoader.getDist();
         //?}
         return dist.isClient() ? Distribution.CLIENT : Distribution.SERVER;

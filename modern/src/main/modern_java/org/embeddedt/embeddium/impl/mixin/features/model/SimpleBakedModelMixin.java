@@ -5,8 +5,8 @@ import net.minecraftforge.client.extensions.IForgeBakedModel;
 //? if forge && >=1.19 {
 import net.minecraftforge.client.model.data.ModelData;
 //?} else if forge && <1.19 {
-/*import net.minecraftforge.client.model.data.IModelData;
-*///?} else if neoforge {
+//import net.minecraftforge.client.model.data.IModelData;
+//?} else if neoforge {
 /*import net.neoforged.neoforge.client.extensions.IBakedModelExtension;
 import net.neoforged.neoforge.client.model.data.ModelData;
 *///?}
@@ -30,7 +30,7 @@ import java.util.List;
 @Mixin(value = SimpleBakedModel.class, priority = 700)
 public abstract class SimpleBakedModelMixin implements /*? if forge {*/ IForgeBakedModel /*?} else {*/ /*IBakedModelExtension *//*?}*/ {
     @Shadow
-    public abstract List<BakedQuad> getQuads(@Nullable BlockState pState, @Nullable Direction pDirection, /*$ rng >>*/ RandomSource pRandom);
+    public abstract List<BakedQuad> getQuads(@Nullable BlockState pState, @Nullable Direction pDirection, /*$ rng >>*/RandomSource pRandom);
 
     @Intrinsic
     @Override

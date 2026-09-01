@@ -31,7 +31,7 @@ public class ClientPacketListenerMixin {
                 //? if <26.1 {
                 packet.pos().x, packet.pos().z,
                 //?} else
-                /*packet.pos().x(), packet.pos().z(),*/
+                //packet.pos().x(), packet.pos().z(),
                 ChunkStatus.FLAG_ALL);
     }
 }

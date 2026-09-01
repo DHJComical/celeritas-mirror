@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
 //? if fabric && ffapi
-/*import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;*/
+//import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 //? if shaders
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 //? if >=26.1 {
@@ -79,8 +79,8 @@ public class FluidRenderer {
     //? if <1.20.2 {
     private static final float SPRITE_UV_SCALING_RANGE = 16f;
     //?} else {
-    /*private static final float SPRITE_UV_SCALING_RANGE = 1f;
-    *///?}
+    //private static final float SPRITE_UV_SCALING_RANGE = 1f;
+    //?}
 
 
     private final BlockPos.MutableBlockPos scratchPos = new BlockPos.MutableBlockPos();
@@ -108,7 +108,7 @@ public class FluidRenderer {
     private final boolean useAmbientOcclusion;
 
     //? if fabric && ffapi && >=1.17
-    /*private final FabricFluidRenderer fabricFluidRenderer = new FabricFluidRenderer();*/
+    //private final FabricFluidRenderer fabricFluidRenderer = new FabricFluidRenderer();
 
     /**
      * Whether any fluids exist with the RENDERS_WITH_VANILLA tag. This allows the check to be elided most of the time.
@@ -147,7 +147,7 @@ public class FluidRenderer {
         //? if <26.1 {
         this.useAmbientOcclusion = Minecraft.useAmbientOcclusion();
          //?} else
-        /*this.useAmbientOcclusion = Minecraft.getInstance().options.ambientOcclusion().get();*/
+        //this.useAmbientOcclusion = Minecraft.getInstance().options.ambientOcclusion().get();
 
         //? if <1.21.11 {
         this.lavaSprites = new TextureAtlasSprite[2];
@@ -163,12 +163,12 @@ public class FluidRenderer {
         //? if >=1.20 <1.21.11 {
         this.doVanillaRenderedFluidsExist = net.minecraft.core.registries.BuiltInRegistries.FLUID.getTagOrEmpty(EmbeddiumTags.RENDERS_WITH_VANILLA).iterator().hasNext();
         //?} else
-        /*this.doVanillaRenderedFluidsExist = false;*/
+        //this.doVanillaRenderedFluidsExist = false;
 
         //? if shaders {
         this.colorEncoder = WorldRenderingSettings.INSTANCE.shouldUseSeparateAo() ? ChunkColorWriter.SEPARATE_AO : ChunkColorWriter.EMBEDDIUM;
         //?} else
-        /*this.colorEncoder = ChunkColorWriter.EMBEDDIUM;*/
+        //this.colorEncoder = ChunkColorWriter.EMBEDDIUM;
     }
 
     /**
@@ -234,7 +234,7 @@ public class FluidRenderer {
             //? if <1.21.11 {
             return !Shapes.blockOccudes(threshold, shape, dir);
             //?} else
-            /*return !Shapes.blockOccludes(threshold, shape, dir);*/
+            //return !Shapes.blockOccludes(threshold, shape, dir);
         }
 
         return true;
@@ -315,7 +315,7 @@ public class FluidRenderer {
         Fluid fluid = fluidState.getType();
 
         //? if fabric && ffapi
-        /*var fabricFluidHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid);*/
+        //var fabricFluidHandler = FluidRenderHandlerRegistry.INSTANCE.get(fluid);
 
         //? if fabric && ffapi && >=1.17 {
         /*if (fabricFluidRenderer.renderCustomFluid(ctx, fabricFluidHandler, fluidState, buffers, material)) {
@@ -357,21 +357,21 @@ public class FluidRenderer {
         //? if forgelike && >=1.19 {
         boolean isWater = fluid.getFluidType().getLightLevel(fluidState, world, blockPos) == 0;
         //?} else if forgelike && <1.19 {
-        /*boolean isWater = fluid.getAttributes().getLuminosity(world, blockPos) == 0;
-        *///?} else
-        /*boolean isWater = fluid.is(FluidTags.WATER);*/
+        //boolean isWater = fluid.getAttributes().getLuminosity(world, blockPos) == 0;
+        //?} else
+        //boolean isWater = fluid.is(FluidTags.WATER);
 
         final ColorProvider<FluidState> colorProvider = this.getColorProvider(fluid);
 
         TextureAtlasSprite[] sprites;
         //? if >=26.1 {
-        /*sprites = readFluidModelSprites(fluidModel);
-        *///?} else if forgelike {
+        //sprites = readFluidModelSprites(fluidModel);
+        //?} else if forgelike {
         sprites = fluidSpriteCache.getSprites(world, blockPos, fluidState);
         //?} else if ffapi {
-        /*sprites = fabricFluidHandler.getFluidSprites(world, blockPos, fluidState);
-        *///?} else
-        /*sprites = isWater ? this.waterSprites : this.lavaSprites;*/
+        //sprites = fabricFluidHandler.getFluidSprites(world, blockPos, fluidState);
+        //?} else
+        //sprites = isWater ? this.waterSprites : this.lavaSprites;
 
         float fluidHeight = this.fluidHeight(world, fluid, blockPos, Direction.UP);
         float northWestHeight, southWestHeight, southEastHeight, northEastHeight;
@@ -409,7 +409,7 @@ public class FluidRenderer {
         //? if shaders {
         boolean disableAo = WorldRenderingSettings.INSTANCE.shouldDisableDirectionalShading();
         //?} else
-        /*boolean disableAo = false;*/
+        //boolean disableAo = false;
 
         if (!sfUp && this.isSideExposed(world, posX, posY, posZ, Direction.UP, Math.min(Math.min(northWestHeight, southWestHeight), Math.min(southEastHeight, northEastHeight)))) {
             northWestHeight -= EPSILON;
@@ -608,10 +608,10 @@ public class FluidRenderer {
                     if (
                             /*? if forgelike {*/
                             adjBlock.shouldDisplayFluidOverlay(world, adjPos, fluidState)
-                            /*?} else if ffapi && >=1.18 {*/
-                            /*FluidRenderHandlerRegistry.INSTANCE.isBlockTransparent(adjBlock.getBlock())
-                            *//*?} else {*/
-                            /*adjBlock.getBlock() instanceof HalfTransparentBlock || adjBlock.getBlock() instanceof LeavesBlock
+                            /*?} else if ffapi && >=1.18 {*//*
+                            FluidRenderHandlerRegistry.INSTANCE.isBlockTransparent(adjBlock.getBlock())
+                            *//*?} else {*//*
+                            adjBlock.getBlock() instanceof HalfTransparentBlock || adjBlock.getBlock() instanceof LeavesBlock
                             *//*?}*/) {
                         sprite = sprites[2];
                         isOverlay = true;

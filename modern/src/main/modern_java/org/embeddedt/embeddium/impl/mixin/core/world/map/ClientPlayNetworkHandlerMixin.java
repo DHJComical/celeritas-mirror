@@ -8,7 +8,7 @@ import net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket;
 //? if >=1.18 {
 import net.minecraft.network.protocol.game.ClientboundLightUpdatePacketData;
 //?} else
-/*import net.minecraft.network.protocol.game.ClientboundLightUpdatePacket;*/
+//import net.minecraft.network.protocol.game.ClientboundLightUpdatePacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -45,6 +45,6 @@ public class ClientPlayNetworkHandlerMixin {
         //? if <1.20.2 {
         ChunkTrackerHolder.get(this.level).onChunkStatusRemoved(packet.getX(), packet.getZ(), ChunkStatus.FLAG_ALL);
         //?} else
-        /*ChunkTrackerHolder.get(this.level).onChunkStatusRemoved(packet.pos().x, packet.pos().z, ChunkStatus.FLAG_ALL);*/
+        //ChunkTrackerHolder.get(this.level).onChunkStatusRemoved(packet.pos().x, packet.pos().z, ChunkStatus.FLAG_ALL);
     }
 }

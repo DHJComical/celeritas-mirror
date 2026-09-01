@@ -8,5 +8,5 @@ public interface WeightedRandomListExtended<E> {
     /**
      * Like getRandomItem, but avoids allocating an Optional.
      */
-    @Nullable E embeddium$getRandomItem(/*$ rng >>*/ RandomSource random);
+    @Nullable E embeddium$getRandomItem(/*$ rng >>*/RandomSource random);
 }

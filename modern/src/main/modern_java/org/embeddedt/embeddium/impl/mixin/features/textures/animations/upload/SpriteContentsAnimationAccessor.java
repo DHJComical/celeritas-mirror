@@ -21,7 +21,7 @@ public interface SpriteContentsAnimationAccessor {
     //? if >=1.20 {
     List<SpriteContents.FrameInfo> getFrames();
     //?} else
-    /*List<TextureAtlasSprite.FrameInfo> getFrames();*/
+    //List<TextureAtlasSprite.FrameInfo> getFrames();
 
     @Accessor
     int getFrameRowSize();

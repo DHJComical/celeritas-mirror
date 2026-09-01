@@ -11,6 +11,6 @@ public class InjectionPoints {
                     //? if forgelike
                     "Lnet/minecraft/client/renderer/culling/Frustum;" +
                     //? if neoforge && >=1.21
-                    /*"Ljava/util/function/Predicate;" +*/
+                    //"Ljava/util/function/Predicate;" +
                     ")V";
 }

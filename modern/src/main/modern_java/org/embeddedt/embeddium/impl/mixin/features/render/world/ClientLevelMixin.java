@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkSource;
 //? if <1.16
-/*import net.minecraft.world.level.dimension.Dimension;*/
+//import net.minecraft.world.level.dimension.Dimension;
 import net.minecraft.world.level.dimension.DimensionType;
 //? if >=1.18 {
 import net.minecraft.world.level.levelgen.RandomSupport;

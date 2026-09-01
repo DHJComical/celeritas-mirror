@@ -164,9 +164,9 @@ public abstract class BakedQuadMixin implements BakedQuadView {
         //? if >=1.16 {
         return this.shade;
         //?} else if forgelike && <1.16 {
-        /*return this.applyDiffuseLighting;
-        *///?} else
-        /*return false;*/
+        //return this.applyDiffuseLighting;
+        //?} else
+        //return false;
     }
 
     //? if forgelike && >=1.19 {

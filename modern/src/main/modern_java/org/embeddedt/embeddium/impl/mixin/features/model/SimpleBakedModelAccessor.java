@@ -3,7 +3,7 @@ package org.embeddedt.embeddium.impl.mixin.features.model;
 //? if forge && >=1.19
 import net.minecraftforge.client.ChunkRenderTypeSet;
 //? if neoforge
-/*import net.neoforged.neoforge.client.ChunkRenderTypeSet;*/
+//import net.neoforged.neoforge.client.ChunkRenderTypeSet;
 
 //? if forgelike && >=1.19 {
 import net.minecraft.client.resources.model.SimpleBakedModel;

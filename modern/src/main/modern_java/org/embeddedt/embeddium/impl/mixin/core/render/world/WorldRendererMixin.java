@@ -4,10 +4,10 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 //? if >=1.21
-/*import net.minecraft.client.DeltaTracker;*/
+//import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.*;
 //? if neoforge
-/*import net.neoforged.neoforge.client.ClientHooks;*/
+//import net.neoforged.neoforge.client.ClientHooks;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
@@ -32,7 +32,7 @@ import org.embeddedt.embeddium.impl.util.sodium.FlawlessFrames;
 //? if >=1.20 {
 import org.joml.Matrix4f;
 //?} else
-/*import com.mojang.math.Matrix4f;*/
+//import com.mojang.math.Matrix4f;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -108,7 +108,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         //? if >=1.18 {
         @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;getEffectiveRenderDistance()I", ordinal = 1)
         //?} else
-        /*@At(value = "FIELD", target = "Lnet/minecraft/client/Options;renderDistance:I")*/
+        //@At(value = "FIELD", target = "Lnet/minecraft/client/Options;renderDistance:I")
     )
     private int nullifyBuiltChunkStorage(Options options) {
         // Do not allow any resources to be allocated
@@ -165,8 +165,8 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         //? if >=1.20 <1.20.6 {
         Matrix4f pose = matrices.last().pose();
         //?} else if <1.20 {
-        /*org.joml.Matrix4f pose = JomlHelper.copy(matrices.last().pose());
-        *///?}
+        //org.joml.Matrix4f pose = JomlHelper.copy(matrices.last().pose());
+        //?}
 
         try {
             this.renderer.setCurrentChunkRenderPose(pose);
@@ -205,11 +205,11 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
 
         // Detect mods setting the vanilla update flags themselves
         //? if <1.18 {
-        /*if (this.needsUpdate) {
-        *///?} else if >=1.18 <1.20.2 {
+        //if (this.needsUpdate) {
+        //?} else if >=1.18 <1.20.2 {
         if (this.needsFullRenderChunkUpdate || this.needsFrustumUpdate.compareAndSet(true, false)) {
         //?} else
-        /*if (this.sectionOcclusionGraph.consumeFrustumUpdate()) {*/
+        //if (this.sectionOcclusionGraph.consumeFrustumUpdate()) {
             this.renderer.scheduleTerrainUpdate();
         }
 
@@ -243,7 +243,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
 
         // We set this because third-party mods may use it (to loop themselves), even if Vanilla does not.
         //? if <1.18
-        /*this.needsUpdate = false;*/
+        //this.needsUpdate = false;
         //? if >=1.18 <1.20.2
         this.needsFullRenderChunkUpdate = false;
     }
@@ -313,9 +313,9 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
             /*? if <1.21 {*/ float tickDelta, long limitTime, /*?} else {*/ /*DeltaTracker tracker, *//*?}*/
             boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightmapTextureManager, /*? if >=1.20.6 {*/ /*Matrix4f pose, *//*?}*/ Matrix4f positionMatrix, CallbackInfo ci) {
         //? if >=1.21
-        /*float tickDelta = tracker.getGameTimeDeltaPartialTick(false);*/
+        //float tickDelta = tracker.getGameTimeDeltaPartialTick(false);
         //? if >=1.20.6
-        /*PoseStack matrices = new PoseStack();*/
+        //PoseStack matrices = new PoseStack();
 
         var cameraPos = camera.getPosition();
 

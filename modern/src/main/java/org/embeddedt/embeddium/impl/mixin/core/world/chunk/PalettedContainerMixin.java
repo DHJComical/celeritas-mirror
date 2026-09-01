@@ -8,12 +8,12 @@ import net.minecraft.world.level.chunk.Palette;
 //? if >=1.17 <1.21.11 {
 import static net.minecraft.world.level.chunk.PalettedContainer.Strategy;
 //?} else if >=1.21.11 {
-/*import net.minecraft.world.level.chunk.Strategy;
-*///?}
+//import net.minecraft.world.level.chunk.Strategy;
+//?}
 import org.embeddedt.embeddium.impl.world.PaletteStorageExtended;
 import org.embeddedt.embeddium.impl.world.ReadableContainerExtended;
 //? if <1.18
-/*import org.embeddedt.embeddium.impl.world.ClonedPalette;*/
+//import org.embeddedt.embeddium.impl.world.ClonedPalette;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -40,7 +40,7 @@ public abstract class PalettedContainerMixin<T> implements ReadableContainerExte
         //? if <1.21.11 {
         return strategy.size();
         //?} else
-        /*return strategy.entryCount();*/
+        //return strategy.entryCount();
     }
 
     @Override

@@ -30,8 +30,8 @@ public class PrimitiveChunkBuildContext extends ChunkBuildContext {
         this.world = world;
         this.transparencyTracker = CeleritasWorldRenderer.instance().getTransparencyTracker();
         //? if >=1.8 {
-        /*this.tesselator = new BufferBuilder(8192);
-        *///?} else
+        //this.tesselator = new BufferBuilder(8192);
+        //?} else
         this.tesselator = BufferBuilder.INSTANCE;
     }
 
@@ -87,7 +87,7 @@ public class PrimitiveChunkBuildContext extends ChunkBuildContext {
 
                 // In 1.8+, color comes before all UVs. In 1.7-, texture UV comes before color.
                 //? if >=1.8
-                /*vertex.color = rawBuffer.get(ptr++);*/
+                //vertex.color = rawBuffer.get(ptr++);
 
                 float u = Float.intBitsToFloat(rawBuffer.get(ptr++));
                 float v = Float.intBitsToFloat(rawBuffer.get(ptr++));
@@ -116,7 +116,7 @@ public class PrimitiveChunkBuildContext extends ChunkBuildContext {
             int spriteId = (spriteY / 16) * 16 + spriteX / 16;
             Material correctMaterial = selectMaterial(material, tracker.getTransparencyLevel(spriteId));
             //?} else
-            /*Material correctMaterial = material;*/
+            //Material correctMaterial = material;
             buffers.get(correctMaterial).getVertexBuffer(facing).push(celeritasVertices, correctMaterial);
         }
     }

@@ -21,7 +21,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 //? if forge
 @Mod.EventBusSubscriber(modid = Celeritas.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 //? if neoforge
-/*@EventBusSubscriber(modid = Celeritas.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)*/
+//@EventBusSubscriber(modid = Celeritas.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class CCLCompatBootstrap {
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {

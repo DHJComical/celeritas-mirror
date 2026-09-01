@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.loader.common;
 
 //? if fabric
-/*import org.embeddedt.embeddium.impl.loader.fabric.FabricEarlyLoaderServices;*/
+//import org.embeddedt.embeddium.impl.loader.fabric.FabricEarlyLoaderServices;
 //? if forgelike
 import org.embeddedt.embeddium.impl.loader.forge.FMLEarlyLoaderServices;
 

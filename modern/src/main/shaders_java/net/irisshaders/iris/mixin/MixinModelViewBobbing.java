@@ -131,19 +131,19 @@ public abstract class MixinModelViewBobbing {
                             //? if <1.21 {
                             "Lorg/joml/Matrix4f;rotationXYZ(FFF)Lorg/joml/Matrix4f;"
                             //?} else
-                            /^"Lorg/joml/Matrix4f;rotation(Lorg/joml/Quaternionfc;)Lorg/joml/Matrix4f;"^/
+                            //"Lorg/joml/Matrix4f;rotation(Lorg/joml/Quaternionfc;)Lorg/joml/Matrix4f;"
             ))
     private Matrix4f iris$applyBobbingToModelView(Matrix4f instance,
                                                   //? if <1.21 {
                                                   float angleX, float angleY, float angleZ, float tickDelta
                                                   //?} else
-                                                  /^Quaternionfc quat, net.minecraft.client.DeltaTracker deltaTracker^/
+                                                  //Quaternionfc quat, net.minecraft.client.DeltaTracker deltaTracker
     ) {
         if (!areShadersOn) {
             //? if <1.21 {
             instance.rotateXYZ(angleX, angleY, angleZ);
             //?} else
-            /^instance.rotate(quat);^/
+            //instance.rotate(quat);
 
             return instance;
         }
@@ -152,7 +152,7 @@ public abstract class MixinModelViewBobbing {
         stack.last().pose().set(instance);
 
         //? if >=1.21
-        /^float tickDelta = deltaTracker.getGameTimeDeltaPartialTick(true);^/
+        //float tickDelta = deltaTracker.getGameTimeDeltaPartialTick(true);
 
         this.bobHurt(stack, tickDelta);
         if (this.minecraft.options.bobView().get()) {
@@ -163,7 +163,7 @@ public abstract class MixinModelViewBobbing {
         //? if <1.21 {
         instance.rotateXYZ(angleX, angleY, angleZ);
         //?} else
-        /^instance.rotate(quat);^/
+        //instance.rotate(quat);
 
         return instance;
     }

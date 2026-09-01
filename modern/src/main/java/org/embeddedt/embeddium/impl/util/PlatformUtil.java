@@ -69,17 +69,17 @@ import net.neoforged.fml.loading.FMLPaths;
 public class PlatformUtil {
     public static boolean isLoadValid() {
         //? if >=1.21.11 {
-        /^return !FMLLoader.getCurrent().getLoadingModList().hasErrors();
-        ^///?} else if >=1.20.6 {
-        /^return !FMLLoader.getLoadingModList().hasErrors();
-        ^///?} else
+        //return !FMLLoader.getCurrent().getLoadingModList().hasErrors();
+        //?} else if >=1.20.6 {
+        //return !FMLLoader.getLoadingModList().hasErrors();
+        //?} else
         return FMLLoader.getLoadingModList().getErrors().isEmpty();
     }
 
     public static boolean modPresent(String modid) {
         //? if >=1.21.11 {
-        /^return FMLLoader.getCurrent().getLoadingModList().getModFileById(modid) != null;
-        ^///?} else {
+        //return FMLLoader.getCurrent().getLoadingModList().getModFileById(modid) != null;
+        //?} else {
         return FMLLoader.getLoadingModList().getModFileById(modid) != null;
         //?}
     }
@@ -90,8 +90,8 @@ public class PlatformUtil {
 
     public static boolean isDevelopmentEnvironment() {
         //? if >=1.21.11 {
-        /^return !FMLLoader.getCurrent().isProduction();
-        ^///?} else
+        //return !FMLLoader.getCurrent().isProduction();
+        //?} else
         return !FMLLoader.isProduction();
     }
 

@@ -55,7 +55,7 @@ public abstract class BiomeMixin {
 
         return color;
         //?} else
-        /*return BiomeColorMaps.getGrassColor(this.defaultColorIndex);*/
+        //return BiomeColorMaps.getGrassColor(this.defaultColorIndex);
     }
 
     /**
@@ -68,7 +68,7 @@ public abstract class BiomeMixin {
         var override = this.specialEffects.getFoliageColorOverride().orElse(null);
         return override != null ? override.intValue() : BiomeColorMaps.getFoliageColor(this.defaultColorIndex);
         //?} else
-        /*return BiomeColorMaps.getFoliageColor(this.defaultColorIndex);*/
+        //return BiomeColorMaps.getFoliageColor(this.defaultColorIndex);
     }
 
     @Unique

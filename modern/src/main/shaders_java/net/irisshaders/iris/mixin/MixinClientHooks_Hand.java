@@ -9,7 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.item.ItemDisplayContext;
 //? if neoforge
-/*import net.neoforged.neoforge.client.ClientHooks;*/
+//import net.neoforged.neoforge.client.ClientHooks;
 //? if forge
 import net.minecraftforge.client.ForgeHooksClient;
 import org.joml.Matrix3f;
@@ -19,8 +19,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 //? if neoforge {
-/*@Mixin(ClientHooks.class)
-*///?} else {
+//@Mixin(ClientHooks.class)
+//?} else {
 @Mixin(ForgeHooksClient.class)
 //?}
 public class MixinClientHooks_Hand {

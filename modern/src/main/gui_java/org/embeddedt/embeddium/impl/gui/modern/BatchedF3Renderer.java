@@ -65,7 +65,7 @@ public class BatchedF3Renderer {
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         //?} else
-        /^bufferBuilder.begin(GL20C.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);^/
+        //bufferBuilder.begin(GL20C.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
 
         Matrix4f matrix = matrixStack.last()
                 .pose();

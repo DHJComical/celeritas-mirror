@@ -59,7 +59,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<World, Primitive
         //? if <1.8 {
         Entity viewEntity = MinecraftAccessor.celeritas$getInstance().camera;
         //?} else
-        /*Entity viewEntity = MinecraftAccessor.celeritas$getInstance().getCamera();*/
+        //Entity viewEntity = MinecraftAccessor.celeritas$getInstance().getCamera();
 
         Objects.requireNonNull(viewEntity, "Client must have view entity");
 
@@ -84,7 +84,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<World, Primitive
         }
         return 16 >> viewDist;
         //?} else
-        /*return MinecraftAccessor.celeritas$getInstance().options.viewDistance;*/
+        //return MinecraftAccessor.celeritas$getInstance().options.viewDistance;
     }
 
     @Override
@@ -97,7 +97,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<World, Primitive
         //? if >=1.2 {
         return this.world.getHeight();
         //?} else
-        /*return 128;*/
+        //return 128;
     }
 
     @Override

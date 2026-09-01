@@ -56,7 +56,7 @@ public class MixinLevelRenderer {
                                             //? if <1.21 {
                                             @Local(ordinal = 0, argsOnly = true) float f
                                             //?} else
-                                            /*@Local(ordinal = 0, argsOnly = true) net.minecraft.client.DeltaTracker deltaTracker*/
+                                            //@Local(ordinal = 0, argsOnly = true) net.minecraft.client.DeltaTracker deltaTracker
                                             ) {
 
         if (this.transparencyChain != null) {
@@ -64,7 +64,7 @@ public class MixinLevelRenderer {
         }
 
         //? if >=1.21
-        /*float f = deltaTracker.getGameTimeDeltaPartialTick(false);*/
+        //float f = deltaTracker.getGameTimeDeltaPartialTick(false);
 		minecraft.getProfiler().popPush("opaque_particles");
 
 		MultiBufferSource.BufferSource bufferSource = renderBuffers.bufferSource();

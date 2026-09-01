@@ -1,8 +1,8 @@
 package org.embeddedt.embeddium.impl.mixin.modcompat.ccl;
 
 //? if neoforge && 1.21.1 {
-
-/*import codechicken.lib.render.block.BlockRenderingRegistry;
+/*
+import codechicken.lib.render.block.BlockRenderingRegistry;
 import net.neoforged.fml.ModList;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

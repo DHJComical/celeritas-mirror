@@ -25,8 +25,8 @@ public class LateDriverScanner {
     //? if >=1.18 {
     private static final Logger LOGGER = LoggerFactory.getLogger(MODNAME + "-PostLaunchChecks");
     //?} else {
-    /*private static final Logger LOGGER = LogManager.getLogger(MODNAME + "-PostLaunchChecks");
-    *///?}
+    //private static final Logger LOGGER = LogManager.getLogger(MODNAME + "-PostLaunchChecks");
+    //?}
 
     public static void onContextInitialized() {
         checkContextImplementation();

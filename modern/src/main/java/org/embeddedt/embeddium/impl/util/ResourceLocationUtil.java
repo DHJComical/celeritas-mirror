@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 public class ResourceLocationUtil {
     public static ResourceLocation make(String namespace, String path) {
         //? if >=1.21
-        /*return ResourceLocation.fromNamespaceAndPath(namespace, path);*/
+        //return ResourceLocation.fromNamespaceAndPath(namespace, path);
         //? if <1.21
         return new ResourceLocation(namespace, path);
     }

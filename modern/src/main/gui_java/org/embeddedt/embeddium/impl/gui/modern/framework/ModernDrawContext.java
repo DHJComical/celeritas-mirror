@@ -1,7 +1,7 @@
 package org.embeddedt.embeddium.impl.gui.modern.framework;
 
 //? if <1.20
-/*import com.mojang.blaze3d.platform.Window;*/
+//import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 //? if <1.20
-/*import net.minecraft.client.gui.Gui;*/
+//import net.minecraft.client.gui.Gui;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -34,7 +34,7 @@ public class ModernDrawContext implements DrawContext {
     //? if >=1.20
     private final net.minecraft.client.gui.GuiGraphics gui;
     //? if <1.20
-    /*private final PoseStack pose;*/
+    //private final PoseStack pose;
     private final Font font;
     private final Map<TextComponent, Component> componentCache = new HashMap<>();
 
@@ -105,7 +105,7 @@ public class ModernDrawContext implements DrawContext {
         //? if >=1.20 {
         gui.fill(x1, y1, x2, y2, color);
         //?} else
-        /*Gui.fill(pose, x1, y1, x2, y2, color);*/
+        //Gui.fill(pose, x1, y1, x2, y2, color);
     }
 
     @Override
@@ -114,13 +114,13 @@ public class ModernDrawContext implements DrawContext {
             //? if >=1.20 {
             return gui.drawString(font, wrapper.sequence(), x, y, color, shadow);
             //?} else
-            /*return shadow ? font.drawShadow(pose, wrapper.sequence(), x, y, color) : font.draw(pose, wrapper.sequence(), x, y, color);*/
+            //return shadow ? font.drawShadow(pose, wrapper.sequence(), x, y, color) : font.draw(pose, wrapper.sequence(), x, y, color);
         }
 
         //? if >=1.20 {
         return gui.drawString(font, compile(str), x, y, color, shadow);
         //?} else
-        /*return shadow ? font.drawShadow(pose, compile(str), x, y, color) : font.draw(pose, compile(str), x, y, color);*/
+        //return shadow ? font.drawShadow(pose, compile(str), x, y, color) : font.draw(pose, compile(str), x, y, color);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class ModernDrawContext implements DrawContext {
         /*//? if >=1.17 {
         RenderSystem.setShaderTexture(0, ResourceLocationUtil.make(icon));
         //?} else
-        /^Minecraft.getInstance().getTextureManager().bind(ResourceLocationUtil.make(icon));^/
+        //Minecraft.getInstance().getTextureManager().bind(ResourceLocationUtil.make(icon));
         Gui.blit(pose, x, y, 0.0f, 0.0f, width, height, width, height);
         *///?}
     }
@@ -189,8 +189,8 @@ public class ModernDrawContext implements DrawContext {
     @Override
     public void disableScissor() {
         //? if <1.20 {
-        /*RenderSystem.disableScissor();
-        *///?} else
+        //RenderSystem.disableScissor();
+        //?} else
         gui.disableScissor();
     }
 

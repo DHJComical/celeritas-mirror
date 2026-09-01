@@ -9,8 +9,8 @@ import org.embeddedt.embeddium.api.util.ColorARGB;
 //? if <26.1 {
 import net.minecraft.client.color.block.BlockColor;
 //?} else {
-/*import net.minecraft.client.color.block.BlockTintSource;
-*///?}
+//import net.minecraft.client.color.block.BlockTintSource;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
@@ -73,8 +73,8 @@ public class DefaultColorProviders {
         }
     }
     //?} else {
-
-    /*public static boolean isVanillaProvider(List<BlockTintSource> providers) {
+/*
+    public static boolean isVanillaProvider(List<BlockTintSource> providers) {
         return providers.stream().allMatch(p -> p.getClass().getName().startsWith("net.minecraft."));
     }
 

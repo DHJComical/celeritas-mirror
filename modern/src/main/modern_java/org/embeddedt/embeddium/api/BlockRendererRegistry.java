@@ -74,6 +74,6 @@ public class BlockRendererRegistry {
          * @param random the RNG used for rendering
          * @return the result of the rendering
          */
-        RenderResult renderBlock(BlockRenderContext ctx, /*$ rng >>*/ RandomSource random, VertexConsumer consumer);
+        RenderResult renderBlock(BlockRenderContext ctx, /*$ rng >>*/RandomSource random, VertexConsumer consumer);
     }
 }

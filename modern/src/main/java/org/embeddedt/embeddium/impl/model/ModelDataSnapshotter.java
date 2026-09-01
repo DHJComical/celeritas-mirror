@@ -27,8 +27,8 @@ public class ModelDataSnapshotter {
         /*Getter EMPTY = pos -> EmptyModelData.INSTANCE;
         IModelData getModelData(BlockPos pos);
         *///?} else {
-        /*Getter EMPTY = new Getter() {};
-        *///?}
+        //Getter EMPTY = new Getter() {};
+        //?}
     }
 
     /**
@@ -43,7 +43,7 @@ public class ModelDataSnapshotter {
         //? if >=1.19
         Map<BlockPos, ?> forgeMap = world.getModelDataManager().getAt(origin.chunk());
         //? if <1.19
-        /*Map<BlockPos, ?> forgeMap = ModelDataManager.getModelData(world, origin.chunk());*/
+        //Map<BlockPos, ?> forgeMap = ModelDataManager.getModelData(world, origin.chunk());
 
         // Fast path if there is no model data in this chunk
         if(forgeMap.isEmpty())
@@ -53,7 +53,7 @@ public class ModelDataSnapshotter {
         //? if >=1.19
         ourMap.defaultReturnValue(ModelData.EMPTY);
         //? if <1.19
-        /*ourMap.defaultReturnValue(EmptyModelData.INSTANCE);*/
+        //ourMap.defaultReturnValue(EmptyModelData.INSTANCE);
 
         BoundingBox volume = new BoundingBox(origin.minBlockX(), origin.minBlockY(), origin.minBlockZ(), origin.maxBlockX(), origin.maxBlockY(), origin.maxBlockZ());
 
@@ -77,7 +77,7 @@ public class ModelDataSnapshotter {
                 //? if >=1.19 {
                 pos -> (ModelData)ourMap.get(pos.asLong());
                 //?} else
-                /*pos -> (IModelData)ourMap.get(pos.asLong());*/
+                //pos -> (IModelData)ourMap.get(pos.asLong());
         //?} else if neoforge && >=1.20.6 {
         /*var snapshot = world.getModelDataManager().snapshotSectionRegion(origin.getX(), origin.getY(), origin.getZ(), origin.getX(), origin.getY(), origin.getZ());
         if (snapshot == ModelDataManager.EMPTY_SNAPSHOT) {
@@ -94,7 +94,7 @@ public class ModelDataSnapshotter {
             return snapshot::getAtOrEmpty;
         }
         *///?} else {
-        /*return Getter.EMPTY;
-        *///?}
+        //return Getter.EMPTY;
+        //?}
     }
 }

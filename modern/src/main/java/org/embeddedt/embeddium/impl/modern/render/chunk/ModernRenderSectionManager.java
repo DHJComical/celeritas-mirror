@@ -56,8 +56,8 @@ public class ModernRenderSectionManager extends RenderSectionManager {
         //? if <1.21.11 {
         var renderPassConfiguration = org.embeddedt.embeddium.impl.modern.render.chunk.config.ModernRenderPassConfigurationBuilder.build(vertexType);
         //?} else {
-        /*var renderPassConfiguration = org.embeddedt.embeddium.impl.render.terrain.PostmodernRenderPassConfigurationBuilder.createRenderPassConfiguration(vertexType);
-        *///?}
+        //var renderPassConfiguration = org.embeddedt.embeddium.impl.render.terrain.PostmodernRenderPassConfigurationBuilder.createRenderPassConfiguration(vertexType);
+        //?}
         return new ModernRenderSectionManager(renderPassConfiguration, world, renderDistance, commandList);
     }
 

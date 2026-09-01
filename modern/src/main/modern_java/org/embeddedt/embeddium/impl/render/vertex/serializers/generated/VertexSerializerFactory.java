@@ -21,8 +21,8 @@ public class VertexSerializerFactory {
         //? if >=1.17 {
         int version = Opcodes.V17;
         //?} else {
-        /*int version = Opcodes.V1_8;
-        *///?}
+        //int version = Opcodes.V1_8;
+        //?}
         classWriter.visit(version, Opcodes.ACC_FINAL | Opcodes.ACC_PUBLIC, name, null,
                 Type.getInternalName(Object.class),
                 new String[] { Type.getInternalName(VertexSerializer.class) });
@@ -186,7 +186,7 @@ public class VertexSerializerFactory {
             //? if <1.21 {
             int byteLength = elementType.getByteSize();
             //?} else
-            /*int byteLength = elementType.byteSize();*/
+            //int byteLength = elementType.byteSize();
 
             ops.add(new MemoryTransfer(srcOffset, dstOffset, byteLength));
         }

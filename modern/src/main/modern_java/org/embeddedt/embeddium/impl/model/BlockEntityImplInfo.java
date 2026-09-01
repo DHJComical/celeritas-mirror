@@ -13,11 +13,11 @@ public class BlockEntityImplInfo {
             try {
                 Method method = clz.getMethod("getModelData");
                 //? if neoforge
-                /*return method.getDeclaringClass() != net.neoforged.neoforge.common.extensions.IBlockEntityExtension.class;*/
+                //return method.getDeclaringClass() != net.neoforged.neoforge.common.extensions.IBlockEntityExtension.class;
                 //? if forge && >=1.17
                 return method.getDeclaringClass() != net.minecraftforge.common.extensions.IForgeBlockEntity.class;
                 //? if forge && <1.17
-                /*return method.getDeclaringClass() != net.minecraftforge.common.extensions.IForgeTileEntity.class;*/
+                //return method.getDeclaringClass() != net.minecraftforge.common.extensions.IForgeTileEntity.class;
             } catch (NoSuchMethodException e) {
                 return false;
             }

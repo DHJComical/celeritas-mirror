@@ -6,7 +6,7 @@ import com.mojang.blaze3d.platform.Window;
 //? if forge
 import net.minecraftforge.common.ForgeConfig;
 //? if <1.19
-/*import net.minecraft.client.Option;*/
+//import net.minecraft.client.Option;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.compat.modernui.MuiGuiScaleHook;
 //? if >=1.18
@@ -117,7 +117,7 @@ public class SodiumGameOptionPages {
                         //? if >=1.19 {
                         .setBinding(new VanillaBooleanOptionBinding(Minecraft.getInstance().options.enableVsync()))
                         //?} else
-                        /*.setBinding(new VanillaBooleanOptionBinding(Option.ENABLE_VSYNC))*/
+                        //.setBinding(new VanillaBooleanOptionBinding(Option.ENABLE_VSYNC))
                         .setImpact(OptionImpact.VARIES)
                         .build())
                 .add(OptionImpl.createBuilder(int.class, vanillaOpts)
@@ -142,7 +142,7 @@ public class SodiumGameOptionPages {
                         //? if >=1.19 {
                         .setBinding(new VanillaBooleanOptionBinding(Minecraft.getInstance().options.bobView()))
                         //?} else
-                        /*.setBinding(new VanillaBooleanOptionBinding(Option.VIEW_BOBBING))*/
+                        //.setBinding(new VanillaBooleanOptionBinding(Option.VIEW_BOBBING))
                         .build())
                 .add(OptionImpl.createBuilder(AttackIndicatorStatus.class, vanillaOpts)
                         .setId(StandardOptions.Option.ATTACK_INDICATOR.cast())
@@ -201,8 +201,8 @@ public class SodiumGameOptionPages {
                             //? if >=1.19 {
                             opts.cloudStatus().set(value);
                             //?} else {
-                            /*opts.renderClouds = value;
-                            *///?}
+                            //opts.renderClouds = value;
+                            //?}
 
                             //? if >=1.16 {
                             if (Minecraft.useShaderTransparency()) {
@@ -216,8 +216,8 @@ public class SodiumGameOptionPages {
                             //? if >=1.19 {
                             return opts.cloudStatus().get();
                             //?} else {
-                            /*return opts.renderClouds;
-                            *///?}
+                            //return opts.renderClouds;
+                            //?}
                         })
                         .setImpact(OptionImpact.LOW)
                         .build())
@@ -274,7 +274,7 @@ public class SodiumGameOptionPages {
                             //? if >=1.19 {
                             opts.entityDistanceScaling().set(value / 100.0);
                             //?} else
-                            /*opts.entityDistanceScaling = value / 100.0f;*/
+                            //opts.entityDistanceScaling = value / 100.0f;
                         }, opts -> Math.round(opts.entityDistanceScaling/*? if >=1.19 {*/().get().floatValue()/*?}*/ * 100.0F))
                         .setImpact(OptionImpact.MEDIUM)
                         .build()
@@ -338,7 +338,7 @@ public class SodiumGameOptionPages {
         return (capabilities.OpenGL46 || capabilities.GL_KHR_no_error)
                 && !Workarounds.isWorkaroundEnabled(Workarounds.Reference.NO_ERROR_CONTEXT_UNSUPPORTED);
         //?} else
-        /*return false;*/
+        //return false;
     }
 
     public static OptionPage advanced() {

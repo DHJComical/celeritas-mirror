@@ -1,8 +1,8 @@
 package org.taumc.celeritas.mixin.core;
 
 //? if >=1.8 {
-
-/*import net.minecraft.util.TypeInstanceMultiMap;
+/*
+import net.minecraft.util.TypeInstanceMultiMap;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

@@ -2,7 +2,7 @@ package net.irisshaders.batchedentityrendering.mixin;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 //? if >=1.21
-/*import com.mojang.blaze3d.vertex.ByteBufferBuilder;*/
+//import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import org.embeddedt.embeddium.api.memory.MemoryIntrinsics;
 import net.irisshaders.batchedentityrendering.impl.BufferBuilderExt;

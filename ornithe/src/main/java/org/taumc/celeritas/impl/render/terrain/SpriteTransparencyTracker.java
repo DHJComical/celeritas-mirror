@@ -19,8 +19,8 @@ public class SpriteTransparencyTracker {
 
     public SpriteTransparencyTracker() {
         //? if >=1.3 {
-        /*var selectedPack = MinecraftAccessor.celeritas$getInstance().texturePacks.getSelected();
-        *///?} else
+        //var selectedPack = MinecraftAccessor.celeritas$getInstance().texturePacks.getSelected();
+        //?} else
         var selectedPack = MinecraftAccessor.celeritas$getInstance().texturePacks.selected;
         try(var terrainFile = selectedPack.getResource("/terrain.png")) {
             var terrainImage = ImageIO.read(terrainFile);

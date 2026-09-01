@@ -23,12 +23,12 @@ public class MixinHorseArmorLayer {
         //? if <1.20.6 {
         var horseArmorItem = pHorse3.getArmor().getItem();
         //?} else
-        /*var horseArmorItem = pHorse3.getBodyArmorItem().getItem();*/
+        //var horseArmorItem = pHorse3.getBodyArmorItem().getItem();
 		if (!(horseArmorItem instanceof
                 //? if <1.20.6 {
                 net.minecraft.world.item.HorseArmorItem
                 //?} else
-                /*net.minecraft.world.item.AnimalArmorItem*/
+                //net.minecraft.world.item.AnimalArmorItem
         ))
 			return;
 
@@ -36,7 +36,7 @@ public class MixinHorseArmorLayer {
         //? if >=1.19.3 {
         ResourceLocation location = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(horseArmorItem);
          //?} else
-        /*ResourceLocation location = net.minecraft.core.Registry.ITEM.getKey(horseArmorItem);*/
+        //ResourceLocation location = net.minecraft.core.Registry.ITEM.getKey(horseArmorItem);
 
 		CapturedRenderingState.INSTANCE.setCurrentRenderedItem(WorldRenderingSettings.INSTANCE.getItemIds().applyAsInt(new NamespacedId(location.getNamespace(), location.getPath())));
 	}
