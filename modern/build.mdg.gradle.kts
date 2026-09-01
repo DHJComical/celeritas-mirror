@@ -22,7 +22,7 @@ plugins {
     id("celeritas.shader-conventions") apply false
     id("embeddium-fabric-module-finder")
     id("maven-publish")
-    id("xyz.wagyourtail.jvmdowngrader") version "1.1.3" apply false
+    id("xyz.wagyourtail.jvmdowngrader") version "1.3.6" apply false
 }
 
 group = "org.embeddedt"
