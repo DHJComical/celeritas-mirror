@@ -23,9 +23,9 @@ java {
 
 base.archivesName = "celeritas-forge-mc12.2"
 
-val modCompileOnly by configurations.creating
+val modCompileOnly = configurations.create("modCompileOnly")
 configurations.compileOnly.get().extendsFrom(modCompileOnly)
-val modRuntimeOnly by configurations.creating
+val modRuntimeOnly = configurations.create("modRuntimeOnly")
 configurations.runtimeOnly.get().extendsFrom(modRuntimeOnly)
 
 val celeritasLwjglVersion = "3.3.3"
@@ -78,7 +78,7 @@ repositories {
     mavenCentral()
 }
 
-val forgePatchDeps by configurations.creating {
+val forgePatchDeps = configurations.create("forgePatchDeps") {
     isCanBeResolved = true
     isCanBeConsumed = false
 }
@@ -92,11 +92,11 @@ configurations {
 }
 
 dependencies {
-    val lombokVersion = rootProject.properties["lombok_version"].toString()
+    val lombokVersion = rootProject.findProperty("lombok_version").toString()
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
 
-    val jabelVersion = rootProject.properties["jabel_version"].toString()
+    val jabelVersion = rootProject.findProperty("jabel_version").toString()
 
     annotationProcessor("com.github.GTNewHorizons:jabel-javac-plugin:${jabelVersion}")
     compileOnly("com.github.GTNewHorizons:jabel-javac-plugin:${jabelVersion}")

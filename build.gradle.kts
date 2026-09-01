@@ -8,7 +8,7 @@ plugins {
     id("org.taumc.gradle.publishing")
 }
 
-project.version = tau.versioning.version(rootProject.properties["project_base_version"].toString(), rootProject.properties["release_channel"])
+project.version = tau.versioning.version(rootProject.findProperty("project_base_version").toString(), rootProject.findProperty("release_channel"))
 println("Celeritas: ${tau.versioning.version}")
 
 //project(":forge1710")

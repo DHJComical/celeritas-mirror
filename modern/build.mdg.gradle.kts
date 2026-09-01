@@ -5,6 +5,7 @@ import net.neoforged.moddevgradle.dsl.NeoForgeExtension
 import net.neoforged.moddevgradle.legacyforge.dsl.LegacyForgeExtension
 import net.neoforged.moddevgradle.legacyforge.dsl.ObfuscationExtension
 import net.neoforged.nfrtgradle.CreateMinecraftArtifacts
+import org.embeddedt.embeddium.gradle.build.extensions.celeritasMixinConfigs
 import org.embeddedt.embeddium.gradle.build.extensions.versionedProperty
 import org.embeddedt.embeddium.gradle.mdg.remapper.GenerateATFromAWTask
 import org.embeddedt.embeddium.gradle.mdg.remapper.GenerateNamedToIntermediaryTSRGTask
@@ -128,7 +129,7 @@ val config: MDGConfig = if (modLoader == ModLoader.NEOFORGE) {
     }
     tasks.register<ReobfuscateCodeAndMixinsTask>("celeritasRemapJar") {
         tsrgMappings = obfuscation.namedToSrgMappings
-        deobfMinecraftJar = tasks.named<CreateMinecraftArtifacts>("createMinecraftArtifacts").flatMap { it -> it.compiledArtifact }
+        deobfMinecraftJar = tasks.named<CreateMinecraftArtifacts>("createMinecraftArtifacts").flatMap { it -> it.gameJarArtifact }
         classpath = sourceSets.main.get().compileClasspath
         archiveBaseName.set(defaultArchiveBaseName)
         archiveClassifier.set("reobf")
@@ -180,7 +181,7 @@ tasks.named("createMinecraftArtifacts") {
 
 modDevExtension.accessTransformers.from(generatedATPath)
 
-val modMixinConfigs = project.extra.get("celeritasMixinConfigs") as MutableList<String>
+val modMixinConfigs = project.celeritasMixinConfigs
 
 if (stonecutter.constants.getOrDefault("shaders", false)) {
     apply(plugin = "celeritas.shader-conventions")
@@ -276,7 +277,7 @@ val shadowJar = tasks.register<ShadowJar>("shadowRemapJar") {
     archiveClassifier = if (isVeryLegacyForge) "pre-downgrade" else ""
     configurations = listOf(project.configurations.shadow.get())
     from(zipTree(tasks.named<Jar>(config.productionJarTask).get().archiveFile))
-    manifest.inheritFrom(tasks.named<Jar>("jar").get().manifest)
+    manifest.from(tasks.named<Jar>("jar").get().manifest)
     if (isVeryLegacyForge) {
         relocate("com.llamalad7.mixinextras", "org.embeddedt.embeddium.impl.shadow.mixinextras")
         relocate("org.joml", "org.embeddedt.embeddium.impl.shadow.joml")

@@ -1,3 +1,5 @@
+import org.embeddedt.embeddium.gradle.build.extensions.celeritasMixinConfigs
+
 plugins {
     id("java-library")
     id("com.gradleup.shadow")
@@ -12,7 +14,7 @@ sourceSets {
     }
 }
 
-val modMixinConfigs = project.extra.get("celeritasMixinConfigs") as MutableList<String>
+val modMixinConfigs = project.celeritasMixinConfigs
 modMixinConfigs.add("oculus-batched-entity-rendering.mixins.json")
 modMixinConfigs.addAll(listOf(
         "mixins.oculus.json",

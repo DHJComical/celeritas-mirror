@@ -98,11 +98,11 @@ configurations {
 }
 
 dependencies {
-    val lombokVersion = rootProject.properties["lombok_version"].toString()
+    val lombokVersion = rootProject.findProperty("lombok_version").toString()
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
 
-    val jabelVersion = rootProject.properties["jabel_version"].toString()
+    val jabelVersion = rootProject.findProperty("jabel_version").toString()
     annotationProcessor("com.github.GTNewHorizons:jabel-javac-plugin:${jabelVersion}")
     compileOnly("com.github.GTNewHorizons:jabel-javac-plugin:${jabelVersion}")
 

@@ -168,7 +168,7 @@ createStonecutterProject("modern", listOf(
     targets.forEach {
         val target = it
         it.loaders.forEach { loader ->
-            val versionConfig = vers(target.friendlyName + "-" + loader, target.semanticName)
+            val versionConfig = version(target.friendlyName + "-" + loader, target.semanticName)
             val buildscriptType = if (loader == "neoforge" || loader == "forge") {
                 "mdg"
             } else if (loader == "fabric") {

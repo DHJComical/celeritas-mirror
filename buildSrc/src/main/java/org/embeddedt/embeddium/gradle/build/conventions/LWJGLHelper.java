@@ -21,7 +21,7 @@ public class LWJGLHelper {
 
     public static void convertLwjgl2To3(Project project, String minecraftLibsConfigurationName) {
         project.getConfigurations().getByName(minecraftLibsConfigurationName).getDependencies().removeIf(dep -> Objects.equals(dep.getGroup(), "org.lwjgl.lwjgl"));
-        String legacyLwjgl3Version = Objects.requireNonNull(project.getProperties().get("legacy_lwjgl3_version"), "legacy_lwjgl3_version not specified").toString();
+        String legacyLwjgl3Version = Objects.requireNonNull(project.findProperty("legacy_lwjgl3_version"), "legacy_lwjgl3_version not specified").toString();
         project.getDependencies().add(minecraftLibsConfigurationName, "org.taumc:legacy-lwjgl3:" + legacyLwjgl3Version);
         addLwjgl3(project, minecraftLibsConfigurationName);
     }

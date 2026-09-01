@@ -111,7 +111,7 @@ val shadowJar = tasks.register<ShadowJar>("shadowRemapJar") {
     archiveClassifier = ""
     configurations = listOf(project.configurations.shadow.get())
     from(zipTree(remapJarTask.get().archiveFile))
-    manifest.inheritFrom(tasks.named<Jar>("jar").get().manifest)
+    manifest.from(tasks.named<Jar>("jar").get().manifest)
     mergeServiceFiles()
 
     from("COPYING", "COPYING.LESSER", "README.md")
