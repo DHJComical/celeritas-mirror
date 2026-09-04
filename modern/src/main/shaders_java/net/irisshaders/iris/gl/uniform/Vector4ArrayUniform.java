@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 
 public class Vector4ArrayUniform extends Uniform {
 	private final Supplier<float[]> value;
-	private float[] cachedValue;
+	private final float[] cachedValue;
 
 	Vector4ArrayUniform(int location, Supplier<float[]> value) {
 		this(location, value, null);
@@ -34,7 +34,7 @@ public class Vector4ArrayUniform extends Uniform {
 		float[] newValue = value.get();
 
 		if (!Arrays.equals(newValue, cachedValue)) {
-			cachedValue = newValue;
+			System.arraycopy(newValue, 0, cachedValue, 0, 4);
 			IrisRenderSystem.uniform4f(location, cachedValue[0], cachedValue[1], cachedValue[2], cachedValue[3]);
 		}
 	}
