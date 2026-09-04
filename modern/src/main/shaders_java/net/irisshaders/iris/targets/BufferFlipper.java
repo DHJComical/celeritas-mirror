@@ -7,9 +7,11 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class BufferFlipper {
 	private final IntSet flippedBuffers;
+	private final IntSet everFlippedBuffers;
 
 	public BufferFlipper() {
 		this.flippedBuffers = new IntOpenHashSet();
+		this.everFlippedBuffers = new IntOpenHashSet();
 	}
 
 	public void flip(int target) {
@@ -17,6 +19,8 @@ public class BufferFlipper {
 			// If the target wasn't in the set, add it to the set.
 			flippedBuffers.add(target);
 		}
+
+		everFlippedBuffers.add(target);
 	}
 
 	/**
@@ -36,5 +40,13 @@ public class BufferFlipper {
 
 	public ImmutableSet<Integer> snapshot() {
 		return ImmutableSet.copyOf(flippedBuffers);
+	}
+
+	/**
+	 * Every buffer that has been flipped at least once, in either direction. These are exactly the buffers whose
+	 * alternate texture is ever written to or read from; the rest only ever use their main texture.
+	 */
+	public ImmutableSet<Integer> everFlipped() {
+		return ImmutableSet.copyOf(everFlippedBuffers);
 	}
 }

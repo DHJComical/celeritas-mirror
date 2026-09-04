@@ -1,11 +1,9 @@
 package net.irisshaders.iris.pipeline;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.IrisRenderSystem;
@@ -62,7 +60,6 @@ public class FinalPassRenderer {
 
 	@Nullable
 	private final Pass finalPass;
-	private final ImmutableList<SwapPass> swapPasses;
 	private final GlFramebuffer baseline;
 	private final GlFramebuffer colorHolder;
 	private final Object2ObjectMap<String, TextureAccess> irisCustomTextures;
@@ -110,8 +107,6 @@ public class FinalPassRenderer {
 			return pass;
 		}).orElse(null);
 
-		IntList buffersToBeCleared = pack.getPackDirectives().getRenderTargetDirectives().getBuffersToBeCleared();
-
 		// The name of this method might seem a bit odd here, but we want a framebuffer with color attachments that line
 		// up with whatever was written last (since we're reading from these framebuffers) instead of trying to create
 		// a framebuffer with color attachments different from what was written last (as we do with normal composite
@@ -122,32 +117,11 @@ public class FinalPassRenderer {
 		this.lastColorTextureVersion = ((Blaze3dRenderTargetExt) Minecraft.getInstance().getMainRenderTarget()).iris$getColorBufferVersion();
 		this.colorHolder.addColorAttachment(0, lastColorTextureId);
 
-		// TODO: We don't actually fully swap the content, we merely copy it from alt to main
-		// This works for the most part, but it's not perfect. A better approach would be creating secondary
-		// framebuffers for every other frame, but that would be a lot more complex...
-		ImmutableList.Builder<SwapPass> swapPasses = ImmutableList.builder();
-
-		flippedBuffers.forEach((i) -> {
-			int target = i;
-
-			if (buffersToBeCleared.contains(target)) {
-				return;
-			}
-
-			SwapPass swap = new SwapPass();
-			RenderTarget target1 = renderTargets.getOrCreate(target);
-			swap.target = target;
-			swap.width = target1.getWidth();
-			swap.height = target1.getHeight();
-			swap.from = renderTargets.createColorFramebuffer(ImmutableSet.of(), new int[]{target});
-			// NB: This is handled in RenderTargets now.
-			//swap.from.readBuffer(target);
-			swap.targetTexture = renderTargets.get(target).getMainTexture();
-
-			swapPasses.add(swap);
-		});
-
-		this.swapPasses = swapPasses.build();
+		// The buffers that are still flipped once the final pass is done have their newest content in their alt
+		// texture, while the next frame expects to find it in their main texture. Rather than copying it back —
+		// which used to happen here, and cost a full-resolution read and write per such buffer, every frame — the
+		// roles of the two textures are swapped every other frame.
+		renderTargets.enableParity(flippedBuffers);
 
 		GlStateManager._glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
 	}
@@ -180,15 +154,10 @@ public class FinalPassRenderer {
 
 	private static void resetRenderTarget(RenderTarget target) {
 		if (target == null) return;
-		// Resets the sampling mode of the given render target and then unbinds it to prevent accidental sampling of it
-		// elsewhere.
-		int filter = GL20C.GL_LINEAR;
-		if (target.getInternalFormat().getPixelFormat().isInteger()) {
-			filter = GL20C.GL_NEAREST;
-		}
 
-		IrisRenderSystem.texParameteri(target.getMainTexture(), GL20C.GL_TEXTURE_2D, GL20C.GL_TEXTURE_MIN_FILTER, filter);
-		IrisRenderSystem.texParameteri(target.getAltTexture(), GL20C.GL_TEXTURE_2D, GL20C.GL_TEXTURE_MIN_FILTER, filter);
+		// Reset the sampling mode of the given render target and then unbind it to prevent accidental sampling of it
+		// elsewhere.
+		target.resetSamplingMode();
 
 		RenderSystem.bindTexture(0);
 	}
@@ -229,15 +198,20 @@ public class FinalPassRenderer {
 
 			FullScreenQuadRenderer.INSTANCE.begin();
 
+			boolean ranCompute = false;
+
 			for (ComputeProgram computeProgram : finalPass.computes) {
 				if (computeProgram != null) {
+					ranCompute = true;
 					computeProgram.use();
 					this.customUniforms.push(computeProgram);
 					computeProgram.dispatch(baseWidth, baseHeight);
 				}
 			}
 
-			IrisRenderSystem.memoryBarrier(GL43C.GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL43C.GL_TEXTURE_FETCH_BARRIER_BIT | GL43C.GL_SHADER_STORAGE_BARRIER_BIT);
+			if (ranCompute) {
+				IrisRenderSystem.memoryBarrier(GL43C.GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL43C.GL_TEXTURE_FETCH_BARRIER_BIT | GL43C.GL_SHADER_STORAGE_BARRIER_BIT);
+			}
 
 			if (!finalPass.mipmappedBuffers.isEmpty()) {
 				RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
@@ -279,21 +253,6 @@ public class FinalPassRenderer {
 			resetRenderTarget(renderTargets.get(i));
 		}
 
-		for (SwapPass swapPass : swapPasses) {
-			// NB: We need to use bind(), not bindAsReadBuffer()... Previously we used bindAsReadBuffer() here which
-			//     broke TAA on many packs and on many drivers.
-			//
-			// Note that glCopyTexSubImage2D reads from the current GL_READ_BUFFER (given by glReadBuffer()) for the
-			// current framebuffer bound to GL_FRAMEBUFFER, but that is distinct from the current GL_READ_FRAMEBUFFER,
-			// which is what bindAsReadBuffer() binds.
-			//
-			// Also note that RenderTargets already calls readBuffer(0) for us.
-			swapPass.from.bind();
-
-			RenderSystem.bindTexture(swapPass.targetTexture);
-			GlStateManager._glCopyTexSubImage2D(GL20C.GL_TEXTURE_2D, 0, 0, 0, 0, 0, swapPass.width, swapPass.height);
-		}
-
 		// Make sure to reset the viewport to how it was before... Otherwise weird issues could occur.
 		// Also bind the "main" framebuffer if it isn't already bound.
 		main.bindWrite(true);
@@ -311,17 +270,6 @@ public class FinalPassRenderer {
 		}
 
 		RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
-	}
-
-	public void recalculateSwapPassSize() {
-		for (SwapPass swapPass : swapPasses) {
-			RenderTarget target = renderTargets.get(swapPass.target);
-			renderTargets.destroyFramebuffer(swapPass.from);
-			swapPass.from = renderTargets.createColorFramebuffer(ImmutableSet.of(), new int[]{swapPass.target});
-			swapPass.width = target.getWidth();
-			swapPass.height = target.getHeight();
-			swapPass.targetTexture = target.getMainTexture();
-		}
 	}
 
 	// TODO: Don't just copy this from DeferredWorldRenderingPipeline
@@ -458,13 +406,5 @@ public class FinalPassRenderer {
 		private void destroy() {
 			this.program.destroy();
 		}
-	}
-
-	private static final class SwapPass {
-		public int target;
-		public int width;
-		public int height;
-		GlFramebuffer from;
-		int targetTexture;
 	}
 }

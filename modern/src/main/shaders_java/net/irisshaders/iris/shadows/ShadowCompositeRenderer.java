@@ -165,16 +165,8 @@ public class ShadowCompositeRenderer {
 	}
 
 	private static void resetRenderTarget(RenderTarget target) {
-		// Resets the sampling mode of the given render target and then unbinds it to prevent accidental sampling of it
-		// elsewhere.
-
-		int filter = GL20C.GL_LINEAR;
-		if (target.getInternalFormat().getPixelFormat().isInteger()) {
-			filter = GL20C.GL_NEAREST;
-		}
-
-		IrisRenderSystem.texParameteri(target.getMainTexture(), GL20C.GL_TEXTURE_2D, GL20C.GL_TEXTURE_MIN_FILTER, filter);
-		IrisRenderSystem.texParameteri(target.getAltTexture(), GL20C.GL_TEXTURE_2D, GL20C.GL_TEXTURE_MIN_FILTER, filter);
+		// Reset the sampling mode of the given render target to prevent accidental mipmapped sampling of it elsewhere.
+		target.resetSamplingMode();
 	}
 
 	public ImmutableSet<Integer> getFlippedAtLeastOnceFinal() {

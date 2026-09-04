@@ -26,6 +26,10 @@ public class ShadowRenderTargets {
 	private final GlFramebuffer depthSourceFb;
 	private final GlFramebuffer noTranslucentsDestFb;
 	private final boolean[] flipped;
+	/**
+	 * Which targets have been flipped at least once. Only those ever touch their alternate texture.
+	 */
+	private final boolean[] everFlipped;
 
 	private final List<GlFramebuffer> ownedFramebuffers;
 	private final int resolution;
@@ -46,6 +50,7 @@ public class ShadowRenderTargets {
 		targets = new RenderTarget[size];
 		formats = new InternalTextureFormat[size];
 		flipped = new boolean[size];
+		everFlipped = new boolean[size];
 		hardwareFiltered = new boolean[size];
 		linearFiltered = new boolean[size];
 		buffersToBeCleared = new IntArrayList();
@@ -77,6 +82,7 @@ public class ShadowRenderTargets {
 	// TODO: Actually flip. This is required for shadow composites!
 	public void flip(int target) {
 		flipped[target] = !flipped[target];
+		everFlipped[target] = true;
 	}
 
 	public boolean isFlipped(int target) {
@@ -143,6 +149,18 @@ public class ShadowRenderTargets {
 		}
 
 		fullClearRequired = true;
+	}
+
+	/**
+	 * Whether the alt texture of the given target is ever used. If it isn't, the target is never flipped and there
+	 * is no point in clearing (or allocating) its alt texture.
+	 */
+	public boolean isAltUsed(int index) {
+		return everFlipped[index];
+	}
+
+	public GlFramebuffer createClearFramebuffer(boolean alt, int[] clearBuffers) {
+		return alt ? createFramebufferWritingToAlt(clearBuffers) : createFramebufferWritingToMain(clearBuffers);
 	}
 
 	public void createIfEmpty(int index) {

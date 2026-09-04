@@ -11,6 +11,14 @@ public interface SamplerHolder {
 	boolean hasSampler(String name);
 
 	/**
+	 * Returns true if the shader pack has replaced any of the given sampler names with a custom texture, meaning
+	 * that whatever texture we would have supplied for it is never actually read.
+	 */
+	default boolean hasCustomTextureOverride(String... names) {
+		return false;
+	}
+
+	/**
 	 * Like addDynamicSampler, but also ensures that any unrecognized / unbound samplers sample from this
 	 * sampler.
 	 * <p>

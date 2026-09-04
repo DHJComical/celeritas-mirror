@@ -9,9 +9,11 @@ import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.joml.Vector2i;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL13C;
+import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL43C;
 
 import java.nio.ByteBuffer;
+import java.util.function.BooleanSupplier;
 
 public class RenderTarget {
 	private static final ByteBuffer NULL_BUFFER = null;
@@ -19,10 +21,12 @@ public class RenderTarget {
 	private final PixelFormat format;
 	private final PixelType type;
 	private final int mainTexture;
-	private final int altTexture;
+	private final String name;
+	private int altTexture;
 	private int width;
 	private int height;
 	private boolean isValid;
+	private BooleanSupplier oddParity;
 
 	public RenderTarget(Builder builder) {
 		this.isValid = true;
@@ -30,27 +34,38 @@ public class RenderTarget {
 		this.internalFormat = builder.internalFormat;
 		this.format = builder.format;
 		this.type = builder.type;
+		this.name = builder.name;
 
 		this.width = builder.width;
 		this.height = builder.height;
 
-		int[] textures = new int[2];
-		GlStateManager._genTextures(textures);
+		this.mainTexture = GlStateManager._genTexture();
+		this.altTexture = 0;
 
-		this.mainTexture = textures[0];
-		this.altTexture = textures[1];
-
-		boolean isPixelFormatInteger = builder.internalFormat.getPixelFormat().isInteger();
-		setupTexture(mainTexture, builder.width, builder.height, !isPixelFormatInteger);
-		setupTexture(altTexture, builder.width, builder.height, !isPixelFormatInteger);
+		setupTexture(mainTexture, builder.width, builder.height, allowsLinear());
 
 		if (builder.name != null) {
 			GLDebug.nameObject(GL43C.GL_TEXTURE, mainTexture, builder.name + " main");
-			GLDebug.nameObject(GL43C.GL_TEXTURE, mainTexture, builder.name + " alt");
 		}
 
 		// Clean up after ourselves
 		// This is strictly defensive to ensure that other buggy code doesn't tamper with our textures
+		GlStateManager._bindTexture(0);
+	}
+
+	private boolean allowsLinear() {
+		return !internalFormat.getPixelFormat().isInteger();
+	}
+
+	private void allocateAltTexture() {
+		this.altTexture = GlStateManager._genTexture();
+
+		setupTexture(altTexture, width, height, allowsLinear());
+
+		if (name != null) {
+			GLDebug.nameObject(GL43C.GL_TEXTURE, altTexture, name + " alt");
+		}
+
 		GlStateManager._bindTexture(0);
 	}
 
@@ -84,7 +99,9 @@ public class RenderTarget {
 
 		resizeTexture(mainTexture, width, height);
 
-		resizeTexture(altTexture, width, height);
+		if (altTexture != 0) {
+			resizeTexture(altTexture, width, height);
+		}
 	}
 
 	public InternalTextureFormat getInternalFormat() {
@@ -92,15 +109,69 @@ public class RenderTarget {
 	}
 
 	public int getMainTexture() {
-		requireValid();
-
-		return mainTexture;
+		return getTextureForParity(true, isOddParity());
 	}
 
 	public int getAltTexture() {
+		return getTextureForParity(false, isOddParity());
+	}
+
+	private boolean isOddParity() {
+		return oddParity != null && oddParity.getAsBoolean();
+	}
+
+	public boolean isParityEnabled() {
+		return oddParity != null;
+	}
+
+	/**
+	 * Resolves one of the two textures by role, for a given frame parity. If parity is not enabled for this target,
+	 * the roles are fixed and the parity is ignored.
+	 *
+	 * @param main whether the main (rather than the alternate) texture is wanted
+	 * @param odd  whether to resolve for the odd frame parity
+	 */
+	public int getTextureForParity(boolean main, boolean odd) {
 		requireValid();
 
+		boolean rolesSwapped = isParityEnabled() && odd;
+
+		if (main != rolesSwapped) {
+			return mainTexture;
+		}
+
+		if (altTexture == 0) {
+			allocateAltTexture();
+		}
+
 		return altTexture;
+	}
+
+	/**
+	 * Enables role swapping across frames for this target, so that the texture holding the newest content is always
+	 * the one the next frame will treat as the main texture. Only meaningful for targets that end the frame flipped;
+	 * the alternative is copying the content back every frame.
+	 */
+	void enableParity(BooleanSupplier oddParity) {
+		this.oddParity = oddParity;
+
+		if (altTexture == 0) {
+			// Both textures are in active use from here on out.
+			allocateAltTexture();
+		}
+	}
+
+	/**
+	 * Resets the sampling mode of both textures, undoing any mipmapped filtering set up for this frame.
+	 */
+	public void resetSamplingMode() {
+		int filter = allowsLinear() ? GL20C.GL_LINEAR : GL20C.GL_NEAREST;
+
+		IrisRenderSystem.texParameteri(mainTexture, GL20C.GL_TEXTURE_2D, GL20C.GL_TEXTURE_MIN_FILTER, filter);
+
+		if (altTexture != 0) {
+			IrisRenderSystem.texParameteri(altTexture, GL20C.GL_TEXTURE_2D, GL20C.GL_TEXTURE_MIN_FILTER, filter);
+		}
 	}
 
 	public int getWidth() {
@@ -115,7 +186,11 @@ public class RenderTarget {
 		requireValid();
 		isValid = false;
 
-		GlStateManager._deleteTextures(new int[]{mainTexture, altTexture});
+		GlStateManager._deleteTexture(mainTexture);
+
+		if (altTexture != 0) {
+			GlStateManager._deleteTexture(altTexture);
+		}
 	}
 
 	private void requireValid() {

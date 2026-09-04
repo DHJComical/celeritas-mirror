@@ -13,7 +13,7 @@ public class GlFramebuffer extends GlObject {
 	private final Int2IntMap attachments;
 	private final int maxDrawBuffers;
 	private final int maxColorAttachments;
-	private boolean hasDepthAttachment;
+	private int depthAttachment;
 
 	public GlFramebuffer() {
 		this.setHandle(IrisRenderSystem.createFramebuffer());
@@ -21,7 +21,6 @@ public class GlFramebuffer extends GlObject {
 		this.attachments = new Int2IntArrayMap();
 		this.maxDrawBuffers = GlStateManager._getInteger(GL30C.GL_MAX_DRAW_BUFFERS);
 		this.maxColorAttachments = GlStateManager._getInteger(GL30C.GL_MAX_COLOR_ATTACHMENTS);
-		this.hasDepthAttachment = false;
 	}
 
 	public void addDepthAttachment(int texture) {
@@ -36,7 +35,7 @@ public class GlFramebuffer extends GlObject {
 			IrisRenderSystem.framebufferTexture2D(fb, GL30C.GL_FRAMEBUFFER, GL30C.GL_DEPTH_ATTACHMENT, GL30C.GL_TEXTURE_2D, texture, 0);
 		}
 
-		this.hasDepthAttachment = true;
+		this.depthAttachment = texture;
 	}
 
 	public void addColorAttachment(int index, int texture) {
@@ -77,8 +76,12 @@ public class GlFramebuffer extends GlObject {
 		return attachments.get(index);
 	}
 
+	public int getDepthAttachment() {
+		return depthAttachment;
+	}
+
 	public boolean hasDepthAttachment() {
-		return hasDepthAttachment;
+		return depthAttachment != 0;
 	}
 
 	public void bind() {
@@ -98,7 +101,7 @@ public class GlFramebuffer extends GlObject {
 	}
 
 	public int getStatus() {
-		bind();
+		GlStateManager._glBindFramebuffer(GL30C.GL_FRAMEBUFFER, handle());
 
 		return GlStateManager.glCheckFramebufferStatus(GL30C.GL_FRAMEBUFFER);
 	}

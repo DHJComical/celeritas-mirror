@@ -214,8 +214,15 @@ public class IrisSamplers {
 			"gdepthtex", "depthtex0");
 		samplers.addDynamicSampler(renderTargets.getDepthTextureNoTranslucents()::getTextureId,
 			"depthtex1");
-		samplers.addDynamicSampler(renderTargets.getDepthTextureNoHand()::getTextureId,
-			"depthtex2");
+
+		// Only pay for the pre-hand depth copy if a program actually reads our depthtex2. Packs often declare the
+		// uniform but never sample it, in which case it is not an active uniform and has no location. A pack can
+		// also rebind the name to a custom texture (Complementary does this for its optional texture palette), and
+		// then the sampler is live but reads that texture instead, so the copy would still go unused.
+		if (samplers.addDynamicSampler(renderTargets.getDepthTextureNoHand()::getTextureId, "depthtex2")
+			&& !samplers.hasCustomTextureOverride("depthtex2")) {
+			renderTargets.setPreHandDepthUsed();
+		}
 	}
 
 	public static void addCustomTextures(SamplerHolder samplers, Object2ObjectMap<String, TextureAccess> irisCustomTextures) {

@@ -479,8 +479,6 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 				shadowUsesImages = shader2.hasActiveImages();
 			}
 
-			this.shadowClearPasses = ClearPassCreator.createShadowClearPasses(shadowRenderTargets, false, shadowDirectives);
-			this.shadowClearPassesFull = ClearPassCreator.createShadowClearPasses(shadowRenderTargets, true, shadowDirectives);
 			this.shadowCompositeRenderer = new ShadowCompositeRenderer(this, programSet.getPackDirectives(), programSet.getShadowComposite(), programSet.getShadowCompCompute(), this.shadowRenderTargets, this.shaderStorageBufferHolder, customTextureManager.getNoiseTexture(), updateNotifier,
 				customTextureManager.getCustomTextureIdMap(TextureStage.SHADOWCOMP), customImages, programSet.getPackDirectives().getExplicitFlips("shadowcomp_pre"), customTextureManager.getIrisCustomTextures(), customUniforms);
 
@@ -490,6 +488,11 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			} else {
 				shadowRenderer = null;
 			}
+
+			// NB: built last, so that every shadowcolor flip has already happened and the clear passes know which
+			// alt textures are actually in use.
+			this.shadowClearPasses = ClearPassCreator.createShadowClearPasses(shadowRenderTargets, false, shadowDirectives);
+			this.shadowClearPassesFull = ClearPassCreator.createShadowClearPasses(shadowRenderTargets, true, shadowDirectives);
 
             defaultFBShadow = shadowRenderTargets.createFramebufferWritingToMain(new int[] {0});
 		} else {
@@ -512,10 +515,10 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		this.customUniforms.optimise();
 		boolean hasRun = false;
 
-		this.clearPassesFull = ClearPassCreator.createClearPasses(renderTargets, true,
-			programSet.getPackDirectives().getRenderTargetDirectives());
-		this.clearPasses = ClearPassCreator.createClearPasses(renderTargets, false,
-			programSet.getPackDirectives().getRenderTargetDirectives());
+		// Only buffers that get flipped somewhere in the chain ever touch their alt texture, so the rest need
+		// neither an alt allocation nor an alt clear pass.
+		renderTargets.declareAltUsed(flipper.everFlipped());
+		rebuildClearPasses();
 
 		for (ComputeProgram program : setup) {
 			if (program != null) {
@@ -901,9 +904,20 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		}
 	}
 
+	private void rebuildClearPasses() {
+		this.clearPassesFull = ClearPassCreator.createClearPasses(renderTargets, true,
+			packDirectives.getRenderTargetDirectives());
+		this.clearPasses = ClearPassCreator.createClearPasses(renderTargets, false,
+			packDirectives.getRenderTargetDirectives());
+	}
+
 	@Override
 	public void beginLevelRendering() {
 		isRenderingWorld = true;
+
+		// Swap the roles of the two textures of every buffer that ends the frame flipped. Must happen before
+		// anything in the pipeline is bound, including the clear passes below.
+		renderTargets.advanceParity();
 
         if (blockIdsNeedPopulation) {
             WorldRenderingSettings.INSTANCE.setBlockStateIds(
@@ -988,7 +1002,6 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			prepareRenderer.recalculateSizes();
 			deferredRenderer.recalculateSizes();
 			compositeRenderer.recalculateSizes();
-			finalPassRenderer.recalculateSwapPassSize();
 			if (shaderStorageBufferHolder != null) {
 				shaderStorageBufferHolder.hasResizedScreen(main.width, main.height);
 			}
@@ -998,10 +1011,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			this.clearPassesFull.forEach(clearPass -> renderTargets.destroyFramebuffer(clearPass.getFramebuffer()));
 			this.clearPasses.forEach(clearPass -> renderTargets.destroyFramebuffer(clearPass.getFramebuffer()));
 
-			this.clearPassesFull = ClearPassCreator.createClearPasses(renderTargets, true,
-				packDirectives.getRenderTargetDirectives());
-			this.clearPasses = ClearPassCreator.createClearPasses(renderTargets, false,
-				packDirectives.getRenderTargetDirectives());
+			rebuildClearPasses();
 		}
 
 		if (changed || IrisVideoSettings.colorSpace != currentColorSpace) {

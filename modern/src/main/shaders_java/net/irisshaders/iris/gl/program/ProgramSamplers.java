@@ -283,6 +283,11 @@ public class ProgramSamplers {
 		}
 
 		@Override
+		public boolean hasCustomTextureOverride(String... names) {
+			return getOverride(null, names) != null;
+		}
+
+		@Override
 		public boolean addDefaultSampler(IntSupplier sampler, String... names) {
 			sampler = getOverride(sampler, names);
 

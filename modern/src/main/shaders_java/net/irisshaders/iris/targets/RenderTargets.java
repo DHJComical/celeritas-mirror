@@ -25,6 +25,7 @@ public class RenderTargets {
 	private final GlFramebuffer noTranslucentsDestFb;
 	private final GlFramebuffer noHandDestFb;
 	private final List<GlFramebuffer> ownedFramebuffers;
+	private final List<FramebufferSpec> framebufferSpecs;
 	private final Map<Integer, PackRenderTargetDirectives.RenderTargetSettings> targetSettingsMap;
 	private final PackDirectives packDirectives;
 	private int currentDepthTexture;
@@ -35,6 +36,9 @@ public class RenderTargets {
 	private boolean fullClearRequired;
 	private boolean translucentDepthDirty;
 	private boolean handDepthDirty;
+	private boolean preHandDepthUsed;
+	private boolean oddParity;
+	private ImmutableSet<Integer> altUsedTargets = ImmutableSet.of();
 
 	private int cachedDepthBufferVersion;
 	private boolean destroyed;
@@ -54,6 +58,7 @@ public class RenderTargets {
 		this.cachedDepthBufferVersion = depthBufferVersion;
 
 		this.ownedFramebuffers = new ArrayList<>();
+		this.framebufferSpecs = new ArrayList<>();
 
 		// NB: Make sure all buffers are cleared so that they don't contain undefined
 		// data. Otherwise very weird things can happen.
@@ -126,6 +131,61 @@ public class RenderTargets {
 			.setName("colortex" + index)
 			.setInternalFormat(settings.getInternalFormat())
 			.setPixelFormat(settings.getInternalFormat().getPixelFormat()).build();
+	}
+
+	public void declareAltUsed(ImmutableSet<Integer> altUsedTargets) {
+		this.altUsedTargets = altUsedTargets;
+	}
+
+	public boolean isAltUsed(int index) {
+		return altUsedTargets.contains(index);
+	}
+
+	public void setPreHandDepthUsed() {
+		this.preHandDepthUsed = true;
+	}
+
+	public void enableParity(ImmutableSet<Integer> parityTargets) {
+		for (int target : parityTargets) {
+			getOrCreate(target).enableParity(this::isOddParity);
+		}
+
+		for (FramebufferSpec spec : framebufferSpecs) {
+			buildOddParityVariant(spec);
+		}
+	}
+
+	public void advanceParity() {
+		oddParity = !oddParity;
+	}
+
+	public boolean isOddParity() {
+		return oddParity;
+	}
+
+	private void buildOddParityVariant(FramebufferSpec spec) {
+		if (spec.framebuffer.hasOddVariant()) {
+			return;
+		}
+
+		boolean needed = false;
+
+		for (int buffer : spec.drawBuffers) {
+			if (targets[buffer].isParityEnabled()) {
+				needed = true;
+				break;
+			}
+		}
+
+		if (!needed) {
+			return;
+		}
+
+		configure(spec.framebuffer().createOddVariant(), spec, true);
+	}
+
+	private record FramebufferSpec(ParityFramebuffer framebuffer, ImmutableSet<Integer> stageWritesToMain,
+								   int[] drawBuffers) {
 	}
 
 	public int getDepthTexture() {
@@ -219,6 +279,11 @@ public class RenderTargets {
 	}
 
 	public void copyPreHandDepth() {
+		if (!preHandDepthUsed) {
+			// Nothing reads depthtex2, so there is no reason to spend a full-resolution depth copy on it.
+			return;
+		}
+
 		if (handDepthDirty) {
 			handDepthDirty = false;
 			RenderSystem.bindTexture(noHand.getTextureId());
@@ -336,44 +401,64 @@ public class RenderTargets {
 			throw new IllegalArgumentException("Framebuffer must have at least one color buffer");
 		}
 
-		GlFramebuffer framebuffer = new GlFramebuffer();
+		ParityFramebuffer framebuffer = new ParityFramebuffer(this::isOddParity);
 		ownedFramebuffers.add(framebuffer);
 
-		int[] actualDrawBuffers = new int[drawBuffers.length];
-
-		for (int i = 0; i < drawBuffers.length; i++) {
-			actualDrawBuffers[i] = i;
-
-			if (drawBuffers[i] >= getRenderTargetCount()) {
+		for (int drawBuffer : drawBuffers) {
+			if (drawBuffer >= getRenderTargetCount()) {
 				// TODO: This causes resource leaks, also we should really verify this in the shaderpack parser...
 				framebuffer.delete();
 				ownedFramebuffers.remove(framebuffer);
-				throw new IllegalStateException("Render target with index " + drawBuffers[i] + " is not supported, only "
+				throw new IllegalStateException("Render target with index " + drawBuffer + " is not supported, only "
 					+ getRenderTargetCount() + " render targets are supported.");
 			}
 
-			RenderTarget target = this.getOrCreate(drawBuffers[i]);
-
-			int textureId = stageWritesToMain.contains(drawBuffers[i]) ? target.getMainTexture() : target.getAltTexture();
-
-			framebuffer.addColorAttachment(i, textureId);
+			this.getOrCreate(drawBuffer);
 		}
 
-		framebuffer.drawBuffers(actualDrawBuffers);
-		framebuffer.readBuffer(0);
+		FramebufferSpec spec = new FramebufferSpec(framebuffer, stageWritesToMain, drawBuffers.clone());
 
+		configure(framebuffer, spec, false);
+
+		framebufferSpecs.add(spec);
+		buildOddParityVariant(spec);
 
 		int status = framebuffer.getStatus();
 		if (status != GL30C.GL_FRAMEBUFFER_COMPLETE) {
-			throw new IllegalStateException("Unexpected error while creating framebuffer: Draw buffers " + Arrays.toString(actualDrawBuffers) + " Status: " + status);
+			throw new IllegalStateException("Unexpected error while creating framebuffer: Draw buffers " + Arrays.toString(drawBuffers) + " Status: " + status);
 		}
 
 		return framebuffer;
 	}
 
+	/**
+	 * Attaches everything described by the spec, resolved for the given frame parity. Both variants of a parity
+	 * framebuffer go through here, so they cannot drift apart.
+	 */
+	private void configure(GlFramebuffer framebuffer, FramebufferSpec spec, boolean odd) {
+		int[] actualDrawBuffers = new int[spec.drawBuffers().length];
+
+		for (int i = 0; i < spec.drawBuffers().length; i++) {
+			int buffer = spec.drawBuffers()[i];
+			actualDrawBuffers[i] = i;
+
+			framebuffer.addColorAttachment(i, targets[buffer].getTextureForParity(spec.stageWritesToMain().contains(buffer), odd));
+		}
+
+		framebuffer.drawBuffers(actualDrawBuffers);
+		framebuffer.readBuffer(0);
+
+		// A depth attachment is added by the caller after creation, so on the even variant there is nothing to do
+		// here; the odd variant is built later and has to pick up whatever the even one ended up with.
+		if (framebuffer != spec.framebuffer() && spec.framebuffer().hasDepthAttachment()) {
+			framebuffer.addDepthAttachment(spec.framebuffer().getDepthAttachment());
+		}
+	}
+
 	public void destroyFramebuffer(GlFramebuffer framebuffer) {
 		framebuffer.delete();
 		ownedFramebuffers.remove(framebuffer);
+		framebufferSpecs.removeIf(spec -> spec.framebuffer() == framebuffer);
 	}
 
 	public int getCurrentWidth() {

@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.IntPredicate;
+import java.util.function.IntSupplier;
 
 public class ClearPassCreator {
 	public static ImmutableList<ClearPass> createClearPasses(RenderTargets renderTargets, boolean fullClear,
@@ -51,28 +54,11 @@ public class ClearPassCreator {
 
 		List<ClearPass> clearPasses = new ArrayList<>();
 
-		clearByColor.forEach((passSize, vector4fIntListMap) -> vector4fIntListMap.forEach((clearInfo, buffers) -> {
-			int startIndex = 0;
-
-			while (startIndex < buffers.size()) {
-				// clear up to the maximum number of draw buffers per each clear pass.
-				// This allows us to handle having more than 8 buffers with the same clear color on systems with
-				// a max draw buffers of 8 (ie, most systems).
-				int[] clearBuffers = new int[Math.min(buffers.size() - startIndex, maxDrawBuffers)];
-
-				for (int i = 0; i < clearBuffers.length; i++) {
-					clearBuffers[i] = buffers.getInt(startIndex);
-					startIndex++;
-				}
-
-				// No need to clear the depth buffer, since we're using Minecraft's depth buffer.
-				clearPasses.add(new ClearPass(clearInfo.getColor(), clearInfo::getWidth, clearInfo::getHeight,
-					renderTargets.createClearFramebuffer(true, clearBuffers), GL21C.GL_COLOR_BUFFER_BIT));
-
-				clearPasses.add(new ClearPass(clearInfo.getColor(), clearInfo::getWidth, clearInfo::getHeight,
-					renderTargets.createClearFramebuffer(false, clearBuffers), GL21C.GL_COLOR_BUFFER_BIT));
-			}
-		}));
+		clearByColor.forEach((passSize, vector4fIntListMap) -> vector4fIntListMap.forEach((clearInfo, buffers) ->
+			addClearPasses(buffers, maxDrawBuffers, renderTargets::isAltUsed,
+				(clearBuffers, alt) -> clearPasses.add(new ClearPass(clearInfo.getColor(), clearInfo::getWidth,
+					clearInfo::getHeight, renderTargets.createClearFramebuffer(alt, clearBuffers),
+					GL21C.GL_COLOR_BUFFER_BIT)))));
 
 		return ImmutableList.copyOf(clearPasses);
 	}
@@ -84,6 +70,7 @@ public class ClearPassCreator {
 		}
 
 		final int maxDrawBuffers = GlStateManager._getInteger(GL21C.GL_MAX_DRAW_BUFFERS);
+		final IntSupplier resolution = renderTargets::getResolution;
 
 		// Sort buffers by their clear color so we can group up glClear calls.
 		Map<Vector4f, IntList> clearByColor = new HashMap<>();
@@ -102,30 +89,60 @@ public class ClearPassCreator {
 
 		List<ClearPass> clearPasses = new ArrayList<>();
 
-
-		clearByColor.forEach((clearColor, buffers) -> {
-			int startIndex = 0;
-
-			while (startIndex < buffers.size()) {
-				// clear up to the maximum number of draw buffers per each clear pass.
-				// This allows us to handle having more than 8 buffers with the same clear color on systems with
-				// a max draw buffers of 8 (ie, most systems).
-				int[] clearBuffers = new int[Math.min(buffers.size() - startIndex, maxDrawBuffers)];
-
-				for (int i = 0; i < clearBuffers.length; i++) {
-					clearBuffers[i] = buffers.getInt(startIndex);
-					startIndex++;
-				}
-
-				// No need to clear the depth buffer, since we're using Minecraft's depth buffer.
-				clearPasses.add(new ClearPass(clearColor, renderTargets::getResolution, renderTargets::getResolution,
-					renderTargets.createFramebufferWritingToAlt(clearBuffers), GL21C.GL_COLOR_BUFFER_BIT));
-
-				clearPasses.add(new ClearPass(clearColor, renderTargets::getResolution, renderTargets::getResolution,
-					renderTargets.createFramebufferWritingToMain(clearBuffers), GL21C.GL_COLOR_BUFFER_BIT));
-			}
-		});
+		clearByColor.forEach((clearColor, buffers) ->
+			addClearPasses(buffers, maxDrawBuffers, renderTargets::isAltUsed,
+				(clearBuffers, alt) -> clearPasses.add(new ClearPass(clearColor, resolution, resolution,
+					renderTargets.createClearFramebuffer(alt, clearBuffers), GL21C.GL_COLOR_BUFFER_BIT))));
 
 		return ImmutableList.copyOf(clearPasses);
+	}
+
+	/**
+	 * Emits the clear passes for one group of same-colored buffers: one set writing to the alt textures and one
+	 * writing to the main textures, each split so that no pass exceeds the GPU's maximum draw buffer count.
+	 * <p>
+	 * Buffers that are never flipped have no alt texture, so clearing it would just be a full-resolution write into
+	 * a texture nothing ever reads. Note that this has to be decided here rather than inside {@code factory}, since
+	 * asking for an alt framebuffer is itself what allocates the alt texture.
+	 *
+	 * @param altUsed whether the given buffer's alt texture is ever read
+	 * @param factory builds and records a clear pass over the given buffers, writing to either alt or main
+	 */
+	private static void addClearPasses(IntList buffers, int maxDrawBuffers, IntPredicate altUsed,
+									   ClearPassFactory factory) {
+		IntList altBuffers = new IntArrayList();
+
+		for (int buffer : buffers) {
+			if (altUsed.test(buffer)) {
+				altBuffers.add(buffer);
+			}
+		}
+
+		forEachChunk(altBuffers, maxDrawBuffers, clearBuffers -> factory.create(clearBuffers, true));
+		forEachChunk(buffers, maxDrawBuffers, clearBuffers -> factory.create(clearBuffers, false));
+	}
+
+	/**
+	 * Splits the buffers into groups of at most {@code maxDrawBuffers}. This allows us to handle having more than 8
+	 * buffers with the same clear color on systems with a max draw buffers of 8 (ie, most systems).
+	 */
+	private static void forEachChunk(IntList buffers, int maxDrawBuffers, Consumer<int[]> consumer) {
+		int startIndex = 0;
+
+		while (startIndex < buffers.size()) {
+			int[] chunk = new int[Math.min(buffers.size() - startIndex, maxDrawBuffers)];
+
+			for (int i = 0; i < chunk.length; i++) {
+				chunk[i] = buffers.getInt(startIndex);
+				startIndex++;
+			}
+
+			consumer.accept(chunk);
+		}
+	}
+
+	@FunctionalInterface
+	private interface ClearPassFactory {
+		void create(int[] clearBuffers, boolean alt);
 	}
 }
