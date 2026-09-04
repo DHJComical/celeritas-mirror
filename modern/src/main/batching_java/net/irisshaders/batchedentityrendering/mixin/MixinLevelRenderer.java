@@ -20,8 +20,8 @@ import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Tracks whether or not the world is being rendered, and manages grouping
- * with different entities.
+ * Tracks whether or not the world is being rendered, marks off each entity's submissions as a group, and flushes the
+ * batched geometry at the points where vanilla would have flushed its own buffer source.
  */
 // Uses a priority of 999 to apply before the main Iris mixins to draw entities before deferred runs.
 @Mixin(value = LevelRenderer.class, priority = 999)
@@ -93,6 +93,12 @@ public class MixinLevelRenderer {
 
 	@Inject(method = "renderLevel", at = @At("RETURN"))
 	private void batchedentityrendering$endLevelRender(CallbackInfo ci) {
+		// Anything still collected here was submitted after the last flush and will never be drawn. Segments own arena
+		// memory until they are drawn or released, so they have to be handed back rather than just dropped.
+		if (renderBuffers.bufferSource() instanceof FullyBufferedMultiBufferSource source) {
+			source.discardCollected();
+		}
+
 		((RenderBuffersExt) renderBuffers).endLevelRendering();
 		groupable = null;
 	}

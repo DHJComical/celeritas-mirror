@@ -1,150 +1,8 @@
 package net.irisshaders.batchedentityrendering.impl;
 
-//? if >=1.21 {
-/*
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.irisshaders.batchedentityrendering.mixin.RenderTypeAccessor;
-import net.minecraft.client.renderer.RenderType;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-public class SegmentedBufferBuilder implements MemoryTrackingBuffer {
-    private final Map<RenderType, ByteBufferBuilderHolder> buffers;
-    private final Map<RenderType, BufferBuilder> builders;
-    private final List<BufferSegment> segments;
-    private final FullyBufferedMultiBufferSource parent;
-
-    public SegmentedBufferBuilder(FullyBufferedMultiBufferSource parent) {
-        // 2 MB initial allocation
-        this.parent = parent;
-        this.buffers = new Object2ObjectOpenHashMap<>();
-        this.builders = new Object2ObjectOpenHashMap<>();
-        this.segments = new ArrayList<>();
-    }
-
-    private static boolean shouldSortOnUpload(RenderType type) {
-        return ((RenderTypeAccessor) type).shouldSortOnUpload();
-    }
-
-    public VertexConsumer getBuffer(RenderType renderType) {
-        try {
-            if (RenderTypeUtil.requiresSegmentSplits(renderType)) {
-                endAndGenSegmentForType(renderType);
-            }
-
-            ByteBufferBuilderHolder buffer = buffers.computeIfAbsent(renderType, (r) -> new ByteBufferBuilderHolder(new ByteBufferBuilder(r.bufferSize())));
-
-            buffer.wasUsed();
-            BufferBuilder builder = builders.computeIfAbsent(renderType, (t) -> new BufferBuilder(buffer.getBuffer(), renderType.mode(), renderType.format()));
-
-            // Use duplicate vertices to break up triangle strips
-            // https://developer.apple.com/library/archive/documentation/3DDrawing/Conceptual/OpenGLES_ProgrammingGuide/Art/degenerate_triangle_strip_2x.png
-            // This works by generating zero-area triangles that don't end up getting rendered.
-            // TODO: How do we handle DEBUG_LINE_STRIP?
-            if (RenderTypeUtil.isTriangleStripDrawMode(renderType)) {
-                ((BufferBuilderExt) builder).splitStrip();
-            }
-
-            return builder;
-        } catch (OutOfMemoryError e) {
-            weAreOutOfMemory();
-
-            // uhhh try again
-            return getBuffer(renderType);
-        }
-    }
-
-    private void weAreOutOfMemory() {
-        parent.weAreOutOfMemory();
-    }
-
-    private void endAndGenSegmentForType(RenderType renderType) {
-        var bufferBuilder = builders.remove(renderType);
-
-        if (bufferBuilder == null) {
-            return;
-        }
-
-        try {
-            MeshData meshData = bufferBuilder.build();
-
-            if (meshData == null) return;
-
-            if (shouldSortOnUpload(renderType)) {
-                meshData.sortQuads(buffers.get(renderType).getBuffer(), RenderSystem.getVertexSorting());
-            }
-
-            segments.add(new BufferSegment(meshData, renderType));
-        } catch (OutOfMemoryError e) {
-            // we're freaked. try to clear memory for the next one, but don't bother about this one.
-
-            weAreOutOfMemory();
-        }
-    }
-
-    public List<BufferSegment> getSegments() {
-        if (!builders.isEmpty()) {
-            List.copyOf(builders.keySet()).forEach(this::endAndGenSegmentForType);
-        }
-
-        List<BufferSegment> finalSegments = new ArrayList<>(segments);
-
-        segments.clear();
-
-        return finalSegments;
-    }
-
-    @Override
-    public long getAllocatedSize() {
-        long usedSize = 0;
-        for (ByteBufferBuilderHolder buffer : buffers.values()) {
-            usedSize += ((MemoryTrackingBuffer) buffer).getAllocatedSize();
-        }
-
-        return usedSize;
-    }
-
-    @Override
-    public long getUsedSize() {
-        long usedSize = 0;
-        for (ByteBufferBuilderHolder buffer : buffers.values()) {
-            usedSize += ((MemoryTrackingBuffer) buffer).getUsedSize();
-        }
-
-        return usedSize;
-    }
-
-    @Override
-    public void freeAndDeleteBuffer() {
-        for (ByteBufferBuilderHolder buffer : buffers.values()) {
-            buffer.forceDelete();
-        }
-
-        buffers.clear();
-    }
-
-    public void clearBuffers(int clearTime) {
-        buffers.values().removeIf(b -> b.deleteOrClear(clearTime));
-    }
-
-    public void lastDitchAttempt() {
-        // JUST REMOVE ANYTHING UNDER 500MS
-        buffers.values().removeIf(b -> b.delete(500));
-    }
-}
-
-*///?} else {
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import net.irisshaders.batchedentityrendering.mixin.RenderTypeAccessor;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -154,112 +12,204 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Accumulates immediate-mode geometry into a single arena, cutting a new {@link BufferSegment} whenever the render type
+ * changes.
+ * <p>
+ * Two properties fall out of this that the rest of the system relies on:
+ * <ul>
+ *     <li>The segment list is in <b>submission order</b>. That is what the translucent drawing phase needs, since
+ *     translucent geometry cannot be reordered without changing what ends up on screen.</li>
+ *     <li>Consecutive submissions of the <i>same</i> render type are merged into one segment. A builder that only ever
+ *     sees one render type therefore still produces exactly one draw call.</li>
+ * </ul>
+ * Note that a segment owns memory in the arena until it is drawn (the buffer uploader takes ownership) or explicitly
+ * handed to {@link #discard(BufferSegment)}.
+ */
 public class SegmentedBufferBuilder implements MultiBufferSource, MemoryTrackingBuffer {
-	private final BufferBuilder buffer;
-	private final List<BufferSegment> buffers;
-	private RenderType currentType;
+	private static final int INITIAL_ARENA_SIZE = 512 * 1024;
 
-	public SegmentedBufferBuilder(FullyBufferedMultiBufferSource parent) {
-		// 2 MB initial allocation
-		this.buffer = new BufferBuilder(512 * 1024);
-		this.buffers = new ArrayList<>();
-		this.currentType = null;
+    //? if <1.21 {
+	private BufferBuilder arena;
+    //?} else {
+    /*private com.mojang.blaze3d.vertex.ByteBufferBuilder arena;
+	private BufferBuilder writer;
+    *///?}
+
+	private final List<BufferSegment> segments = new ArrayList<>();
+	private RenderType currentType;
+	private long lastUse;
+
+	public SegmentedBufferBuilder() {
+		this.arena = newArena();
+		this.lastUse = System.currentTimeMillis();
 	}
+
+    //? if <1.21 {
+	private static BufferBuilder newArena() {
+		return new BufferBuilder(INITIAL_ARENA_SIZE);
+	}
+    //?} else
+    //private static com.mojang.blaze3d.vertex.ByteBufferBuilder newArena() { return new com.mojang.blaze3d.vertex.ByteBufferBuilder(INITIAL_ARENA_SIZE); }
 
 	private static boolean shouldSortOnUpload(RenderType type) {
 		return ((RenderTypeAccessor) type).shouldSortOnUpload();
 	}
 
+	/**
+	 * Releases a segment that will never be drawn. Drawn segments are released by the buffer uploader instead.
+	 */
+	public static void discard(BufferSegment segment) {
+        //? if <1.21 {
+		segment.renderedBuffer().release();
+        //?} else
+        //segment.renderedBuffer().close();
+	}
+
+	private VertexConsumer sink() {
+        //? if <1.21 {
+		return arena;
+        //?} else
+        //return writer;
+	}
+
 	@Override
 	public VertexConsumer getBuffer(RenderType renderType) {
-		if (!Objects.equals(currentType, renderType) || renderType.mode() == VertexFormat.Mode.TRIANGLE_FAN || renderType.mode() == VertexFormat.Mode.DEBUG_LINE_STRIP || renderType.mode() == VertexFormat.Mode.LINE_STRIP) {
-			if (currentType != null) {
-				if (shouldSortOnUpload(currentType)) {
-					buffer.setQuadSorting(RenderSystem.getVertexSorting());
-				}
-
-				buffers.add(new BufferSegment(Objects.requireNonNull(buffer.end()), currentType));
-			}
-
-			buffer.begin(renderType.mode(), renderType.format());
-
-			currentType = renderType;
+		// Triangle fans and line strips can't be concatenated with anything, so they always start a fresh segment.
+		if (!Objects.equals(currentType, renderType) || RenderTypeUtil.requiresSegmentSplits(renderType)) {
+			finishSegment();
+			beginSegment(renderType);
 		}
 
 		// Use duplicate vertices to break up triangle strips
 		// https://developer.apple.com/library/archive/documentation/3DDrawing/Conceptual/OpenGLES_ProgrammingGuide/Art/degenerate_triangle_strip_2x.png
 		// This works by generating zero-area triangles that don't end up getting rendered.
-		// TODO: How do we handle DEBUG_LINE_STRIP?
 		if (RenderTypeUtil.isTriangleStripDrawMode(currentType)) {
-			((BufferBuilderExt) buffer).splitStrip();
+			((BufferBuilderExt) sink()).splitStrip();
 		}
 
-		return buffer;
+		return sink();
 	}
 
-	public List<BufferSegment> getSegments() {
+	private void beginSegment(RenderType renderType) {
+        //? if <1.21 {
+		arena.begin(renderType.mode(), renderType.format());
+        //?} else
+        //writer = new BufferBuilder(arena, renderType.mode(), renderType.format());
+
+		currentType = renderType;
+		lastUse = System.currentTimeMillis();
+	}
+
+	private void finishSegment() {
 		if (currentType == null) {
-			return Collections.emptyList();
+			return;
 		}
 
+        //? if <1.21 {
 		if (shouldSortOnUpload(currentType)) {
-			buffer.setQuadSorting(RenderSystem.getVertexSorting());
+			arena.setQuadSorting(RenderSystem.getVertexSorting());
 		}
 
-		buffers.add(new BufferSegment(Objects.requireNonNull(buffer.end()), currentType));
+		BufferBuilder.RenderedBuffer built = arena.endOrDiscardIfEmpty();
+        //?} else {
+        /*com.mojang.blaze3d.vertex.MeshData built = writer.build();
+		writer = null;
+
+		if (built != null && shouldSortOnUpload(currentType)) {
+			built.sortQuads(arena, RenderSystem.getVertexSorting());
+		}
+        *///?}
+
+		if (built != null) {
+			segments.add(new BufferSegment(built, currentType));
+		}
 
 		currentType = null;
+	}
 
-		List<BufferSegment> finalSegments = new ArrayList<>(buffers);
+	/**
+	 * Finishes any in-progress segment and hands over everything accumulated so far, in submission order. Ownership of
+	 * the returned segments passes to the caller.
+	 */
+	public List<BufferSegment> getSegments() {
+		finishSegment();
 
-		buffers.clear();
+		if (segments.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<BufferSegment> finalSegments = new ArrayList<>(segments);
+
+		segments.clear();
 
 		return finalSegments;
 	}
 
-	public List<BufferSegment> getSegmentsForType(TransparencyType transparencyType) {
-		if (currentType == null) {
-			return Collections.emptyList();
+	/**
+	 * Finishes any in-progress segment and releases everything this builder is still holding. Leaves the builder idle,
+	 * which callers rely on before they start releasing segments they took from it - releasing the last outstanding
+	 * segment resets the arena, and that would corrupt a build that was still in progress.
+	 */
+	public void discardPending() {
+		finishSegment();
+
+		for (BufferSegment segment : segments) {
+			discard(segment);
 		}
 
-		if (((BlendingStateHolder) currentType).getTransparencyType() == transparencyType) {
-			if (shouldSortOnUpload(currentType)) {
-				buffer.setQuadSorting(RenderSystem.getVertexSorting());
-			}
+		segments.clear();
+	}
 
-			buffers.add(new BufferSegment(Objects.requireNonNull(buffer.end()), currentType));
+	private void resetArena() {
+		// The arena itself is going away, so the segments inside it don't need to be released one by one.
+		segments.clear();
+		currentType = null;
+        //? if >=1.21
+        //writer = null;
 
-			currentType = null;
+		((MemoryTrackingBuffer) arena).freeAndDeleteBuffer();
+		arena = newArena();
+		lastUse = System.currentTimeMillis();
+	}
+
+	/**
+	 * Returns the arena to its initial size if this builder has been idle for a while. Without this, one unusually
+	 * heavy frame would keep its peak allocation for the rest of the session.
+	 */
+	public void clearBuffers(int clearTime) {
+		if (segments.isEmpty() && currentType == null
+			&& getAllocatedSize() > INITIAL_ARENA_SIZE
+			&& System.currentTimeMillis() - lastUse > clearTime) {
+			resetArena();
 		}
+	}
 
-		List<BufferSegment> finalSegments = buffers.stream().filter(segment -> ((BlendingStateHolder) segment.type()).getTransparencyType() == transparencyType).toList();
-
-		buffers.removeAll(finalSegments);
-
-		return finalSegments;
+	/**
+	 * Throws away this frame's geometry to free memory. Only called when we're about to run out anyway; the frame will
+	 * be missing some entities, which is better than crashing.
+	 */
+	public void lastDitchAttempt() {
+		resetArena();
 	}
 
 	@Override
 	public long getAllocatedSize() {
-		return ((MemoryTrackingBuffer) buffer).getAllocatedSize();
+		return ((MemoryTrackingBuffer) arena).getAllocatedSize();
 	}
 
 	@Override
 	public long getUsedSize() {
-		return ((MemoryTrackingBuffer) buffer).getUsedSize();
+		return ((MemoryTrackingBuffer) arena).getUsedSize();
 	}
 
 	@Override
 	public void freeAndDeleteBuffer() {
-		((MemoryTrackingBuffer) buffer).freeAndDeleteBuffer();
+		segments.clear();
+		currentType = null;
+        //? if >=1.21
+        //writer = null;
+
+		((MemoryTrackingBuffer) arena).freeAndDeleteBuffer();
 	}
-
-    public void lastDitchAttempt() {
-
-    }
-
-    public void clearBuffers(int clearTime) {
-
-    }
 }
-//?}
