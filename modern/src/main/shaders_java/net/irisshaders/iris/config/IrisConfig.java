@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
+import net.irisshaders.iris.pathways.scaling.RenderScalePreset;
+import net.irisshaders.iris.pathways.scaling.UpscaleMode;
 import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
@@ -160,6 +162,18 @@ public class IrisConfig {
 			save();
 		}
 
+		try {
+			IrisVideoSettings.renderScale = RenderScalePreset.valueOf(properties.getProperty("renderScale", "NATIVE"));
+			IrisVideoSettings.upscaleMode = UpscaleMode.valueOf(properties.getProperty("upscaleMode", "FSR"));
+			IrisVideoSettings.upscaleSharpness = Integer.parseInt(properties.getProperty("upscaleSharpness", "80"));
+		} catch (IllegalArgumentException e) {
+			CeleritasShaders.logger().error("Render scale settings reset; value is invalid.");
+			IrisVideoSettings.renderScale = RenderScalePreset.NATIVE;
+			IrisVideoSettings.upscaleMode = UpscaleMode.FSR;
+			IrisVideoSettings.upscaleSharpness = 80;
+			save();
+		}
+
 		if (shaderPackName != null) {
 			if (shaderPackName.equals("(internal)") || shaderPackName.isEmpty()) {
 				shaderPackName = null;
@@ -182,6 +196,9 @@ public class IrisConfig {
         properties.setProperty("enableTextureMaterialFallback", enableTextureMaterialFallback ? "true" : "false");
 		properties.setProperty("maxShadowRenderDistance", String.valueOf(IrisVideoSettings.shadowDistance));
 		properties.setProperty("colorSpace", IrisVideoSettings.colorSpace.name());
+		properties.setProperty("renderScale", IrisVideoSettings.renderScale.name());
+		properties.setProperty("upscaleMode", IrisVideoSettings.upscaleMode.name());
+		properties.setProperty("upscaleSharpness", String.valueOf(IrisVideoSettings.upscaleSharpness));
 		// NB: This uses ISO-8859-1 with unicode escapes as the encoding
 		try (OutputStream os = Files.newOutputStream(propertiesPath)) {
 			properties.store(os, COMMENT);

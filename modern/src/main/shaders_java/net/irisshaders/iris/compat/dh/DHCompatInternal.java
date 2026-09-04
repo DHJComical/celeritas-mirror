@@ -1,5 +1,6 @@
 package net.irisshaders.iris.compat.dh;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiFramebuffer;
@@ -45,6 +46,8 @@ public class DHCompatInternal {
 	private int storedDepthTex;
 	private boolean incompatible = false;
 	private int cachedVersion;
+	private int cachedWidth = -1;
+	private int cachedHeight = -1;
 
 	public DHCompatInternal(IrisRenderingPipeline pipeline, boolean dhShadowEnabled) {
 		this.pipeline = pipeline;
@@ -159,9 +162,12 @@ public class DHCompatInternal {
 	}
 
 	public void reconnectDHTextures(int depthTex) {
-		if (((Blaze3dRenderTargetExt) Minecraft.getInstance().getMainRenderTarget()).iris$getDepthBufferVersion() != cachedVersion) {
-			cachedVersion = ((Blaze3dRenderTargetExt) Minecraft.getInstance().getMainRenderTarget()).iris$getDepthBufferVersion();
-			createDepthTex(Minecraft.getInstance().getMainRenderTarget().width, Minecraft.getInstance().getMainRenderTarget().height);
+		RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
+		int version = ((Blaze3dRenderTargetExt) main).iris$getDepthBufferVersion();
+
+		if (version != cachedVersion || cachedWidth != main.width || cachedHeight != main.height) {
+			cachedVersion = version;
+			createDepthTex(main.width, main.height);
 		}
 		if (storedDepthTex != depthTex && dhTerrainFramebuffer != null) {
 			storedDepthTex = depthTex;
@@ -181,6 +187,8 @@ public class DHCompatInternal {
 			depthTexNoTranslucent = null;
 		}
 
+		cachedWidth = width;
+		cachedHeight = height;
 		translucentDepthDirty = true;
 
 		depthTexNoTranslucent = new DepthTexture("DH depth tex", width, height, DepthBufferFormat.DEPTH32F);

@@ -10,5 +10,6 @@ public enum UniformType {
 	VEC3,
 	VEC3I,
 	VEC4,
-	VEC4I
+	VEC4I,
+	VEC4UI
 }

@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.api.v0.IrisApi;
 import net.irisshaders.iris.gl.program.IrisProgramTypes;
+import net.irisshaders.iris.pathways.scaling.RenderScale;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
@@ -66,9 +67,30 @@ public class MixinGameRenderer {
         return !IrisApi.getInstance().isShaderPackInUse();
     }
 
+	// Swap in the reduced-resolution world target before anything is drawn into it. This runs
+	// ahead of LevelRenderer.renderLevel's clear, and ahead of IrisRenderingPipeline sizing its
+	// own render targets off the main render target, so the whole pipeline follows along.
+	@Inject(method = "renderLevel", at = @At("HEAD"))
+	private void iris$beginScaledWorld(CallbackInfo ci) {
+		RenderScale.begin();
+	}
+
 	@Inject(method = "renderLevel", at = @At("TAIL"))
 	private void iris$runColorSpace(CallbackInfo ci) {
 		Iris.getPipelineManager().getPipeline().ifPresent(WorldRenderingPipeline::finalizeGameRendering);
+
+		// Resolve the scaled world image back into Minecraft's real render target. This has to
+		// happen after the color space pass above, which operates on the scaled image, and
+		// before the entity outline blit, the post-processing chain and the GUI, which all run
+		// at native resolution back in GameRenderer.render.
+		RenderScale.end();
+	}
+
+	// Insurance: if renderLevel exits abnormally we would otherwise leave getMainRenderTarget
+	// permanently redirected at a target nothing else knows about. A no-op in the normal path.
+	@Inject(method = "render", at = @At("TAIL"))
+	private void iris$ensureScaledWorldResolved(CallbackInfo ci) {
+		RenderScale.end();
 	}
 
 	@Redirect(method = "reloadShaders", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList()Ljava/util/ArrayList;"))

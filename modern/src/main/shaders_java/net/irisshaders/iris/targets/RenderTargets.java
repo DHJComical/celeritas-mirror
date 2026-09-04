@@ -146,7 +146,7 @@ public class RenderTargets {
 
 	public boolean resizeIfNeeded(int newDepthBufferVersion, int newDepthTextureId, int newWidth, int newHeight, DepthBufferFormat newDepthFormat, PackDirectives packDirectives) {
 		boolean recreateDepth = false;
-		if (cachedDepthBufferVersion != newDepthBufferVersion) {
+		if (cachedDepthBufferVersion != newDepthBufferVersion || currentDepthTexture != newDepthTextureId) {
 			recreateDepth = true;
 			currentDepthTexture = newDepthTextureId;
 			cachedDepthBufferVersion = newDepthBufferVersion;

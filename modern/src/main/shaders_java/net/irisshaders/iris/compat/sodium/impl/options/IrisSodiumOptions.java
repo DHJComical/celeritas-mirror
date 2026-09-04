@@ -7,6 +7,9 @@ import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.config.IrisConfig;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
+import net.irisshaders.iris.pathways.scaling.RenderScale;
+import net.irisshaders.iris.pathways.scaling.RenderScalePreset;
+import net.irisshaders.iris.pathways.scaling.UpscaleMode;
 import net.minecraft.client.Options;
 import org.taumc.celeritas.api.OptionGUIConstructionEvent;
 import org.taumc.celeritas.api.OptionGroupConstructionEvent;
@@ -47,6 +50,9 @@ public class IrisSodiumOptions {
         OptionGroupConstructionEvent.BUS.addListener(ev -> {
             if(ev.getId().matches(StandardOptions.Group.RENDERING)) {
                 ev.getOptions().add(1, createMaxShadowDistanceSlider(SodiumGameOptionPages.getVanillaOpts()));
+                ev.getOptions().add(2, createRenderScaleButton());
+                ev.getOptions().add(3, createUpscaleModeButton());
+                ev.getOptions().add(4, createUpscaleSharpnessSlider());
             } else if(ev.getId().matches(StandardOptions.Group.GRAPHICS)) {
                 ev.getOptions().add(createColorSpaceButton(SodiumGameOptionPages.getVanillaOpts()));
             }
@@ -90,6 +96,68 @@ public class IrisSodiumOptions {
 			.setImpact(OptionImpact.HIGH)
 			.setEnabledPredicate(IrisVideoSettings::isShadowDistanceSliderEnabled)
 			.build();
+	}
+
+	public static OptionImpl<IrisConfig, RenderScalePreset> createRenderScaleButton() {
+		RenderScalePreset[] presets = RenderScalePreset.values();
+		TextComponent[] names = new TextComponent[presets.length];
+
+		for (int i = 0; i < presets.length; i++) {
+			names[i] = TextComponent.literal(presets[i].getPercent() + "%");
+		}
+
+		return OptionImpl.createBuilder(RenderScalePreset.class, irisOpts)
+			.setName(TextComponent.translatable("options.iris.renderScale"))
+			.setTooltip(TextComponent.translatable("options.iris.renderScale.sodium_tooltip"))
+			.setControl(option -> new CyclingControl<>(option, RenderScalePreset.class, names))
+			.setBinding((options, value) -> {
+					IrisVideoSettings.renderScale = value;
+					saveConfig();
+				},
+				options -> IrisVideoSettings.renderScale)
+			.setImpact(OptionImpact.HIGH)
+			.build();
+	}
+
+	public static OptionImpl<IrisConfig, UpscaleMode> createUpscaleModeButton() {
+		return OptionImpl.createBuilder(UpscaleMode.class, irisOpts)
+			.setName(TextComponent.translatable("options.iris.upscaleMode"))
+			.setTooltip(TextComponent.translatable("options.iris.upscaleMode.sodium_tooltip"))
+			.setControl(option -> new CyclingControl<>(option, UpscaleMode.class,
+				new TextComponent[]{TextComponent.literal("Bilinear"), TextComponent.literal("FSR 1.0")}))
+			.setBinding((options, value) -> {
+					IrisVideoSettings.upscaleMode = value;
+					RenderScale.onSettingsChanged();
+					saveConfig();
+				},
+				options -> IrisVideoSettings.upscaleMode)
+			.setImpact(OptionImpact.LOW)
+			.setEnabledPredicate(() -> IrisVideoSettings.renderScale.isScaled())
+			.build();
+	}
+
+	public static OptionImpl<IrisConfig, Integer> createUpscaleSharpnessSlider() {
+		return OptionImpl.createBuilder(int.class, irisOpts)
+			.setName(TextComponent.translatable("options.iris.upscaleSharpness"))
+			.setTooltip(TextComponent.translatable("options.iris.upscaleSharpness.sodium_tooltip"))
+			.setControl(option -> new SliderControl(option, 0, 100, 5, ControlValueFormatter.percentage()))
+			.setBinding((options, value) -> {
+					IrisVideoSettings.upscaleSharpness = value;
+					saveConfig();
+				},
+				options -> IrisVideoSettings.upscaleSharpness)
+			.setImpact(OptionImpact.LOW)
+			.setEnabledPredicate(() -> IrisVideoSettings.renderScale.isScaled()
+				&& IrisVideoSettings.upscaleMode == UpscaleMode.FSR)
+			.build();
+	}
+
+	private static void saveConfig() {
+		try {
+			Iris.getIrisConfig().save();
+		} catch (IOException e) {
+			CeleritasShaders.logger().error("Error saving config", e);
+		}
 	}
 
 	public static OptionImpl<Options, ColorSpace> createColorSpaceButton(OptionStorage<Options> vanillaOpts) {

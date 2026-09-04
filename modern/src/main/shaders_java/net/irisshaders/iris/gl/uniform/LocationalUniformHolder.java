@@ -8,6 +8,7 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 import org.joml.Vector4f;
+import org.joml.Vector4i;
 
 import java.util.OptionalInt;
 import java.util.function.BooleanSupplier;
@@ -100,6 +101,17 @@ public interface LocationalUniformHolder extends UniformHolder {
 	@Override
 	default LocationalUniformHolder uniform4f(UniformUpdateFrequency updateFrequency, String name, Supplier<Vector4f> value) {
 		location(name, UniformType.VEC4).ifPresent(id -> addUniform(updateFrequency, new Vector4Uniform(id, value)));
+
+		return this;
+	}
+
+	/**
+	 * For {@code uvec4} uniforms - see {@link Vector4UnsignedIntegerUniform}. Not to be
+	 * confused with a {@code uniform4i} for genuine {@code ivec4} uniforms, which this codebase
+	 * does not currently need at this (frequency-based, non-dynamic) call site.
+	 */
+	default LocationalUniformHolder uniform4ui(UniformUpdateFrequency updateFrequency, String name, Supplier<Vector4i> value) {
+		location(name, UniformType.VEC4UI).ifPresent(id -> addUniform(updateFrequency, new Vector4UnsignedIntegerUniform(id, value)));
 
 		return this;
 	}

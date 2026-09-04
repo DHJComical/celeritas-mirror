@@ -85,6 +85,8 @@ public class ProgramUniforms {
 			typeName = "ivec2";
 		} else if (type == GL20C.GL_INT_VEC4) {
 			typeName = "ivec4";
+		} else if (type == GL30C.GL_UNSIGNED_INT_VEC4) {
+			typeName = "uvec4";
 		} else if (type == GL20C.GL_SAMPLER_3D) {
 			typeName = "sampler3D";
 		} else if (type == GL20C.GL_SAMPLER_2D) {
@@ -137,6 +139,8 @@ public class ProgramUniforms {
 			return UniformType.VEC4;
 		} else if (type == GL20C.GL_INT_VEC4) {
 			return UniformType.VEC4I;
+		} else if (type == GL30C.GL_UNSIGNED_INT_VEC4) {
+			return UniformType.VEC4UI;
 		} else if (type == GL20C.GL_FLOAT_MAT3) {
 			return UniformType.MAT3;
 		} else if (type == GL20C.GL_FLOAT_VEC3) {

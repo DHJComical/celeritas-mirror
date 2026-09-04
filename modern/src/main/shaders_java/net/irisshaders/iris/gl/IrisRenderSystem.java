@@ -144,6 +144,18 @@ public class IrisRenderSystem {
 		GL32C.glUniform4i(location, v0, v1, v2, v3);
 	}
 
+	/**
+	 * For {@code uvec4} uniforms specifically. Unlike the {@code bool}/{@code int} pair,
+	 * {@code glUniform4i} is <em>not</em> valid for loading a {@code uvec4} - the GL spec
+	 * requires the unsigned variant, or it raises {@code GL_INVALID_OPERATION} and leaves the
+	 * uniform unchanged. {@code v0}-{@code v3} are passed as {@code int} purely because Java
+	 * has no unsigned type; the bit pattern is what matters.
+	 */
+	public static void uniform4ui(int location, int v0, int v1, int v2, int v3) {
+		RenderSystem.assertOnRenderThreadOrInit();
+		GL30C.glUniform4ui(location, v0, v1, v2, v3);
+	}
+
 	public static void texParameteriv(int texture, int target, int pname, int[] params) {
 		RenderSystem.assertOnRenderThreadOrInit();
 		dsaState.texParameteriv(texture, target, pname, params);
