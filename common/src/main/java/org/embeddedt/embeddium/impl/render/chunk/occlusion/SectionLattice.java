@@ -115,6 +115,8 @@ public final class SectionLattice {
     // Non-null only when the lattice serves a shadow pass as well.
     @Nullable
     private final ShadowOcclusionCuller shadowCuller;
+    // Whether the raster occluder is in use; gates maintenance of occluderData/occluderBounds, which only it reads.
+    private final boolean rasterOcclusion;
 
     private final int minSectionY, maxSectionY;
 
@@ -137,6 +139,11 @@ public final class SectionLattice {
     long[] shadowVisitState;
     long[] sectionMeta;
     int[] regionOfCell;
+
+    int[] @Nullable [] occluderData;
+
+    int @Nullable [] occluderBounds;
+
     RenderSection[] latticeSection;
 
     // Queue entries ((packedLocalXYZ << 32) | latticeIndex) of the cells the last main search reported visible, in
@@ -191,13 +198,14 @@ public final class SectionLattice {
      * @param hasShadowPass whether the lattice must also support {@link #findShadowVisible}, which costs a second
      *                      visit-state array
      */
-    public SectionLattice(int minSectionY, int maxSectionY, boolean hasShadowPass) {
+    public SectionLattice(int minSectionY, int maxSectionY, boolean hasShadowPass, boolean rasterOcclusion) {
         this.minSectionY = minSectionY;
         this.maxSectionY = maxSectionY;
         this.baseY = minSectionY - 1;
         this.dimY = (maxSectionY - minSectionY) + 2;
-        this.culler = new OcclusionCuller(this, minSectionY, maxSectionY);
+        this.culler = new OcclusionCuller(this, minSectionY, maxSectionY, rasterOcclusion);
         this.shadowCuller = hasShadowPass ? new ShadowOcclusionCuller(this) : null;
+        this.rasterOcclusion = rasterOcclusion;
 
         if (this.dimY > MAX_DIM) {
             throw new IllegalStateException("World height " + this.dimY + " exceeds occlusion lattice limit " + MAX_DIM);
@@ -269,7 +277,18 @@ public final class SectionLattice {
         long previous = this.sectionMeta[idx];
         this.sectionMeta[idx] = packedMetadata;
 
-        return ((previous ^ packedMetadata) & PackedSectionMetadata.GRAPH_INPUT_MASK) != 0;
+        boolean occluderChanged = false;
+
+        if (this.rasterOcclusion) {
+            int[] data = PackedSectionMetadata.hasOccluderData(packedMetadata) ? occluderDataOf(this.latticeSection[idx]) : null;
+            // A rebuild allocates a fresh array, so identity is enough to detect
+            // new boxes even when the packed metadata is otherwise unchanged.
+            occluderChanged = this.occluderData[idx] != data;
+            this.occluderData[idx] = data;
+            this.occluderBounds[idx] = boundsOf(data);
+        }
+
+        return occluderChanged || ((previous ^ packedMetadata) & PackedSectionMetadata.GRAPH_INPUT_MASK) != 0;
     }
 
     /**
@@ -459,6 +478,14 @@ public final class SectionLattice {
         return this.snapshot(this.visitState, this.mainSnapshotBuffers);
     }
 
+    public String rasterBufferSize() {
+        return this.culler.rasterBufferSize();
+    }
+
+    public int rasterBacktrackCount() {
+        return this.culler.rasterBacktrackCount();
+    }
+
     /**
      * Run the shadow-pass search over the currently installed lattice cells, using the shadow visit-state array
      * so the main search's state is left intact.
@@ -527,6 +554,8 @@ public final class SectionLattice {
         this.sectionMeta = new long[slots];
         this.regionOfCell = new int[slots];
         this.latticeSection = new RenderSection[slots];
+        this.occluderData = this.rasterOcclusion ? new int[slots][] : null;
+        this.occluderBounds = this.rasterOcclusion ? new int[slots] : null;
 
         // Existing coordinates are no longer valid after resizing; the next
         // ensureWindowCovers must rebase and reinstall every attached section.
@@ -545,6 +574,10 @@ public final class SectionLattice {
         Arrays.fill(this.sectionMeta, VisibilityEncoding.NULL);
         Arrays.fill(this.regionOfCell, -1);
         Arrays.fill(this.latticeSection, null);
+        if (this.rasterOcclusion) {
+            Arrays.fill(this.occluderData, null);
+            Arrays.fill(this.occluderBounds, 0);
+        }
 
         this.baseX = newBaseX;
         this.baseZ = newBaseZ;
@@ -624,6 +657,10 @@ public final class SectionLattice {
         System.arraycopy(this.sectionMeta, srcOff, this.sectionMeta, destOff, len);
         System.arraycopy(this.regionOfCell, srcOff, this.regionOfCell, destOff, len);
         System.arraycopy(this.latticeSection, srcOff, this.latticeSection, destOff, len);
+        if (this.rasterOcclusion) {
+            System.arraycopy(this.occluderData, srcOff, this.occluderData, destOff, len);
+            System.arraycopy(this.occluderBounds, srcOff, this.occluderBounds, destOff, len);
+        }
     }
 
     /**
@@ -657,6 +694,10 @@ public final class SectionLattice {
             System.arraycopy(this.sectionMeta, srcOff, this.sectionMeta, destOff, runLen);
             System.arraycopy(this.regionOfCell, srcOff, this.regionOfCell, destOff, runLen);
             System.arraycopy(this.latticeSection, srcOff, this.latticeSection, destOff, runLen);
+            if (this.rasterOcclusion) {
+                System.arraycopy(this.occluderData, srcOff, this.occluderData, destOff, runLen);
+                System.arraycopy(this.occluderBounds, srcOff, this.occluderBounds, destOff, runLen);
+            }
         }
     }
 
@@ -742,6 +783,10 @@ public final class SectionLattice {
                     this.sectionMeta[idx] = VisibilityEncoding.NULL;
                     this.regionOfCell[idx] = -1;
                     this.latticeSection[idx] = null;
+                    if (this.rasterOcclusion) {
+                        this.occluderData[idx] = null;
+                        this.occluderBounds[idx] = 0;
+                    }
 
                     RenderSection section = this.sections.get(
                             PositionUtil.packSection(worldX, this.baseY + ly, worldZ));
@@ -789,6 +834,15 @@ public final class SectionLattice {
 
     // Install only into the interior. An attached section outside the current
     // window remains in sections and is picked up by a later rebase.
+    private static int @Nullable [] occluderDataOf(@Nullable RenderSection section) {
+        var built = section != null ? section.getBuiltContext() : null;
+        return built != null ? built.occluderBoxes : null;
+    }
+
+    private static int boundsOf(int @Nullable [] occluderData) {
+        return occluderData != null ? SectionVisibilityBuilder.bounds(occluderData) : 0;
+    }
+
     private void install(RenderSection section) {
         if (this.visitState == null) {
             return;
@@ -806,7 +860,15 @@ public final class SectionLattice {
         }
         this.latticeSection[idx] = section;
         this.regionOfCell[idx] = section.getRegion().getId();
-        this.sectionMeta[idx] = section.getPackedMetadata();
+        long packedMetadata = section.getPackedMetadata();
+        this.sectionMeta[idx] = packedMetadata;
+
+        if (this.rasterOcclusion) {
+            int[] data = PackedSectionMetadata.hasOccluderData(packedMetadata) ? occluderDataOf(section) : null;
+            this.occluderData[idx] = data;
+            this.occluderBounds[idx] = boundsOf(data);
+        }
+
         this.installedCount++;
     }
 
@@ -826,6 +888,10 @@ public final class SectionLattice {
         this.sectionMeta[idx] = VisibilityEncoding.NULL;
         this.regionOfCell[idx] = -1;
         this.latticeSection[idx] = null;
+        if (this.rasterOcclusion) {
+            this.occluderData[idx] = null;
+            this.occluderBounds[idx] = 0;
+        }
         this.installedCount--;
     }
 }

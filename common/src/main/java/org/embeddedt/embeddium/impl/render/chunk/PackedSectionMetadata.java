@@ -15,10 +15,10 @@ import org.jetbrains.annotations.Nullable;
  *
  * <p>Bit layout:
  * <pre>
- * 63                 53 52 51       49 48      46 45                0
- * +--------------------+--+-----------+----------+-------------------+
- * |       spare        |IF| pending   | visuals  | visibility graph  |
- * +--------------------+--+-----------+----------+-------------------+
+ * 63                 54 53 52 51       49 48      46 45                0
+ * +--------------------+--+--+-----------+----------+-------------------+
+ * |       spare        |OD|IF| pending   | visuals  | visibility graph  |
+ * +--------------------+--+--+-----------+----------+-------------------+
  * </pre>
  * <ul>
  *   <li>Bits {@code 0..45}: {@link VisibilityEncoding} entries. Entry
@@ -30,7 +30,8 @@ import org.jetbrains.annotations.Nullable;
  *   <li>Bits {@code 49..51}: pending update type; zero means none, otherwise
  *       {@code ChunkUpdateType.ordinal() + 1}.</li>
  *   <li>Bit {@code 52}: a build is in flight.</li>
- *   <li>Bits {@code 53..63}: reserved.</li>
+ *   <li>Bit {@code 53}: the section's built data has occluder boxes.</li>
+ *   <li>Bits {@code 54..63}: reserved.</li>
  * </ul>
  *
  * <p>The visibility graph uses only bits {@code 0..45}, but
@@ -57,12 +58,6 @@ public final class PackedSectionMetadata {
     private static final int VISUALS_FLAGS_SHIFT = 46;
     private static final long VISUALS_FLAGS_MASK = 0b111L;
 
-    /**
-     * Fields whose changes can alter the result of a visibility search or its
-     * render-list output: visibility graph data and visual-presence flags.
-     */
-    public static final long GRAPH_INPUT_MASK = VISIBILITY_MASK | (VISUALS_FLAGS_MASK << VISUALS_FLAGS_SHIFT);
-
     // Bits 49..51: 0 means no pending update; otherwise ordinal + 1.
     private static final int PENDING_UPDATE_SHIFT = 49;
     private static final long PENDING_UPDATE_MASK = 0b111L;
@@ -70,6 +65,16 @@ public final class PackedSectionMetadata {
     // Bit 52: a build cancellation token is currently attached.
     private static final int BUILD_IN_FLIGHT_BIT = 52;
     private static final long BUILD_IN_FLIGHT_FLAG = 1L << BUILD_IN_FLIGHT_BIT;
+
+    // Bit 53: the section's built data has occluder boxes.
+    private static final int HAS_OCCLUDER_DATA_BIT = 53;
+    private static final long HAS_OCCLUDER_DATA_FLAG = 1L << HAS_OCCLUDER_DATA_BIT;
+
+    /**
+     * Fields whose changes can alter the result of a visibility search or its
+     * render-list output: visibility graph data and visual-presence flags.
+     */
+    public static final long GRAPH_INPUT_MASK = VISIBILITY_MASK | (VISUALS_FLAGS_MASK << VISUALS_FLAGS_SHIFT);
 
     /** Returns only the visibility graph field. */
     public static long getVisibilityData(long packed) {
@@ -123,6 +128,18 @@ public final class PackedSectionMetadata {
     /** Returns whether a section build is currently in flight. */
     public static boolean isBuildInFlight(long packed) {
         return (packed & BUILD_IN_FLIGHT_FLAG) != 0;
+    }
+
+    /** Returns whether the section's built data has occluder boxes. */
+    public static boolean hasOccluderData(long packed) {
+        return (packed & HAS_OCCLUDER_DATA_FLAG) != 0;
+    }
+
+    /**
+     * Replaces the has-occluder-data flag and preserves every other field.
+     */
+    public static long withHasOccluderData(long packed, boolean hasOccluderData) {
+        return hasOccluderData ? (packed | HAS_OCCLUDER_DATA_FLAG) : (packed & ~HAS_OCCLUDER_DATA_FLAG);
     }
 
     /*

@@ -112,7 +112,8 @@ public class ModernRenderSectionManager extends RenderSectionManager {
             return null;
         }
 
-        return new ChunkBuilderMeshingTask(render, context, frame, this.cameraPosition);
+        return new ChunkBuilderMeshingTask(render, context, frame, this.cameraPosition,
+                this.useRasterOcclusionCulling());
     }
 
     @Override
@@ -124,6 +125,11 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     @Override
     protected @Nullable SectionTicker createSectionTicker() {
         return new GenericSectionSpriteTicker<>(SpriteUtil::markSpriteActive);
+    }
+
+    @Override
+    protected boolean useRasterOcclusionCulling() {
+        return Celeritas.options().performance.useRasterOcclusionCulling;
     }
 
     @Override

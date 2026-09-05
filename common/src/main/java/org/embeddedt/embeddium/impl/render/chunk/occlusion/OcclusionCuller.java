@@ -1,12 +1,16 @@
 package org.embeddedt.embeddium.impl.render.chunk.occlusion;
 
+import grondag.bitraster.AbstractRasterizer;
+import grondag.bitraster.PackedBox;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.render.chunk.LocalSectionIndex;
 import org.embeddedt.embeddium.impl.render.chunk.PackedSectionMetadata;
+import org.embeddedt.embeddium.impl.render.chunk.lists.RenderVisualsService;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3ic;
 
 import static org.embeddedt.embeddium.impl.common.util.MathUtil.nearestToZero;
@@ -114,13 +118,17 @@ public class OcclusionCuller {
 
     private final RegionCullCache regionCullCache = new RegionCullCache();
 
+    private final @Nullable RasterOccluder rasterOccluder;
+    private boolean rasterActive;
+
     private boolean isCameraInUnloadedSection;
     private boolean isMultiRootSearch;
 
-    public OcclusionCuller(SectionLattice lattice, int minSectionY, int maxSectionY) {
+    public OcclusionCuller(SectionLattice lattice, int minSectionY, int maxSectionY, boolean rasterOcclusion) {
         this.lattice = lattice;
         this.minSectionY = minSectionY;
         this.maxSectionY = maxSectionY;
+        this.rasterOccluder = rasterOcclusion ? new RasterOccluder() : null;
     }
 
     /**
@@ -182,6 +190,12 @@ public class OcclusionCuller {
             allowFrustumClamping = false;
         }
 
+        this.rasterActive = this.rasterOccluder != null && useOcclusionCulling && viewport.getVpMatrix() != null;
+
+        if (this.rasterActive) {
+            this.rasterOccluder.prepareScene(frame, viewport, searchDistance, numRegions);
+        }
+
         this.process(visitor, viewport, searchDistance, useOcclusionCulling, allowFrustumClamping, frame);
 
         if (recordVisible) {
@@ -212,6 +226,8 @@ public class OcclusionCuller {
         final long[] queue = this.queue;
         final long[] apertures = this.apertures;
         final long[] visibleCells = this.visibleCells;
+        final int[] occluderBounds = this.lattice.occluderBounds;
+        final int[][] occluderData = this.lattice.occluderData;
         int visibleCount = this.visibleCount;
         final int baseX = this.lattice.baseX, baseY = this.lattice.baseY, baseZ = this.lattice.baseZ;
 
@@ -250,10 +266,10 @@ public class OcclusionCuller {
             int regionId = regionOfCell[idx];
             long sm = sectionMeta[idx];
             int compactMeta = PackedSectionMetadata.toCompactMeta(sm);
-            int classification = cache.classify(regionId,
-                    regionOrigin(chunkX, RenderRegion.REGION_WIDTH_SH, RenderRegion.REGION_BLOCK_WIDTH),
-                    regionOrigin(chunkY, RenderRegion.REGION_HEIGHT_SH, RenderRegion.REGION_BLOCK_HEIGHT),
-                    regionOrigin(chunkZ, RenderRegion.REGION_LENGTH_SH, RenderRegion.REGION_BLOCK_LENGTH));
+            int regionX = regionOrigin(chunkX, RenderRegion.REGION_WIDTH_SH, RenderRegion.REGION_BLOCK_WIDTH);
+            int regionY = regionOrigin(chunkY, RenderRegion.REGION_HEIGHT_SH, RenderRegion.REGION_BLOCK_HEIGHT);
+            int regionZ = regionOrigin(chunkZ, RenderRegion.REGION_LENGTH_SH, RenderRegion.REGION_BLOCK_LENGTH);
+            int classification = cache.classify(regionId, regionX, regionY, regionZ);
 
             // Fully-inside regions need no per-section tests and outside regions
             // are not traversed. Sections in a partial region are checked
@@ -285,14 +301,24 @@ public class OcclusionCuller {
                 visible = aperture != FastFrustumClamping.EMPTY;
             }
 
+            boolean traverse = visible;
+
+            if (this.rasterActive && visible) {
+                RasterOccluder.SectionVisibility result = this.rasterTest(occluderBounds, occluderData,
+                        idx, chunkX, chunkY, chunkZ, camX, camY, camZ,
+                        compactMeta, PackedSectionMetadata.hasOccluderData(sm), regionId, regionX, regionY, regionZ);
+                visible = result == RasterOccluder.SectionVisibility.VISIBLE;
+                traverse = result != RasterOccluder.SectionVisibility.HIDDEN;
+            }
+
             int sectionIndex = LocalSectionIndex.pack(chunkX, chunkY, chunkZ);
             visitor.visit(idx, regionId, sectionIndex, compactMeta, visible);
 
-            if (!visible) {
+            if (!traverse) {
                 continue;
             }
 
-            if (visibleCells != null) {
+            if (visible && visibleCells != null) {
                 visibleCells[visibleCount++] = entry;
             }
 
@@ -333,6 +359,50 @@ public class OcclusionCuller {
 
         this.tail = tail;
         this.visibleCount = visibleCount;
+    }
+
+    private RasterOccluder.SectionVisibility rasterTest(int[] occluderBounds, int[][] occluderData,
+                                                        int idx, int chunkX, int chunkY, int chunkZ, int camX, int camY, int camZ,
+                                                        int meta, boolean hasOccluderData,
+                                                        int regionId, int regionX, int regionY, int regionZ) {
+        var occluder = this.rasterOccluder;
+
+        // A section with nothing to draw is visible wherever nothing has been drawn. One with geometry is
+        // tested against the bounds of what it draws, which may lie off screen even though the section is
+        // in the frustum, and that cull is worth keeping; such sections are rare above the horizon anyway.
+        if (!hasOccluderData && occluder.isSectionUntouched(regionId, regionX, regionY, regionZ, chunkX, chunkY, chunkZ)) {
+            if (AbstractRasterizer.STATS) RasterOccluder.STAT_REGION_SKIP++;
+            return RasterOccluder.SectionVisibility.VISIBLE;
+        }
+
+        int dx = chunkX - camX;
+        int dy = chunkY - camY;
+        int dz = chunkZ - camZ;
+        int squaredChunkDist = (dx * dx) + (dy * dy) + (dz * dz);
+
+        boolean hasGeometry =
+                (PackedSectionMetadata.getCompactVisualsFlags(meta) & (1 << RenderVisualsService.HAS_BLOCK_GEOMETRY)) != 0;
+
+        // the flag spares the many sections without data the loads below, which rarely hit cache
+        int bounds = hasOccluderData ? occluderBounds[idx] : PackedBox.FULL_BOX;
+
+        RasterOccluder.SectionVisibility result = occluder.testSection(chunkX << 4, chunkY << 4, chunkZ << 4, squaredChunkDist, bounds);
+
+        if (result == RasterOccluder.SectionVisibility.VISIBLE && hasGeometry && hasOccluderData) {
+            occluder.occludeSection(occluderData[idx]);
+        }
+
+        return result;
+    }
+
+    /** Current raster buffer size as {@code width x height} in pixels, or null when the raster is off. */
+    public String rasterBufferSize() {
+        return this.rasterOccluder == null ? null
+                : this.rasterOccluder.bufferWidth() + "x" + this.rasterOccluder.bufferHeight();
+    }
+
+    public int rasterBacktrackCount() {
+        return this.rasterOccluder == null ? 0 : this.rasterOccluder.backtrackCount();
     }
 
     // Visit each selected neighbour using both its linear array offset and

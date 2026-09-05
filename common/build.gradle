@@ -152,6 +152,18 @@ tasks.register('jmh', JavaExec) {
     }
 }
 
+tasks.register('rasterCullReport', JavaExec) {
+    group = 'verification'
+    description = 'Reports visible section counts per world and camera placement.'
+
+    classpath = sourceSets.jmh.runtimeClasspath
+    mainClass = 'org.embeddedt.embeddium.impl.render.chunk.occlusion.bench.RasterCullReport'
+
+    maxHeapSize = '1g'
+    // e.g. ./gradlew :common:rasterCullReport -Dreport.renderDistance=64
+    systemProperties System.getProperties().findAll { it.key.toString().startsWith('report.') }
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -228,4 +240,14 @@ def transformedAttr = Attribute.of("rfgDeobfuscatorTransformed", Boolean)
         attribute(obfAttr, "mcp")
         attribute(transformedAttr, true)
     }
+}
+
+tasks.register('rasterStats', JavaExec) {
+    group = 'verification'
+    classpath = sourceSets.jmh.runtimeClasspath
+    mainClass = 'org.embeddedt.embeddium.impl.render.chunk.occlusion.bench.RasterStatsReport'
+    maxHeapSize = '1g'
+    jvmArgs '-Dbitraster.stats=true'
+    systemProperties System.getProperties().findAll { it.key.toString().startsWith('report.') }
+    doFirst { if (project.hasProperty('statargs')) args(project.property('statargs').toString().split('\\s+').findAll { !it.isEmpty() }) }
 }

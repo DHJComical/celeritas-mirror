@@ -101,4 +101,58 @@ public final class VoxelSlice {
 
         return occluder.computeVisibilityEncoding();
     }
+
+    public int[] occlusionData() {
+        if (this.empty) {
+            return null;
+        }
+
+        var occluder = new SectionVisibilityBuilder();
+        byte[] blocks = this.blocks;
+
+        for (int y = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++) {
+                int row = ((y + 1) * AREA) + ((z + 1) * SIZE) + 1;
+
+                for (int x = 0; x < 16; x++) {
+                    int block = blocks[row + x];
+
+                    if (VoxelWorld.isOpaque(block)) {
+                        occluder.markOpaque(x, y, z);
+                    }
+
+                    if (VoxelWorld.isRenderable(block)) {
+                        occluder.markRenderable(x, y, z);
+                    }
+                }
+            }
+        }
+
+        return occluder.computeOccluderBoxes();
+    }
+
+    public long[] opacityBits() {
+        var bits = new long[64];
+
+        if (this.empty) {
+            return bits;
+        }
+
+        byte[] blocks = this.blocks;
+
+        for (int y = 0; y < 16; y++) {
+            for (int z = 0; z < 16; z++) {
+                int row = ((y + 1) * AREA) + ((z + 1) * SIZE) + 1;
+
+                for (int x = 0; x < 16; x++) {
+                    if (VoxelWorld.isOpaque(blocks[row + x])) {
+                        int index = x | (z << 4) | (y << 8);
+                        bits[index >> 6] |= 1L << (index & 63);
+                    }
+                }
+            }
+        }
+
+        return bits;
+    }
 }

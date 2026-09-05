@@ -58,6 +58,11 @@ public class VintageRenderSectionManager extends RenderSectionManager {
     }
 
     @Override
+    protected boolean useRasterOcclusionCulling() {
+        return false;
+    }
+
+    @Override
     protected boolean useFogOcclusion() {
         return CeleritasVintage.options().performance.useFogOcclusion;
     }

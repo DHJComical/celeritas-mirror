@@ -60,6 +60,11 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
     }
 
     @Override
+    protected boolean useRasterOcclusionCulling() {
+        return false;
+    }
+
+    @Override
     protected boolean useFogOcclusion() {
         return true;
     }

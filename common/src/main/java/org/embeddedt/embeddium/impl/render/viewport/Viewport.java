@@ -2,6 +2,9 @@ package org.embeddedt.embeddium.impl.render.viewport;
 
 import org.embeddedt.embeddium.impl.render.viewport.frustum.Frustum;
 import org.embeddedt.embeddium.impl.util.PositionUtil;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.RoundingMode;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
@@ -14,9 +17,17 @@ public final class Viewport {
     private final Vector3i chunkCoords;
     private final Vector3i blockCoords;
 
+    private final @Nullable Matrix4fc vpMatrix;
+
     public Viewport(Frustum frustum, Vector3d position) {
+        this(frustum, position, null);
+    }
+
+    public Viewport(Frustum frustum, Vector3d position, @Nullable Matrix4fc vpMatrix) {
         this.frustum = frustum;
         this.transform = new CameraTransform(position.x, position.y, position.z);
+
+        this.vpMatrix = vpMatrix == null ? null : new Matrix4f(vpMatrix);
 
         this.chunkCoords = new Vector3i(
                 PositionUtil.posToSectionCoord(position.x),
@@ -60,6 +71,10 @@ public final class Viewport {
 
     public int intersectCameraRelativeBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
         return this.frustum.intersectAab(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+
+    public @Nullable Matrix4fc getVpMatrix() {
+        return this.vpMatrix;
     }
 
     public Frustum getFrustum() {

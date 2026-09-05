@@ -45,6 +45,11 @@ public class ArchaicRenderSectionManager extends RenderSectionManager {
     }
 
     @Override
+    protected boolean useRasterOcclusionCulling() {
+        return false;
+    }
+
+    @Override
     protected boolean useFogOcclusion() {
         return true;
     }
@@ -80,7 +85,8 @@ public class ArchaicRenderSectionManager extends RenderSectionManager {
 
         ChunkRenderContext context = new ChunkRenderContext(new SectionPos(render.getChunkX(), render.getChunkY(), render.getChunkZ()));
 
-        return new ChunkBuilderMeshingTask(render, context, frame, this.cameraPosition);
+        return new ChunkBuilderMeshingTask(render, context, frame, this.cameraPosition,
+                this.useRasterOcclusionCulling());
     }
 
     @Override

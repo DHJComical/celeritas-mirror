@@ -45,6 +45,9 @@ public class OcclusionCullerBench {
         @Param({ "true" })
         public boolean scatteredAlloc;
 
+        @Param({ "false" })
+        public boolean rasterOcclusion;
+
         public SyntheticWorld syntheticWorld;
         public SectionLattice lattice;
 
@@ -62,12 +65,14 @@ public class OcclusionCullerBench {
         public void setup() {
             BenchPlatform.ensureInitialized();
 
-            this.syntheticWorld = new SyntheticWorld(this.world, this.renderDistance, this.scatteredAlloc);
+            this.syntheticWorld = new SyntheticWorld(this.world, this.renderDistance, this.scatteredAlloc,
+                    this.rasterOcclusion);
             this.searchDistance = this.syntheticWorld.getSearchDistance();
 
             this.numRegions = BenchPlatform.regionManager().getRegionIdsLength();
 
-            this.lattice = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, false);
+            this.lattice = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, false,
+                    this.rasterOcclusion);
 
             for (RenderSection section : this.syntheticWorld.getConstructionOrder()) {
                 this.lattice.attach(section);

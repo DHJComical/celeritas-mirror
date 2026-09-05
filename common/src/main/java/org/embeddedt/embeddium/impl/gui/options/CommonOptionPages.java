@@ -157,6 +157,16 @@ public class CommonOptionPages {
                         .setBinding((opts, value) -> opts.performance.useFasterClouds = value, opts -> opts.performance.useFasterClouds)
                         .build())
                 //?}
+                .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
+                        .setId(StandardOptions.Option.RASTER_OCCLUSION_CULLING.cast())
+                        .setName(TextComponent.translatable("celeritas.options.raster_occlusion_culling.name"))
+                        .setTooltip(TextComponent.translatable("celeritas.options.raster_occlusion_culling.tooltip"))
+                        .setControl(TickBoxControl::new)
+                        .setImpact(OptionImpact.VARIES)
+                        .setBinding((opts, value) -> opts.performance.useRasterOcclusionCulling = value, opts -> opts.performance.useRasterOcclusionCulling)
+                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
+                        .build()
+                )
                 .build());
 
         return new OptionPage(StandardOptions.Pages.PERFORMANCE, TextComponent.translatable("sodium.options.pages.performance"), List.copyOf(groups));

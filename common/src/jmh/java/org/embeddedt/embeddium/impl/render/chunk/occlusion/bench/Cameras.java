@@ -28,12 +28,17 @@ public final class Cameras {
     }
 
     public static Viewport viewport(double x, double y, double z, float yawDegrees, float pitchDegrees, int renderDistance) {
+        return viewport(x, y, z, yawDegrees, pitchDegrees, renderDistance, FOV_DEGREES);
+    }
+
+    public static Viewport viewport(double x, double y, double z, float yawDegrees, float pitchDegrees, int renderDistance,
+                                    float fovDegrees) {
         Matrix4f matrix = new Matrix4f()
-                .perspective((float) Math.toRadians(FOV_DEGREES), ASPECT, NEAR_PLANE, farPlane(renderDistance))
+                .perspective((float) Math.toRadians(fovDegrees), ASPECT, NEAR_PLANE, farPlane(renderDistance))
                 .rotateX((float) Math.toRadians(pitchDegrees))
                 .rotateY((float) Math.toRadians(yawDegrees + 180.0f));
 
-        return new Viewport(new SimpleFrustum(new FrustumIntersection(matrix)), new Vector3d(x, y, z));
+        return new Viewport(new SimpleFrustum(new FrustumIntersection(matrix)), new Vector3d(x, y, z), matrix);
     }
 
     public static Viewport viewport(double x, double y, double z, int renderDistance) {

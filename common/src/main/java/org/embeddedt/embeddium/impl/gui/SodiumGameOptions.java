@@ -76,6 +76,8 @@ public class SodiumGameOptions implements OptionStorage<SodiumGameOptions> {
         public boolean useNoErrorGLContext = true;
 
         public AsyncOcclusionMode asyncOcclusionMode = AsyncOcclusionMode.ONLY_SHADOW;
+
+        public boolean useRasterOcclusionCulling = false;
     }
 
     public static class AdvancedSettings {

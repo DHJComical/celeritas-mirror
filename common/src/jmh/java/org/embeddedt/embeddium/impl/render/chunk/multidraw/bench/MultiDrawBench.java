@@ -87,9 +87,9 @@ public class MultiDrawBench {
             BenchPlatform.ensureInitialized();
 
             this.syntheticWorld = new SyntheticWorld(this.world, this.renderDistance, SyntheticWorld.DEFAULT_SEED,
-                    this.caveWidth, true, 0.0D, false);
+                    this.caveWidth, true, 0.0D, false, false);
 
-            this.lattice = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, false);
+            this.lattice = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, false, false);
 
             for (RenderSection section : this.syntheticWorld.getConstructionOrder()) {
                 this.lattice.attach(section);

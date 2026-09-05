@@ -89,7 +89,7 @@ public class ShadowOcclusionCullerBench {
             this.numRegions = BenchPlatform.regionManager().getRegionIdsLength();
 
             // hasShadowPass: allocates the second visit-state array the shadow search stamps.
-            this.lattice = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, true);
+            this.lattice = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, true, false);
 
             for (RenderSection section : syntheticWorld.getConstructionOrder()) {
                 this.lattice.attach(section);

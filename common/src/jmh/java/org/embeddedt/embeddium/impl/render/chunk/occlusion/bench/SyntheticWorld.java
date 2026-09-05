@@ -43,20 +43,27 @@ public final class SyntheticWorld {
     private final int sectionCount;
 
     public SyntheticWorld(WorldType type, int renderDistance) {
-        this(type, renderDistance, DEFAULT_SEED, VoxelWorld.DEFAULT_CAVE_WIDTH, false, 0.0D, false);
+        this(type, renderDistance, DEFAULT_SEED, VoxelWorld.DEFAULT_CAVE_WIDTH, false, 0.0D, false, false);
     }
 
     public SyntheticWorld(WorldType type, int renderDistance, boolean scatteredAlloc) {
-        this(type, renderDistance, DEFAULT_SEED, VoxelWorld.DEFAULT_CAVE_WIDTH, scatteredAlloc, 0.0D, false);
+        this(type, renderDistance, DEFAULT_SEED, VoxelWorld.DEFAULT_CAVE_WIDTH, scatteredAlloc, 0.0D, false, false);
+    }
+
+    public SyntheticWorld(WorldType type, int renderDistance, boolean scatteredAlloc, boolean occluderBoxes) {
+        this(type, renderDistance, DEFAULT_SEED, VoxelWorld.DEFAULT_CAVE_WIDTH, scatteredAlloc, 0.0D, false,
+                occluderBoxes);
     }
 
     /**
      * @param scatteredAlloc      shuffled allocation order (models a long-lived session)
      * @param unloadedProbability fraction of sections absent from the box
      * @param allFlagged          full visuals mask on every section (sensitivity knob, not realistic)
+     * @param occluderBoxes       generate occluder boxes; far dearer per section than the visibility fill,
+     *                            and dead weight unless a report is measuring the rasterizer
      */
     public SyntheticWorld(WorldType type, int renderDistance, long seed, double caveWidth, boolean scatteredAlloc,
-                          double unloadedProbability, boolean allFlagged) {
+                          double unloadedProbability, boolean allFlagged, boolean occluderBoxes) {
         this.type = type;
         this.renderDistance = renderDistance;
         this.seed = seed;
@@ -102,7 +109,11 @@ public final class SyntheticWorld {
         // arithmetic moves off this thread — pass 2 still allocates every section itself, in order, because the
         // heap layout of those sections is exactly what scatteredAlloc exists to control and letting worker
         // threads allocate them into their own TLABs would quietly change what the benchmark measures.
-        long[] visibility = this.computeVisibility(radius, width);
+        int[][] boxes = occluderBoxes
+                ? new int[width * width * (MAX_SECTION_Y - MIN_SECTION_Y)][]
+                : null;
+
+        long[] visibility = this.computeVisibility(radius, width, boxes);
 
         // Pass 2: allocate sections in the requested order.
         this.sections = new Long2ReferenceOpenHashMap<>(present, 0.75f);
@@ -114,8 +125,14 @@ public final class SyntheticWorld {
 
             var section = new RenderSection(regionFor(regionManager, regions, x, y, z), x, y, z);
 
-            section.setInfo(new BenchSectionData(visibility[gridIndex(x, y, z, radius, width)], x, y, z,
-                    allFlagged));
+            var info = new BenchSectionData(visibility[gridIndex(x, y, z, radius, width)], x, y, z,
+                    allFlagged);
+
+            if (boxes != null) {
+                info.occluderBoxes = boxes[gridIndex(x, y, z, radius, width)];
+            }
+
+            section.setInfo(info);
             applyPendingUpdate(section, x, y, z);
 
             this.sections.put(packed, section);
@@ -211,14 +228,14 @@ public final class SyntheticWorld {
      * {@code VoxelWorld}'s heightmap cache. Output does not depend on the striping: visibility is a pure
      * function of position.
      */
-    private long[] computeVisibility(int radius, int width) {
+    private long[] computeVisibility(int radius, int width, int[][] occluderBoxes) {
         final int height = MAX_SECTION_Y - MIN_SECTION_Y;
         var visibility = new long[width * width * height];
 
         int workers = Math.min(Runtime.getRuntime().availableProcessors(), width);
 
         if (workers <= 1) {
-            this.computeVisibilityStripe(this.voxelWorld, visibility, radius, width, 0, 1);
+            this.computeVisibilityStripe(this.voxelWorld, visibility, occluderBoxes, radius, width, 0, 1);
             return visibility;
         }
 
@@ -231,7 +248,7 @@ public final class SyntheticWorld {
             // seed generate identical blocks. They are dropped with the threads, releasing those caches.
             threads[w] = new Thread(() -> this.computeVisibilityStripe(
                     new VoxelWorld(this.type, this.seed, this.voxelWorld.getCaveWidth()),
-                    visibility, radius, width, worker, workers), "bench-worldgen-" + worker);
+                    visibility, occluderBoxes, radius, width, worker, workers), "bench-worldgen-" + worker);
 
             threads[w].start();
         }
@@ -249,8 +266,8 @@ public final class SyntheticWorld {
     }
 
     /** Runs the real visibility flood fill over every section in this worker's share of the columns. */
-    private void computeVisibilityStripe(VoxelWorld world, long[] visibility, int radius, int width,
-                                         int worker, int workers) {
+    private void computeVisibilityStripe(VoxelWorld world, long[] visibility, int[][] occluderBoxes,
+                                         int radius, int width, int worker, int workers) {
         for (int xi = worker; xi < width; xi += workers) {
             int x = xi - radius;
 
@@ -262,7 +279,14 @@ public final class SyntheticWorld {
                         continue;
                     }
 
-                    visibility[gridIndex(x, y, z, radius, width)] = world.slice(x, y, z).computeVisibility();
+                    var slice = world.slice(x, y, z);
+                    int index = gridIndex(x, y, z, radius, width);
+
+                    if (occluderBoxes != null) {
+                        occluderBoxes[index] = slice.occlusionData();
+                    }
+
+                    visibility[index] = slice.computeVisibility();
                 }
             }
         }

@@ -56,7 +56,11 @@ public class FrustumMixin implements ViewportProvider {
 
     @Override
     public Viewport sodium$createViewport() {
-        return new Viewport(new SimpleFrustum(this.intersection), new Vector3d(this.camX, this.camY, this.camZ));
+        //? if >=1.20 {
+        return new Viewport(new SimpleFrustum(this.intersection), new Vector3d(this.camX, this.camY, this.camZ), this.matrix);
+        //?} else {
+        /*return new Viewport(new SimpleFrustum(this.intersection), new Vector3d(this.camX, this.camY, this.camZ));
+        *///?}
     }
 
     //? if <1.20 {

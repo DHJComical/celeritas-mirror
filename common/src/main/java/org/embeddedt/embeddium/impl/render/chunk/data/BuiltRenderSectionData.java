@@ -2,7 +2,9 @@ package org.embeddedt.embeddium.impl.render.chunk.data;
 
 import org.embeddedt.embeddium.impl.render.chunk.lists.RenderVisualsService;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -12,6 +14,8 @@ import java.util.Objects;
 public class BuiltRenderSectionData {
     public boolean hasBlockGeometry;
     public long visibilityData;
+
+    public int @Nullable [] occluderBoxes;
 
     public int getVisualBitmaskForSection() {
         return this.hasBlockGeometry ? (1 << RenderVisualsService.HAS_BLOCK_GEOMETRY) : 0;
@@ -26,11 +30,12 @@ public class BuiltRenderSectionData {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         BuiltRenderSectionData that = (BuiltRenderSectionData) o;
-        return hasBlockGeometry == that.hasBlockGeometry && visibilityData == that.visibilityData;
+        return hasBlockGeometry == that.hasBlockGeometry && visibilityData == that.visibilityData
+                && Arrays.equals(occluderBoxes, that.occluderBoxes);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(hasBlockGeometry, visibilityData);
+        return (Objects.hash(hasBlockGeometry, visibilityData) * 31) + Arrays.hashCode(occluderBoxes);
     }
 }

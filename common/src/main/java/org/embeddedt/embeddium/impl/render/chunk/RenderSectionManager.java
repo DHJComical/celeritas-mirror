@@ -139,7 +139,7 @@ public abstract class RenderSectionManager {
         this.minSection = minSection;
         this.maxSection = maxSection;
         AsyncOcclusionMode asyncMode = this.getAsyncOcclusionMode();
-        this.sectionGraph = new SectionGraph(this.minSection, this.maxSection, asyncMode, hasShadowPass);
+        this.sectionGraph = new SectionGraph(this.minSection, this.maxSection, asyncMode, hasShadowPass, this.useRasterOcclusionCulling());
         this.renderListManager = new RenderListManager(this.sectionGraph, false, asyncMode, this.createSectionTicker());
         if (hasShadowPass) {
             this.shadowRenderListManager = new RenderListManager(this.sectionGraph, true, asyncMode, this.createSectionTicker());
@@ -346,6 +346,8 @@ public abstract class RenderSectionManager {
     }
 
     protected abstract boolean useFogOcclusion();
+
+    protected abstract boolean useRasterOcclusionCulling();
 
     private float getSearchDistance(@Nullable Matrix4fc projectionMatrix) {
         float distance;

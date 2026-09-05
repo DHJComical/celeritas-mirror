@@ -34,8 +34,8 @@ public final class SectionGraph {
     // runDeferredTasks() once every search has been joined.
     private final ArrayDeque<Runnable> updateTasks = new ArrayDeque<>();
 
-    public SectionGraph(int minSectionY, int maxSectionY, AsyncOcclusionMode asyncMode, boolean hasShadowPass) {
-        this.lattice = new SectionLattice(minSectionY, maxSectionY, hasShadowPass);
+    public SectionGraph(int minSectionY, int maxSectionY, AsyncOcclusionMode asyncMode, boolean hasShadowPass, boolean rasterOcclusion) {
+        this.lattice = new SectionLattice(minSectionY, maxSectionY, hasShadowPass, rasterOcclusion);
 
         if (asyncMode != AsyncOcclusionMode.NONE) {
             this.executor = Executors.newSingleThreadExecutor(runnable -> {
