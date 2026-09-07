@@ -3,7 +3,7 @@ import org.embeddedt.embeddium.gradle.task.GenerateLWJGLAbstraction
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'xyz.wagyourtail.jvmdowngrader' version '1.3.6'
+    id 'xyz.wagyourtail.jvmdowngrader' version '2.0.1'
 }
 
 group = "org.embeddedt.celeritas"

@@ -6,12 +6,12 @@ plugins {
 
 dependencies {
     implementation("com.google.guava:guava:33.1.0-jre")
-    implementation("org.ow2.asm:asm:9.6")
-    implementation("org.ow2.asm:asm-tree:9.6")
-    implementation("org.ow2.asm:asm-commons:9.6")
+    implementation("org.ow2.asm:asm:9.10.1")
+    implementation("org.ow2.asm:asm-tree:9.10.1")
+    implementation("org.ow2.asm:asm-commons:9.10.1")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.apache.commons:commons-compress:1.26.0")
-    implementation("com.gradleup.shadow:shadow-gradle-plugin:9.3.0")
+    implementation("com.gradleup.shadow:shadow-gradle-plugin:9.6.1")
     implementation("dev.kikugie:stonecutter:0.10-alpha.8")
 }
 
