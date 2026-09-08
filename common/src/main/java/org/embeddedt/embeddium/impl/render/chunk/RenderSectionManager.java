@@ -513,10 +513,12 @@ public abstract class RenderSectionManager {
             timer.startProfiling();
         }
 
-        this.chunkRenderer.render(matrices, commandList, this.getCurrentRenderListManager().getRenderLists(), pass, occlusionCamera, camera);
-
-        if (shouldProfile) {
-            timer.finishProfiling();
+        try {
+            this.chunkRenderer.render(matrices, commandList, this.getCurrentRenderListManager().getRenderLists(), pass, occlusionCamera, camera);
+        } finally {
+            if (shouldProfile) {
+                timer.finishProfiling();
+            }
         }
 
         commandList.flush();
