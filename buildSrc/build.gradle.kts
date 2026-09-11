@@ -12,7 +12,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.apache.commons:commons-compress:1.26.0")
     implementation("com.gradleup.shadow:shadow-gradle-plugin:9.6.1")
-    implementation("dev.kikugie:stonecutter:0.10-alpha.8")
+    implementation("dev.kikugie:stonecutter:0.10-alpha.9")
 }
 
 repositories {

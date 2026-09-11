@@ -175,8 +175,11 @@ if (modLoader == ModLoader.NEOFORGE) {
     }
 }
 
-tasks.named("createMinecraftArtifacts") {
+tasks.named<CreateMinecraftArtifacts>("createMinecraftArtifacts") {
     dependsOn(generateAccessTransformer)
+    // NFRT does not inherit Gradle's project repositories. Legacy Forge's launcher
+    // classifier is hosted on the Forge Maven and must be passed explicitly.
+    additionalRepositories.add("https://maven.minecraftforge.net/")
 }
 
 modDevExtension.accessTransformers.from(generatedATPath)

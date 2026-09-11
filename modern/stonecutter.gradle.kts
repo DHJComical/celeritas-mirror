@@ -96,12 +96,8 @@ stonecutter.parameters {
         replace("net.minecraft.resources.ResourceLocation", "net.minecraft.resources.Identifier")
     }
 
-    // NOTE: Stonecutter 0.10-alpha.8 has a bug in RegexSpecImpl.replace: it constructs
-    // RegexReplacement(pattern, target) with the pattern and the replacement swapped, so the regex
-    // ends up being emitted into the source instead of the replacement text. Until that is fixed
-    // upstream, the arguments here are deliberately given in swapped order to compensate.
     replacements.regex(eval(current.version, ">=1.21.11")) {
-        replace("Identifier", "\\bResourceLocation\\b", "ResourceLocation", "\\bIdentifier\\b")
+        replace("\\bResourceLocation\\b", "Identifier", "\\bIdentifier\\b", "ResourceLocation")
     }
 }
 
