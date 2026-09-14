@@ -36,6 +36,7 @@ import java.util.function.Function;
  * armor into the opaque phase paints the markings over it. {@link #startGroup()} marks off one object's submissions;
  * within a group, anything submitted after the first translucent geometry is demoted into the sequenced phase so that it
  * keeps its place. Only the object that interleaves pays for it - other users of the same render type still batch.
+ * {@link TransparencyType#DECAL} geometry is exempt, since it must draw after what it overlays regardless.
  */
 public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSource implements MemoryTrackingBuffer, Groupable, WrappingMultiBufferSource {
 	private static final int NUM_BUFFERS = 32;
@@ -75,8 +76,8 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 	private boolean isReady;
 	private boolean inGroup;
 	/**
-	 * Set once the current group submits translucent geometry. Everything it submits afterwards is demoted into the
-	 * sequenced phase so that it stays behind that geometry.
+	 * Set once the current group submits translucent geometry. Everything it submits afterwards, except decals, is
+	 * demoted into the sequenced phase so that it stays behind that geometry.
 	 */
 	private boolean forceSequenced;
 
@@ -130,7 +131,12 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 	}
 
 	private SegmentedBufferBuilder builderFor(RenderType renderType) {
-		if (forceSequenced || RenderTypeUtil.getTransparencyType(renderType) == SEQUENCED_PHASE) {
+		TransparencyType transparencyType = RenderTypeUtil.getTransparencyType(renderType);
+
+		// Decals are never demoted. They must draw after the geometry they overlay, which the decal phase already
+		// guarantees, and callers request them *before* that geometry while holding onto both consumers (e.g. item glint),
+		// so sharing the sequenced builder would both misorder them and close the decal's consumer.
+		if (transparencyType != TransparencyType.DECAL && (forceSequenced || transparencyType == SEQUENCED_PHASE)) {
 			// Only keep the flag latched while we're still in a group.
 			forceSequenced = inGroup;
 
