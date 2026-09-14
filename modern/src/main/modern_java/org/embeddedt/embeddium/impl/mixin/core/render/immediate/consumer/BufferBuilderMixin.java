@@ -493,11 +493,18 @@ public abstract class BufferBuilderMixin /*? if >=1.15 <1.21 {*/ extends Default
     /**
      * Grows the vertex buffer geometrically instead of by a fixed step.
      */
+    //? if >=1.17 {
     @ModifyArg(
         method = "ensureCapacity",
         at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/MemoryTracker;resize(Ljava/nio/ByteBuffer;I)Ljava/nio/ByteBuffer;"),
         index = 1
     )
+    //?} else {
+    /*@ModifyArg(
+        method = "ensureCapacity",
+        at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/platform/MemoryTracker;createByteBuffer(I)Ljava/nio/ByteBuffer;")
+    )
+    *///?}
     private int embeddium$growGeometrically(int vanillaSize) {
         int current = this.buffer.capacity();
         int geometric = current + (current >> 1);
