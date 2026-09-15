@@ -31,8 +31,8 @@ public class ColorMixer {
 
         // Then, shift the high 8 bits of each packed 16-bit component into the low 8 bits, and mask off the high bits of
         // each 16-bit component to produce a vector of packed 8-bit components, where every other component is empty.
-        int c1 = (((a1 * aRatio) + (b1 * bRatio)) >> 8) & CHANNEL_MASK;
-        int c2 = (((a2 * aRatio) + (b2 * bRatio)) >> 8) & CHANNEL_MASK;
+        int c1 = (((a1 * aRatio) + (b1 * bRatio) + 0x00800080) >> 8) & CHANNEL_MASK;
+        int c2 = (((a2 * aRatio) + (b2 * bRatio) + 0x00800080) >> 8) & CHANNEL_MASK;
 
         // Join the color components into the original order
         return ((c1 << 0) | (c2 << 8));
@@ -51,10 +51,10 @@ public class ColorMixer {
     public static int mul(int a, int b) {
         // Take each 8-bit component pair, multiply them together to create intermediate 16-bit integers,
         // and then shift the high half of each 16-bit integer into 8-bit integers.
-        int c0 = (((a >>  0) & 0xFF) * ((b >>  0) & 0xFF)) >> 8;
-        int c1 = (((a >>  8) & 0xFF) * ((b >>  8) & 0xFF)) >> 8;
-        int c2 = (((a >> 16) & 0xFF) * ((b >> 16) & 0xFF)) >> 8;
-        int c3 = (((a >> 24) & 0xFF) * ((b >> 24) & 0xFF)) >> 8;
+        int c0 = ((((a >>  0) & 0xFF) * ((b >>  0) & 0xFF)) + 0xFF) >> 8;
+        int c1 = ((((a >>  8) & 0xFF) * ((b >>  8) & 0xFF)) + 0xFF) >> 8;
+        int c2 = ((((a >> 16) & 0xFF) * ((b >> 16) & 0xFF)) + 0xFF) >> 8;
+        int c3 = ((((a >> 24) & 0xFF) * ((b >> 24) & 0xFF)) + 0xFF) >> 8;
 
         // Pack the components
         return (c0 <<  0) | (c1 <<  8) | (c2 << 16) | (c3 << 24);
@@ -74,9 +74,9 @@ public class ColorMixer {
         b &= 0xFF; // Mask the component for safety
         // Take each 8-bit component pair, multiply them together to create intermediate 16-bit integers,
         // and then shift the high half of each 16-bit integer into 8-bit integers.
-        int c0 = (((a >>  0) & 0xFF) * b) >> 8;
-        int c1 = (((a >>  8) & 0xFF) * b) >> 8;
-        int c2 = (((a >> 16) & 0xFF) * b) >> 8;
+        int c0 = ((((a >>  0) & 0xFF) * b) + 0xFF) >> 8;
+        int c1 = ((((a >>  8) & 0xFF) * b) + 0xFF) >> 8;
+        int c2 = ((((a >> 16) & 0xFF) * b) + 0xFF) >> 8;
         int c3 = (a >> 24) & 0xFF;
 
         // Pack the components
