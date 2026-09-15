@@ -33,16 +33,6 @@ public class GlFence {
         return result == GL32.GL_SIGNALED;
     }
 
-    public void sync() {
-        this.sync(GL32.GL_TIMEOUT_IGNORED);
-    }
-
-    @Deprecated
-    public void sync(long timeout) {
-        this.checkDisposed();
-        LWJGL.glWaitSync(this.id, 0, timeout);
-    }
-
     public void delete() {
         LWJGL.glDeleteSync(this.id);
         this.disposed = true;
