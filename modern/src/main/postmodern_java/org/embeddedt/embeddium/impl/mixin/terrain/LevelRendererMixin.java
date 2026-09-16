@@ -95,6 +95,11 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
         }
     }
 
+    @Inject(method = "needsUpdate", at = @At("RETURN"))
+    private void onTerrainUpdateScheduled(CallbackInfo ci) {
+        this.celeritas$renderer.scheduleTerrainUpdate();
+    }
+
     @Overwrite
     private void cullTerrain(Camera camera, Frustum frustum, boolean spectator) {
         var viewport = ((ViewportProvider) frustum).sodium$createViewport();
