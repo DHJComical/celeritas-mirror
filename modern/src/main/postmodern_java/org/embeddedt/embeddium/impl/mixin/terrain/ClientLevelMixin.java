@@ -2,6 +2,7 @@ package org.embeddedt.embeddium.impl.mixin.terrain;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkStatus;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTracker;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
@@ -28,6 +29,17 @@ public class ClientLevelMixin implements ChunkTrackerHolder {
                 pChunkPos.x, pChunkPos.z,
                 //?} else
                 //pChunkPos.x(), pChunkPos.z(),
+                ChunkStatus.FLAG_HAS_BLOCK_DATA);
+    }
+
+    @Inject(method = "unload", at = @At("RETURN"))
+    private void markUnloaded(LevelChunk chunk, CallbackInfo ci) {
+        var pos = chunk.getPos();
+        this.tracker.onChunkStatusRemoved(
+                //? if <26.1 {
+                pos.x, pos.z,
+                //?} else
+                //pos.x(), pos.z(),
                 ChunkStatus.FLAG_HAS_BLOCK_DATA);
     }
 }
