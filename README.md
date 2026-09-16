@@ -69,6 +69,9 @@ Please reach out to @embeddedt on Discord if you have concerns regarding the lic
 * Asek3, for developing Rubidium, the original port of Sodium 0.5 to Forge
 * CelestialAbyss, for developing the Embeddium logo (which is reused here aside from recoloring), and input-Here for some very good visual touchups
 * Ven ([@basdxz](https://github.com/basdxz)), for help with translucency sorting, suggesting the general approach for async occlusion culling, and other suggestions during development
+* rdh, for leading several key improvements, including faster & better occlusion culling, better AO rendering, etc
+* douira, for researching and writing the [paper](https://douira.dev/assets/document/douira-master-thesis.pdf) on which the translucency sorting v3 implementation is based
+* grondag, for developing [bitraster](https://github.com/vram-guild/bitraster), the library we vendor for rasterized occlusion culling
 * XFactHD, Pepper, and anyone else I've forgotten to mention, for providing valuable code insights
 
 [![YourKit logo](https://www.yourkit.com/images/yklogo.png)](https://www.yourkit.com/)
