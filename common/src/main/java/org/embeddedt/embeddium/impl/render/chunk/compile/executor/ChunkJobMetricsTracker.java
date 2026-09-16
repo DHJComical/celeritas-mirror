@@ -64,6 +64,11 @@ public class ChunkJobMetricsTracker {
             }
         }
 
+        public void flipInterval() {
+            this.observationsInLastTimeInterval = this.observationsInCurrentTimeInterval;
+            this.observationsInCurrentTimeInterval = 0;
+        }
+
         public int getObservationsInLastTimeInterval() {
             return this.observationsInLastTimeInterval;
         }
@@ -103,8 +108,7 @@ public class ChunkJobMetricsTracker {
         long time = System.nanoTime();
         if ((time - lastTimeIntervalFlip) >= OBSERVATION_COUNT_TIME) {
             for (var data : metricsByTask.values()) {
-                data.observationsInLastTimeInterval = data.observationsInCurrentTimeInterval;
-                data.observationsInCurrentTimeInterval = 0;
+                data.flipInterval();
             }
             lastTimeIntervalFlip = time;
         }

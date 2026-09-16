@@ -13,7 +13,7 @@ import org.embeddedt.embeddium.impl.render.chunk.data.BuiltSectionMeshParts;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
-import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
+import org.embeddedt.embeddium.impl.render.chunk.sorting.SortState;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 
 import java.nio.ByteBuffer;
@@ -90,7 +90,7 @@ public final class ChunkBuildBuffers {
         int vertexCount = 0;
 
         ModelQuadFacing[] facingsToUpload = pass.isSorted() ? ONLY_UNASSIGNED : ModelQuadFacing.VALUES;
-        TranslucentQuadAnalyzer.SortState sortState = pass.isSorted() ? builder.getVertexBuffer(ModelQuadFacing.UNASSIGNED).getSortState() : null;
+        SortState sortState = pass.isSorted() ? builder.getVertexBuffer(ModelQuadFacing.UNASSIGNED).getSortState() : null;
 
         for (ModelQuadFacing facing : facingsToUpload) {
             var buffer = builder.getVertexBuffer(facing);
@@ -134,7 +134,8 @@ public final class ChunkBuildBuffers {
             mergedIndexBuffer = null;
         }
 
-        return new BuiltSectionMeshParts(mergedBuffer, mergedIndexBuffer, TranslucentQuadAnalyzer.SortState.compacted(sortState), vertexRanges);
+        // Uncompacted: the consumer needs the sorting level before it throws away the data behind it.
+        return new BuiltSectionMeshParts(mergedBuffer, mergedIndexBuffer, sortState, vertexRanges);
     }
 
     public void destroy() {

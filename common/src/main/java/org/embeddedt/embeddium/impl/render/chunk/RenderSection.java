@@ -8,7 +8,8 @@ import org.embeddedt.embeddium.impl.render.chunk.occlusion.VisibilityEncoding;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.util.task.CancellationToken;
-import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
+import org.embeddedt.embeddium.impl.render.chunk.sorting.PartitionTree;
+import org.embeddedt.embeddium.impl.render.chunk.sorting.SortState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,21 +51,34 @@ public class RenderSection extends AbstractSection {
         void onMetadataChanged(RenderSection section);
     }
 
+    /** Marks a section with no translucent render passes at all, which the debug overlay does not count */
+    public static final int NO_TRANSLUCENT_GEOMETRY = -1;
+
     /**
-     * A mapping from translucent render passes to the sort state for that particular pass (which contains data needed
-     * to perform a resort of the geometry as the camera moves). Will be empty for sections without any translucent
-     * render passes.
+     * A mapping from translucent render passes to the sort state for that particular pass, holding the data needed to
+     * resort that pass' geometry as the camera moves. Only passes that actually need resorting appear here, so this is
+     * empty for sections whose translucent geometry (if any) was sorted once at mesh time.
      */
     @Getter
     @NotNull
-    private Map<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> translucencySortStates = Collections.emptyMap();
+    private Map<TerrainRenderPass, SortState.Resortable> translucencySortStates = Collections.emptyMap();
+
+    /**
+     * The {@link SortState#debugIndex()} of the most expensive sort among this section's translucent passes, or
+     * {@link #NO_TRANSLUCENT_GEOMETRY} if it has none. Only consumed by the debug overlay.
+     */
+    @Getter
+    private int highestSortingIndex = NO_TRANSLUCENT_GEOMETRY;
+
+    public enum SortMode {
+        NONE,
+        TREE,
+        DYNAMIC
+    }
 
     @Getter
-    private TranslucentQuadAnalyzer.Level highestSortingLevel = TranslucentQuadAnalyzer.Level.NONE;
-
-    @Getter
-    @Setter
-    private boolean needsDynamicTranslucencySorting;
+    @NotNull
+    private SortMode sortMode = SortMode.NONE;
 
     // Pending Update State
 
@@ -143,7 +157,13 @@ public class RenderSection extends AbstractSection {
     }
 
     public void updateCachedContextDataFlags() {
-        int flags = this.contextData != null ? this.contextData.getVisualBitmaskForSection() : 0;
+        int flags = 0;
+        if (this.contextData != null) {
+            flags = this.contextData.getVisualBitmaskForSection();
+            if (this.sortMode == SortMode.DYNAMIC) {
+                flags |= 1 << RenderVisualsService.NEEDS_DYNAMIC_SORT;
+            }
+        }
         long visibilityData = this.contextData != null ? this.contextData.visibilityData : VisibilityEncoding.NULL;
         boolean hasOccluderData = this.contextData != null && this.contextData.occluderBoxes != null;
 
@@ -179,22 +199,31 @@ public class RenderSection extends AbstractSection {
         return this.getVisualsServiceFlags() != 0;
     }
 
-    public void setTranslucencySortStates(@NotNull Map<TerrainRenderPass, TranslucentQuadAnalyzer.SortState> sortStates) {
+    /**
+     * @param sortStates the passes needing a resort as the camera moves; every entry implies dynamic sorting
+     * @param highestSortingIndex the highest variant seen before compaction, or {@link #NO_TRANSLUCENT_GEOMETRY}
+     */
+    public void setTranslucencySortStates(@NotNull Map<TerrainRenderPass, SortState.Resortable> sortStates, int highestSortingIndex) {
         this.translucencySortStates = Map.copyOf(sortStates);
-
-        TranslucentQuadAnalyzer.Level level = TranslucentQuadAnalyzer.Level.NONE;
-        boolean needsDynamicSorting = false;
-
-        if (!sortStates.isEmpty()) {
-            // Find highest level among all sort states
-            for (TranslucentQuadAnalyzer.SortState state : sortStates.values()) {
-                level = state.level().ordinal() > level.ordinal() ? state.level() : level;
-                needsDynamicSorting |= state.requiresDynamicSorting();
-            }
+        this.highestSortingIndex = highestSortingIndex;
+        if (sortStates.isEmpty()) {
+            this.sortMode = SortMode.NONE;
+        } else if (sortStates.values().stream().allMatch(state -> state instanceof PartitionTree)) {
+            this.sortMode = SortMode.TREE;
+        } else {
+            this.sortMode = SortMode.DYNAMIC;
         }
+        this.updateCachedContextDataFlags();
+    }
 
-        this.highestSortingLevel = level;
-        this.needsDynamicTranslucencySorting = needsDynamicSorting;
+    public void clearTranslucencySortStates() {
+        this.translucencySortStates = Collections.emptyMap();
+        this.sortMode = SortMode.NONE;
+        this.updateCachedContextDataFlags();
+    }
+
+    public boolean isTreeSorted() {
+        return this.sortMode == SortMode.TREE;
     }
 
     public @Nullable CancellationToken getBuildCancellationToken() {

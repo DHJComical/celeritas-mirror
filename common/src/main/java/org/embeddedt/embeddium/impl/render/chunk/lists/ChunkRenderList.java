@@ -19,6 +19,9 @@ public class ChunkRenderList {
     private final byte[] sectionsWithEntities = new byte[RenderRegion.REGION_SIZE];
     private int sectionsWithEntitiesCount = 0;
 
+    private final byte[] sectionsNeedingDynamicSort = new byte[RenderRegion.REGION_SIZE];
+    private int sectionsNeedingDynamicSortCount = 0;
+
     private int size;
 
     public ChunkRenderList(RenderRegion region) {
@@ -40,6 +43,17 @@ public class ChunkRenderList {
 
         this.sectionsWithEntities[this.sectionsWithEntitiesCount] = (byte) index;
         this.sectionsWithEntitiesCount += (flags >>> RenderVisualsService.HAS_BLOCK_ENTITIES) & 1;
+
+        this.sectionsNeedingDynamicSort[this.sectionsNeedingDynamicSortCount] = (byte) index;
+        this.sectionsNeedingDynamicSortCount += (flags >>> RenderVisualsService.NEEDS_DYNAMIC_SORT) & 1;
+    }
+
+    public @Nullable ByteIterator sectionsNeedingDynamicSortIterator() {
+        if (this.sectionsNeedingDynamicSortCount == 0) {
+            return null;
+        }
+
+        return new ByteArrayIterator(this.sectionsNeedingDynamicSort, this.sectionsNeedingDynamicSortCount);
     }
 
     public @Nullable ByteIterator sectionsWithGeometryIterator() {

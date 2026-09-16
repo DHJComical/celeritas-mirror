@@ -2,7 +2,8 @@ package org.embeddedt.embeddium.impl.render.chunk.vertex.builder;
 
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
-import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadAnalyzer;
+import org.embeddedt.embeddium.impl.render.chunk.sorting.SortState;
+import org.embeddedt.embeddium.impl.render.chunk.sorting.TranslucentQuadRecorder;
 import org.jetbrains.annotations.Nullable;
 import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 import java.nio.ByteBuffer;
@@ -12,7 +13,7 @@ public class ChunkMeshBufferBuilder {
     private final int stride;
 
     private final int initialCapacity;
-    private final TranslucentQuadAnalyzer analyzer;
+    private final TranslucentQuadRecorder analyzer;
 
     private ByteBuffer buffer;
     private int count;
@@ -28,7 +29,7 @@ public class ChunkMeshBufferBuilder {
         this.capacity = 0;
         this.initialCapacity = initialCapacity;
 
-        this.analyzer = collectSortState ? new TranslucentQuadAnalyzer() : null;
+        this.analyzer = collectSortState ? new TranslucentQuadRecorder() : null;
     }
 
     public void push(ChunkVertexEncoder.Vertex[] vertices, Material material) {
@@ -106,7 +107,7 @@ public class ChunkMeshBufferBuilder {
     }
 
     @Nullable
-    public TranslucentQuadAnalyzer.SortState getSortState() {
+    public SortState getSortState() {
         return this.analyzer != null ? this.analyzer.getSortState() : null;
     }
 

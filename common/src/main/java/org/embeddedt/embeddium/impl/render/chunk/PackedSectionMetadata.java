@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * <p>Bit layout:
  * <pre>
- * 63                 54 53 52 51       49 48      46 45                0
+ * 63                 55 54 53 52       50 49      46 45                0
  * +--------------------+--+--+-----------+----------+-------------------+
  * |       spare        |OD|IF| pending   | visuals  | visibility graph  |
  * +--------------------+--+--+-----------+----------+-------------------+
@@ -26,12 +26,12 @@ import org.jetbrains.annotations.Nullable;
  *       another. Each eight-bit row uses its six low bits; the two padding
  *       positions are not part of the visibility field (the final row's
  *       padding is reused by the visual flags).</li>
- *   <li>Bits {@code 46..48}: {@link RenderVisualsService} visual flags.</li>
- *   <li>Bits {@code 49..51}: pending update type; zero means none, otherwise
+ *   <li>Bits {@code 46..49}: {@link RenderVisualsService} visual flags.</li>
+ *   <li>Bits {@code 50..52}: pending update type; zero means none, otherwise
  *       {@code ChunkUpdateType.ordinal() + 1}.</li>
- *   <li>Bit {@code 52}: a build is in flight.</li>
- *   <li>Bit {@code 53}: the section's built data has occluder boxes.</li>
- *   <li>Bits {@code 54..63}: reserved.</li>
+ *   <li>Bit {@code 53}: a build is in flight.</li>
+ *   <li>Bit {@code 54}: the section's built data has occluder boxes.</li>
+ *   <li>Bits {@code 55..63}: reserved.</li>
  * </ul>
  *
  * <p>The visibility graph uses only bits {@code 0..45}, but
@@ -54,20 +54,20 @@ public final class PackedSectionMetadata {
     private static final int VISIBILITY_BITS = 46;
     public static final long VISIBILITY_MASK = (1L << VISIBILITY_BITS) - 1;
 
-    // Bits 46..48: RenderVisualsService.HAS_* flags.
+    // Bits 46..49: RenderVisualsService flags.
     private static final int VISUALS_FLAGS_SHIFT = 46;
-    private static final long VISUALS_FLAGS_MASK = 0b111L;
+    private static final long VISUALS_FLAGS_MASK = 0b1111L;
 
-    // Bits 49..51: 0 means no pending update; otherwise ordinal + 1.
-    private static final int PENDING_UPDATE_SHIFT = 49;
+    // Bits 50..52: 0 means no pending update; otherwise ordinal + 1.
+    private static final int PENDING_UPDATE_SHIFT = 50;
     private static final long PENDING_UPDATE_MASK = 0b111L;
 
-    // Bit 52: a build cancellation token is currently attached.
-    private static final int BUILD_IN_FLIGHT_BIT = 52;
+    // Bit 53: a build cancellation token is currently attached.
+    private static final int BUILD_IN_FLIGHT_BIT = 53;
     private static final long BUILD_IN_FLIGHT_FLAG = 1L << BUILD_IN_FLIGHT_BIT;
 
-    // Bit 53: the section's built data has occluder boxes.
-    private static final int HAS_OCCLUDER_DATA_BIT = 53;
+    // Bit 54: the section's built data has occluder boxes.
+    private static final int HAS_OCCLUDER_DATA_BIT = 54;
     private static final long HAS_OCCLUDER_DATA_FLAG = 1L << HAS_OCCLUDER_DATA_BIT;
 
     /**
@@ -90,14 +90,14 @@ public final class PackedSectionMetadata {
         return (packed & ~VISIBILITY_MASK) | (visibilityData & VISIBILITY_MASK);
     }
 
-    /** Returns the three visual-presence flags. */
+    /** Returns the four visual flags. */
     public static int getVisualsFlags(long packed) {
         return (int) ((packed >>> VISUALS_FLAGS_SHIFT) & VISUALS_FLAGS_MASK);
     }
 
     /**
-     * Replaces the visual-presence flags and preserves every other field.
-     * Only the three low bits of {@code flags} are stored.
+     * Replaces the visual flags and preserves every other field.
+     * Only the four low bits of {@code flags} are stored.
      */
     public static long withVisualsFlags(long packed, int flags) {
         return (packed & ~(VISUALS_FLAGS_MASK << VISUALS_FLAGS_SHIFT))
@@ -145,7 +145,7 @@ public final class PackedSectionMetadata {
     /*
      * Compact collector metadata: includes only the info the VisibleChunkCollector cares about.
      *
-     *   6  5     3 2       0
+     *   7  6     4 3       0
      *   +--+-------+--------+
      *   |IF|pending|visuals |
      *   +--+-------+--------+
