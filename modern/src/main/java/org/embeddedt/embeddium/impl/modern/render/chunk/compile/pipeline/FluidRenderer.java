@@ -17,6 +17,7 @@ import org.embeddedt.embeddium.api.world.EmbeddiumBlockAndTintGetter;
 import org.embeddedt.embeddium.impl.model.light.LightMode;
 import org.embeddedt.embeddium.impl.model.light.LightPipeline;
 import org.embeddedt.embeddium.impl.model.light.LightPipelineProvider;
+import org.embeddedt.embeddium.impl.model.light.data.LightDataAccess;
 import org.embeddedt.embeddium.impl.model.light.data.QuadLightData;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuad;
 import org.embeddedt.embeddium.impl.model.quad.ModelQuadView;
@@ -61,6 +62,7 @@ import org.embeddedt.embeddium.impl.util.ModelQuadUtil;
 import org.embeddedt.embeddium.impl.util.ModernBlockPosUtil;
 import org.joml.Vector3fc;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -405,6 +407,7 @@ public class FluidRenderer {
 
         LightMode lightMode = isWater && this.useAmbientOcclusion ? LightMode.SMOOTH : LightMode.FLAT;
         LightPipeline lighter = this.lighters.getLighter(lightMode);
+        boolean flatLight = lightMode == LightMode.FLAT;
 
         //? if shaders {
         boolean disableAo = WorldRenderingSettings.INSTANCE.shouldDisableDirectionalShading();
@@ -500,7 +503,7 @@ public class FluidRenderer {
                 setVertex(quad, 3, 1.0F, northEastHeight, 0.0f, u4, v4);
             }
 
-            this.updateQuad(quad, world, blockPos, lighter, ModelQuadFacing.POS_Y, 1.0F, colorProvider, fluidState);
+            this.updateQuad(quad, world, blockPos, lighter, ModelQuadFacing.POS_Y, 1.0F, colorProvider, fluidState, flatLight);
             this.writeQuad(meshBuilder, material, offset, quad, facing, false, ctx);
 
             if (fluidState.shouldRenderBackwardUpFace(world, this.scratchPos.set(posX, posY + 1, posZ))) {
@@ -527,7 +530,7 @@ public class FluidRenderer {
 
             quad.setFlags(ModelQuadFlags.IS_VANILLA_SHADED | ModelQuadFlags.IS_PARALLEL);
 
-            this.updateQuad(quad, world, blockPos, lighter, ModelQuadFacing.NEG_Y, 1.0F, colorProvider, fluidState);
+            this.updateQuad(quad, world, blockPos, lighter, ModelQuadFacing.NEG_Y, 1.0F, colorProvider, fluidState, flatLight);
             this.writeQuad(meshBuilder, material, offset, quad, ModelQuadFacing.NEG_Y, false, ctx);
 
         }
@@ -643,7 +646,7 @@ public class FluidRenderer {
 
                 ModelQuadFacing facing = ModernQuadFacing.fromDirection(dir);
 
-                this.updateQuad(quad, world, blockPos, lighter, facing, br, colorProvider, fluidState);
+                this.updateQuad(quad, world, blockPos, lighter, facing, br, colorProvider, fluidState, flatLight);
                 this.writeQuad(meshBuilder, material, offset, quad, facing, false, ctx);
 
                 if (!isOverlay) {
@@ -671,9 +674,16 @@ public class FluidRenderer {
     }
 
     private void updateQuad(ModelQuadView quad, EmbeddiumBlockAndTintGetter world, BlockPos pos, LightPipeline lighter, ModelQuadFacing dir, float brightness,
-                            ColorProvider<FluidState> colorProvider, FluidState fluidState) {
+                            ColorProvider<FluidState> colorProvider, FluidState fluidState, boolean flatLight) {
         QuadLightData light = this.quadLightData;
         lighter.calculate(quad, pos.getX(), pos.getY(), pos.getZ(), light, ModelQuadFacing.UNASSIGNED, dir, false, true);
+
+        if (flatLight) {
+            // Vanilla lights flat fluid faces from the brighter of the block and the block above it,
+            // with the bottom face shifted down one block
+            int y = dir == ModelQuadFacing.NEG_Y ? pos.getY() - 1 : pos.getY();
+            Arrays.fill(light.lm, this.getFluidLightmap(pos.getX(), y, pos.getZ()));
+        }
 
         colorProvider.getColors(world, pos, fluidState, quad, this.quadColors);
 
@@ -682,6 +692,14 @@ public class FluidRenderer {
         for (int i = 0; i < 4; i++) {
             this.quadColors[i] = colorEncoder.writeColor(this.quadColors[i], light.br[i] * brightness);
         }
+    }
+
+    private int getFluidLightmap(int x, int y, int z) {
+        LightDataAccess cache = this.lighters.getLightData();
+        int self = LightDataAccess.getEmissiveLightmap(cache.get(x, y, z));
+        int above = LightDataAccess.getEmissiveLightmap(cache.get(x, y + 1, z));
+        return LightDataAccess.pack(Math.max(LightDataAccess.unpackBlock(self), LightDataAccess.unpackBlock(above)),
+                Math.max(LightDataAccess.unpackSky(self), LightDataAccess.unpackSky(above)));
     }
 
     private static final int VANILLA_FLUID_NORMAL = DirectionUtil.PACKED_NORMALS[Direction.UP.ordinal()];
