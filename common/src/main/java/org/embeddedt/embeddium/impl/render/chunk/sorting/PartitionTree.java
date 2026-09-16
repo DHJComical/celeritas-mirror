@@ -158,7 +158,7 @@ public final class PartitionTree implements SortState.Resortable {
 
             // slab = number of planes at or below this quad's lo
             int slab = 0;
-            while (slab < planes.length && planes[slab] <= lo + QuadSet.EPSILON) slab++;
+            while (slab < planes.length && planes[slab] <= lo + QuadSet.OVERLAP_EPSILON) slab++;
 
             if (hi - lo <= QuadSet.EPSILON && slab > 0 && Math.abs(planes[slab - 1] - lo) <= QuadSet.EPSILON) {
                 onPlane[slab - 1].add(quad);
@@ -234,8 +234,8 @@ public final class PartitionTree implements SortState.Resortable {
 
     private static boolean intersects(QuadSet quads, int p, int q) {
         for (int axis = 0; axis < 3; axis++) {
-            if (quads.boundsMin(p, axis) >= quads.boundsMax(q, axis) - QuadSet.EPSILON
-                    || quads.boundsMin(q, axis) >= quads.boundsMax(p, axis) - QuadSet.EPSILON) return false;
+            if (quads.boundsMin(p, axis) >= quads.boundsMax(q, axis) - QuadSet.OVERLAP_EPSILON
+                    || quads.boundsMin(q, axis) >= quads.boundsMax(p, axis) - QuadSet.OVERLAP_EPSILON) return false;
         }
         return true;
     }
@@ -300,7 +300,7 @@ public final class PartitionTree implements SortState.Resortable {
                     : Math.min(ends[nextEnd], points[nextPoint]);
 
             // ends first, then quads on the plane, then starts: a quad beginning here is not yet in the way
-            while (nextEnd < endCount && ends[nextEnd] <= plane + QuadSet.EPSILON) {
+            while (nextEnd < endCount && ends[nextEnd] <= plane + QuadSet.OVERLAP_EPSILON) {
                 nextEnd++;
                 below++;
                 sinceCut++;
@@ -313,7 +313,7 @@ public final class PartitionTree implements SortState.Resortable {
                 onPlane++;
             }
 
-            while (nextStart < startCount && starts[nextStart] < plane - QuadSet.EPSILON) {
+            while (nextStart < startCount && starts[nextStart] < plane - QuadSet.OVERLAP_EPSILON) {
                 nextStart++;
                 opened++;
             }

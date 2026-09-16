@@ -4,6 +4,7 @@ import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
 
 public record QuadSet(int count, float[] centers, float[] bounds, float[] normals, float[] dots, byte[] facings) {
     static final float EPSILON = 1e-4f;
+    static final float OVERLAP_EPSILON = 0.008f;
 
     public QuadSet {
         if (count < 0) {
@@ -125,8 +126,17 @@ public record QuadSet(int count, float[] centers, float[] bounds, float[] normal
 
     /** if p must be drawn before q */
     public boolean isSeenThrough(int p, int q) {
-        return !isCoplanar(p, q) && minDot(p, normalX(q), normalY(q), normalZ(q)) < dots[q] - EPSILON
-                && maxDot(q, normalX(p), normalY(p), normalZ(p)) > dots[p] + EPSILON;
+        if (isCoplanar(p, q)) return false;
+
+        float qnx = normalX(q), qny = normalY(q), qnz = normalZ(q);
+        float pnx = normalX(p), pny = normalY(p), pnz = normalZ(p);
+        float pMin = minDot(p, qnx, qny, qnz), qMax = maxDot(q, pnx, pny, pnz);
+
+        // only a quad spanning the other's normal can overhang its plane; a flat one is a real separation, however small
+        float pTol = maxDot(p, qnx, qny, qnz) - pMin > EPSILON ? OVERLAP_EPSILON : EPSILON;
+        float qTol = qMax - minDot(q, pnx, pny, pnz) > EPSILON ? OVERLAP_EPSILON : EPSILON;
+
+        return pMin < dots[q] - pTol && qMax > dots[p] + qTol;
     }
 
     public float boundsMin(int quad, int axis) {
