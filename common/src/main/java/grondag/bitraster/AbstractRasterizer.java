@@ -675,8 +675,9 @@ public abstract class AbstractRasterizer {
 	}
 
 	/**
-	 * Sets the buffer to {@code 8 * tileWidth} by {@code 8 * tileHeight} pixels, reallocating and clearing it
-	 * if the size changed. Safe between frames only: the current polygon and scene contents are discarded.
+	 * Sets the buffer to {@code 8 * tileWidth} by {@code 8 * tileHeight} pixels and clears it if the size changed,
+	 * reallocating only past the largest size used so far. Safe between frames only: the current polygon and scene
+	 * contents are discarded.
 	 */
 	public final void resize(int tileWidth, int tileHeight) {
 		if (tileWidth < MIN_SIZE_TILES || tileWidth > MAX_SIZE_TILES || tileHeight < MIN_SIZE_TILES || tileHeight > MAX_SIZE_TILES) {
@@ -704,15 +705,22 @@ public abstract class AbstractRasterizer {
 		preciseWidthClamp = preciseWidth - PRECISE_PIXEL_CENTER;
 		preciseHeightClamp = preciseHeight - PRECISE_PIXEL_CENTER;
 
-		eventData = new int[pixelHeight * 2];
-		tiles = new long[tileCount];
-		fullBits = new long[(tileCount + 63) >> 6];
+		// CELERITAS: keep arrays that are large enough already, since the raster budget alternates between a small
+		// buffer and a large one; only the leading part is used, so it is cleared here as a new array would be
+		if (eventData == null || eventData.length < pixelHeight * 2) eventData = new int[pixelHeight * 2];
+		if (tiles == null || tiles.length < tileCount) tiles = new long[tileCount];
+		if (fullBits == null || fullBits.length < fullBitsWords()) fullBits = new long[fullBitsWords()];
+		clear();
+	}
+
+	private int fullBitsWords() {
+		return (tileCount + 63) >> 6;
 	}
 
 	/** Marks every pixel clear. */
 	final void clear() {
-		Arrays.fill(tiles, 0L);
-		Arrays.fill(fullBits, 0L);
+		Arrays.fill(tiles, 0, tileCount, 0L);
+		Arrays.fill(fullBits, 0, fullBitsWords(), 0L);
 	}
 
 	final int tileIndexFromPixelXY(int x, int y) {
@@ -743,9 +751,9 @@ public abstract class AbstractRasterizer {
 		offsetY = source.offsetY;
 		offsetZ = source.offsetZ;
 		System.arraycopy(source.vertexData, 0, vertexData, 0, VERTEX_DATA_LENGTH);
-		System.arraycopy(source.eventData, 0, eventData, 0, eventData.length);
+		System.arraycopy(source.eventData, 0, eventData, 0, pixelHeight * 2);
 		System.arraycopy(source.tiles, 0, tiles, 0, tileCount);
-		System.arraycopy(source.fullBits, 0, fullBits, 0, fullBits.length);
+		System.arraycopy(source.fullBits, 0, fullBits, 0, fullBitsWords());
 	}
 
 	// CELERITAS: work counters for RasterStatsReport. STATS is a constant so the JIT drops the increments when off.

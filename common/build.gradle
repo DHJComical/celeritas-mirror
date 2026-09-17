@@ -145,10 +145,9 @@ tasks.register('jmh', JavaExec) {
     // collector's per-frame allocation, not a requirement.
     maxHeapSize = '1g'
 
-    doFirst {
-        if (project.hasProperty('jmhargs')) {
-            args(project.property('jmhargs').toString().split('\\s+').findAll { !it.isEmpty() })
-        }
+    // Read at configuration time: the configuration cache forbids touching the project from doFirst.
+    if (project.hasProperty('jmhargs')) {
+        args(project.property('jmhargs').toString().split('\\s+').findAll { !it.isEmpty() })
     }
 }
 
@@ -161,7 +160,15 @@ tasks.register('rasterCullReport', JavaExec) {
 
     maxHeapSize = '1g'
     // e.g. ./gradlew :common:rasterCullReport -Dreport.renderDistance=64
-    systemProperties System.getProperties().findAll { it.key.toString().startsWith('report.') }
+    // Read through a provider so the configuration cache tracks them: taken from System.getProperties() at
+    // configuration time they are invisible to it, and a cached configuration is reused whatever -D flags are passed.
+    forwardReportProperties(it)
+}
+
+/** Forwards every -Dreport.* on the Gradle command line to the task's JVM, in a configuration-cache-safe way. */
+def forwardReportProperties(JavaExec task) {
+    def reportProperties = providers.systemPropertiesPrefixedBy('report.')
+    task.jvmArgumentProviders.add({ reportProperties.get().collect { k, v -> "-D$k=$v".toString() } } as CommandLineArgumentProvider)
 }
 
 publishing {
@@ -248,6 +255,6 @@ tasks.register('rasterStats', JavaExec) {
     mainClass = 'org.embeddedt.embeddium.impl.render.chunk.occlusion.bench.RasterStatsReport'
     maxHeapSize = '1g'
     jvmArgs '-Dbitraster.stats=true'
-    systemProperties System.getProperties().findAll { it.key.toString().startsWith('report.') }
-    doFirst { if (project.hasProperty('statargs')) args(project.property('statargs').toString().split('\\s+').findAll { !it.isEmpty() }) }
+    forwardReportProperties(it)
+    if (project.hasProperty('statargs')) args(project.property('statargs').toString().split('\\s+').findAll { !it.isEmpty() })
 }

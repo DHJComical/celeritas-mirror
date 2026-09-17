@@ -48,6 +48,10 @@ public class OcclusionCullerBench {
         @Param({ "false" })
         public boolean rasterOcclusion;
 
+        /** Only meaningful with {@code rasterOcclusion=true}. FLOOR measures the standing per-frame cost of the probe. */
+        @Param({ "ADAPTIVE" })
+        public BudgetMode rasterBudget;
+
         /** ALL_GEOMETRY models the first search after a renderer reload, where every built section is pending. */
         @Param({ "HASHED" })
         public SyntheticWorld.PendingMode pending;
@@ -81,6 +85,8 @@ public class OcclusionCullerBench {
             for (RenderSection section : this.syntheticWorld.getConstructionOrder()) {
                 this.lattice.attach(section);
             }
+
+            this.rasterBudget.apply(this.lattice.rasterBudget());
 
             double y = Cameras.surfaceCameraY(0, 0);
 

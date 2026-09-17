@@ -9,9 +9,11 @@ import org.lwjgl.egl.EGL15;
 import org.lwjgl.egl.EGLCapabilities;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11C;
+import org.lwjgl.system.Configuration;
 import org.lwjgl.system.JNI;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 /**
@@ -35,6 +37,8 @@ public final class HeadlessGl {
         if (initialized) {
             return;
         }
+
+        Configuration.OPENGL_EXPLICIT_INIT.set(true);
 
         long display = openDisplay();
 
@@ -65,6 +69,7 @@ public final class HeadlessGl {
             }
         }
 
+        GL.create((ByteBuffer name) -> EGL10.eglGetProcAddress(name));
         GL.createCapabilities();
 
         // GLRenderDevice requires this; the benchmarks never touch vanilla GL state.

@@ -15,6 +15,11 @@ public final class RasterStatsReport {
     private static final int RENDER_DISTANCE = Integer.getInteger("report.renderDistance", 32);
     private static final int YAW_STEPS = 8;
     private static final int WARM = 150;
+    private static final int TIMED_ROUNDS = 5;
+    private static final BudgetMode BUDGET_MODE = BudgetMode.fromProperty("report.budget", BudgetMode.ADAPTIVE);
+    /** Camera height above the surface eye height, and pitch; e.g. dy=96 pitch=45 looks down on the terrain from above. */
+    private static final double CAMERA_DY = Double.parseDouble(System.getProperty("report.dy", "0"));
+    private static final float CAMERA_PITCH = Float.parseFloat(System.getProperty("report.pitch", Float.toString(Cameras.DEFAULT_PITCH)));
 
     public static void main(String[] args) {
         BenchPlatform.ensureInitialized();
@@ -25,8 +30,9 @@ public final class RasterStatsReport {
         int numRegions = BenchPlatform.regionManager().getRegionIdsLength();
         var lattice = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, false, true);
         for (RenderSection section : world.getConstructionOrder()) lattice.attach(section);
+        BUDGET_MODE.apply(lattice.rasterBudget());
 
-        double y = Cameras.surfaceCameraY(0, 0);
+        double y = Cameras.surfaceCameraY(0, 0) + CAMERA_DY;
 
         if (args.length > 1 && args[1].equals("yscan")) {
             var base = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, false, false);
@@ -48,31 +54,56 @@ public final class RasterStatsReport {
             }
             return;
         }
-        Viewport[] ring = Cameras.yawRing(8.5, y, 8.5, YAW_STEPS, Cameras.DEFAULT_PITCH, RENDER_DISTANCE);
+        Viewport[] ring = Cameras.yawRing(8.5, y, 8.5, YAW_STEPS, CAMERA_PITCH, RENDER_DISTANCE);
         int frame = 0;
+
+        // A lattice without the raster, timed over the same ring, so the raster's cost can be read as a difference.
+        var base = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, false, false);
+        for (RenderSection section : world.getConstructionOrder()) base.attach(section);
 
         for (int w = 0; w < WARM; w++) {
             for (Viewport v : ring) {
                 lattice.ensureWindowCovers(v.getChunkCoord(), searchDistance);
                 lattice.findVisible(new CountingVisitor(), v, searchDistance, numRegions, true, true, ++frame);
+                base.ensureWindowCovers(v.getChunkCoord(), searchDistance);
+                base.findVisible(new CountingVisitor(), v, searchDistance, numRegions, true, true, ++frame);
             }
         }
 
-        reset();
-        long visible = 0;
-        long t0 = System.nanoTime();
-        for (Viewport v : ring) {
-            var c = new CountingVisitor();
-            lattice.ensureWindowCovers(v.getChunkCoord(), searchDistance);
-            lattice.findVisible(c, v, searchDistance, numRegions, true, true, ++frame);
-            visible += c.visible;
+        // Several timed rounds, keeping the fastest, so a GC or a scheduling hiccup does not stand in for the cost.
+        long visible = 0, baseVisible = 0;
+        long total = Long.MAX_VALUE, baseTotal = Long.MAX_VALUE;
+        for (int round = 0; round < TIMED_ROUNDS; round++) {
+            reset();
+            visible = 0;
+            long t0 = System.nanoTime();
+            for (Viewport v : ring) {
+                var c = new CountingVisitor();
+                lattice.ensureWindowCovers(v.getChunkCoord(), searchDistance);
+                lattice.findVisible(c, v, searchDistance, numRegions, true, true, ++frame);
+                visible += c.visible;
+            }
+            total = Math.min(total, System.nanoTime() - t0);
+
+            baseVisible = 0;
+            t0 = System.nanoTime();
+            for (Viewport v : ring) {
+                var c = new CountingVisitor();
+                base.ensureWindowCovers(v.getChunkCoord(), searchDistance);
+                base.findVisible(c, v, searchDistance, numRegions, true, true, ++frame);
+                baseVisible += c.visible;
+            }
+            baseTotal = Math.min(baseTotal, System.nanoTime() - t0);
         }
-        long total = System.nanoTime() - t0;
         int n = YAW_STEPS;
-        System.out.printf("world=%s visible/frame=%d total=%.3fms test=%.3fms occlude=%.3fms%n", worldType, visible / n,
-                total / 1e6 / n, RasterOccluder.STAT_TEST_NANOS / 1e6 / n, RasterOccluder.STAT_OCCLUDE_NANOS / 1e6 / n);
-        System.out.printf("sections tested=%d occluded=%d emptySkip=%d vertexHit=%d%n", RasterOccluder.STAT_SECTIONS / n,
-                RasterOccluder.STAT_OCCLUDED_SECTIONS / n, RasterOccluder.STAT_EMPTY_SKIP / n, AbstractRasterizer.STAT_T_VERTEX / n);
+        System.out.printf("world=%s dy=%.0f pitch=%.0f | no raster: visible/frame=%d total=%.3fms%n", worldType, CAMERA_DY, CAMERA_PITCH,
+                baseVisible / n, baseTotal / 1e6 / n);
+        System.out.printf("raster: visible/frame=%d total=%.3fms (+%.3fms) test=%.3fms occlude=%.3fms%n", visible / n,
+                total / 1e6 / n, (total - baseTotal) / 1e6 / n, RasterOccluder.STAT_TEST_NANOS / 1e6 / n, RasterOccluder.STAT_OCCLUDE_NANOS / 1e6 / n);
+        System.out.printf("sections tested=%d occluded=%d emptySkip=%d budgetSkip=%d vertexHit=%d%n", RasterOccluder.STAT_SECTIONS / n,
+                RasterOccluder.STAT_OCCLUDED_SECTIONS / n, RasterOccluder.STAT_EMPTY_SKIP / n, RasterOccluder.STAT_BUDGET_SKIP / n,
+                AbstractRasterizer.STAT_T_VERTEX / n);
+        System.out.println("budget (" + BUDGET_MODE + "): " + lattice.rasterBudget());
         System.out.printf("draw calls=%d polygons=%d tiles=%d | test calls=%d polygons=%d tiles=%d | eventRows=%d%n",
                 AbstractRasterizer.STAT_DRAW_CALLS / n, AbstractRasterizer.STAT_DRAW_QUADS / n,
                 (AbstractRasterizer.STAT_D_INNER + AbstractRasterizer.STAT_D_COVER) / n,
@@ -92,7 +123,7 @@ public final class RasterStatsReport {
 
     private static void reset() {
         AbstractRasterizer.STAT_D_NOOP = AbstractRasterizer.STAT_D_RANGE0 = AbstractRasterizer.STAT_D_RANGE1 = AbstractRasterizer.STAT_D_RANGE2 = AbstractRasterizer.STAT_D_RANGE3 = 0;
-        RasterOccluder.STAT_CENTER_HIT = RasterOccluder.STAT_NEAR = RasterOccluder.STAT_AIR_TESTS = RasterOccluder.STAT_AIR_VISIBLE = RasterOccluder.STAT_EMPTY_SKIP = AbstractRasterizer.STAT_T_VERTEX = 0;
+        RasterOccluder.STAT_CENTER_HIT = RasterOccluder.STAT_NEAR = RasterOccluder.STAT_AIR_TESTS = RasterOccluder.STAT_AIR_VISIBLE = RasterOccluder.STAT_EMPTY_SKIP = RasterOccluder.STAT_BUDGET_SKIP = AbstractRasterizer.STAT_T_VERTEX = 0;
         AbstractRasterizer.STAT_T_EMPTY = AbstractRasterizer.STAT_T_INNER = AbstractRasterizer.STAT_T_COVER = AbstractRasterizer.STAT_T_HIDDEN = AbstractRasterizer.STAT_T_BOX_HIDDEN = 0;
         AbstractRasterizer.STAT_D_INNER = AbstractRasterizer.STAT_D_COVER = 0;
         RasterOccluder.STAT_TEST_NANOS = RasterOccluder.STAT_OCCLUDE_NANOS = RasterOccluder.STAT_SECTIONS = RasterOccluder.STAT_OCCLUDED_SECTIONS = 0;

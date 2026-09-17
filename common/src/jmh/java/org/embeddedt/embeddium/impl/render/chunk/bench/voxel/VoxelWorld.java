@@ -33,6 +33,11 @@ public final class VoxelWorld {
     /** Fraction of terrain-skin blocks replaced by {@link #CUTOUT}, out of 256. Confined to the surface. */
     private static final int CUTOUT_ROLL = 40; // ~16% of the skin
 
+    /** Blocks from the camera column at which the CLIFF world's ground steps up; past the standing probe's reach. */
+    public static final int CLIFF_RADIUS = 8 * 16;
+    /** Not a multiple of 16: the plateau surface must sit inside a section, or the outward-only search never reaches it. */
+    public static final int CLIFF_RISE = 36;
+
     private final WorldType type;
     private final long seed;
     private final double caveWidth;
@@ -71,6 +76,10 @@ public final class VoxelWorld {
             return by < SEA_LEVEL ? WATER : AIR;
         }
 
+        if (this.isSolidGround()) {
+            return SOLID;
+        }
+
         if (by < surface - CAVE_MARGIN) {
             return row.isCave(bx) ? AIR : SOLID;
         }
@@ -85,6 +94,11 @@ public final class VoxelWorld {
      */
     CaveRow caveRow(CaveLattice lattice, int by, int bz) {
         return new CaveRow(this, lattice, by, bz);
+    }
+
+    /** {@return whether everything below the surface is solid, with no caves and no cutouts} */
+    private boolean isSolidGround() {
+        return this.type == WorldType.PLAINS || this.type == WorldType.HILLS || this.type == WorldType.CLIFF;
     }
 
     /** {@return whether this world has no blocks at all} */
@@ -154,6 +168,18 @@ public final class VoxelWorld {
     public int surfaceHeight(int bx, int bz) {
         if (this.type == WorldType.CAVES) {
             return Integer.MAX_VALUE;
+        }
+
+        if (this.type == WorldType.FLAT || this.type == WorldType.PLAINS || this.type == WorldType.CLIFF) {
+            // the SURFACE height at the origin, so Cameras.surfaceCameraY(0, 0) is at eye height here too
+            int base = (int) Math.floor(sectionHeight(0.0, 0.0) * 16.0);
+
+            if (this.type == WorldType.CLIFF) {
+                long dx = bx - 8, dz = bz - 8;
+                return (dx * dx) + (dz * dz) >= (long) CLIFF_RADIUS * CLIFF_RADIUS ? base + CLIFF_RISE : base;
+            }
+
+            return base;
         }
 
         return (int) Math.floor(sectionHeight(bx * (1.0 / 16.0), bz * (1.0 / 16.0)) * 16.0);

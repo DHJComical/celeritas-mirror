@@ -487,6 +487,11 @@ public final class SectionLattice {
         return this.culler.rasterBacktrackCount();
     }
 
+    /** The main search's raster test budget; see {@link RasterBudget}. */
+    public RasterBudget rasterBudget() {
+        return this.culler.rasterBudget();
+    }
+
     /**
      * Run the shadow-pass search over the currently installed lattice cells, using the shadow visit-state array
      * so the main search's state is left intact.

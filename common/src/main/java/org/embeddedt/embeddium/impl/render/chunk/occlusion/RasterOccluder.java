@@ -16,7 +16,7 @@ public final class RasterOccluder extends BoxOccluder {
     private int backtrackCount;
 
     /** Work counters for benchmarks; only maintained when {@link AbstractRasterizer#STATS} is set. */
-    public static long STAT_CENTER_HIT, STAT_AIR_TESTS, STAT_AIR_VISIBLE, STAT_NEAR, STAT_EMPTY_SKIP;
+    public static long STAT_CENTER_HIT, STAT_AIR_TESTS, STAT_AIR_VISIBLE, STAT_NEAR, STAT_EMPTY_SKIP, STAT_BUDGET_SKIP;
     public static long STAT_TEST_NANOS, STAT_OCCLUDE_NANOS, STAT_SECTIONS, STAT_OCCLUDED_SECTIONS;
 
     public enum SectionVisibility {
@@ -47,8 +47,12 @@ public final class RasterOccluder extends BoxOccluder {
      * Clears the buffer for a new search. The matrix already carries rotation and projection but no
      * camera translation, so it is supplied as the projection with an identity model matrix;
      * {@link #prepareRegion} applies the camera-relative offset per section.
+     *
+     * @param testDistance farthest distance in blocks at which a section will be tested this search; the buffer
+     *                     is sized to resolve one-block gaps out to it, so a search that tests only nearby
+     *                     sections gets a smaller buffer and draws its occluders into fewer tiles
      */
-    public void prepareScene(int viewVersion, Viewport viewport, float searchDistance) {
+    public void prepareScene(int viewVersion, Viewport viewport, float testDistance) {
         Matrix4fc vpMatrix = viewport.getVpMatrix();
 
         if (vpMatrix == null) {
@@ -59,7 +63,7 @@ public final class RasterOccluder extends BoxOccluder {
 
         this.backtrackCount = 0;
 
-        chooseBufferSize(vpMatrix, searchDistance);
+        chooseBufferSize(vpMatrix, testDistance);
         invalidate();
         prepareScene(viewVersion, transform.x, transform.y, transform.z,
                 Matrix4L::loadIdentity, m -> copyMatrix(vpMatrix, m));
