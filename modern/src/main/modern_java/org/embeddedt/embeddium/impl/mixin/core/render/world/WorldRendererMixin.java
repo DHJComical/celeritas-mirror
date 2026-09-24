@@ -83,6 +83,26 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
     @Unique
     private int frame;
 
+    @Unique
+    private static void celeritas$enterManagedCode() {
+        RenderDevice.enterManagedCode();
+        celeritas$resetVanillaBufferCache();
+    }
+
+    @Unique
+    private static void celeritas$exitManagedCode() {
+        RenderDevice.exitManagedCode();
+        celeritas$resetVanillaBufferCache();
+    }
+
+    @Unique
+    private static void celeritas$resetVanillaBufferCache() {
+        //? if >=1.17
+        com.mojang.blaze3d.vertex.BufferUploader.reset();
+        //? if <1.17
+        //com.mojang.blaze3d.vertex.VertexBuffer.unbind();
+    }
+
     @Shadow public abstract boolean shouldShowEntityOutlines();
 
     //? if >=1.18 {
@@ -122,12 +142,12 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
 
     @Inject(method = "setLevel", at = @At("HEAD"))
     private void onWorldChanged(ClientLevel world, CallbackInfo ci) {
-        RenderDevice.enterManagedCode();
+        celeritas$enterManagedCode();
 
         try {
             this.renderer.setWorld(world);
         } finally {
-            RenderDevice.exitManagedCode();
+            celeritas$exitManagedCode();
         }
     }
 
@@ -160,7 +180,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
      */
     @Overwrite
     private void /*? if <1.20.2 {*/ renderChunkLayer /*?} else {*/ /*renderSectionLayer *//*?}*/(RenderType renderLayer, /*? if <1.20.6 {*/ PoseStack matrices, /*?}*/ double x, double y, double z /*? if >=1.20.6 {*/ /*,Matrix4f pose *//*?}*/ /*? if >=1.17 {*/, Matrix4f matrix /*?}*/) {
-        RenderDevice.enterManagedCode();
+        celeritas$enterManagedCode();
 
         //? if >=1.20 <1.20.6 {
         Matrix4f pose = matrices.last().pose();
@@ -172,7 +192,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
             this.renderer.setCurrentChunkRenderPose(pose);
             this.renderer.drawChunkLayer(renderLayer, x, y, z);
         } finally {
-            RenderDevice.exitManagedCode();
+            celeritas$exitManagedCode();
         }
 
         // TODO: Avoid setting up and clearing the state a second time
@@ -213,7 +233,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
             this.renderer.scheduleTerrainUpdate();
         }
 
-        RenderDevice.enterManagedCode();
+        celeritas$enterManagedCode();
 
         Vec3 pos = camera.getPosition();
         float pitch = camera.getXRot();
@@ -238,7 +258,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
                 this.renderer.setupTerrain(viewport, cameraState, this.frame++, spectator, FlawlessFrames.isActive());
             }
         } finally {
-            RenderDevice.exitManagedCode();
+            celeritas$exitManagedCode();
         }
 
         // We set this because third-party mods may use it (to loop themselves), even if Vanilla does not.
@@ -293,12 +313,12 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
 
     @Inject(method = "allChanged()V", at = @At("RETURN"))
     private void onReload(CallbackInfo ci) {
-        RenderDevice.enterManagedCode();
+        celeritas$enterManagedCode();
 
         try {
             this.renderer.reload();
         } finally {
-            RenderDevice.exitManagedCode();
+            celeritas$exitManagedCode();
         }
     }
 

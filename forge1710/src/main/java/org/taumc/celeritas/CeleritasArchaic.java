@@ -14,12 +14,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
 import org.embeddedt.embeddium.impl.common.util.NativeBuffer;
-import org.embeddedt.embeddium.impl.gl.device.GLRenderDevice;
-import org.taumc.celeritas.lwjgl.GL20;
 import org.taumc.celeritas.command.TogglePassCommand;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
-
-import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 import java.lang.management.ManagementFactory;
 
@@ -32,9 +28,6 @@ public class CeleritasArchaic {
     @Mod.EventHandler
     public void onInit(FMLInitializationEvent event) {
         LOGGER.info("Hello from Forge!");
-        GLRenderDevice.VANILLA_STATE_RESETTER = () -> {
-            LWJGL.glBindBuffer(GL20.GL_ARRAY_BUFFER, 0);
-        };
         VERSION = Loader.instance().getIndexedModList().get(MODID).getVersion();
         MinecraftForge.EVENT_BUS.register(this);
 

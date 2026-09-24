@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk.occlusion.bench;
 
-import org.embeddedt.embeddium.impl.gl.device.GLRenderDevice;
 import org.lwjgl.egl.EGL;
 import org.lwjgl.egl.EGL10;
 import org.lwjgl.egl.EGL12;
@@ -71,10 +70,6 @@ public final class HeadlessGl {
 
         GL.create((ByteBuffer name) -> EGL10.eglGetProcAddress(name));
         GL.createCapabilities();
-
-        // GLRenderDevice requires this; the benchmarks never touch vanilla GL state.
-        GLRenderDevice.VANILLA_STATE_RESETTER = () -> {
-        };
 
         initialized = true;
     }

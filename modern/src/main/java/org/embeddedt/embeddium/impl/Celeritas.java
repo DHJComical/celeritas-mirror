@@ -43,7 +43,6 @@ import net.neoforged.fml.loading.FMLLoader;
 *///?}
 
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
-import org.embeddedt.embeddium.impl.gl.device.GLRenderDevice;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
@@ -88,8 +87,6 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         if (!EarlyLoaderServices.INSTANCE.getDistribution().isClient()) {
             return;
         }
-
-        commonClientInit();
 
         if (Boolean.getBoolean("embeddium.auditAndExit")) {
             MixinAuditUtil.auditAndExit();
@@ -150,19 +147,8 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         if (Boolean.getBoolean("embeddium.auditAndExit")) {
             MixinAuditUtil.auditAndExit();
         }
-
-        commonClientInit();
     }
     *///?}
-
-    private static void commonClientInit() {
-        GLRenderDevice.VANILLA_STATE_RESETTER = () -> {
-            //? if >=1.17 <1.21.11
-            com.mojang.blaze3d.vertex.BufferUploader.reset();
-            //? if <1.17
-            //com.mojang.blaze3d.vertex.VertexBuffer.unbind();
-        };
-    }
 
     public static SodiumGameOptions options() {
         if (CONFIG == null) {

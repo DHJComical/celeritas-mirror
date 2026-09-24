@@ -25,11 +25,6 @@ public class GLRenderDevice implements RenderDevice {
     private boolean isActive;
     private GlTessellation activeTessellation;
 
-    // TODO replace this with something less ugly
-    public static Runnable VANILLA_STATE_RESETTER = () -> {
-        throw new IllegalStateException("The host mod should replace the VANILLA_STATE_RESETTER with an implementation specific to the platform.");
-    };
-
     @Override
     public CommandList createCommandList() {
         GLRenderDevice.this.checkDeviceActive();
@@ -43,7 +38,7 @@ public class GLRenderDevice implements RenderDevice {
             return;
         }
 
-        VANILLA_STATE_RESETTER.run();
+        unbindArrayBuffer();
 
         this.stateTracker.clear();
         this.isActive = true;
@@ -55,13 +50,14 @@ public class GLRenderDevice implements RenderDevice {
             return;
         }
 
-        //? if <1.17
-        /*VertexBuffer.unbind();*/
-
-        VANILLA_STATE_RESETTER.run();
+        unbindArrayBuffer();
 
         this.stateTracker.clear();
         this.isActive = false;
+    }
+
+    private static void unbindArrayBuffer() {
+        LWJGL.glBindBuffer(GlBufferTarget.ARRAY_BUFFER.getTargetParameter(), 0);
     }
 
     @Override
