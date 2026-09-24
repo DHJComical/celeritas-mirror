@@ -8,6 +8,10 @@ import org.embeddedt.embeddium.impl.gl.shader.ShaderConstants;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderParser;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 
+import java.util.regex.Pattern;
+
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 public class ShaderLoader {
     /**
      * Creates an OpenGL shader from GLSL sources. The GLSL source file should be made available on the classpath at the
@@ -20,7 +24,37 @@ public class ShaderLoader {
      * @return An OpenGL shader object compiled with the given user defines
      */
     public static GlShader loadShader(ShaderType type, String name, ShaderConstants constants) {
-        return new GlShader(type, name, ShaderParser.parseShader(getShaderSource(name), ShaderLoader::getShaderSource, constants));
+        return new GlShader(type, name, downgradeIfNeeded(type, ShaderParser.parseShader(getShaderSource(name), ShaderLoader::getShaderSource, constants)));
+    }
+
+    private static final Pattern VERSION_DIRECTIVE = Pattern.compile("^#version.*$", Pattern.MULTILINE);
+    private static final Pattern IN_PARAM = Pattern.compile("^in ", Pattern.MULTILINE);
+    private static final Pattern OUT_PARAM = Pattern.compile("^out ", Pattern.MULTILINE);
+    private static final String LEGACY_PREAMBLE = String.join("\n",
+            "#version 120",
+            "#define LEGACY",
+            "#define uint unsigned int",
+            "#define texture texture2D"
+    ) + "\n";
+
+    public static boolean useLegacyGlsl() {
+        return !LWJGL.isOpenGLVersionSupported(3, 2);
+    }
+
+    public static String downgradeIfNeeded(ShaderType type, String shaderSource) {
+        if (useLegacyGlsl()) {
+            if (type != ShaderType.VERTEX && type != ShaderType.FRAGMENT) {
+                throw new IllegalStateException("Cannot load non-vertex/fragment shader on old GL");
+            }
+            shaderSource = VERSION_DIRECTIVE.matcher(shaderSource).replaceFirst(LEGACY_PREAMBLE);
+            if (type == ShaderType.VERTEX) {
+                shaderSource = IN_PARAM.matcher(shaderSource).replaceAll("attribute ");
+            } else {
+                shaderSource = IN_PARAM.matcher(shaderSource).replaceAll("varying ");
+            }
+            shaderSource = OUT_PARAM.matcher(shaderSource).replaceAll("varying ");
+        }
+        return shaderSource;
     }
 
     public static String getShaderSource(String name) {

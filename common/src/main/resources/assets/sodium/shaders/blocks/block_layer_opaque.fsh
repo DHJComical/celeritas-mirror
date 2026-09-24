@@ -1,5 +1,9 @@
 #version 330 core
 
+#ifdef LEGACY
+#extension GL_EXT_gpu_shader4 : require
+#endif
+
 #import <sodium:include/fog.glsl>
 
 in vec4 v_Color;

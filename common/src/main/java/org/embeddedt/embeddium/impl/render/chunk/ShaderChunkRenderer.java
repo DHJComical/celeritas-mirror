@@ -17,9 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
-
-import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 public abstract class ShaderChunkRenderer implements ChunkRenderer {
     private static final Logger LOGGER = LogManager.getLogger(ShaderChunkRenderer.class);
@@ -37,7 +34,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
     public ShaderChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
         this.device = device;
         this.renderPassConfiguration = renderPassConfiguration;
-        this.enableLegacyGLPatches = !LWJGL.isOpenGLVersionSupported(3, 2);
+        this.enableLegacyGLPatches = ShaderLoader.useLegacyGlsl();
         if (this.enableLegacyGLPatches) {
             LOGGER.warn("System does not support modern GLSL, will attempt to patch terrain shaders");
         }
@@ -58,44 +55,15 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
         return program;
     }
 
-    private static final Pattern VERSION_DIRECTIVE = Pattern.compile("^#version.*$", Pattern.MULTILINE);
-    private static final Pattern IN_PARAM = Pattern.compile("^in ", Pattern.MULTILINE);
-    private static final Pattern OUT_PARAM = Pattern.compile("^out ", Pattern.MULTILINE);
-    private static final String LEGACY_PREAMBLE = String.join("\n",
-            "#version 120",
-            "#extension GL_EXT_gpu_shader4 : require",
-            "#define LEGACY",
-            "#define uint unsigned int",
-            "#define texture texture2D"
-    ) + "\n";
-
-    private GlShader loadShader(ShaderType type, String path, ShaderConstants constants) {
-        String shaderSource = ShaderParser.parseShader(ShaderLoader.getShaderSource(path), ShaderLoader::getShaderSource, constants);
-        if (this.enableLegacyGLPatches) {
-            if (type != ShaderType.VERTEX && type != ShaderType.FRAGMENT) {
-                throw new IllegalStateException("Cannot load non-vertex/fragment shader on old GL");
-            }
-            // Downlevel to GLSL 1.20
-            shaderSource = VERSION_DIRECTIVE.matcher(shaderSource).replaceFirst(LEGACY_PREAMBLE);
-            if (type == ShaderType.VERTEX) {
-                shaderSource = IN_PARAM.matcher(shaderSource).replaceAll("attribute ");
-            } else {
-                shaderSource = IN_PARAM.matcher(shaderSource).replaceAll("varying ");
-            }
-            shaderSource = OUT_PARAM.matcher(shaderSource).replaceAll("varying ");
-        }
-        return new GlShader(type, path, shaderSource);
-    }
-
     protected GlProgram<ChunkShaderInterface> createShader(String path, ChunkShaderOptions options) {
         ShaderConstants constants = options.constants();
 
         List<GlShader> loadedShaders = new ArrayList<>();
 
-        loadedShaders.add(loadShader(ShaderType.VERTEX,
+        loadedShaders.add(ShaderLoader.loadShader(ShaderType.VERTEX,
                 "sodium:" + path + ".vsh", constants));
 
-        loadedShaders.add(loadShader(ShaderType.FRAGMENT,
+        loadedShaders.add(ShaderLoader.loadShader(ShaderType.FRAGMENT,
                 "sodium:" + path + ".fsh", constants));
 
         try {

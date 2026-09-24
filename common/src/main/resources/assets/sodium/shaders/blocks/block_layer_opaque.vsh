@@ -1,5 +1,9 @@
 #version 330 core
 
+#ifdef LEGACY
+#extension GL_EXT_gpu_shader4 : require
+#endif
+
 #import <sodium:include/fog.glsl>
 #import <sodium:include/chunk_vertex.glsl>
 #import <sodium:include/chunk_matrices.glsl>
