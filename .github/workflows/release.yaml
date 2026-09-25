@@ -11,7 +11,7 @@ on:
         options:
           - DRY_RUN
           - DEV_BUILD
-          - PRERELEASE
+          - PRE_RELEASE
           - RELEASE
 
 env:
