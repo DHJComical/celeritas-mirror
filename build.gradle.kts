@@ -89,3 +89,8 @@ val publishTask = tau.publishing.publish {
         }
     }
 }
+
+// TauGradle's publish artifacts hold a reference to the Project, which can't be serialized.
+tasks.named("taugradle_publish") {
+    notCompatibleWithConfigurationCache("TauGradle publish artifacts reference the Project")
+}
