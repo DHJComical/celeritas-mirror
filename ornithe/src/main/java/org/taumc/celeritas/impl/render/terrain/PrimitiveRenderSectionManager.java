@@ -10,6 +10,7 @@ import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.*;
 import org.embeddedt.embeddium.impl.render.chunk.compile.ChunkBuildOutput;
 import org.embeddedt.embeddium.impl.render.chunk.compile.tasks.ChunkBuilderTask;
+import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
 import org.embeddedt.embeddium.impl.render.chunk.data.BuiltRenderSectionData;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
@@ -18,6 +19,7 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.util.position.SectionPos;
 import org.jetbrains.annotations.Nullable;
+import org.taumc.celeritas.impl.render.terrain.fog.GLStateManagerFogService;
 import org.taumc.celeritas.impl.render.terrain.compile.PrimitiveBuiltRenderSectionData;
 import org.taumc.celeritas.impl.render.terrain.compile.PrimitiveChunkBuildContext;
 import org.taumc.celeritas.impl.render.terrain.compile.task.ChunkBuilderMeshingTask;
@@ -62,6 +64,11 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
     @Override
     protected boolean useRasterOcclusionCulling() {
         return false;
+    }
+
+    @Override
+    public FogService getFogService() {
+        return GLStateManagerFogService.INSTANCE;
     }
 
     @Override
@@ -170,7 +177,7 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
     private static class ChunkRenderer extends DefaultChunkRenderer {
 
         public ChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
-            super(device, renderPassConfiguration);
+            super(device, renderPassConfiguration, GLStateManagerFogService.INSTANCE);
         }
 
         @Override

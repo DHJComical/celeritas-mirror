@@ -13,7 +13,7 @@ import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ChunkRenderMatricesBuilder;
 import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
@@ -238,7 +238,7 @@ public abstract class WorldRendererMixin implements WorldRendererExtended {
         Vec3 pos = camera.getPosition();
         float pitch = camera.getXRot();
         float yaw = camera.getYRot();
-        float fogDistance = ChunkShaderFogComponent.FOG_SERVICE.getFogCutoff();
+        float fogDistance = FogHelper.INSTANCE.getFogCutoff();
 
         var cameraState = new SimpleWorldRenderer.CameraState(
                 pos.x, pos.y, pos.z,

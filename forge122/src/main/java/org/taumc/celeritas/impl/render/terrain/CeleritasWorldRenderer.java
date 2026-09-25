@@ -13,10 +13,10 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.client.MinecraftForgeClient;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
+import org.taumc.celeritas.impl.render.terrain.fog.GLStateManagerFogService;
 import org.taumc.celeritas.CeleritasVintage;
 import org.taumc.celeritas.mixin.core.terrain.ActiveRenderInfoAccessor;
 
@@ -86,7 +86,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
 
         float pitch = viewEntity.rotationPitch;
         float yaw = viewEntity.rotationYaw;
-        float fogDistance = ChunkShaderFogComponent.FOG_SERVICE.getFogCutoff();
+        float fogDistance = GLStateManagerFogService.INSTANCE.getFogCutoff();
 
         return new CameraState(x, y, z, pitch, yaw, fogDistance);
     }

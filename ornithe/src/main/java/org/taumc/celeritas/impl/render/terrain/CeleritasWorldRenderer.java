@@ -7,9 +7,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.world.World;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
+import org.taumc.celeritas.impl.render.terrain.fog.GLStateManagerFogService;
 import org.taumc.celeritas.impl.extensions.RenderGlobalExtension;
 import org.taumc.celeritas.impl.render.terrain.matrix.PrimitiveChunkMatrixGetter;
 import org.taumc.celeritas.mixin.core.MinecraftAccessor;
@@ -69,7 +69,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<World, Primitive
 
         float pitch = viewEntity.pitch;
         float yaw = viewEntity.yaw;
-        float fogDistance = ChunkShaderFogComponent.FOG_SERVICE.getFogCutoff();
+        float fogDistance = GLStateManagerFogService.INSTANCE.getFogCutoff();
 
         return new CameraState(x, y, z, pitch, yaw, fogDistance);
     }

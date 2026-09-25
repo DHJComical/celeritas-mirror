@@ -9,7 +9,7 @@ public interface ChunkShaderComponent {
     void setup();
 
     interface Factory<T extends ChunkShaderComponent> {
-        T create(ShaderBindingContext context);
+        T create(ShaderBindingContext context, ChunkShaderEnvironment environment);
 
         default Collection<String> getDefines() {
             return List.of();

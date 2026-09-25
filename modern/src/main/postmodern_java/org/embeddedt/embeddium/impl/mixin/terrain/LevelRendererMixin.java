@@ -24,7 +24,7 @@ import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
@@ -111,7 +111,7 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
         Vec3 pos = camera.position();
         float pitch = camera.xRot();
         float yaw = camera.yRot();
-        float fogDistance = ChunkShaderFogComponent.FOG_SERVICE.getFogCutoff();
+        float fogDistance = FogHelper.INSTANCE.getFogCutoff();
 
         var cameraState = new SimpleWorldRenderer.CameraState(
                 pos.x, pos.y, pos.z,

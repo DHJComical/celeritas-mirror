@@ -30,7 +30,6 @@ import org.embeddedt.embeddium.impl.render.chunk.metrics.RenderSectionMetricsTra
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegionManager;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
 import org.embeddedt.embeddium.impl.common.util.MathUtil;
@@ -428,6 +427,8 @@ public abstract class RenderSectionManager {
     }
 
     protected abstract boolean shouldUseOcclusionCulling(Viewport viewport, boolean spectator);
+
+    public abstract FogService getFogService();
 
     private boolean hasTranslucencySortedSections() {
         return this.getCurrentRenderListManager().getRenderLists().getPasses().stream().anyMatch(TerrainRenderPass::isSorted);
@@ -1007,10 +1008,10 @@ public abstract class RenderSectionManager {
     }
 
     private float getEffectiveRenderDistance(@Nullable Matrix4fc projectionMatrix) {
-        var color = ChunkShaderFogComponent.FOG_SERVICE.getFogColor();
+        var color = this.getFogService().getFogColor();
         var alpha = color[3];
-        var distance = ChunkShaderFogComponent.FOG_SERVICE.getFogCutoff();
-        var shape = ChunkShaderFogComponent.FOG_SERVICE.getFogShapeIndex();
+        var distance = this.getFogService().getFogCutoff();
+        var shape = this.getFogService().getFogShapeIndex();
 
         var renderDistance = this.getRenderDistance();
 

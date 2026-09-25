@@ -6,8 +6,6 @@ import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat4v;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformInt;
 import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
 
-import java.util.ServiceLoader;
-
 /**
  * These shader implementations try to remain compatible with the deprecated fixed function pipeline by manually
  * copying the state into each shader's uniforms. The shader code itself is a straight-forward implementation of the
@@ -19,11 +17,15 @@ import java.util.ServiceLoader;
  * not depend on any vendor-specific extensions and is written using very simple GLSL code.
  */
 public abstract class ChunkShaderFogComponent implements ChunkShaderComponent {
-    public static final FogService FOG_SERVICE = ServiceLoader.load(FogService.class).findFirst().orElseThrow();
+    protected final FogService fogService;
+
+    protected ChunkShaderFogComponent(FogService fogService) {
+        this.fogService = fogService;
+    }
 
     public static class None extends ChunkShaderFogComponent {
-        public None(ShaderBindingContext context) {
-
+        public None(ShaderBindingContext context, ChunkShaderEnvironment environment) {
+            super(environment.fogService());
         }
 
         @Override
@@ -36,15 +38,17 @@ public abstract class ChunkShaderFogComponent implements ChunkShaderComponent {
         private final GlUniformFloat4v uFogColor;
         private final GlUniformFloat uFogDensity;
 
-        public Exp(ShaderBindingContext context) {
+        public Exp(ShaderBindingContext context, ChunkShaderEnvironment environment) {
+            super(environment.fogService());
+
             this.uFogColor = context.bindUniform("u_FogColor", GlUniformFloat4v::new);
             this.uFogDensity = context.bindUniform("u_FogDensity", GlUniformFloat::new);
         }
 
         @Override
         public void setup() {
-            this.uFogColor.set(FOG_SERVICE.getFogColor());
-            this.uFogDensity.set(FOG_SERVICE.getFogDensity());
+            this.uFogColor.set(this.fogService.getFogColor());
+            this.uFogDensity.set(this.fogService.getFogDensity());
         }
     }
 
@@ -52,15 +56,17 @@ public abstract class ChunkShaderFogComponent implements ChunkShaderComponent {
         private final GlUniformFloat4v uFogColor;
         private final GlUniformFloat uFogDensity;
 
-        public Exp2(ShaderBindingContext context) {
+        public Exp2(ShaderBindingContext context, ChunkShaderEnvironment environment) {
+            super(environment.fogService());
+
             this.uFogColor = context.bindUniform("u_FogColor", GlUniformFloat4v::new);
             this.uFogDensity = context.bindUniform("u_FogDensity", GlUniformFloat::new);
         }
 
         @Override
         public void setup() {
-            this.uFogColor.set(FOG_SERVICE.getFogColor());
-            this.uFogDensity.set(FOG_SERVICE.getFogDensity());
+            this.uFogColor.set(this.fogService.getFogColor());
+            this.uFogDensity.set(this.fogService.getFogDensity());
         }
     }
 
@@ -71,7 +77,9 @@ public abstract class ChunkShaderFogComponent implements ChunkShaderComponent {
         private final GlUniformFloat uFogStart;
         private final GlUniformFloat uFogEnd;
 
-        public Smooth(ShaderBindingContext context) {
+        public Smooth(ShaderBindingContext context, ChunkShaderEnvironment environment) {
+            super(environment.fogService());
+
             this.uFogColor = context.bindUniform("u_FogColor", GlUniformFloat4v::new);
             this.uFogShape = context.bindUniform("u_FogShape", GlUniformInt::new);
             this.uFogStart = context.bindUniform("u_FogStart", GlUniformFloat::new);
@@ -80,11 +88,11 @@ public abstract class ChunkShaderFogComponent implements ChunkShaderComponent {
 
         @Override
         public void setup() {
-            this.uFogColor.set(FOG_SERVICE.getFogColor());
-            this.uFogShape.set(FOG_SERVICE.getFogShapeIndex());
+            this.uFogColor.set(this.fogService.getFogColor());
+            this.uFogShape.set(this.fogService.getFogShapeIndex());
 
-            this.uFogStart.set(FOG_SERVICE.getFogStart());
-            this.uFogEnd.set(FOG_SERVICE.getFogEnd());
+            this.uFogStart.set(this.fogService.getFogStart());
+            this.uFogEnd.set(this.fogService.getFogEnd());
         }
     }
 

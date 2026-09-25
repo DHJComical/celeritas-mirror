@@ -7,12 +7,13 @@ import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat4v;
 import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderComponent;
+import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderEnvironment;
 
 import java.util.Collection;
 import java.util.List;
 
 public class FogHelper implements FogService {
-    private static final FogHelper INSTANCE = new FogHelper();
+    public static final FogHelper INSTANCE = new FogHelper();
 
     private static FogData fogData() {
         return Minecraft.getInstance().gameRenderer.getGameRenderState().levelRenderState.cameraRenderState.fogData;
@@ -57,7 +58,7 @@ public class FogHelper implements FogService {
     private static class PostmodernFogComponent implements ChunkShaderComponent {
         private static final ChunkShaderComponent.Factory<PostmodernFogComponent> FACTORY = new ChunkShaderComponent.Factory<>() {
             @Override
-            public PostmodernFogComponent create(ShaderBindingContext context) {
+            public PostmodernFogComponent create(ShaderBindingContext context, ChunkShaderEnvironment environment) {
                 return new PostmodernFogComponent(context);
             }
 

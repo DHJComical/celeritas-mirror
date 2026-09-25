@@ -7,6 +7,8 @@ import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkFogMode;
 import org.lwjgl.opengl.GL11;
 
 public class GLStateManagerFogService implements FogService {
+    public static final GLStateManagerFogService INSTANCE = new GLStateManagerFogService();
+
     @Override
     public float getFogEnd() {
         return GL11.glGetInteger(GL11.GL_FOG_END);

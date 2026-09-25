@@ -5,6 +5,8 @@ import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkFogMode;
 import org.lwjgl.opengl.GL11;
 
 public class GLStateManagerFogService implements FogService {
+    public static final GLStateManagerFogService INSTANCE = new GLStateManagerFogService();
+
     public static float fogColorRed, fogColorGreen, fogColorBlue;
 
     @Override

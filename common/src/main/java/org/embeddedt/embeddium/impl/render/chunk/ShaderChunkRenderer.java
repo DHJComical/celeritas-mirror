@@ -7,6 +7,7 @@ import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.gl.shader.*;
+import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
 import org.embeddedt.embeddium.impl.render.chunk.shader.*;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
@@ -31,8 +32,11 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
 
     protected final boolean enableLegacyGLPatches;
 
-    public ShaderChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
+    protected final ChunkShaderEnvironment environment;
+
+    public ShaderChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration, FogService fogService) {
         this.device = device;
+        this.environment = new ChunkShaderEnvironment(fogService);
         this.renderPassConfiguration = renderPassConfiguration;
         this.enableLegacyGLPatches = ShaderLoader.useLegacyGlsl();
         if (this.enableLegacyGLPatches) {
@@ -76,7 +80,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
             if (!this.enableLegacyGLPatches) {
                 builder.bindFragmentData("fragColor", ChunkShaderBindingPoints.FRAG_COLOR);
             }
-            return builder.link((shader) -> new DefaultChunkShaderInterface(shader, options));
+            return builder.link((shader) -> new DefaultChunkShaderInterface(shader, options, this.environment));
         } finally {
             loadedShaders.forEach(GlShader::delete);
         }
@@ -84,7 +88,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
 
     protected List<ChunkShaderComponent.Factory<?>> getShaderComponents() {
         var componentFactories = new ArrayList<ChunkShaderComponent.Factory<?>>(4);
-        componentFactories.add(ChunkShaderFogComponent.FOG_SERVICE.getFogMode());
+        componentFactories.add(this.environment.fogService().getFogMode());
         return componentFactories;
     }
 

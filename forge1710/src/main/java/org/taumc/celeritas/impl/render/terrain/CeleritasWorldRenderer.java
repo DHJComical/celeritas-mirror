@@ -21,7 +21,6 @@ import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SortedRenderLists;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTracker;
 import org.embeddedt.embeddium.impl.render.chunk.map.ChunkTrackerHolder;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
@@ -32,6 +31,7 @@ import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.taumc.celeritas.CeleritasArchaic;
 import org.taumc.celeritas.impl.extensions.RenderGlobalExtension;
+import org.taumc.celeritas.impl.render.terrain.fog.GLStateManagerFogService;
 import org.taumc.celeritas.mixin.core.terrain.ActiveRenderInfoAccessor;
 
 import java.util.*;
@@ -183,7 +183,7 @@ public class CeleritasWorldRenderer {
 
         float pitch = viewEntity.rotationPitch;
         float yaw = viewEntity.rotationYaw;
-        float fogDistance = ChunkShaderFogComponent.FOG_SERVICE.getFogCutoff();
+        float fogDistance = GLStateManagerFogService.INSTANCE.getFogCutoff();
 
         boolean dirty = x != this.lastCameraX || y != this.lastCameraY || z != this.lastCameraZ ||
                 pitch != this.lastCameraPitch || yaw != this.lastCameraYaw || fogDistance != this.lastFogDistance;

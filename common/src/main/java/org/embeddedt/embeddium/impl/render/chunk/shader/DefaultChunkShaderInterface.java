@@ -36,7 +36,7 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
 
     private GlPrimitiveType primitiveType;
 
-    public DefaultChunkShaderInterface(ShaderBindingContext context, ChunkShaderOptions options) {
+    public DefaultChunkShaderInterface(ShaderBindingContext context, ChunkShaderOptions options, ChunkShaderEnvironment environment) {
         this.uniformModelViewMatrix = context.bindUniform("u_ModelViewMatrix", GlUniformMatrix4f::new);
         this.uniformProjectionMatrix = context.bindUniform("u_ProjectionMatrix", GlUniformMatrix4f::new);
         this.uniformRegionOffset = context.bindUniform("u_RegionOffset", GlUniformFloat3v::new);
@@ -48,7 +48,7 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
             this.uniformTextures.put(ChunkShaderTextureSlot.LIGHT, context.bindUniform("u_LightTex", GlUniformInt::new));
         }
 
-        this.components = options.components().stream().map(c -> c.create(context)).toList();
+        this.components = options.components().stream().map(c -> c.create(context, environment)).toList();
     }
 
     @Deprecated // the shader interface should not modify pipeline state

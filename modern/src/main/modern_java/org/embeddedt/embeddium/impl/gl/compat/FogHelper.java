@@ -13,6 +13,8 @@ import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkFogMode;
 import net.minecraft.util.Mth;
 
 public class FogHelper implements FogService {
+    public static final FogHelper INSTANCE = new FogHelper();
+
     private static final float FAR_PLANE_THRESHOLD_EXP = (float) Math.log(1.0f / 0.0019f);
     private static final float FAR_PLANE_THRESHOLD_EXP2 = Mth.sqrt(FAR_PLANE_THRESHOLD_EXP);
 

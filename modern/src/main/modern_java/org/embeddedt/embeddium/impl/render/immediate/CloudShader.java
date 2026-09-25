@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.render.immediate;
 
 import org.embeddedt.embeddium.impl.gl.shader.*;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.*;
-import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderFogComponent;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.render.shader.ShaderLoader;
 import org.joml.Matrix4f;
 
@@ -70,9 +70,9 @@ public class CloudShader implements AutoCloseable {
         public void setupState(Matrix4f modelViewMatrix, Matrix4f projectionMatrix, float r, float g, float b, float a) {
             this.uniformModelViewMatrix.set(modelViewMatrix);
             this.uniformProjectionMatrix.set(projectionMatrix);
-            this.uniformFogStart.set(ChunkShaderFogComponent.FOG_SERVICE.getFogStart());
-            this.uniformFogEnd.set(ChunkShaderFogComponent.FOG_SERVICE.getFogEnd());
-            this.uniformFogColor.set(ChunkShaderFogComponent.FOG_SERVICE.getFogColor());
+            this.uniformFogStart.set(FogHelper.INSTANCE.getFogStart());
+            this.uniformFogEnd.set(FogHelper.INSTANCE.getFogEnd());
+            this.uniformFogColor.set(FogHelper.INSTANCE.getFogColor());
             this.uniformMainColor.set(new float[] { r, g, b, a });
         }
     }

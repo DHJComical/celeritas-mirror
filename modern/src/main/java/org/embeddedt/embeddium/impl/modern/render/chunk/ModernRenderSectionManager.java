@@ -10,6 +10,7 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import org.embeddedt.embeddium.api.ChunkMeshEvent;
 import org.embeddedt.embeddium.api.render.texture.SpriteUtil;
 import org.embeddedt.embeddium.impl.Celeritas;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.ModernChunkBuildContext;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.tasks.ChunkBuilderMeshingTask;
@@ -17,6 +18,7 @@ import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSectionManager;
+import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
 import org.embeddedt.embeddium.impl.render.chunk.lists.SectionTicker;
 import org.embeddedt.embeddium.impl.render.chunk.occlusion.AsyncOcclusionMode;
 import org.embeddedt.embeddium.impl.render.chunk.sprite.GenericSectionSpriteTicker;
@@ -130,6 +132,11 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     @Override
     protected boolean useRasterOcclusionCulling() {
         return Celeritas.options().performance.useRasterOcclusionCulling;
+    }
+
+    @Override
+    public FogService getFogService() {
+        return FogHelper.INSTANCE;
     }
 
     @Override
