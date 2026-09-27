@@ -66,6 +66,10 @@ public class ChunkJobCollector {
         this.submitted.add(job);
     }
 
+    public boolean hasSubmittedJobs() {
+        return !this.submitted.isEmpty();
+    }
+
     public boolean canOffer() {
         return (this.budget - this.submitted.size()) > 0;
     }

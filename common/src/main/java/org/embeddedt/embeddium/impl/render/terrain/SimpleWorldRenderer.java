@@ -131,7 +131,11 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
 
         this.prepareFrame(viewport, cameraState, updateChunksImmediately);
 
-        this.renderSectionManager.uploadChunks();
+        // After a shadow pass the uploads already happened there; uploading here would join the searches it submitted,
+        // which is only worth it for rebuilds the render thread just waited on.
+        if (!this.renderSectionManager.didShadowPassRunThisFrame() || this.renderSectionManager.hasBlockingResultsPending()) {
+            this.renderSectionManager.uploadChunks();
+        }
 
         if (this.renderSectionManager.needsUpdate()) {
             this.renderSectionManager.update(viewport, frame, spectator);
@@ -148,7 +152,8 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
      * Shadow-pass counterpart of {@link #setupTerrain}. The shadow pass precedes the terrain pass in a frame, so
      * this joins the previous frame's searches, applies chunk load/unload events while the lattice is quiescent,
      * and runs the terrain search for {@code playerViewport} when one is due; the terrain pass then reuses it.
-     * Render-distance reloads and uploads are left to the terrain pass.
+     * Build results are uploaded here, while no search is in flight; render-distance reloads are left to the terrain
+     * pass.
      *
      * @param playerViewport the player camera's viewport for this frame
      * @param shadowViewport the shadow frustum, centred on the player camera
@@ -165,6 +170,8 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
         this.processChunkEvents();
 
         this.prepareFrame(shadowViewport, cameraState, false);
+
+        this.renderSectionManager.uploadChunks();
 
         this.renderSectionManager.updateForShadowPass(playerViewport, shadowViewport, frame, spectator);
 

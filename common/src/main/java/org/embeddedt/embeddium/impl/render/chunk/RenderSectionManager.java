@@ -118,6 +118,8 @@ public abstract class RenderSectionManager {
     // pass of the same frame then skips re-running the search.
     private boolean shadowPassRanThisFrame;
 
+    private boolean blockingResultsPending;
+
     // Shared by every section (one allocation, not one per section); installed on each RenderSection so its
     // packedMetadata changes fan out to the list manager mirror(s).
     private final RenderSection.MetadataSink metadataSink = this::pushSectionMetadata;
@@ -384,7 +386,9 @@ public abstract class RenderSectionManager {
         }
 
         section.setPendingUpdate(update);
-        this.getCurrentRenderListManager().getRebuildLists().byUpdateType().get(update).add(section);
+        // Sorts order geometry for the player camera, so they go to the terrain queue even when build results are
+        // processed during the shadow pass.
+        this.renderListManager.getRebuildLists().byUpdateType().get(update).add(section);
     }
 
     /**
@@ -597,12 +601,20 @@ public abstract class RenderSectionManager {
         this.submitRebuildTasks(updateImmediately ? blockingRebuilds : deferredSorts, ChunkUpdateType.SORT);
 
         blockingRebuilds.awaitCompletion(this.builder);
+        this.blockingResultsPending |= blockingRebuilds.hasSubmittedJobs();
 
         // Tick singlethreaded rebuilds
         this.builder.tick();
     }
 
+    /** Whether updateChunks waited on rebuilds whose results have not been uploaded yet. */
+    public boolean hasBlockingResultsPending() {
+        return this.blockingResultsPending;
+    }
+
     public void uploadChunks() {
+        this.blockingResultsPending = false;
+
         var results = this.collectChunkBuildResults();
 
         if (results.isEmpty()) {
@@ -619,8 +631,10 @@ public abstract class RenderSectionManager {
         }
 
         // Forcefully mark the graph as needing updates if the previous render list detected an overflow of the
-        // update queue. This is necessary to queue those additional chunks.
-        if (this.getCurrentRenderListManager().getRebuildLists().hasAdditionalUpdates()) {
+        // update queue. This is necessary to queue those additional chunks. The terrain pass skips its upload after a
+        // shadow pass, so the terrain lists are checked here too.
+        if (this.renderListManager.getRebuildLists().hasAdditionalUpdates()
+                || (this.isInShadowPass() && this.shadowRenderListManager != null && this.shadowRenderListManager.getRebuildLists().hasAdditionalUpdates())) {
             this.markGraphDirty();
         }
     }
