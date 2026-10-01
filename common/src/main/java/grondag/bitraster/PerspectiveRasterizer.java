@@ -102,7 +102,7 @@ public final class PerspectiveRasterizer extends AbstractRasterizer {
 			final float tz = cz[corner];
 
 			// same acceptance as needsNearClip
-			if (!(w > 0 && tz > 0 && tz <= w)) {
+			if (!(w > 0 && tz > 0)) {
 				return false;
 			}
 

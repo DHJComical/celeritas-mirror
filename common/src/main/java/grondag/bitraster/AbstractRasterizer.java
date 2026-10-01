@@ -1375,14 +1375,9 @@ public abstract class AbstractRasterizer {
 		final float w = Float.intBitsToFloat(data[baseIndex + PV_W]);
 		final float z = Float.intBitsToFloat(data[baseIndex + PV_Z]);
 
-		if (w == 0) {
-			return 1;
-		} else if (w > 0) {
-			return (z > 0 && z <= w) ? 0 : 1;
-		} else {
-			// w < 0
-			return (z < 0 && z >= w) ? 0 : 1;
-		}
+		// Only points behind the near plane need clipping. Past the far plane is fine: the buffer stores no
+		// depth, and such a point still projects to the right pixel, while clipNear would drag it toward the camera.
+		return (w > 0 && z > 0) ? 0 : 1;
 	}
 
 	/**
