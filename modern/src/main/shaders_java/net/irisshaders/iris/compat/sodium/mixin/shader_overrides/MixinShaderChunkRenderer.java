@@ -5,6 +5,7 @@ import org.embeddedt.embeddium.impl.gl.shader.GlProgram;
 import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.ShaderChunkRenderer;
+import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
 import net.irisshaders.iris.compat.sodium.impl.shader_overrides.IrisChunkProgramOverrides;
@@ -25,7 +26,7 @@ public class MixinShaderChunkRenderer {
 	private IrisChunkProgramOverrides irisChunkProgramOverrides;
 
 	@Inject(method = "<init>", at = @At("RETURN"))
-	private void iris$onInit(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration, CallbackInfo ci) {
+	private void iris$onInit(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration, FogService fogService, CallbackInfo ci) {
 		irisChunkProgramOverrides = new IrisChunkProgramOverrides();
 	}
 
