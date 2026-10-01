@@ -3,8 +3,8 @@ package org.taumc.celeritas.impl.render.terrain.compile.pipeline;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockModelShapes;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.block.model.IBakedModel;
 import net.minecraft.client.renderer.color.IBlockColor;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -14,7 +14,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.WorldType;
 import net.minecraftforge.client.model.pipeline.VertexBufferConsumer;
 import net.minecraftforge.registries.IRegistryDelegate;
 import org.embeddedt.embeddium.api.util.ColorARGB;
@@ -46,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 
 public class VintageBlockRenderer {
-    private final BlockModelShapes shapes;
     private final VintageChunkBuildContext context;
     private final VertexBufferConsumer consumer;
     private final LightPipelineProvider lighters;
@@ -67,7 +65,6 @@ public class VintageBlockRenderer {
 
 
     public VintageBlockRenderer(VintageChunkBuildContext context, LightDataCache cache) {
-        this.shapes = Minecraft.getMinecraft().getBlockRendererDispatcher().getBlockModelShapes();
         this.consumer = new VertexBufferConsumer();
         this.context = context;
         this.lighters = new LightPipelineProvider(cache, VintageDiffuseProvider.INSTANCE, true);
@@ -79,18 +76,20 @@ public class VintageBlockRenderer {
         Arrays.fill(this.currentOrientations, null);
     }
 
-    public void renderBlock(IBlockState state, BlockPos pos, CeleritasBlockAccess blockAccess, BlockRenderLayer layer) {
+    /**
+     * Equivalent of {@link net.minecraft.client.renderer.BlockModelRenderer#renderModel}, so the state must already be
+     * the extended state.
+     *
+     * @return whether any quads were emitted
+     */
+    public boolean renderModel(IBakedModel model, IBlockState state, BlockPos pos, CeleritasBlockAccess blockAccess, BlockRenderLayer layer) {
         int defaultFlags = BakedQuadGroupAnalyzer.USE_ALL_THINGS;
         if (!useRenderPassOptimization) {
             defaultFlags &= ~BakedQuadGroupAnalyzer.USE_RENDER_PASS_OPTIMIZATION;
         }
         this.analyzer.setDefaultRenderingFlags(defaultFlags);
 
-        if (blockAccess.getWorldType() != WorldType.DEBUG_ALL_BLOCK_STATES) {
-            state = state.getActualState(blockAccess, pos);
-        }
-        var model = this.shapes.getModelForState(state);
-        state = state.getBlock().getExtendedState(state, blockAccess, pos);
+        boolean rendered = false;
         this.currentState = state;
         this.currentBlockAccess = blockAccess;
 
@@ -117,6 +116,7 @@ public class VintageBlockRenderer {
 
             this.currentQuadRenderingFlags = this.analyzer.getFlagsForRendering(VintageDiffuseProvider.fromEnumFacing(dir), BakedQuadView.ofList(quads));
             renderQuadList(buffer, buffers, material, pos, dir, lighter, colorProvider, offset, quads);
+            rendered = true;
         }
 
         var quads = model.getQuads(state, null, rand);
@@ -124,9 +124,12 @@ public class VintageBlockRenderer {
         if (!quads.isEmpty()) {
             this.currentQuadRenderingFlags = this.analyzer.getFlagsForRendering(ModelQuadFacing.UNASSIGNED, BakedQuadView.ofList(quads));
             renderQuadList(buffer, buffers, material, pos, null, lighter, colorProvider, offset, quads);
+            rendered = true;
         }
 
         this.currentBlockAccess = null;
+
+        return rendered;
     }
 
     private QuadLightData getVertexLight(LightPipeline lighter, BlockPos pos, EnumFacing cullFace, BakedQuadView quad) {

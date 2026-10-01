@@ -13,7 +13,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
-import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ReportedException;
 import net.minecraft.util.math.BlockPos;
@@ -116,12 +115,9 @@ public class ChunkBuilderMeshingTask extends ChunkBuilderTask<ChunkBuildOutput> 
                         for (BlockRenderLayer layer : VintageChunkBuildContext.LAYERS) {
                             if (block.canRenderInLayer(blockState, layer)) {
                                 ForgeHooksClient.setRenderLayer(layer);
-                                if (blockState.getRenderType() == EnumBlockRenderType.MODEL && USE_NEW_BLOCK_RENDERER) {
-                                    buildContext.getBlockRenderer().renderBlock(blockState, blockPos, slice, layer);
-                                } else {
-                                    var buffer = buildContext.getBufferForLayer(layer);
-                                    dispatcher.renderBlock(blockState, blockPos, slice, buffer);
-                                }
+                                // Model rendering is redirected to the fast block renderer by BlockRendererDispatcherMixin
+                                var buffer = buildContext.getBufferForLayer(layer);
+                                dispatcher.renderBlock(blockState, blockPos, slice, buffer);
                             }
                         }
 

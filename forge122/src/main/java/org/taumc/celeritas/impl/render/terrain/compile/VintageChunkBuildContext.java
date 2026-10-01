@@ -66,7 +66,7 @@ public class VintageChunkBuildContext extends ChunkBuildContext {
     public net.minecraft.client.renderer.BufferBuilder getBufferForLayer(BlockRenderLayer layer) {
         var builder = this.worldRenderers[layer.ordinal()];
         if (builder == null) {
-            builder = new net.minecraft.client.renderer.BufferBuilder(131072);
+            builder = new ChunkBufferBuilder(131072, this, layer);
             this.worldRenderers[layer.ordinal()] = builder;
         }
         if (!this.usedWorldRenderers[layer.ordinal()]) {
