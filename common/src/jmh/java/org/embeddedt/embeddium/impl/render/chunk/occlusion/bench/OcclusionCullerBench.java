@@ -56,6 +56,10 @@ public class OcclusionCullerBench {
         @Param({ "HASHED" })
         public SyntheticWorld.PendingMode pending;
 
+        /** Lattice world bounds of a Cubic Chunks world, so Y is windowed; the sections are the same. */
+        @Param({ "false" })
+        public boolean tallWorld;
+
         public SyntheticWorld syntheticWorld;
         public SectionLattice lattice;
 
@@ -79,8 +83,10 @@ public class OcclusionCullerBench {
 
             this.numRegions = BenchPlatform.regionManager().getRegionIdsLength();
 
-            this.lattice = new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, false,
-                    this.rasterOcclusion);
+            this.lattice = this.tallWorld
+                    ? new SectionLattice(-(1 << 19), 1 << 19, false, this.rasterOcclusion)
+                    : new SectionLattice(SyntheticWorld.MIN_SECTION_Y, SyntheticWorld.MAX_SECTION_Y, false,
+                            this.rasterOcclusion);
 
             for (RenderSection section : this.syntheticWorld.getConstructionOrder()) {
                 this.lattice.attach(section);
