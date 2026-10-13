@@ -12,6 +12,10 @@ public enum SpriteTransparencyLevel {
         return level.ordinal() >= this.ordinal() ? level : this;
     }
 
+    public static SpriteTransparencyLevel of(boolean hasTransparent, boolean hasTranslucent) {
+        return hasTranslucent ? TRANSLUCENT : hasTransparent ? TRANSPARENT : OPAQUE;
+    }
+
     public interface Holder {
         SpriteTransparencyLevel embeddium$getTransparencyLevel();
 

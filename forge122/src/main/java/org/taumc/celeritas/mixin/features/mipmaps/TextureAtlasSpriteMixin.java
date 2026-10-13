@@ -53,7 +53,8 @@ public abstract class TextureAtlasSpriteMixin implements SpriteExtension, Sprite
 
         float totalWeight = 0.0f;
 
-        SpriteTransparencyLevel level = prevLevel;
+        boolean hasTransparent = false;
+        boolean hasTranslucent = false;
 
         for (int y = 0; y < nativeImage.length; y++) {
             int color = nativeImage[y];
@@ -62,9 +63,7 @@ public abstract class TextureAtlasSpriteMixin implements SpriteExtension, Sprite
             // Ignore all fully-transparent pixels for the purposes of computing an average color.
             if (alpha > 0) {
                 if(alpha < 255) {
-                    level = level.chooseNextLevel(SpriteTransparencyLevel.TRANSLUCENT);
-                } else {
-                    level = level.chooseNextLevel(SpriteTransparencyLevel.OPAQUE);
+                    hasTranslucent = true;
                 }
 
                 if (shouldRewriteColors) {
@@ -78,13 +77,13 @@ public abstract class TextureAtlasSpriteMixin implements SpriteExtension, Sprite
                     totalWeight += weight;
                 }
             } else {
-                level = level.chooseNextLevel(SpriteTransparencyLevel.TRANSPARENT);
+                hasTransparent = true;
             }
         }
 
         // Bail if none of the pixels are semi-transparent or we aren't supposed to rewrite colors.
         if (!shouldRewriteColors || totalWeight == 0.0f) {
-            return level;
+            return prevLevel.chooseNextLevel(SpriteTransparencyLevel.of(hasTransparent, hasTranslucent));
         }
 
         r /= totalWeight;
@@ -105,7 +104,7 @@ public abstract class TextureAtlasSpriteMixin implements SpriteExtension, Sprite
             }
         }
 
-        return level;
+        return prevLevel.chooseNextLevel(SpriteTransparencyLevel.of(hasTransparent, hasTranslucent));
     }
 
     @Override

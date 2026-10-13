@@ -36,18 +36,21 @@ public class SpriteTransparencyTracker {
         int spriteWidth = atlasWidth / DEFAULT_SPRITE_WIDTH;
         for (int i = 0; i < SPRITE_COUNT; i++) {
             int ptr = (i / DEFAULT_SPRITE_WIDTH) * (atlasWidth * spriteWidth) + (i % DEFAULT_SPRITE_WIDTH) * spriteWidth;
-            SpriteTransparencyLevel level = SpriteTransparencyLevel.OPAQUE;
+            boolean hasTransparent = false;
+            boolean hasTranslucent = false;
             for (int y = 0; y < spriteWidth; y++) {
                 for (int x = 0; x < spriteWidth; x++) {
                     int alpha = ColorARGB.unpackAlpha(contents[ptr]);
-                    if (alpha < 255) {
-                        level = level.chooseNextLevel(alpha == 0 ? SpriteTransparencyLevel.TRANSPARENT : SpriteTransparencyLevel.TRANSLUCENT);
+                    if (alpha == 0) {
+                        hasTransparent = true;
+                    } else if (alpha < 255) {
+                        hasTranslucent = true;
                     }
                     ptr++;
                 }
                 ptr += atlasWidth - spriteWidth;
             }
-            levels[i] = level;
+            levels[i] = SpriteTransparencyLevel.of(hasTransparent, hasTranslucent);
         }
     }
 

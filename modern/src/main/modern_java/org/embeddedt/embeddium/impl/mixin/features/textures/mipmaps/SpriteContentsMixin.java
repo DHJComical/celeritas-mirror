@@ -118,7 +118,8 @@ public class SpriteContentsMixin implements SpriteTransparencyLevel.Holder {
 
         float totalWeight = 0.0f;
 
-        SpriteTransparencyLevel level = SpriteTransparencyLevel.OPAQUE;
+        boolean hasTransparent = false;
+        boolean hasTranslucent = false;
 
         for (int pixelIndex = 0; pixelIndex < pixelCount; pixelIndex++) {
             long pPixel = ppPixel + (pixelIndex * 4);
@@ -129,9 +130,7 @@ public class SpriteContentsMixin implements SpriteTransparencyLevel.Holder {
             // Ignore all fully-transparent pixels for the purposes of computing an average color.
             if (alpha > 0) {
                 if(alpha < 255) {
-                    level = level.chooseNextLevel(SpriteTransparencyLevel.TRANSLUCENT);
-                } else {
-                    level = level.chooseNextLevel(SpriteTransparencyLevel.OPAQUE);
+                    hasTranslucent = true;
                 }
 
                 if (shouldRewriteColors) {
@@ -145,11 +144,11 @@ public class SpriteContentsMixin implements SpriteTransparencyLevel.Holder {
                     totalWeight += weight;
                 }
             } else {
-                level = level.chooseNextLevel(SpriteTransparencyLevel.TRANSPARENT);
+                hasTransparent = true;
             }
         }
 
-        this.embeddium$transparencyLevel = level;
+        this.embeddium$transparencyLevel = SpriteTransparencyLevel.of(hasTransparent, hasTranslucent);
 
         // Bail if none of the pixels are semi-transparent or we aren't supposed to rewrite colors.
         // We can also bail if the transparency level is OPAQUE, since it indicates none of the pixels
