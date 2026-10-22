@@ -416,9 +416,8 @@ public final class SectionLattice {
      * retained and only the newly exposed band is resolved through the
      * authoritative section map.
      *
-     * <p>Call this on the render thread before dispatching a search. The
-     * asynchronous search must not observe allocation, rebasing, attachment,
-     * detachment, or metadata updates while it is running.
+     * <p>This must not overlap a running search, which must not observe
+     * allocation, rebasing, attachment, detachment, or metadata updates.
      */
     public void ensureWindowCovers(Vector3ic cameraSectionPos, float searchDistance) {
         int radius = MathUtil.mojfloor(searchDistance / 16.0f);
