@@ -134,7 +134,7 @@ final class ShadowOcclusionCuller {
 
     /**
      * Enqueue every main-pass visible cell whose region is not wholly outside the shadow frustum. Cells are installed
-     * by construction (the lattice is structurally unchanged between the two searches), so only the stamp gate is
+     * by construction (a window move between the two searches remaps the roots), so only the stamp gate is
      * needed to avoid duplicates.
      */
     private int seed(long frameStamp) {

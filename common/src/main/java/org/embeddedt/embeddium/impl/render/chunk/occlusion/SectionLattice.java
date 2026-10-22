@@ -149,8 +149,8 @@ public final class SectionLattice {
     RenderSection[] latticeSection;
 
     // Queue entries ((packedLocalXYZ << 32) | latticeIndex) of the cells the last main search reported visible, in
-    // traversal order; the root set of the shadow search. Written by OcclusionCuller, read by
-    // ShadowOcclusionCuller on the same search thread.
+    // traversal order; the root set of the shadow search. Written by OcclusionCuller, remapped by ensureWindowCovers,
+    // read by ShadowOcclusionCuller on the same search thread.
     long[] visibleCells = new long[0];
     int visibleCount;
 
@@ -422,6 +422,7 @@ public final class SectionLattice {
     public void ensureWindowCovers(Vector3ic cameraSectionPos, float searchDistance) {
         int radius = MathUtil.mojfloor(searchDistance / 16.0f);
         int neededDimXZ = 2 * (radius + SLACK) + 3;
+        int oldBaseX = this.baseX, oldBaseY = this.baseY, oldBaseZ = this.baseZ;
 
         if (this.visitState == null || neededDimXZ > this.dimX) {
             this.allocate(neededDimXZ);
@@ -455,8 +456,28 @@ public final class SectionLattice {
                 this.rebase(newBaseX, newBaseY, newBaseZ);
             }
 
+            this.remapVisibleCells(oldBaseX, oldBaseY, oldBaseZ);
             this.established = true;
         }
+    }
+
+    // The shadow search seeds from these terrain roots, which still index the old window.
+    private void remapVisibleCells(int oldBaseX, int oldBaseY, int oldBaseZ) {
+        int retained = 0;
+
+        for (int i = 0; i < this.visibleCount; i++) {
+            int xyz = (int) (this.visibleCells[i] >>> 32);
+            int x = oldBaseX + ((xyz >>> (2 * XYZ_SHIFT)) & XYZ_LOCAL_MASK);
+            int y = oldBaseY + ((xyz >>> XYZ_SHIFT) & XYZ_LOCAL_MASK);
+            int z = oldBaseZ + (xyz & XYZ_LOCAL_MASK);
+            int idx = this.installedIndex(x, y, z);
+
+            if (idx >= 0) {
+                this.visibleCells[retained++] = ((long) this.packXyz(x, y, z) << 32) | (idx & 0xFFFFFFFFL);
+            }
+        }
+
+        this.visibleCount = retained;
     }
 
     /**
