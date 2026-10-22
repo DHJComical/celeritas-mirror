@@ -104,6 +104,16 @@ public class TranslucentQuadRecorder {
             maxZ = Math.max(maxZ, vertex.z);
         }
 
+        if (!Float.isFinite(minX) || !Float.isFinite(minY) || !Float.isFinite(minZ) || !Float.isFinite(maxX) || !Float.isFinite(maxY) || !Float.isFinite(maxZ)) {
+            // Sort orders index the geometry buffer, so the quad must still be recorded; as a degenerate one, the
+            // sorter ignores it.
+            for (Vector3f vertex : vertexPositions) {
+                vertex.set(0, 0, 0);
+            }
+            captureQuad();
+            return;
+        }
+
         float centerX = totalX / 4, centerY = totalY / 4, centerZ = totalZ / 4;
 
         quadCenters.add(centerX);

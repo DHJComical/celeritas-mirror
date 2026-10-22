@@ -179,7 +179,7 @@ public final class TranslucentSorter {
 
     private static boolean allCoplanarWith(QuadSet quads, int reference) {
         for (int quadIdx = 0; quadIdx < quads.count(); quadIdx++) {
-            if (!quads.isCoplanar(reference, quadIdx)) {
+            if (!quads.isDegenerate(quadIdx) && !quads.isCoplanar(reference, quadIdx)) {
                 return false;
             }
         }
@@ -196,10 +196,12 @@ public final class TranslucentSorter {
         QuadSet.Bounds box = quads.union();
 
         for (int quadIdx = 0; quadIdx < quads.count(); quadIdx++) {
+            if (quads.isDegenerate(quadIdx)) continue;
+
             ModelQuadFacing facing = quads.facing(quadIdx);
 
             if (!facing.isDirection()) {
-                // A slanted or degenerate quad is not flat on any face of the box
+                // A slanted quad is not flat on any face of the box
                 return false;
             }
 

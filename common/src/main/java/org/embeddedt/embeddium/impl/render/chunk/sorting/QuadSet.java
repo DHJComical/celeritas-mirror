@@ -101,6 +101,8 @@ public record QuadSet(int count, float[] centers, float[] bounds, float[] normal
         float maxX = Float.NEGATIVE_INFINITY, maxY = Float.NEGATIVE_INFINITY, maxZ = Float.NEGATIVE_INFINITY;
 
         for (int quad = 0; quad < count; quad++) {
+            if (isDegenerate(quad)) continue;
+
             int boundOffset = quad * 6;
 
             minX = Math.min(minX, bounds[boundOffset + 0]);
