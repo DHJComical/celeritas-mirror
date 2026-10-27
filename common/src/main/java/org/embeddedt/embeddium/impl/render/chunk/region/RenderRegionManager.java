@@ -39,12 +39,13 @@ public class RenderRegionManager {
     }
 
     /**
-     * Picks the stride that every region's geometry arena allocates in. The stride of any vertex format used by the
-     * configuration must divide it evenly.
+     * Picks the element size of every region's geometry arena. It holds a whole number of primitives for every pass, so
+     * each allocation starts on a primitive boundary. Shaders rely on this to find a vertex's corner from
+     * {@code gl_VertexID}.
      */
     private static int computeCommonVertexStride(RenderPassConfiguration<?> renderPassConfiguration) {
         return renderPassConfiguration.getAllKnownRenderPasses()
-                .mapToInt(pass -> pass.vertexType().getVertexFormat().getStride())
+                .mapToInt(pass -> pass.vertexType().getVertexFormat().getStride() * pass.primitiveType().getVerticesPerPrimitive())
                 .reduce(1, MathUtil::lcm);
     }
 
