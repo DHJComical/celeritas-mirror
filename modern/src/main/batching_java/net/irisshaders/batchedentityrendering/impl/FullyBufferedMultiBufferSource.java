@@ -2,6 +2,7 @@ package net.irisshaders.batchedentityrendering.impl;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.irisshaders.batchedentityrendering.impl.wrappers.WrappingMultiBufferSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -9,6 +10,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
@@ -37,6 +39,11 @@ import java.util.function.Function;
  * within a group, anything submitted after the first translucent geometry is demoted into the sequenced phase so that it
  * keeps its place. Only the object that interleaves pays for it - other users of the same render type still batch.
  * {@link TransparencyType#DECAL} geometry is exempt, since it must draw after what it overlays regardless.
+ * <p>
+ * Render types that vanilla gives a fixed buffer are exempt as well, and are always batched. Vanilla draws them in one
+ * go at fixed points rather than in submission order, and lets callers hold any number of their consumers alongside one
+ * other consumer, which only holds here if each of them has a builder to itself. Batched translucent geometry is drawn
+ * after the sequenced geometry, as vanilla draws its fixed translucent buffers after the shared one.
  */
 public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSource implements MemoryTrackingBuffer, Groupable, WrappingMultiBufferSource {
 	private static final int NUM_BUFFERS = 32;
@@ -53,6 +60,11 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 	 * faithful record of submission order.
 	 */
 	private final SegmentedBufferBuilder sequencedBuilder;
+	/**
+	 * A builder for each render type that vanilla gives a fixed buffer, keyed by the unwrapped type. Kept out of the LRU,
+	 * so that evicting a type there can only close a consumer that vanilla would have closed as well.
+	 */
+	private final Reference2ObjectOpenHashMap<RenderType, SegmentedBufferBuilder> fixedBuilders = new Reference2ObjectOpenHashMap<>();
 	/**
 	 * An LRU cache mapping RenderType objects to a relevant buffer.
 	 */
@@ -81,7 +93,7 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 	 */
 	private boolean forceSequenced;
 
-	public FullyBufferedMultiBufferSource() {
+	public FullyBufferedMultiBufferSource(Collection<RenderType> fixedTypes) {
         //? if <1.21 {
 		super(new com.mojang.blaze3d.vertex.BufferBuilder(0), Collections.emptyMap());
         //?} else
@@ -94,6 +106,10 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 		}
 
 		this.sequencedBuilder = new SegmentedBufferBuilder();
+
+		for (RenderType type : fixedTypes) {
+			this.fixedBuilders.put(type, new SegmentedBufferBuilder(type.bufferSize()));
+		}
 
 		// use accessOrder=true so our LinkedHashMap works as an LRU cache.
 		this.affinities = new Object2IntLinkedOpenHashMap<>(32, 0.75F);
@@ -131,6 +147,12 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 	}
 
 	private SegmentedBufferBuilder builderFor(RenderType renderType) {
+		SegmentedBufferBuilder fixedBuilder = fixedBuilders.get(RenderTypeUtil.unwrap(renderType));
+
+		if (fixedBuilder != null) {
+			return fixedBuilder;
+		}
+
 		TransparencyType transparencyType = RenderTypeUtil.getTransparencyType(renderType);
 
 		// Decals are never demoted. They must draw after the geometry they overlay, which the decal phase already
@@ -172,12 +194,11 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 		profiler.push("collect");
 
 		for (SegmentedBufferBuilder builder : builders) {
-			for (BufferSegment segment : builder.getSegments()) {
-				batchedPhases
-					.computeIfAbsent(RenderTypeUtil.getTransparencyType(segment.type()), type -> new LinkedHashMap<>())
-					.computeIfAbsent(segment.type(), type -> new ArrayList<>())
-					.add(segment);
-			}
+			collectBatched(builder);
+		}
+
+		for (SegmentedBufferBuilder builder : fixedBuilders.values()) {
+			collectBatched(builder);
 		}
 
 		sequencedSegments.addAll(sequencedBuilder.getSegments());
@@ -185,6 +206,15 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 		affinities.clear();
 
 		profiler.pop();
+	}
+
+	private void collectBatched(SegmentedBufferBuilder builder) {
+		for (BufferSegment segment : builder.getSegments()) {
+			batchedPhases
+				.computeIfAbsent(RenderTypeUtil.getTransparencyType(segment.type()), type -> new LinkedHashMap<>())
+				.computeIfAbsent(segment.type(), type -> new ArrayList<>())
+				.add(segment);
+		}
 	}
 
 	@Override
@@ -206,6 +236,10 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
         int targetClearTime = getTargetClearTime();
 
         for (SegmentedBufferBuilder builder : builders) {
+            builder.clearBuffers(targetClearTime);
+        }
+
+        for (SegmentedBufferBuilder builder : fixedBuilders.values()) {
             builder.clearBuffers(targetClearTime);
         }
 
@@ -233,6 +267,11 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 	 * deliberate - {@code endBatch} runs after {@code endBatchWithType} in the separate-entity-draws path.
 	 */
 	private void drawPhase(TransparencyType phase) {
+		if (phase == SEQUENCED_PHASE && !sequencedSegments.isEmpty()) {
+			drawSequenced();
+			sequencedSegments.clear();
+		}
+
 		Map<RenderType, List<BufferSegment>> batched = batchedPhases.remove(phase);
 
 		if (batched != null) {
@@ -250,11 +289,6 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 
 				type.clearRenderState();
 			}
-		}
-
-		if (phase == SEQUENCED_PHASE && !sequencedSegments.isEmpty()) {
-			drawSequenced();
-			sequencedSegments.clear();
 		}
 	}
 
@@ -293,6 +327,10 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 		// Leave every builder idle first. Releasing the last outstanding segment of an arena resets it, which would
 		// corrupt a segment that was still being built.
 		for (SegmentedBufferBuilder builder : builders) {
+			builder.discardPending();
+		}
+
+		for (SegmentedBufferBuilder builder : fixedBuilders.values()) {
 			builder.discardPending();
 		}
 
@@ -362,6 +400,10 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 			size += builder.getAllocatedSize();
 		}
 
+		for (SegmentedBufferBuilder builder : fixedBuilders.values()) {
+			size += builder.getAllocatedSize();
+		}
+
 		return size;
 	}
 
@@ -370,6 +412,10 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
         long size = sequencedBuilder.getUsedSize();
 
 		for (SegmentedBufferBuilder builder : builders) {
+			size += builder.getUsedSize();
+		}
+
+		for (SegmentedBufferBuilder builder : fixedBuilders.values()) {
 			size += builder.getUsedSize();
 		}
 
@@ -383,6 +429,10 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
             builder.lastDitchAttempt();
         }
 
+        for (SegmentedBufferBuilder builder : fixedBuilders.values()) {
+            builder.lastDitchAttempt();
+        }
+
         sequencedBuilder.lastDitchAttempt();
     }
 
@@ -391,6 +441,10 @@ public class FullyBufferedMultiBufferSource extends MultiBufferSource.BufferSour
 		discardCollected();
 
 		for (SegmentedBufferBuilder builder : builders) {
+			builder.freeAndDeleteBuffer();
+		}
+
+		for (SegmentedBufferBuilder builder : fixedBuilders.values()) {
 			builder.freeAndDeleteBuffer();
 		}
 

@@ -17,9 +17,7 @@ public class RenderTypeUtil {
      * Determines which drawing phase a render type belongs to, unwrapping any Iris render type wrappers first.
      */
     public static TransparencyType getTransparencyType(RenderType type) {
-        while (type instanceof WrappableRenderType) {
-            type = ((WrappableRenderType) type).unwrap();
-        }
+        type = unwrap(type);
 
         if (type instanceof BlendingStateHolder) {
             return ((BlendingStateHolder) type).getTransparencyType();
@@ -28,5 +26,16 @@ public class RenderTypeUtil {
         // Default to "generally transparent" if we can't figure it out. This is the conservative choice, since it means
         // the geometry is drawn in submission order rather than being reordered.
         return TransparencyType.GENERAL_TRANSPARENT;
+    }
+
+    /**
+     * Strips any Iris render type wrappers, returning the render type that was originally requested.
+     */
+    public static RenderType unwrap(RenderType type) {
+        while (type instanceof WrappableRenderType) {
+            type = ((WrappableRenderType) type).unwrap();
+        }
+
+        return type;
     }
 }

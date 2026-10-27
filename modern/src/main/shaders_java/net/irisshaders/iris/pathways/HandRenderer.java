@@ -7,6 +7,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 import net.irisshaders.batchedentityrendering.impl.FullyBufferedMultiBufferSource;
+import net.irisshaders.batchedentityrendering.impl.RenderBuffersExt;
 import net.irisshaders.iris.api.v0.IrisApi;
 import net.irisshaders.iris.mixin.GameRendererAccessor;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
@@ -31,7 +32,7 @@ import java.util.function.BooleanSupplier;
 public class HandRenderer {
 	public static final HandRenderer INSTANCE = new HandRenderer();
 	public static final float DEPTH = 0.125F;
-	private final FullyBufferedMultiBufferSource bufferSource = new FullyBufferedMultiBufferSource();
+	private final FullyBufferedMultiBufferSource bufferSource = new FullyBufferedMultiBufferSource(((RenderBuffersExt) Minecraft.getInstance().renderBuffers()).getFixedRenderTypes());
 	private boolean ACTIVE;
 	private boolean renderingSolid;
 

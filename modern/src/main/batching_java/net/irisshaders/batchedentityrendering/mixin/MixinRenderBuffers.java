@@ -8,20 +8,24 @@ import net.irisshaders.batchedentityrendering.impl.RenderBuffersExt;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.OutlineBufferSource;
 import net.minecraft.client.renderer.RenderBuffers;
+import net.minecraft.client.renderer.RenderType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Collection;
 
 @Mixin(RenderBuffers.class)
 public class MixinRenderBuffers implements RenderBuffersExt, MemoryTrackingRenderBuffers, DrawCallTrackingRenderBuffers {
 	@Unique
-	private final FullyBufferedMultiBufferSource buffered = new FullyBufferedMultiBufferSource();
+	private FullyBufferedMultiBufferSource buffered;
 	@Unique
-	private final OutlineBufferSource outlineBufferSource = new OutlineBufferSource(buffered);
+	private OutlineBufferSource outlineBufferSource;
 	@Unique
 	private int begins = 0;
 	@Unique
@@ -40,6 +44,17 @@ public class MixinRenderBuffers implements RenderBuffersExt, MemoryTrackingRende
 
     @Unique
     private static final boolean BATCHED_OPTIMIZATION_ENABLED = !Boolean.getBoolean("celeritas.disableBatchedEntityRendering");
+
+	@Inject(method = "<init>", at = @At("RETURN"))
+	private void batchedentityrendering$createBufferedSource(CallbackInfo ci) {
+		buffered = new FullyBufferedMultiBufferSource(getFixedRenderTypes());
+		outlineBufferSource = new OutlineBufferSource(buffered);
+	}
+
+	@Override
+	public Collection<RenderType> getFixedRenderTypes() {
+		return ((BufferSourceAccessor) bufferSource).getFixedBuffers().keySet();
+	}
 
 	@Inject(method = "bufferSource", at = @At("HEAD"), cancellable = true)
 	private void batchedentityrendering$replaceBufferSource(CallbackInfoReturnable<MultiBufferSource.BufferSource> cir) {

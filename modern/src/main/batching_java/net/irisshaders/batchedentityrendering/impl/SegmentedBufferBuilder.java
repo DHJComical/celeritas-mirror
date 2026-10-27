@@ -36,21 +36,30 @@ public class SegmentedBufferBuilder implements MultiBufferSource, MemoryTracking
 	private BufferBuilder writer;
     *///?}
 
+	private final int initialArenaSize;
 	private final List<BufferSegment> segments = new ArrayList<>();
 	private RenderType currentType;
 	private long lastUse;
 
 	public SegmentedBufferBuilder() {
+		this(INITIAL_ARENA_SIZE);
+	}
+
+	/**
+	 * @param initialArenaSize the size the arena starts at, and returns to after being idle
+	 */
+	public SegmentedBufferBuilder(int initialArenaSize) {
+		this.initialArenaSize = initialArenaSize;
 		this.arena = newArena();
 		this.lastUse = System.currentTimeMillis();
 	}
 
     //? if <1.21 {
-	private static BufferBuilder newArena() {
-		return new BufferBuilder(INITIAL_ARENA_SIZE);
+	private BufferBuilder newArena() {
+		return new BufferBuilder(initialArenaSize);
 	}
     //?} else
-    //private static com.mojang.blaze3d.vertex.ByteBufferBuilder newArena() { return new com.mojang.blaze3d.vertex.ByteBufferBuilder(INITIAL_ARENA_SIZE); }
+    //private com.mojang.blaze3d.vertex.ByteBufferBuilder newArena() { return new com.mojang.blaze3d.vertex.ByteBufferBuilder(initialArenaSize); }
 
 	private static boolean shouldSortOnUpload(RenderType type) {
 		return ((RenderTypeAccessor) type).shouldSortOnUpload();
@@ -179,7 +188,7 @@ public class SegmentedBufferBuilder implements MultiBufferSource, MemoryTracking
 	 */
 	public void clearBuffers(int clearTime) {
 		if (segments.isEmpty() && currentType == null
-			&& getAllocatedSize() > INITIAL_ARENA_SIZE
+			&& getAllocatedSize() > initialArenaSize
 			&& System.currentTimeMillis() - lastUse > clearTime) {
 			resetArena();
 		}
