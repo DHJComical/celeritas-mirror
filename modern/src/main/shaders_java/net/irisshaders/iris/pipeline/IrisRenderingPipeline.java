@@ -1,6 +1,5 @@
 package net.irisshaders.iris.pipeline;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -196,6 +195,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 
     public IrisRenderingPipeline(ProgramSet programSet) {
+		long stageStart = ShaderLoadTimings.now();
 		ShaderPrinter.resetPrintState();
 
 		this.shouldRenderUnderwaterOverlay = programSet.getPackDirectives().underwaterOverlay();
@@ -316,7 +316,9 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			return shadowRenderTargets;
 		};
 
+		stageStart = ShaderLoadTimings.record(ShaderLoadTimings.Stage.PIPELINE_SETUP, stageStart);
 		pendingPrograms.compileAll();
+		stageStart = ShaderLoadTimings.record(ShaderLoadTimings.Stage.COMPOSITE_SUBMIT, stageStart);
 
 		this.shadowComputes = createShadowComputes(programSet.getShadowCompute(), pendingPrograms);
 
@@ -349,6 +351,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			centerDepthSampler, shadowTargetsSupplier,
 			customTextureManager.getCustomTextureIdMap().getOrDefault(TextureStage.COMPOSITE_AND_FINAL, Object2ObjectMaps.emptyMap()), customTextureManager.getIrisCustomTextures(), customImages,
 			this.compositeRenderer.getFlippedAtLeastOnceFinal(), customUniforms, pendingPrograms);
+		stageStart = ShaderLoadTimings.record(ShaderLoadTimings.Stage.COMPOSITE_BUILD, stageStart);
 
 		Supplier<ImmutableSet<Integer>> flipped =
 			() -> isBeforeTranslucent ? flippedAfterPrepare : flippedAfterTranslucent;
@@ -442,7 +445,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		this.loadedShaders = new HashSet<>();
 
-        Stopwatch watch = Stopwatch.createStarted();
+        stageStart = ShaderLoadTimings.record(ShaderLoadTimings.Stage.PIPELINE_REST, stageStart);
 
         try {
             this.shaderMap = new ShaderMap((key, syncExecutor) -> {
@@ -471,8 +474,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
             throw e;
         }
 
-        watch.stop();
-        CeleritasShaders.logger().info("Loaded shaders in {}", watch);
+        stageStart = ShaderLoadTimings.record(ShaderLoadTimings.Stage.GBUFFER_BUILD, stageStart);
 
         // We need to defer creation of the block state mappings, like Iris 1.8, because tags may not exist at launch time
         blockIdsNeedPopulation = true;
@@ -498,8 +500,10 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 				shadowUsesImages = shader2.hasActiveImages();
 			}
 
+			stageStart = ShaderLoadTimings.record(ShaderLoadTimings.Stage.PIPELINE_REST, stageStart);
 			this.shadowCompositeRenderer = new ShadowCompositeRenderer(this, programSet.getPackDirectives(), programSet.getShadowComposite(), programSet.getShadowCompCompute(), this.shadowRenderTargets, this.shaderStorageBufferHolder, customTextureManager.getNoiseTexture(), updateNotifier,
 				customTextureManager.getCustomTextureIdMap(TextureStage.SHADOWCOMP), customImages, programSet.getPackDirectives().getExplicitFlips("shadowcomp_pre"), customTextureManager.getIrisCustomTextures(), customUniforms, pendingPrograms);
+			stageStart = ShaderLoadTimings.record(ShaderLoadTimings.Stage.COMPOSITE_BUILD, stageStart);
 
 			if (programSet.getPackDirectives().getShadowDirectives().isShadowEnabled().orElse(true)) {
 				this.shadowRenderer = new ShadowRenderer(this, programSet.getShadow().orElse(null),
@@ -528,7 +532,9 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			shadowRenderTargets != null ? shadowRenderTargets.createShadowFramebuffer(ImmutableSet.of(), programSet.getShadow().filter(source -> !source.getDirectives().hasUnknownDrawBuffers()).map(source -> source.getDirectives().getDrawBuffers()).orElse(new int[]{0, 1})) : null, customUniforms);
 
 
+		stageStart = ShaderLoadTimings.record(ShaderLoadTimings.Stage.PIPELINE_REST, stageStart);
 		this.setup = createSetupComputes(programSet.getSetup(), pendingPrograms, TextureStage.SETUP);
+		stageStart = ShaderLoadTimings.record(ShaderLoadTimings.Stage.COMPOSITE_BUILD, stageStart);
 		pendingPrograms.destroyUntaken();
 
 		// first optimization pass
@@ -592,6 +598,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
         int defaultTex = packDirectives.getFallbackTex();
         defaultFB = flippedAfterPrepare.contains(defaultTex) ? renderTargets.createFramebufferWritingToAlt(new int[] { defaultTex }) : renderTargets.createFramebufferWritingToMain(new int[] { defaultTex });
         defaultFBAlt = flippedAfterTranslucent.contains(defaultTex) ? renderTargets.createFramebufferWritingToAlt(new int[] { defaultTex }) : renderTargets.createFramebufferWritingToMain(new int[] { defaultTex });
+        ShaderLoadTimings.record(ShaderLoadTimings.Stage.PIPELINE_REST, stageStart);
 	}
 
 	private ComputeProgram[] createShadowComputes(ComputeSource[] compute, PendingPrograms pendingPrograms) {

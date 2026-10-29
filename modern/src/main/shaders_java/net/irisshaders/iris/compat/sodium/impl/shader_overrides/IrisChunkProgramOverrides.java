@@ -13,6 +13,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
 import net.irisshaders.iris.gl.blending.BufferBlendOverride;
+import net.irisshaders.iris.pipeline.ShaderLoadTimings;
 import net.irisshaders.iris.pipeline.SodiumTerrainPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shadows.ShadowRenderingState;
@@ -114,6 +115,7 @@ public class IrisChunkProgramOverrides {
 
 	public void createShaders(SodiumTerrainPipeline pipeline, RenderPassConfiguration configuration) {
 		if (pipeline != null) {
+			long buildStart = ShaderLoadTimings.now();
 			pipeline.patchShaders(configuration);
 
 			// Every pass is submitted before any is finished, so the driver can compile them together.
@@ -133,7 +135,9 @@ public class IrisChunkProgramOverrides {
 				var entry = submitted.get(i);
 
 				try {
+					long waitStart = ShaderLoadTimings.now();
 					this.programs.put(entry.getKey(), entry.getValue().program().finish(entry.getValue().factory()));
+					ShaderLoadTimings.record(ShaderLoadTimings.Stage.COMPILE_WAIT, waitStart);
 				} catch (RuntimeException e) {
 					for (int j = i + 1; j < submitted.size(); j++) {
 						submitted.get(j).getValue().program().delete();
@@ -141,6 +145,9 @@ public class IrisChunkProgramOverrides {
 					throw e;
 				}
 			}
+
+			ShaderLoadTimings.record(ShaderLoadTimings.Stage.TERRAIN_BUILD, buildStart);
+			ShaderLoadTimings.report("terrain programs");
 		} else {
 			for (GlProgram<?> program : this.programs.values()) {
 				if (program != null) {

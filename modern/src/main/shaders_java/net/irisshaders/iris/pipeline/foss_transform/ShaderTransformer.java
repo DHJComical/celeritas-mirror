@@ -2,6 +2,7 @@ package net.irisshaders.iris.pipeline.foss_transform;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import net.irisshaders.iris.gl.blending.AlphaTest;
+import net.irisshaders.iris.pipeline.ShaderLoadTimings;
 import net.irisshaders.iris.pipeline.transform.Patch;
 import net.irisshaders.iris.pipeline.transform.parameter.Parameters;
 import net.irisshaders.iris.pipeline.transform.parameter.SodiumParameters;
@@ -50,7 +51,9 @@ public class ShaderTransformer {
             }
 
             if(result == null || !useCache) {
+                long transformStart = ShaderLoadTimings.now();
                 result = ShaderTransformationDiskCache.transformIfAbsent(key, () -> transformInternal(name, sources, patchType, parameters));
+                ShaderLoadTimings.record(ShaderLoadTimings.Stage.TRANSFORM, transformStart);
                 // Clear this, we don't want whatever random type was last transformed being considered for the key
                 parameters.type = null;
                 synchronized (shaderTransformationCache) {
@@ -82,7 +85,9 @@ public class ShaderTransformer {
                 result = shaderTransformationCache.getAndMoveToFirst(key);
             }
             if(result == null || !useCache) {
+                long transformStart = ShaderLoadTimings.now();
                 result = transformInternal(name, inputs, patchType, parameters);
+                ShaderLoadTimings.record(ShaderLoadTimings.Stage.TRANSFORM, transformStart);
                 // Clear this, we don't want whatever random type was last transformed being considered for the key
                 parameters.type = null;
                 synchronized (shaderTransformationCache) {

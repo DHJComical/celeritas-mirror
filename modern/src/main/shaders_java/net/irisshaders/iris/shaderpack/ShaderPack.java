@@ -15,6 +15,7 @@ import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.texture.TextureDefinition;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
+import net.irisshaders.iris.pipeline.ShaderLoadTimings;
 import net.irisshaders.iris.shaderpack.error.UnsupportedFeatureFlagException;
 import net.irisshaders.iris.shaderpack.include.AbsolutePackPath;
 import net.irisshaders.iris.shaderpack.include.IncludeGraph;
@@ -255,6 +256,7 @@ public class ShaderPack {
 				return null;
 			}
 
+			long preprocessStart = ShaderLoadTimings.now();
 			ImmutableList<String> lines = includeProcessor.getIncludedFile(path);
 
 			if (lines == null) {
@@ -276,6 +278,7 @@ public class ShaderPack {
 			// though there exist many more (such as relocating all #extension directives and similar things)
 			String source = builder.toString();
 			source = JcppProcessor.glslPreprocessSource(source, finalEnvironmentDefines1);
+			ShaderLoadTimings.record(ShaderLoadTimings.Stage.PREPROCESSING, preprocessStart);
 
 			return source;
 		};

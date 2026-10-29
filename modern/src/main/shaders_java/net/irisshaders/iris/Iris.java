@@ -8,6 +8,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.compat.flywheel.ClrwlBackend;
 import net.irisshaders.iris.compat.flywheel.Colorwheel;
+import net.irisshaders.iris.pipeline.ShaderLoadTimings;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.config.IrisConfig;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
@@ -327,7 +328,9 @@ public class Iris {
 		resetShaderPackOptions = false;
 
 		try {
+			long parseStart = ShaderLoadTimings.now();
 			currentPack = new ShaderPack(shaderPackPath, changedConfigs, StandardMacros.createStandardEnvironmentDefines());
+			ShaderLoadTimings.record(ShaderLoadTimings.Stage.PACK_PARSING, parseStart);
 
 			MutableOptionValues changedConfigsValues = currentPack.getShaderPackOptions().getOptionValues().mutableCopy();
 
@@ -640,7 +643,9 @@ public class Iris {
 			return new VanillaRenderingPipeline();
 		}
 
+		long programSetStart = ShaderLoadTimings.now();
 		ProgramSet programs = currentPack.getProgramSet(dimensionId);
+		ShaderLoadTimings.record(ShaderLoadTimings.Stage.PROGRAM_SET, programSetStart);
 
 		// We use DeferredWorldRenderingPipeline on 1.16, and NewWorldRendering pipeline on 1.17 when rendering shaders.
 		try {

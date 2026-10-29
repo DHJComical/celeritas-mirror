@@ -5,6 +5,7 @@ package net.irisshaders.iris.gl.shader;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.gl.IrisRenderSystem;
+import net.irisshaders.iris.pipeline.ShaderLoadTimings;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
@@ -71,6 +72,7 @@ public class ProgramCreator {
 			checkNotDone();
 			done = true;
 
+			long waitStart = ShaderLoadTimings.now();
 			List<GlShader> compiled;
 
 			try {
@@ -87,6 +89,7 @@ public class ProgramCreator {
 			}
 
 			boolean linked = GlStateManager.glGetProgrami(program, GL20C.GL_LINK_STATUS) == GL20C.GL_TRUE;
+			ShaderLoadTimings.record(ShaderLoadTimings.Stage.COMPILE_WAIT, waitStart);
 
 			//Always detach shaders according to https://www.khronos.org/opengl/wiki/Shader_Compilation#Cleanup
 			for (GlShader shader : compiled) {

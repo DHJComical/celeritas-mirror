@@ -32,7 +32,11 @@ public class PipelineManager {
 			pipeline = pipelineFactory.apply(currentDimension);
 			pipelinesPerDimension.put(currentDimension, pipeline);
 
+			long reloadStart = ShaderLoadTimings.now();
 			WorldRenderingSettings.INSTANCE.reloadRendererIfRequired();
+			ShaderLoadTimings.record(ShaderLoadTimings.Stage.RENDERER_RELOAD, reloadStart);
+
+			ShaderLoadTimings.report("pipeline for " + currentDimension);
 		} else {
 			pipeline = pipelinesPerDimension.get(currentDimension);
 		}

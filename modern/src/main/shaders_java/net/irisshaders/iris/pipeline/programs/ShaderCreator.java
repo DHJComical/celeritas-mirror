@@ -12,6 +12,7 @@ import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ShaderLoadTimings;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.fallback.ShaderSynthesizer;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
@@ -120,6 +121,8 @@ public class ShaderCreator {
                 }
             });
 
+            long constructStart = ShaderLoadTimings.now();
+
             try {
                 return new ExtendedShader(shaderResourceFactory, name, vertexFormat, tessControl != null || tessEval != null, writingToBeforeTranslucent, writingToAfterTranslucent, blendModeOverride, alpha, uniforms -> {
                     CommonUniforms.addDynamicUniforms(uniforms, FogMode.PER_VERTEX);
@@ -131,6 +134,8 @@ public class ShaderCreator {
                 }, isIntensity, parent, overrides, customUniforms);
             } catch (IOException e) {
                 throw new CompletionException(e);
+            } finally {
+                ShaderLoadTimings.record(ShaderLoadTimings.Stage.EXTENDED_SHADER, constructStart);
             }
         }, syncExecutor);
 	}
