@@ -1,7 +1,9 @@
 package net.irisshaders.iris.gl;
 
-//? if >=26.1
-//import com.mojang.blaze3d.pipeline.ColorTargetState;
+//? if >=26.1 {
+/*import com.mojang.blaze3d.pipeline.ColorTargetState;
+import org.embeddedt.embeddium.impl.blaze3d.CeleritasCommandEncoder;
+*///?}
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.gl.sampler.SamplerLimits;
@@ -391,6 +393,14 @@ public class IrisRenderSystem {
 
 	public static void destroySampler(int glId) {
 		GL33C.glDeleteSamplers(glId);
+	}
+
+	/**
+	 * Makes vanilla apply its own program and pipeline state on its next draw, after Iris has drawn with its own.
+	 */
+	public static void invalidateVanillaRenderState() {
+		//? if >=26.1
+		//((CeleritasCommandEncoder) RenderSystem.getDevice().createCommandEncoder()).celeritas$invalidateAppliedState();
 	}
 
 	/**

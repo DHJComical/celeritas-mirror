@@ -42,8 +42,8 @@ public class FogUniforms {
 		}, notifier -> {
 		});
 
-		uniforms.uniform1f("fogStart", FogHelper.INSTANCE::getFogStart, ValueUpdateNotifier.NONE);
-		uniforms.uniform1f("fogEnd", FogHelper.INSTANCE::getFogEnd, ValueUpdateNotifier.NONE);
+		uniforms.uniform1f("fogStart", VanillaEnvironment::fogStart, ValueUpdateNotifier.NONE);
+		uniforms.uniform1f("fogEnd", VanillaEnvironment::fogEnd, ValueUpdateNotifier.NONE);
 
 		uniforms
 			// TODO: Update frequency of continuous?

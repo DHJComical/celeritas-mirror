@@ -82,9 +82,10 @@ public final class CommonUniforms {
 				TextureAtlasAccessor atlasAccessor = (TextureAtlasAccessor) atlas;
 				return new Vector2i(atlasAccessor.callGetWidth(), atlasAccessor.callGetHeight());
 			}
-			//?}
 
 			return ZERO_VECTOR_2i;
+			//?} else
+			//return CapturedRenderingState.INSTANCE.getCurrentAtlasSize();
 		}, listener -> {
 		});
 

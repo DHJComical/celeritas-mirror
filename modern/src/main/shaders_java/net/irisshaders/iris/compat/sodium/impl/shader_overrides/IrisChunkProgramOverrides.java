@@ -178,21 +178,23 @@ public class IrisChunkProgramOverrides {
 			createShaders(sodiumTerrainPipeline, configuration);
 		}
 
+		// Translucent terrain discards nearly transparent fragments on 26.1, but is still drawn as translucent rather
+		// than cutout.
 		if (ShadowRenderingState.areShadowsCurrentlyBeingRendered()) {
 			if (sodiumTerrainPipeline != null && !sodiumTerrainPipeline.hasShadowPass()) {
 				throw new IllegalStateException("Shadow program requested, but the pack does not have a shadow pass?");
 			}
 
-			if (pass.supportsFragmentDiscard()) {
+			if (pass.supportsFragmentDiscard() && !pass.isReverseOrder()) {
 				return this.programs.get(IrisTerrainPass.SHADOW_CUTOUT);
 			} else {
 				return this.programs.get(IrisTerrainPass.SHADOW);
 			}
 		} else {
-			if (pass.supportsFragmentDiscard()) {
-				return this.programs.get(IrisTerrainPass.GBUFFER_CUTOUT);
-			} else if (pass.isReverseOrder()) {
+			if (pass.isReverseOrder()) {
 				return this.programs.get(IrisTerrainPass.GBUFFER_TRANSLUCENT);
+			} else if (pass.supportsFragmentDiscard()) {
+				return this.programs.get(IrisTerrainPass.GBUFFER_CUTOUT);
 			} else {
 				return this.programs.get(IrisTerrainPass.GBUFFER_SOLID);
 			}

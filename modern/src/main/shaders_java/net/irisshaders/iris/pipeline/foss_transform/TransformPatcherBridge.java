@@ -55,12 +55,12 @@ public class TransformPatcherBridge {
 
     public static Map<ShaderType, String> patchVanilla(
             String name, Map<ShaderType, String> sources,
-            AlphaTest alpha, boolean isLines,
+            AlphaTest alpha, boolean isLines, boolean isClouds,
             boolean hasChunkOffset,
             ShaderAttributeInputs inputs,
             Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap) {
         return transform(name,sources,
-                new VanillaParameters(Patch.VANILLA, textureMap, alpha, isLines, hasChunkOffset, inputs, sources.containsKey(ShaderType.GEOM), sources.containsKey(ShaderType.TESS_CTRL) || sources.containsKey(ShaderType.TESS_EVALUATE)));
+                new VanillaParameters(Patch.VANILLA, textureMap, alpha, isLines, isClouds, hasChunkOffset, inputs, sources.containsKey(ShaderType.GEOM), sources.containsKey(ShaderType.TESS_CTRL) || sources.containsKey(ShaderType.TESS_EVALUATE)));
     }
 
 

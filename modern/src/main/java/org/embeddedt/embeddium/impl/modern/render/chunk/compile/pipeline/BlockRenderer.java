@@ -85,6 +85,10 @@ public class BlockRenderer {
     private final ArrayList<ContextAwareChunkVertexEncoder> usedContextEncoders = new ArrayList<>(4);
 
     private Material defaultMaterial;
+    //? if shaders && >=26.1 {
+    /*@Nullable
+    private Material overrideMaterial;
+    *///?}
 
     public record BlockRendererConfig(ColorProviderRegistry colorProviderRegistry, LightPipelineProvider lighters
                                       //? if shaders && <26.1
@@ -141,7 +145,11 @@ public class BlockRenderer {
         }
         //?}
         this.defaultMaterial = buffers.getRenderPassConfiguration().getMaterialForRenderType(blockRenderType);
-        //?}
+        //?} else if shaders {
+        /*// Quads choose their own layer on 26.1, unless the shader pack moves the whole block to another.
+        var layerOverride = config.renderTypeOverrides() != null ? config.renderTypeOverrides().get(ctx.state().getBlock()) : null;
+        this.overrideMaterial = layerOverride != null ? buffers.getRenderPassConfiguration().getMaterialForRenderType(layerOverride) : null;
+        *///?}
 
         this.analyzer.setDefaultRenderingFlags(defaultQuadRenderingFlags);
 
@@ -249,6 +257,11 @@ public class BlockRenderer {
                 case TRANSPARENT -> renderPassConfig.defaultCutoutMippedMaterial();
                 case TRANSLUCENT -> renderPassConfig.defaultTranslucentMaterial();
             };
+            *///?}
+            //? if shaders && >=26.1 {
+            /*if (this.overrideMaterial != null) {
+                quadMaterial = this.overrideMaterial;
+            }
             *///?}
             ChunkModelBuilder builder = buffers.get(quadMaterial);
 

@@ -4,6 +4,8 @@ import net.irisshaders.iris.gl.blending.AlphaTest;
 import net.irisshaders.iris.gl.blending.AlphaTests;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
+//? if >=26.1
+//import net.irisshaders.iris.pipeline.foss_transform.VanillaUniformBlocks;
 
 public class ShaderSynthesizer {
 	public static String vsh(boolean hasChunkOffset, ShaderAttributeInputs inputs, FogMode fogMode,
@@ -12,16 +14,17 @@ public class ShaderSynthesizer {
 		StringBuilder main = new StringBuilder();
 
 		shader.append("#version 150 core\n");
+		declareVanillaBlocks(shader);
 
 		// Vertex Position
-		shader.append("uniform mat4 iris_ModelViewMat;\n");
-		shader.append("uniform mat4 iris_ProjMat;\n");
+		vanillaUniform(shader, "uniform mat4 iris_ModelViewMat;\n");
+		vanillaUniform(shader, "uniform mat4 iris_ProjMat;\n");
 		shader.append("in vec3 iris_Position;\n");
 
 		String position;
 
 		if (hasChunkOffset) {
-			shader.append("uniform vec3 iris_ChunkOffset;\n");
+			vanillaUniform(shader, "uniform vec3 iris_ChunkOffset;\n");
 			position = "iris_Position + iris_ChunkOffset";
 		} else {
 			position = "iris_Position";
@@ -36,8 +39,11 @@ public class ShaderSynthesizer {
 				"    0.0, 0.0, 0.0, 1.0\n" +
 				");\n");
 
-			shader.append("uniform float iris_LineWidth;\n" +
-				"uniform vec2 iris_ScreenSize;\n");
+			//? if <26.1 {
+			shader.append("uniform float iris_LineWidth;\n");
+			//?} else
+			//shader.append("in float iris_LineWidth;\n");
+			vanillaUniform(shader, "uniform vec2 iris_ScreenSize;\n");
 
 			main.append("vec4 linePosStart = iris_ProjMat * VIEW_SCALE * iris_ModelViewMat * vec4(" + position + ", 1.0);\n" +
 				"    vec4 linePosEnd = iris_ProjMat * VIEW_SCALE * iris_ModelViewMat * vec4(" + position + " + iris_Normal, 1.0);\n" +
@@ -68,7 +74,7 @@ public class ShaderSynthesizer {
 			shader.append("flat ");
 		}
 		shader.append("out vec4 iris_vertexColor;\n");
-		shader.append("uniform vec4 iris_ColorModulator;\n");
+		vanillaUniform(shader, "uniform vec4 iris_ColorModulator;\n");
 
 		// Vertex Normal
 		if (inputs.hasNormal() && inputs.hasColor()) {
@@ -77,8 +83,8 @@ public class ShaderSynthesizer {
 			// TODO: Entity lighting without color? Only a theoretical possibility since all
 			//       entity shaders use vertex color.
 			if (entityLighting) {
-				shader.append("uniform vec3 iris_Light0_Direction;\n");
-				shader.append("uniform vec3 iris_Light1_Direction;\n");
+				vanillaUniform(shader, "uniform vec3 iris_Light0_Direction;\n");
+				vanillaUniform(shader, "uniform vec3 iris_Light1_Direction;\n");
 
 				// Copied from Mojang code.
 				shader.append("vec4 minecraft_mix_light(vec3 lightDir0, vec3 lightDir1, vec3 normal, vec4 color) {\n" +
@@ -156,6 +162,7 @@ public class ShaderSynthesizer {
 		StringBuilder main = new StringBuilder();
 
 		shader.append("#version 150 core\n");
+		declareVanillaBlocks(shader);
 
 		shader.append("out vec4 fragColor;\n");
 		shader.append("uniform float iris_AlphaTestValue;\n");
@@ -203,9 +210,12 @@ public class ShaderSynthesizer {
 		}
 
 		if (fogMode == FogMode.PER_VERTEX || fogMode == FogMode.PER_FRAGMENT) {
-			shader.append("uniform vec4 iris_FogColor;\n");
+			vanillaUniform(shader, "uniform vec4 iris_FogColor;\n");
+			//? if <26.1 {
 			shader.append("uniform float iris_FogStart;\n");
 			shader.append("uniform float iris_FogEnd;\n");
+			//?} else
+			//shader.append("#define iris_FogStart iris_FogRenderDistanceStart\n#define iris_FogEnd iris_FogRenderDistanceEnd\n");
 
 			if (fogMode == FogMode.PER_VERTEX) {
 				// Use vertex distances, close enough
@@ -213,7 +223,7 @@ public class ShaderSynthesizer {
 				main.append("float fragmentDistance = vertexDistance;\n");
 			} else /*if (fogMode == FogMode.PER_FRAGMENT)*/ {
 				// Use fragment distances since beam vertices are very far apart
-				shader.append("uniform mat4 iris_ProjMat;\n");
+				vanillaUniform(shader, "uniform mat4 iris_ProjMat;\n");
 				main.append("float fragmentDistance = -iris_ProjMat[3].z / ((gl_FragCoord.z) * -2.0 + 1.0 - iris_ProjMat[2].z);\n");
 			}
 
@@ -243,5 +253,21 @@ public class ShaderSynthesizer {
 		shader.append("}\n");
 
 		return shader.toString();
+	}
+
+	private static void declareVanillaBlocks(StringBuilder shader) {
+		//? if >=26.1 {
+		/*for (VanillaUniformBlocks block : VanillaUniformBlocks.FALLBACK_BLOCKS) {
+			shader.append(block.getDeclaration()).append('\n');
+		}
+		*///?}
+	}
+
+	/**
+	 * Declares a value vanilla provides, which is a member of one of {@link VanillaUniformBlocks} on 26.1.
+	 */
+	private static void vanillaUniform(StringBuilder shader, String declaration) {
+		//? if <26.1
+		shader.append(declaration);
 	}
 }

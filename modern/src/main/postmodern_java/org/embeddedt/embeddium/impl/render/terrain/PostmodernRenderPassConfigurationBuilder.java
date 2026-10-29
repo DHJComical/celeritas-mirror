@@ -120,6 +120,8 @@ public class PostmodernRenderPassConfigurationBuilder {
             Objects.requireNonNull(currentChunkRenderPass);
             currentChunkRenderPass.close();
             currentChunkRenderPass = null;
+            // Terrain is drawn with Celeritas's own programs.
+            ((CeleritasCommandEncoder) RenderSystem.getDevice().createCommandEncoder()).celeritas$invalidateAppliedState();
         }
     }
 

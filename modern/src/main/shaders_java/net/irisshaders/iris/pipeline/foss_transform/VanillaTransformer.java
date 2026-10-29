@@ -208,6 +208,9 @@ public class VanillaTransformer {
         translationUnit.rename("gl_ProjectionMatrix", "iris_ProjMat");
         translationUnit.injectVariable(
                 "uniform mat4 iris_ProjMat;");
+
+        //? if >=26.1
+        //patchVanillaBlocks(translationUnit, parameters);
     }
 
     public static void patchVanillaCore(Transformer translationUnit, VanillaParameters parameters) {
@@ -281,5 +284,18 @@ public class VanillaTransformer {
             addIfNotExistsType(translationUnit, "iris_UV1", "in vec2");
             addIfNotExistsType(translationUnit, "iris_UV2", "in vec2");
         }
+
+        //? if >=26.1
+        //patchVanillaBlocks(translationUnit, parameters);
     }
+
+    //? if >=26.1 {
+    /*private static void patchVanillaBlocks(Transformer translationUnit, VanillaParameters parameters) {
+        VanillaUniformBlocks.declareForPack(translationUnit, parameters.type);
+
+        if (parameters.isClouds() && parameters.type == ShaderType.VERTEX) {
+            CloudVertices.patch(translationUnit);
+        }
+    }
+    *///?}
 }

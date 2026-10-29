@@ -14,6 +14,7 @@ import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.fallback.ShaderSynthesizer;
+import net.irisshaders.iris.pipeline.foss_transform.CloudVertices;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
 import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.shaderpack.loading.ProgramId;
@@ -38,13 +39,13 @@ import java.util.function.Supplier;
 public class ShaderCreator {
 	// Gbuffer programs see these vertex attributes with an iris_ prefix, so that they can't clash with names in the
 	// shader pack's code.
-	private static final Set<String> PREFIXED_ATTRIBUTES = Set.of("Position", "Color", "Normal", "UV0", "UV1", "UV2");
+	private static final Set<String> PREFIXED_ATTRIBUTES = Set.of("Position", "Color", "Normal", "UV0", "UV1", "UV2", "LineWidth");
 
 	public static PendingGbufferProgram create(IrisRenderingPipeline parent, String name, ProgramSource source, ProgramId programId,
 											   GlFramebuffer writingToBeforeTranslucent, GlFramebuffer writingToAfterTranslucent,
 											   AlphaTest fallbackAlpha, VertexFormat vertexFormat, ShaderAttributeInputs inputs,
 											   Supplier<ImmutableSet<Integer>> flipped, boolean isIntensity, boolean isShadowPass,
-											   boolean isLines, CustomUniforms customUniforms) {
+											   boolean isLines, boolean isClouds, CustomUniforms customUniforms) {
 		AlphaTest alpha = source.getDirectives().getAlphaTestOverride().orElse(fallbackAlpha);
 		BlendModeOverride blendModeOverride = source.getDirectives().getBlendModeOverride().orElse(programId.getBlendModeOverride());
 
@@ -58,10 +59,20 @@ public class ShaderCreator {
 
 		CompletableFuture<Map<ShaderType, String>> transformed = CompletableFuture.supplyAsync(() -> {
 			Preconditions.checkArgument(source.isValid());
-			return TransformPatcherBridge.patchVanilla(name, source.getSourcesMap(), alpha, isLines, true, inputs, parent.getTextureMap());
+			return TransformPatcherBridge.patchVanilla(name, source.getSourcesMap(), alpha, isLines, isClouds, true, inputs, parent.getTextureMap());
 		}, TransformPatcherBridge.EXECUTOR);
 
-		return new PendingGbufferProgram(name, attributeLocations(vertexFormat), transformed, (builder, sources) -> {
+		//? if >=26.1 {
+		/*boolean generatesClouds = isClouds;
+		*///?} else
+		boolean generatesClouds = false;
+		ImmutableSet<Integer> reservedTextureUnits = generatesClouds ? IrisSamplers.CLOUDS_RESERVED_TEXTURE_UNITS : IrisSamplers.WORLD_RESERVED_TEXTURE_UNITS;
+
+		return new PendingGbufferProgram(name, attributeLocations(vertexFormat), reservedTextureUnits, transformed, (builder, sources) -> {
+			if (generatesClouds) {
+				builder.addExternalSampler(IrisSamplers.CLOUD_FACES_TEXTURE_UNIT, CloudVertices.CLOUD_FACES_SAMPLER);
+			}
+
 			CommonUniforms.addDynamicUniforms(builder, FogMode.PER_VERTEX);
 			customUniforms.assignTo(builder);
 			BuiltinReplacementUniforms.addBuiltinReplacementUniforms(builder);
@@ -88,7 +99,7 @@ public class ShaderCreator {
 		sources.put(ShaderType.VERTEX, ShaderSynthesizer.vsh(true, inputs, fogMode, entityLighting, isLeash));
 		sources.put(ShaderType.FRAGMENT, ShaderSynthesizer.fsh(inputs, fogMode, alpha, intensityTex, isLeash));
 
-		return new PendingGbufferProgram(name, attributeLocations(vertexFormat), CompletableFuture.completedFuture(sources), (builder, s) -> {
+		return new PendingGbufferProgram(name, attributeLocations(vertexFormat), IrisSamplers.WORLD_RESERVED_TEXTURE_UNITS, CompletableFuture.completedFuture(sources), (builder, s) -> {
 			builder.addExternalSampler(IrisSamplers.ALBEDO_TEXTURE_UNIT, "gtexture");
 			builder.addExternalSampler(IrisSamplers.OVERLAY_TEXTURE_UNIT, "overlay");
 			builder.addExternalSampler(IrisSamplers.LIGHTMAP_TEXTURE_UNIT, "lightmap");

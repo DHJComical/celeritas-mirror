@@ -26,4 +26,9 @@ public class CommandEncoderMixin implements CeleritasCommandEncoder {
     public void celeritas$configureForPipeline(RenderPipeline renderPipeline) {
         getExtendedBackendOrThrow().celeritas$configureForPipeline(renderPipeline);
     }
+
+    @Override
+    public void celeritas$invalidateAppliedState() {
+        getExtendedBackendOrThrow().celeritas$invalidateAppliedState();
+    }
 }

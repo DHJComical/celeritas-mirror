@@ -1,10 +1,10 @@
 package net.irisshaders.iris.pipeline.programs;
 
+import com.google.common.collect.ImmutableSet;
 import net.irisshaders.iris.gl.program.ProgramBuilder;
 import net.irisshaders.iris.gl.shader.ProgramCreator;
 import net.irisshaders.iris.pipeline.PendingPrograms;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
-import net.irisshaders.iris.samplers.IrisSamplers;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,15 +25,17 @@ public final class PendingGbufferProgram {
 
 	private final String name;
 	private final Map<String, Integer> attributeLocations;
+	private final ImmutableSet<Integer> reservedTextureUnits;
 	private final CompletableFuture<Map<ShaderType, String>> sources;
 	private final Builder builder;
 	@Nullable
 	private ProgramCreator.Submitted submitted;
 
-	PendingGbufferProgram(String name, Map<String, Integer> attributeLocations,
+	PendingGbufferProgram(String name, Map<String, Integer> attributeLocations, ImmutableSet<Integer> reservedTextureUnits,
 						  CompletableFuture<Map<ShaderType, String>> sources, Builder builder) {
 		this.name = name;
 		this.attributeLocations = attributeLocations;
+		this.reservedTextureUnits = reservedTextureUnits;
 		this.sources = sources;
 		this.builder = builder;
 	}
@@ -61,7 +63,7 @@ public final class PendingGbufferProgram {
 		ProgramCreator.Submitted program = submitted;
 		submitted = null;
 
-		return builder.build(ProgramBuilder.finish(program, IrisSamplers.WORLD_RESERVED_TEXTURE_UNITS), transformed);
+		return builder.build(ProgramBuilder.finish(program, reservedTextureUnits), transformed);
 	}
 
 	/**

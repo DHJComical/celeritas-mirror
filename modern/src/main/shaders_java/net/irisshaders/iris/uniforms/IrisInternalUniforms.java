@@ -22,8 +22,8 @@ public class IrisInternalUniforms {
 				return new Vector4f(fogColor[0], fogColor[1], fogColor[2], fogColor[3]);
 			});
 
-		uniforms.uniform1f(PER_FRAME, "iris_FogStart", FogHelper.INSTANCE::getFogStart)
-			.uniform1f(PER_FRAME, "iris_FogEnd", FogHelper.INSTANCE::getFogEnd);
+		uniforms.uniform1f(PER_FRAME, "iris_FogStart", VanillaEnvironment::fogStart)
+			.uniform1f(PER_FRAME, "iris_FogEnd", VanillaEnvironment::fogEnd);
 
 		uniforms.uniform1f("iris_FogDensity", () -> {
 			// ensure that the minimum value is 0.0

@@ -697,6 +697,13 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 	private PendingGbufferProgram createShader(String name, Optional<ProgramSource> source, ShaderKey key) {
 		if (source.isEmpty()) {
+			//? if >=26.1 {
+			/*// Synthesized programs can't generate 26.1's clouds, so vanilla's draws them.
+			if (key == ShaderKey.CLOUDS) {
+				return null;
+			}
+			*///?}
+
 			return createFallbackShader(name, key);
 		}
 
@@ -721,7 +728,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			() -> isBeforeTranslucent ? flippedAfterPrepare : flippedAfterTranslucent;
 
 		return ShaderCreator.create(this, name, source, programId, beforeTranslucent, afterTranslucent,
-			fallbackAlpha, vertexFormat, inputs, flipped, isIntensity, false, isLines, customUniforms);
+			fallbackAlpha, vertexFormat, inputs, flipped, isIntensity, false, isLines, programId == ProgramId.Clouds, customUniforms);
 	}
 
 	private PendingGbufferProgram createFallbackShader(String name, ShaderKey key) {
@@ -760,7 +767,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		Supplier<ImmutableSet<Integer>> flipped = () -> flippedBeforeShadow;
 
 		return ShaderCreator.create(this, name, source, programId, framebuffer, framebuffer,
-			fallbackAlpha, vertexFormat, inputs, flipped, isIntensity, true, isLines, customUniforms);
+			fallbackAlpha, vertexFormat, inputs, flipped, isIntensity, true, isLines, false, customUniforms);
 	}
 
 	public void addGbufferOrShadowSamplers(SamplerHolder samplers, ImageHolder images, Supplier<ImmutableSet<Integer>> flipped,
@@ -1072,6 +1079,8 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 		}
 		//?}
+
+		IrisRenderSystem.invalidateVanillaRenderState();
 	}
 
 	@Override
@@ -1081,6 +1090,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		}
 
 		prepareRenderer.renderAll();
+		IrisRenderSystem.invalidateVanillaRenderState();
 	}
 
 	@Override
@@ -1123,6 +1133,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		renderTargets.copyPreTranslucentDepth();
 
 		deferredRenderer.renderAll();
+		IrisRenderSystem.invalidateVanillaRenderState();
 
 		GlStateManager._enableBlend();
 
@@ -1147,11 +1158,13 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
         removePhaseIfNeeded();
         compositeRenderer.renderAll();
 		finalPassRenderer.renderFinalPass();
+		IrisRenderSystem.invalidateVanillaRenderState();
 	}
 
 	@Override
 	public void finalizeGameRendering() {
 		colorSpaceConverter.process(VanillaTargets.colorTexture(Minecraft.getInstance().getMainRenderTarget()));
+		IrisRenderSystem.invalidateVanillaRenderState();
 	}
 
 	@Override

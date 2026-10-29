@@ -2,6 +2,7 @@ package net.irisshaders.iris.uniforms;
 
 import net.minecraft.client.Minecraft;
 import org.joml.Matrix4f;
+import org.joml.Vector2i;
 import org.joml.Vector3d;
 
 public class CapturedRenderingState {
@@ -22,6 +23,7 @@ public class CapturedRenderingState {
 	private int currentRenderedItem = -1;
 
 	private float currentAlphaTest;
+	private final Vector2i currentAtlasSize = new Vector2i();
 	private float cloudTime;
 
 	private CapturedRenderingState() {
@@ -109,6 +111,17 @@ public class CapturedRenderingState {
 
 	public void setCurrentAlphaTest(float alphaTest) {
 		this.currentAlphaTest = alphaTest;
+	}
+
+	/**
+	 * Returns the size of the texture atlas the current draw samples, or zero if it doesn't sample one.
+	 */
+	public Vector2i getCurrentAtlasSize() {
+		return currentAtlasSize;
+	}
+
+	public void setCurrentAtlasSize(int width, int height) {
+		currentAtlasSize.set(width, height);
 	}
 
 	public float getDarknessLightFactor() {

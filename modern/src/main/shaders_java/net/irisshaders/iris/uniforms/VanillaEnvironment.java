@@ -5,8 +5,10 @@ import net.minecraft.world.entity.Entity;
 import org.joml.Vector3d;
 //? if <26.1 {
 import net.minecraft.world.phys.Vec3;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 //?} else {
 /*import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.fog.FogData;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.attribute.EnvironmentAttributeProbe;
 import net.minecraft.world.attribute.EnvironmentAttributes;
@@ -15,7 +17,8 @@ import net.minecraft.world.attribute.EnvironmentAttributes;
 import java.util.OptionalLong;
 
 /**
- * The client level's time of day, sky and clouds, which 26.1 moved to world clocks and environment attributes.
+ * The client level's time of day, sky, clouds and fog, which 26.1 moved to world clocks, environment attributes and
+ * render state.
  */
 public final class VanillaEnvironment {
 	private VanillaEnvironment() {
@@ -77,8 +80,30 @@ public final class VanillaEnvironment {
 		*///?}
 	}
 
+	/**
+	 * Returns where the fog shader packs see begins. On 26.1 that is the environmental fog (water, lava, blindness and
+	 * the like), not the render distance fog, matching upstream Iris.
+	 */
+	public static float fogStart() {
+		//? if <26.1 {
+		return FogHelper.INSTANCE.getFogStart();
+		//?} else
+		//return fogData().environmentalStart;
+	}
+
+	public static float fogEnd() {
+		//? if <26.1 {
+		return FogHelper.INSTANCE.getFogEnd();
+		//?} else
+		//return fogData().environmentalEnd;
+	}
+
 	//? if >=26.1 {
-	/*private static EnvironmentAttributeProbe probe() {
+	/*private static FogData fogData() {
+		return Minecraft.getInstance().gameRenderer.getGameRenderState().levelRenderState.cameraRenderState.fogData;
+	}
+
+	private static EnvironmentAttributeProbe probe() {
 		return Minecraft.getInstance().gameRenderer.getMainCamera().attributeProbe();
 	}
 	*///?}

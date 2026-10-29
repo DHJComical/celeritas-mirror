@@ -16,19 +16,29 @@ import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import net.irisshaders.iris.vertices.ImmediateState;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.opengl.ARBTextureSwizzle;
+import org.lwjgl.opengl.GL30C;
+//? if <26.1 {
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.ARBTextureSwizzle;
 import org.lwjgl.opengl.GL20C;
-import org.lwjgl.opengl.GL30C;
+//?} else {
+/*import com.mojang.blaze3d.buffers.GpuBufferSlice;
+import com.mojang.blaze3d.opengl.GlBuffer;
+import com.mojang.blaze3d.opengl.GlProgram;
+import com.mojang.blaze3d.opengl.Uniform;
+import net.irisshaders.iris.pipeline.foss_transform.VanillaUniformBlocks;
+import org.lwjgl.opengl.GL31C;
+*///?}
 
 import java.util.List;
 
 /**
- * A shader pack program for something vanilla draws, such as entities, particles or the sky. Vanilla draws with an
- * {@link IrisShaderInstance}, which binds the current pipeline's program for its {@link ShaderKey}.
+ * A shader pack program for something vanilla draws, such as entities, particles or the sky. Before 26.1, vanilla
+ * draws with an {@code IrisShaderInstance}, which binds the current pipeline's program for its {@link ShaderKey}. On
+ * 26.1, the program is bound in place of vanilla's once vanilla has set up a draw.
  */
 public final class GbufferProgram {
 	private static final int[] INTENSITY_SWIZZLE = {GL30C.GL_RED, GL30C.GL_RED, GL30C.GL_RED, GL30C.GL_RED};
@@ -46,6 +56,7 @@ public final class GbufferProgram {
 	private final boolean intensitySwizzle;
 	private final boolean usesTessellation;
 
+	//? if <26.1 {
 	private final int modelViewLocation;
 	private final int modelViewInverseLocation;
 	private final int normalMatrixLocation;
@@ -65,6 +76,17 @@ public final class GbufferProgram {
 	private final Matrix3f scratchNormalMatrix = new Matrix3f();
 	private final float[] scratchMatrix4 = new float[16];
 	private final float[] scratchMatrix3 = new float[9];
+	//?} else {
+	/*private static final VanillaUniformBlocks[] BLOCKS = VanillaUniformBlocks.values();
+	// Where blocks a vanilla program doesn't declare are bound, past the bindings vanilla assigns its programs.
+	private static final int FIRST_SPARE_BLOCK_BINDING = 16;
+
+	// By VanillaUniformBlocks ordinal, or -1 if the program doesn't use the block.
+	private final int[] blockIndices = new int[BLOCKS.length];
+	private final boolean[] blockIsSpare = new boolean[BLOCKS.length];
+	@Nullable
+	private GlProgram blockBindingsFor;
+	*///?}
 
 	/**
 	 * Builds the program from a builder whose uniforms and samplers have been added. Custom uniforms, if given, must
@@ -90,6 +112,7 @@ public final class GbufferProgram {
 		this.usesTessellation = usesTessellation;
 
 		int id = program.handle();
+		//? if <26.1 {
 		this.modelViewLocation = GlStateManager._glGetUniformLocation(id, "iris_ModelViewMat");
 		this.modelViewInverseLocation = GlStateManager._glGetUniformLocation(id, "iris_ModelViewMatInverse");
 		this.normalMatrixLocation = GlStateManager._glGetUniformLocation(id, "iris_NormalMat");
@@ -104,6 +127,12 @@ public final class GbufferProgram {
 		this.fogColorLocation = GlStateManager._glGetUniformLocation(id, "iris_FogColor");
 		this.light0DirectionLocation = GlStateManager._glGetUniformLocation(id, "iris_Light0_Direction");
 		this.light1DirectionLocation = GlStateManager._glGetUniformLocation(id, "iris_Light1_Direction");
+		//?} else {
+		/*for (VanillaUniformBlocks block : BLOCKS) {
+			int index = IrisRenderSystem.getUniformBlockIndex(id, block.getBlockName());
+			blockIndices[block.ordinal()] = index == GL31C.GL_INVALID_INDEX ? -1 : index;
+		}
+		*///?}
 	}
 
 	public void bind(VanillaDrawState state) {
@@ -116,11 +145,26 @@ public final class GbufferProgram {
 		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.ALBEDO_TEXTURE_UNIT, state.albedoTexture);
 		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.OVERLAY_TEXTURE_UNIT, state.overlayTexture);
 		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, state.lightmapTexture);
+		//? if >=26.1 {
+		/*// Filtering and wrapping are sampler state on 26.1, not texture state.
+		IrisRenderSystem.bindSamplerToUnit(IrisSamplers.ALBEDO_TEXTURE_UNIT, state.albedoSampler);
+		IrisRenderSystem.bindSamplerToUnit(IrisSamplers.OVERLAY_TEXTURE_UNIT, state.overlaySampler);
+		IrisRenderSystem.bindSamplerToUnit(IrisSamplers.LIGHTMAP_TEXTURE_UNIT, state.lightmapSampler);
+		CapturedRenderingState.INSTANCE.setCurrentAtlasSize(state.atlasWidth, state.atlasHeight);
+
+		if (state.cloudFacesTexture != 0) {
+			GlStateManager._activeTexture(GL31C.GL_TEXTURE0 + IrisSamplers.CLOUD_FACES_TEXTURE_UNIT);
+			GL31C.glBindTexture(GL31C.GL_TEXTURE_BUFFER, state.cloudFacesTexture);
+		}
+		*///?}
 
 		ImmediateState.usingTessellation = usesTessellation;
 
 		program.bind();
+		//? if <26.1 {
 		uploadVanillaUniforms(state);
+		//?} else
+		//bindVanillaBlocks(state);
 
 		if (customUniforms != null) {
 			customUniforms.push(this);
@@ -148,6 +192,7 @@ public final class GbufferProgram {
 		}
 	}
 
+	//? if <26.1 {
 	private void uploadVanillaUniforms(VanillaDrawState state) {
 		uploadMatrix(modelViewLocation, state.modelView);
 		uploadMatrix(projectionLocation, state.projection);
@@ -198,6 +243,42 @@ public final class GbufferProgram {
 			IrisRenderSystem.uniform1f(location, value);
 		}
 	}
+	//?} else {
+	/*/^*
+	 * Points the program's blocks at the bindings vanilla's program reads them from, so that vanilla's buffers,
+	 * including those it rebinds between draws, reach the program. Blocks vanilla's program lacks are bound to spare
+	 * bindings, from the render pass if it has them.
+	 ^/
+	private void bindVanillaBlocks(VanillaDrawState state) {
+		if (blockBindingsFor != state.vanillaProgram) {
+			blockBindingsFor = state.vanillaProgram;
+			int handle = program.handle();
+
+			for (VanillaUniformBlocks block : BLOCKS) {
+				int index = blockIndices[block.ordinal()];
+
+				if (index == -1) {
+					continue;
+				}
+
+				int binding = state.vanillaProgram.getUniform(block.getVanillaName()) instanceof Uniform.Ubo(int vanillaBinding) ? vanillaBinding : -1;
+				blockIsSpare[block.ordinal()] = binding == -1;
+				IrisRenderSystem.uniformBlockBinding(handle, index, binding == -1 ? FIRST_SPARE_BLOCK_BINDING + block.ordinal() : binding);
+			}
+		}
+
+		for (VanillaUniformBlocks block : BLOCKS) {
+			if (blockIndices[block.ordinal()] != -1 && blockIsSpare[block.ordinal()]) {
+				GpuBufferSlice slice = state.uniforms.get(block.getVanillaName());
+
+				if (slice != null) {
+					GL31C.glBindBufferRange(GL31C.GL_UNIFORM_BUFFER, FIRST_SPARE_BLOCK_BINDING + block.ordinal(),
+						((GlBuffer) slice.buffer()).handle, slice.offset(), slice.length());
+				}
+			}
+		}
+	}
+	*///?}
 
 	public boolean hasActiveImages() {
 		return program.getActiveImages() > 0;

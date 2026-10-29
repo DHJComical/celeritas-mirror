@@ -28,6 +28,9 @@ public class IrisSamplers {
 	public static final int LIGHTMAP_TEXTURE_UNIT = 2;
 
 	public static final ImmutableSet<Integer> WORLD_RESERVED_TEXTURE_UNITS = ImmutableSet.of(0, 1, 2);
+	// Holds the buffer of cloud faces 26.1 generates cloud vertices from, in clouds programs only.
+	public static final int CLOUD_FACES_TEXTURE_UNIT = 3;
+	public static final ImmutableSet<Integer> CLOUDS_RESERVED_TEXTURE_UNITS = ImmutableSet.of(0, 1, 2, CLOUD_FACES_TEXTURE_UNIT);
 
 	// TODO: In composite programs, there shouldn't be any reserved textures.
 	// We need a way to restore these texture bindings.

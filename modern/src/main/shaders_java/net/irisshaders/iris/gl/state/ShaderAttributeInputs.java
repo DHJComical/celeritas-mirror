@@ -15,7 +15,8 @@ public class ShaderAttributeInputs {
 	// WARNING: adding new fields requires updating hashCode and equals methods!
 
 	public ShaderAttributeInputs(VertexFormat format, boolean isFullbright, boolean isLines, boolean glint, boolean text) {
-		if (format == DefaultVertexFormat.POSITION_COLOR_NORMAL && !isLines) {
+		// 26.1 lines carry their width per vertex.
+		if ((format == DefaultVertexFormat.POSITION_COLOR_NORMAL || format.getElementAttributeNames().contains("LineWidth")) && !isLines) {
 			newLines = true;
 		}
 

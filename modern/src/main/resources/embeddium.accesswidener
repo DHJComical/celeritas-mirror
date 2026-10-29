@@ -79,6 +79,13 @@ accessible  class   com/mojang/blaze3d/opengl/GlStateManager$DepthState
 accessible method com/mojang/blaze3d/platform/NativeImage getPixelABGR (II)I
 accessible field com/mojang/blaze3d/systems/GpuDevice backend Lcom/mojang/blaze3d/systems/GpuDeviceBackend;
 accessible class com/mojang/blaze3d/opengl/GlDevice
+accessible field com/mojang/blaze3d/opengl/GlBuffer handle I
+accessible class com/mojang/blaze3d/opengl/GlRenderPass
+accessible class com/mojang/blaze3d/opengl/GlRenderPass$TextureViewAndSampler
+accessible field com/mojang/blaze3d/opengl/GlRenderPass pipeline Lcom/mojang/blaze3d/opengl/GlRenderPipeline;
+accessible field com/mojang/blaze3d/opengl/GlRenderPass uniforms Ljava/util/HashMap;
+accessible field com/mojang/blaze3d/opengl/GlRenderPass samplers Ljava/util/HashMap;
+accessible class com/mojang/blaze3d/opengl/GlCommandEncoder
 accessible  class   net/minecraft/client/renderer/RenderStateShard$DepthTestStateShard
 accessible  class   net/minecraft/client/renderer/RenderStateShard$TransparencyStateShard
 accessible  class   net/minecraft/client/renderer/RenderType$CompositeRenderType
