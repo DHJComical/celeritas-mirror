@@ -1,6 +1,7 @@
 package net.irisshaders.iris;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.GlDebug;
 import com.mojang.blaze3d.platform.InputConstants;
 //? if fabric
@@ -16,6 +17,7 @@ import net.irisshaders.iris.gl.shader.StandardMacros;
 import net.irisshaders.iris.gui.debug.DebugLoadFailedGridScreen;
 import net.irisshaders.iris.gui.screen.ShaderPackScreen;
 import net.irisshaders.iris.helpers.OptionalBoolean;
+import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.PipelineManager;
 import net.irisshaders.iris.pipeline.VanillaRenderingPipeline;
@@ -43,6 +45,7 @@ import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.taumc.celeritas.shaders.CeleritasShaders;
@@ -50,6 +53,7 @@ import org.taumc.celeritas.shaders.CeleritasShaders;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
@@ -57,7 +61,10 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -84,6 +91,11 @@ public class Iris {
 	private static ShaderpackDirectoryManager shaderpacksDirectoryManager;
 	private static ShaderPack currentPack;
 	private static String currentPackName;
+	@Nullable
+	private static PackFingerprint currentPackFingerprint;
+	// The pack in use when shaders were last turned off, reused if they are turned back on with nothing changed.
+	@Nullable
+	private static ReusablePack reusablePack;
 	private static Optional<Exception> storedError = Optional.empty();
 	private static boolean initialized;
 	private static PipelineManager pipelineManager;
@@ -201,7 +213,7 @@ public class Iris {
 		irisConfig.setShadersEnabled(enabled);
 		irisConfig.save();
 
-		reload();
+		reloadAfterToggle();
 		if (minecraft.player != null) {
 			minecraft.player.displayClientMessage(enabled ? Component.translatable("iris.shaders.toggled", currentPackName) : Component.translatable("iris.shaders.disabled"), false);
 		}
@@ -327,9 +339,28 @@ public class Iris {
 		}
 		resetShaderPackOptions = false;
 
+		ImmutableList<StringPair> environmentDefines = StandardMacros.createStandardEnvironmentDefines();
+		// Taken before parsing, so that files changed while the pack is being read count as changed.
+		List<String> fileStamps = stampPackFiles(shaderPackRoot, shaderPackPath);
+
+		ReusablePack reusable = reusablePack;
+		reusablePack = null;
+
+		if (reusable != null && fileStamps != null
+			&& reusable.fingerprint().equals(new PackFingerprint(name, new HashMap<>(changedConfigs), environmentDefines, fileStamps))) {
+			currentPack = reusable.pack();
+			currentPackFingerprint = reusable.fingerprint();
+			fallback = false;
+			currentPackName = name;
+
+			CeleritasShaders.logger().info("Using shaderpack: " + name + " (unchanged since shaders were turned off)");
+
+			return true;
+		}
+
 		try {
 			long parseStart = ShaderLoadTimings.now();
-			currentPack = new ShaderPack(shaderPackPath, changedConfigs, StandardMacros.createStandardEnvironmentDefines());
+			currentPack = new ShaderPack(shaderPackPath, changedConfigs, environmentDefines);
 			ShaderLoadTimings.record(ShaderLoadTimings.Stage.PACK_PARSING, parseStart);
 
 			MutableOptionValues changedConfigsValues = currentPack.getShaderPackOptions().getOptionValues().mutableCopy();
@@ -340,6 +371,11 @@ public class Iris {
 			changedConfigsValues.getStringValues().forEach(configsToSave::setProperty);
 
 			tryUpdateConfigPropertiesFile(shaderPackConfigTxt, configsToSave);
+
+			// Keyed by the options just saved, since those are what the next load will read back.
+			Map<String, String> savedConfigs = new HashMap<>();
+			configsToSave.forEach((k, v) -> savedConfigs.put((String) k, (String) v));
+			currentPackFingerprint = fileStamps != null ? new PackFingerprint(name, savedConfigs, environmentDefines, fileStamps) : null;
 		} catch (Exception e) {
 			CeleritasShaders.logger().error("Failed to load the shaderpack \"{}\"!", name);
 			CeleritasShaders.logger().error("", e);
@@ -364,6 +400,40 @@ public class Iris {
 		CeleritasShaders.logger().info("Using shaderpack: " + name);
 
 		return true;
+	}
+
+	/**
+	 * Everything a parsed shader pack depends on, to tell whether a pack parsed earlier is still up to date.
+	 */
+	private record PackFingerprint(String name, Map<String, String> options, List<StringPair> environmentDefines, List<String> fileStamps) {}
+
+	private record ReusablePack(ShaderPack pack, PackFingerprint fingerprint) {}
+
+	/**
+	 * Lists the size and modification time of each file the pack is read from, or returns null if that fails.
+	 */
+	@Nullable
+	private static List<String> stampPackFiles(Path packRoot, Path shadersPath) {
+		try {
+			if (!Files.isDirectory(packRoot)) {
+				BasicFileAttributes attributes = Files.readAttributes(packRoot, BasicFileAttributes.class);
+				return List.of(attributes.size() + " " + attributes.lastModifiedTime());
+			}
+
+			try (Stream<Path> stream = Files.walk(shadersPath)) {
+				List<String> stamps = new ArrayList<>();
+				for (Path path : (Iterable<Path>) stream::iterator) {
+					BasicFileAttributes attributes = Files.readAttributes(path, BasicFileAttributes.class);
+					if (attributes.isRegularFile()) {
+						stamps.add(shadersPath.relativize(path) + " " + attributes.size() + " " + attributes.lastModifiedTime());
+					}
+				}
+				stamps.sort(null);
+				return stamps;
+			}
+		} catch (IOException | UncheckedIOException e) {
+			return null;
+		}
 	}
 
 	private static Optional<Path> loadExternalZipShaderpack(Path shaderpackPath) throws IOException {
@@ -557,11 +627,36 @@ public class Iris {
 	}
 
 	public static void reload() throws IOException {
+		reload(false);
+	}
+
+	/**
+	 * Reloads after shaders were turned on or off. Unlike {@link #reload()}, this keeps the parsed pack when they are
+	 * turned off, and reuses it when they are turned back on if nothing it depends on changed.
+	 */
+	public static void reloadAfterToggle() throws IOException {
+		reload(true);
+	}
+
+	/**
+	 * @param reusePack whether a pack parsed before can be used again if nothing it depends on changed, instead of
+	 *                  reading it from disk. Only toggling shaders does this; other reloads exist to pick up changes.
+	 */
+	private static void reload(boolean reusePack) throws IOException {
 		// allows shaderpacks to be changed at runtime
 		irisConfig.initialize();
 
+		ShaderPack previousPack = currentPack;
+		PackFingerprint previousFingerprint = currentPackFingerprint;
+
 		// Destroy all allocated resources
 		destroyEverything();
+
+		if (!reusePack) {
+			reusablePack = null;
+		} else if (previousPack != null && previousFingerprint != null) {
+			reusablePack = new ReusablePack(previousPack, previousFingerprint);
+		}
 
 		// Load the new shaderpack
 		loadShaderpack();
@@ -583,6 +678,7 @@ public class Iris {
 	 */
 	private static void destroyEverything() {
 		currentPack = null;
+		currentPackFingerprint = null;
 
 		getPipelineManager().destroyPipeline();
 

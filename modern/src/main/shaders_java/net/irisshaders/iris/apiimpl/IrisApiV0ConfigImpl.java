@@ -26,7 +26,7 @@ public class IrisApiV0ConfigImpl implements IrisApiConfig {
 		}
 
 		try {
-			Iris.reload();
+			Iris.reloadAfterToggle();
 		} catch (IOException e) {
 			CeleritasShaders.logger().error("Error reloading shader pack while applying changes!", e);
 		}
