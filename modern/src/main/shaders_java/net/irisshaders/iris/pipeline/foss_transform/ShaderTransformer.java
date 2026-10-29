@@ -120,6 +120,25 @@ public class ShaderTransformer {
         return builder.toString();
     }
 
+    /**
+     * Renames identifiers that are keywords to the AST parser but valid in the given GLSL version, prefixing them
+     * with {@code iris_renamed_}.
+     */
+    public static String renameReservedWords(String input, int version) {
+        input = replaceTexture(input);
+
+        for (int reservedVersion : versionedReservedWords.keySet()) {
+            if (version < reservedVersion) {
+                for (String reservedWord : versionedReservedWords.get(reservedVersion)) {
+                    String newName = "iris_renamed_" + reservedWord;
+                    input = input.replaceAll("\\b" + reservedWord + "\\b", newName);
+                }
+            }
+        }
+
+        return input;
+    }
+
     private static <P extends Parameters> Map<ShaderType, String> transformInternal(String name, Map<ShaderType, String> inputs, Patch patchType, P parameters) {
         EnumMap<ShaderType, String> result = new EnumMap<>(ShaderType.class);
         EnumMap<ShaderType, Transformer> types = new EnumMap<>(ShaderType.class);
@@ -154,20 +173,7 @@ public class ShaderTransformer {
 
             String profileString = "#version " + versionString + " " + profile + "\n";
 
-            // This handles some reserved keywords which cause the AST parser to fail
-            // but aren't necessarily invalid for GLSL versions prior to 400. This simple
-            // renames the matching strings and prefixes them with iris_renamed_
-
-            input = replaceTexture(input);
-
-            for (int version : versionedReservedWords.keySet()) {
-                if (versionInt < version) {
-                    for (String reservedWord : versionedReservedWords.get(version)) {
-                        String newName = "iris_renamed_" + reservedWord;
-                        input = input.replaceAll("\\b" + reservedWord + "\\b", newName);
-                    }
-                }
-            }
+            input = renameReservedWords(input, versionInt);
 
             var parsedShader = ShaderParser.parseShader(input);
             var translationUnit = parsedShader.full();

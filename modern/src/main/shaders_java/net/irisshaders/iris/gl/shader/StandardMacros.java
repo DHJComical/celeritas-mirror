@@ -5,6 +5,8 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.GlUtil;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.compat.dh.DHCompat;
+import net.irisshaders.iris.compat.flywheel.Colorwheel;
+import net.irisshaders.iris.compat.flywheel.engine.ClrwlRenderingPhase;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.pathways.HandRenderer;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
@@ -53,6 +55,15 @@ public class StandardMacros {
 		define(standardDefines, getVendor());
 		define(standardDefines, getRenderer());
 		define(standardDefines, "IS_IRIS");
+
+		if (Colorwheel.isFlywheelLoaded()) {
+			define(standardDefines, "HAS_COLORWHEEL");
+			define(standardDefines, "COLORWHEEL_VERSION", Colorwheel.FORMATTED_VERSION);
+
+			for (ClrwlRenderingPhase phase : ClrwlRenderingPhase.values()) {
+				define(standardDefines, "CLRWL_RENDER_STAGE_" + phase.name(), Integer.toString(phase.getValue()));
+			}
+		}
         define(standardDefines, "IRIS_HAS_TRANSLUCENCY_SORTING");
         define(standardDefines, "IRIS_TAG_SUPPORT", "2");
 

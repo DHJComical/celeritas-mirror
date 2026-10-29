@@ -212,13 +212,29 @@ tasks.named<ProcessResources>("processResources") {
     val isFabric = modLoader == ModLoader.FABRIC
     val modId = rootProject.property("mod_id").toString()
     val mixinConfigs = modMixinConfigs
+    // The shader pack Flywheel backend depends on Flywheel internals that changed in 1.0.6, and replaces Colorwheel.
+    val minFlywheelVersion = if (versionedProperty("flywheel_version") != null) "1.0.6" else null
+    inputs.property("minFlywheelVersion", minFlywheelVersion ?: "")
 
     doLast {
         val outputDir = Path.of(outputs.files.asPath)
 
-        if (isNeoForge) {
-            val modsTOML = outputDir.resolve("META-INF/mods.toml")
+        val modsTOML = outputDir.resolve("META-INF/mods.toml")
 
+        if (minFlywheelVersion != null && !isFabric && Files.exists(modsTOML)) {
+            val loaderDependency = { id: String, type: String, mandatory: Boolean, range: String ->
+                "\n\n[[dependencies.${modId}]]\nmodId = \"${id}\"\nmandatory = ${mandatory}\ntype = \"${type}\"\nversionRange = \"${range}\"\nordering = \"NONE\"\nside = \"CLIENT\""
+            }
+            modsTOML.toFile().appendText(loaderDependency("flywheel", "optional", false, "[${minFlywheelVersion},)"))
+            modsTOML.toFile().appendText(if (isNeoForge) {
+                loaderDependency("colorwheel", "incompatible", false, "*")
+            } else {
+                // Forge has no incompatible dependencies, but rejects an optional one whose range nothing satisfies.
+                loaderDependency("colorwheel", "optional", false, "(,0)")
+            })
+        }
+
+        if (isNeoForge) {
             if (Files.exists(modsTOML)) {
                 modsTOML.toFile().appendText("\n\n[[mixins]]\nconfig = \"${modId}.mixins.json\"")
 
@@ -233,6 +249,10 @@ tasks.named<ProcessResources>("processResources") {
                 val parse = JsonSlurper().parse(file) as MutableMap<String, Any>
 
                 parse["mixins"] = mixinConfigs.toList()
+
+                if (minFlywheelVersion != null) {
+                    parse["breaks"] = mapOf("flywheel" to "<${minFlywheelVersion}", "colorwheel" to "*")
+                }
 
                 file.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(parse)))
             }

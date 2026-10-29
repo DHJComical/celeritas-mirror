@@ -51,6 +51,13 @@ public class IrisConfig {
     @Getter
     @Setter
     private boolean enableTextureMaterialFallback;
+    /**
+     * Whether Flywheel content renders through a pack's regular gbuffers programs when the pack has no Flywheel
+     * programs of its own.
+     */
+    @Getter
+    @Setter
+    private boolean flywheelFallbackMode;
 
 	public IrisConfig(Path propertiesPath) {
 		shaderPackName = null;
@@ -152,6 +159,7 @@ public class IrisConfig {
         disableUpdateMessage = "true".equals(properties.getProperty("disableUpdateMessage"));
         blockUnknownShaders = "true".equals(properties.getProperty("blockUnknownShaders"));
         enableTextureMaterialFallback = !"false".equals(properties.getProperty("enableTextureMaterialFallback"));
+        flywheelFallbackMode = "true".equals(properties.getProperty("flywheelFallbackMode"));
 		try {
 			IrisVideoSettings.shadowDistance = Integer.parseInt(properties.getProperty("maxShadowRenderDistance", "32"));
 			IrisVideoSettings.colorSpace = ColorSpace.valueOf(properties.getProperty("colorSpace", "SRGB"));
@@ -194,6 +202,7 @@ public class IrisConfig {
         properties.setProperty("disableUpdateMessage", disableUpdateMessage ? "true" : "false");
         properties.setProperty("blockUnknownShaders", blockUnknownShaders ? "true" : "false");
         properties.setProperty("enableTextureMaterialFallback", enableTextureMaterialFallback ? "true" : "false");
+        properties.setProperty("flywheelFallbackMode", flywheelFallbackMode ? "true" : "false");
 		properties.setProperty("maxShadowRenderDistance", String.valueOf(IrisVideoSettings.shadowDistance));
 		properties.setProperty("colorSpace", IrisVideoSettings.colorSpace.name());
 		properties.setProperty("renderScale", IrisVideoSettings.renderScale.name());

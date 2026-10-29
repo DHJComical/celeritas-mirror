@@ -1,4 +1,6 @@
+import bs.ModLoader
 import org.embeddedt.embeddium.gradle.build.extensions.celeritasMixinConfigs
+import org.embeddedt.embeddium.gradle.build.extensions.versionedProperty
 
 plugins {
     id("java-library")
@@ -44,5 +46,43 @@ dependencies {
         if (additionalDepConfig != null) {
             add(additionalDepConfig, it)
         }
+    }
+}
+
+// The Iris code compiled for every shader target calls into the Flywheel backend.
+val flywheelVersion = requireNotNull(versionedProperty("flywheel_version")) {
+    "Shader targets compile the Flywheel backend; set flywheel_version_${ModLoader.getMinecraftVersion(project).replace('.', '_')} in gradle.properties"
+}
+
+sourceSets {
+    main {
+        java.srcDir("src/main/flywheel_java")
+        resources.srcDir("src/main/flywheel_resources")
+    }
+}
+
+modMixinConfigs.add("mixins.oculus.compat.flywheel.json")
+
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Create Maven"
+                url = uri("https://maven.createmod.net")
+            }
+        }
+        filter {
+            includeGroup("dev.engine-room.flywheel")
+        }
+    }
+}
+
+dependencies {
+    val modLoader = requireNotNull(ModLoader.fromProject(project))
+    val minecraftVersion = ModLoader.getMinecraftVersion(project)
+    // Forge and Fabric jars are published obfuscated and need the loader's remapping configuration.
+    val configurationName = if (modLoader == ModLoader.NEOFORGE) "compileOnly" else "modCompileOnly"
+    add(configurationName, "dev.engine-room.flywheel:flywheel-${modLoader.friendlyName}-${minecraftVersion}:${flywheelVersion}") {
+        isTransitive = false
     }
 }

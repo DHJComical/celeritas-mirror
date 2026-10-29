@@ -109,9 +109,11 @@ import org.lwjgl.opengl.GL43C;
 import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -1249,6 +1251,39 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			shader.clear();
 			shader.close();
 		});
+	}
+
+	public RenderTargets getRenderTargets() {
+		return renderTargets;
+	}
+
+	public ShadowRenderTargets getShadowRenderTargets() {
+		return shadowTargetsSupplier.get();
+	}
+
+	private enum FlywheelPass { SOLID, TRANSLUCENT, SHADOW }
+
+	private record FlywheelFramebufferKey(ProgramSource source, FlywheelPass pass) {}
+
+	// Flywheel engines are rebuilt more often than the pipeline, so they share these rather than creating their own.
+	private final Map<FlywheelFramebufferKey, GlFramebuffer> flywheelFramebuffers = new HashMap<>();
+
+	/**
+	 * Returns the gbuffers framebuffer for a Flywheel program. The render targets own it and keep it valid across
+	 * resizes, so callers must not destroy it.
+	 */
+	public GlFramebuffer getFlywheelGbuffersFramebuffer(ProgramSource source, boolean afterTranslucent) {
+		var key = new FlywheelFramebufferKey(source, afterTranslucent ? FlywheelPass.TRANSLUCENT : FlywheelPass.SOLID);
+		return flywheelFramebuffers.computeIfAbsent(key, k -> renderTargets.createGbufferFramebuffer(
+			afterTranslucent ? flippedAfterTranslucent : flippedAfterPrepare, source.getDirectives().getDrawBuffers()));
+	}
+
+	/**
+	 * Returns the shadow framebuffer for a Flywheel program, owned by the shadow render targets.
+	 */
+	public GlFramebuffer getFlywheelShadowFramebuffer(ProgramSource source) {
+		return flywheelFramebuffers.computeIfAbsent(new FlywheelFramebufferKey(source, FlywheelPass.SHADOW),
+			k -> getShadowRenderTargets().createShadowFramebuffer(ImmutableSet.of(), source.getDirectives().getDrawBuffers()));
 	}
 
 	@Override

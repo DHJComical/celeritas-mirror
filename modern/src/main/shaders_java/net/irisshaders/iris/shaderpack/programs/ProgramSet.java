@@ -1,5 +1,7 @@
 package net.irisshaders.iris.shaderpack.programs;
 
+import net.irisshaders.iris.compat.flywheel.Colorwheel;
+import net.irisshaders.iris.compat.flywheel.shaderpack.ClrwlPackPrograms;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
 import net.irisshaders.iris.shaderpack.ShaderPack;
@@ -12,6 +14,7 @@ import net.irisshaders.iris.shaderpack.properties.PackDirectives;
 import net.irisshaders.iris.shaderpack.properties.PackRenderTargetDirectives;
 import net.irisshaders.iris.shaderpack.properties.ShaderProperties;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
+import org.jetbrains.annotations.Nullable;
 import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.*;
@@ -66,6 +69,8 @@ public class ProgramSet implements ProgramSetInterface {
 	private final ProgramSource dhShadow;
 	private final ShaderPack pack;
 	private final ProgramSource gbuffersDamagedBlock;
+	@Nullable
+	private final ClrwlPackPrograms clrwlPrograms;
 
 	public ProgramSet(AbsolutePackPath directory, Function<AbsolutePackPath, String> sourceProvider,
 					  ShaderProperties shaderProperties, ShaderPack pack) {
@@ -154,6 +159,10 @@ public class ProgramSet implements ProgramSetInterface {
 		this.finalCompute = readComputeArray(directory, sourceProvider, "final", shaderProperties);
 
 		locateDirectives();
+
+		this.clrwlPrograms = Colorwheel.isFlywheelLoaded()
+			? new ClrwlPackPrograms(directory, sourceProvider, this, shaderProperties, pack.getClrwlProperties())
+			: null;
 	}
 
 	@SafeVarargs
@@ -167,7 +176,7 @@ public class ProgramSet implements ProgramSetInterface {
 		return Optional.empty();
 	}
 
-	private static ProgramSource readProgramSource(AbsolutePackPath directory,
+	public static ProgramSource readProgramSource(AbsolutePackPath directory,
 												   Function<AbsolutePackPath, String> sourceProvider, String program,
 												   ProgramSet programSet, ShaderProperties properties, boolean readTesselation) {
 		return readProgramSource(directory, sourceProvider, program, programSet, properties, null, readTesselation);
@@ -217,7 +226,7 @@ public class ProgramSet implements ProgramSetInterface {
 			defaultBlendModeOverride);
 	}
 
-	private static ComputeSource readComputeSource(AbsolutePackPath directory,
+	public static ComputeSource readComputeSource(AbsolutePackPath directory,
 												   Function<AbsolutePackPath, String> sourceProvider, String program,
 												   ProgramSet programSet, ShaderProperties properties) {
 		AbsolutePackPath computePath = directory.resolve(program + ".csh");
@@ -571,5 +580,13 @@ public class ProgramSet implements ProgramSetInterface {
 
 	public ShaderPack getPack() {
 		return pack;
+	}
+
+	/**
+	 * @return this set's Flywheel programs, or {@code null} when Flywheel is not installed
+	 */
+	@Nullable
+	public ClrwlPackPrograms getClrwlPrograms() {
+		return clrwlPrograms;
 	}
 }

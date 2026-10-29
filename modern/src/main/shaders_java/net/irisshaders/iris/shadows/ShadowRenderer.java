@@ -16,6 +16,7 @@ import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.mixin.LevelRendererAccessor;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.pipeline.ShaderRenderPassEvent;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
 import net.irisshaders.iris.shaderpack.properties.PackDirectives;
 import net.irisshaders.iris.shaderpack.properties.PackShadowDirectives;
@@ -529,6 +530,8 @@ public class ShadowRenderer {
 
 		levelRenderer.getLevel().getProfiler().popPush("build blockentities");
 
+		ShaderRenderPassEvent.BUS.post(new ShaderRenderPassEvent(ShaderRenderPassEvent.Stage.SHADOW_SOLID, MODELVIEW, shadowProjection, playerCamera, tickDelta));
+
         Predicate<BlockEntity> blockEntityFilter;
 		if (shouldRenderLightBlockEntities && !shouldRenderBlockEntities) {
             blockEntityFilter = be -> WorldUtil.getLightEmission(be.getBlockState(), be.getLevel(), be.getBlockPos()) > 0;
@@ -561,6 +564,8 @@ public class ShadowRenderer {
 		// It doesn't matter a ton, since this just means that they won't be sorted in the normal rendering pass.
 		// Just something to watch out for, however...
 		if (shouldRenderTranslucent) {
+			ShaderRenderPassEvent.BUS.post(new ShaderRenderPassEvent(ShaderRenderPassEvent.Stage.SHADOW_TRANSLUCENT, MODELVIEW, shadowProjection, playerCamera, tickDelta));
+
             //? if <1.20.6 {
 			levelRenderer.invokeRenderChunkLayer(RenderType.translucent(), modelView, cameraX, cameraY, cameraZ, shadowProjection);
             //?} else

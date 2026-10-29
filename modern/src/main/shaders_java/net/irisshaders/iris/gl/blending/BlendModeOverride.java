@@ -9,6 +9,10 @@ public class BlendModeOverride {
 		this.blendMode = blendMode;
 	}
 
+	public BlendMode getBlendMode() {
+		return blendMode;
+	}
+
 	public static void restore() {
 		BlendModeStorage.restoreBlend();
 	}

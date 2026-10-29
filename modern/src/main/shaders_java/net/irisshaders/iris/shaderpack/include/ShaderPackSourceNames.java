@@ -1,6 +1,8 @@
 package net.irisshaders.iris.shaderpack.include;
 
 import com.google.common.collect.ImmutableList;
+import net.irisshaders.iris.compat.flywheel.Colorwheel;
+import net.irisshaders.iris.compat.flywheel.shaderpack.ClrwlProgramId;
 import net.irisshaders.iris.shaderpack.loading.ProgramArrayId;
 import net.irisshaders.iris.shaderpack.loading.ProgramId;
 
@@ -67,6 +69,14 @@ public class ShaderPackSourceNames {
 			} else {
 				addStarts(potentialFileNames, programId.getSourceName());
 			}
+		}
+
+		if (Colorwheel.isFlywheelLoaded()) {
+			for (ClrwlProgramId programId : ClrwlProgramId.values()) {
+				addStarts(potentialFileNames, programId.programName());
+			}
+
+			addComputeStarts(potentialFileNames, "clrwl_shadow_distort");
 		}
 
 		return potentialFileNames.build();

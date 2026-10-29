@@ -72,6 +72,7 @@ Please reach out to @embeddedt on Discord if you have concerns regarding the lic
 * rdh, for leading several key improvements, including faster & better occlusion culling, better AO rendering, etc
 * douira, for researching and writing the [paper](https://douira.dev/assets/document/douira-master-thesis.pdf) on which the translucency sorting v3 implementation is based
 * grondag, for developing [bitraster](https://github.com/vram-guild/bitraster), the library we vendor for rasterized occlusion culling
+* djefrey, for developing [Colorwheel](https://github.com/djefrey/Colorwheel), which our Flywheel backend for shader packs is ported from
 * XFactHD, Pepper, and anyone else I've forgotten to mention, for providing valuable code insights
 
 [![YourKit logo](https://www.yourkit.com/images/yklogo.png)](https://www.yourkit.com/)

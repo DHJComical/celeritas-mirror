@@ -10,6 +10,7 @@ import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.layer.IsOutlineRenderStateShard;
 import net.irisshaders.iris.layer.OuterWrappedRenderType;
 import net.irisshaders.iris.pathways.HandRenderer;
+import net.irisshaders.iris.pipeline.ShaderRenderPassEvent;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shadows.frustum.fallback.NonCullingFrustum;
@@ -148,6 +149,21 @@ public class MixinLevelRenderer {
 		if (Iris.shouldActivateWireframe() && this.minecraft.isLocalServer()) {
 			IrisRenderSystem.setPolygonMode(GL43C.GL_FILL);
 		}
+	}
+
+	@Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=string"))
+	private void iris$afterTranslucents(CallbackInfo ci,
+										//? if <1.20.6 {
+										@Local(ordinal = 0, argsOnly = true) PoseStack poseStack,
+										@Local(ordinal = 0, argsOnly = true) Matrix4f projection,
+										//?} else {
+										/*@Local(ordinal = 0, argsOnly = true) Matrix4f modelMatrix,
+										@Local(ordinal = 1, argsOnly = true) Matrix4f projection,
+										*///?}
+										@Local(ordinal = 0, argsOnly = true) Camera camera) {
+		//? if <1.20.6
+		Matrix4f modelMatrix = poseStack.last().pose();
+		ShaderRenderPassEvent.BUS.post(new ShaderRenderPassEvent(ShaderRenderPassEvent.Stage.TRANSLUCENT, modelMatrix, projection, camera, celeritas$currentTickDelta));
 	}
 
 	// Setup shadow terrain & render shadows before the main terrain setup. We need to do things in this order to

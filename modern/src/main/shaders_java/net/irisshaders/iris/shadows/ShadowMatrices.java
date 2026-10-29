@@ -5,8 +5,8 @@ import com.mojang.math.Axis;
 import org.joml.Matrix4f;
 
 public class ShadowMatrices {
-	private static final float NEAR = 0.05f;
-	private static final float FAR = 256.0f;
+	public static final float NEAR = 0.05f;
+	public static final float FAR = 256.0f;
 
 	/**
 	 * Distance the shadow camera is pulled back from the player camera along the shadow light vector, applied by

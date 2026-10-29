@@ -46,6 +46,10 @@ public class WorldRenderingSettings {
 		return reloadRequired;
 	}
 
+	public void requireReload() {
+		reloadRequired = true;
+	}
+
 	public void clearReloadRequired() {
 		reloadRequired = false;
 	}

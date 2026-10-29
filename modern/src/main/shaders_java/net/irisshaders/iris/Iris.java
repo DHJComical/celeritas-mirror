@@ -6,6 +6,9 @@ import com.mojang.blaze3d.platform.InputConstants;
 //? if fabric
 //import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.irisshaders.iris.compat.dh.DHCompat;
+import net.irisshaders.iris.compat.flywheel.ClrwlBackend;
+import net.irisshaders.iris.compat.flywheel.Colorwheel;
+import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.config.IrisConfig;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.gl.shader.StandardMacros;
@@ -563,6 +566,11 @@ public class Iris {
 		// Very important - we need to re-create the pipeline straight away.
 		// https://github.com/IrisShaders/Iris/issues/1330
 		if (Minecraft.getInstance().level != null) {
+			// Flywheel engines are built against the previous pack's programs; the level renderer reload resets them.
+			if (Colorwheel.isFlywheelLoaded()) {
+				WorldRenderingSettings.INSTANCE.requireReload();
+			}
+
 			Iris.getPipelineManager().preparePipeline(Iris.getCurrentDimension());
 		}
 	}
@@ -797,6 +805,11 @@ public class Iris {
 		} catch (IOException e) {
 			CeleritasShaders.logger().error("Failed to initialize Iris configuration, default values will be used instead");
 			CeleritasShaders.logger().error("", e);
+		}
+
+		// Options load before Flywheel freezes its backend registry at the first resource reload.
+		if (Colorwheel.isFlywheelLoaded()) {
+			ClrwlBackend.init();
 		}
 
 		initialized = true;

@@ -1,0 +1,6 @@
+#include "celeritas:internal/uniform/frame.glsl"
+#include "celeritas:internal/uniform/pass.glsl"
+#include "celeritas:internal/uniform/level.glsl"
+#include "celeritas:internal/uniform/player.glsl"
+#include "celeritas:internal/uniform/fog.glsl"
+#include "celeritas:internal/uniform/options.glsl"
