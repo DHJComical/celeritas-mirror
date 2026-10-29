@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.LongAdder;
 public final class ShaderLoadTimings {
 	public enum Stage {
 		PACK_PARSING("Shader pack parsing", false),
-		PREPROCESSING("GLSL includes and preprocessing (part of pack parsing and program set)", true),
+		PREPROCESSING("GLSL includes and preprocessing, summed across threads", true),
 		PROGRAM_SET("Program set for dimension", false),
 		PIPELINE_SETUP("Pipeline setup before compiling", false),
 		COMPOSITE_SUBMIT("Waiting for composite transforms and submitting them", false),
