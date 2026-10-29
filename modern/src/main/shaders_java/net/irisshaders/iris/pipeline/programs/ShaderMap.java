@@ -36,6 +36,9 @@ public class ShaderMap {
         }
 
         var combinedFuture = CompletableFuture.allOf(futures);
+        // A failed transform completes its future on a worker thread without queueing a render thread task, so
+        // completion has to wake the loop below itself.
+        combinedFuture.whenComplete((result, throwable) -> renderThreadTasks.add(() -> {}));
 
         while (!combinedFuture.isDone()) {
             try {
@@ -52,7 +55,7 @@ public class ShaderMap {
             } catch (CompletionException e) {
                 Throwable trueCause = e;
                 while (trueCause instanceof CompletionException) {
-                    trueCause = e.getCause();
+                    trueCause = trueCause.getCause();
                 }
                 sneakyThrow(trueCause);
             }
