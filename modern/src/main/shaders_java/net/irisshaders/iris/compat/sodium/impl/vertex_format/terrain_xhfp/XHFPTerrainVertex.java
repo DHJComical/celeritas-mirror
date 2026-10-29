@@ -17,6 +17,7 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncode
 import net.irisshaders.iris.vertices.ExtendedDataHelper;
 import net.irisshaders.iris.vertices.NormI8;
 import net.irisshaders.iris.vertices.NormalHelper;
+//? if <26.1
 import org.embeddedt.embeddium.impl.render.texture.TextureAtlasExtended;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -178,6 +179,7 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
 
             short blockId = this.blockId;
 
+            //? if <26.1 {
             if (blockId == -1 && fallbackMaterials != null) {
                 // Try to fall back to the "canonical" block ID for the texture, this can often greatly improve
                 // the visuals of facade-style blocks
@@ -186,6 +188,7 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
                     blockId = (short) fallbackMaterials.getFallbackId(sprite, this.blockState);
                 }
             }
+            //?}
 
             MemoryUtil.memPutShort(ptr + MC_ENTITY_OFFSET, blockId);
             MemoryUtil.memPutShort(ptr + MC_ENTITY_OFFSET - STRIDE, blockId);

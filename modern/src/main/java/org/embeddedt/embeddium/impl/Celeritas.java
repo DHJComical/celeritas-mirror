@@ -123,9 +123,15 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
         });
         *///?}
 
+        //? if shaders && >=26.1
+        //modEventBus.addListener(net.irisshaders.iris.IrisDebugEntries::register);
+
         // TODO remove
         //? if shaders {
         modEventBus.addListener((RegisterKeyMappingsEvent ev) -> {
+            net.irisshaders.iris.Iris.createKeybinds();
+            //? if >=26.1
+            //ev.registerCategory(net.irisshaders.iris.Iris.KEYBIND_CATEGORY);
             ev.register(net.irisshaders.iris.Iris.reloadKeybind);
             ev.register(net.irisshaders.iris.Iris.shaderpackScreenKeybind);
             ev.register(net.irisshaders.iris.Iris.toggleShadersKeybind);

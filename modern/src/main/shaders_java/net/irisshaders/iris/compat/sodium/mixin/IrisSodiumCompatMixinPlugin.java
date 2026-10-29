@@ -38,7 +38,11 @@ public class IrisSodiumCompatMixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public List<String> getMixins() {
-		return null;
+		// These target Celeritas classes that only exist before 26.1.
+		//? if <26.1 {
+		return List.of("clouds.MixinCloudRenderer", "vertex_format.MixinVertexSerializerCache", "vertex_format.entity.MixinModelVertex");
+		//?} else
+		//return null;
 	}
 
 	@Override

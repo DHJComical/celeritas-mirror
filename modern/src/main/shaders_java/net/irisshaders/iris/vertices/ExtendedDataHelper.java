@@ -1,6 +1,7 @@
 package net.irisshaders.iris.vertices;
 
 import com.mojang.blaze3d.vertex.VertexFormatElement;
+//? if <26.1
 import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;

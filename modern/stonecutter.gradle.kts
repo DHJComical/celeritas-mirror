@@ -21,7 +21,11 @@ stonecutter.parameters {
     constants["neoforge"] = configuredModLoader == ModLoader.NEOFORGE
     constants["forgelike"] = configuredModLoader == ModLoader.NEOFORGE || configuredModLoader == ModLoader.FORGE
 
-    constants["shaders"] = stonecutter.compare(current.version, "1.20") >= 0 && stonecutter.compare(current.version, "1.21.3") < 0
+    val shaders = (stonecutter.compare(current.version, "1.20") >= 0 && stonecutter.compare(current.version, "1.21.3") < 0)
+            || stonecutter.compare(current.version, "26.1") >= 0
+    constants["shaders"] = shaders
+    // Whether the Iris Flywheel backend (Colorwheel) is compiled; "flywheel" is the older core Flywheel compat.
+    constants["colorwheel"] = shaders && versionedProperty("flywheel_version") != null
     constants["settings_gui"] = stonecutter.compare(current.version, "1.21.5") < 0
 
     val fabricApiVersion =
@@ -96,8 +100,23 @@ stonecutter.parameters {
         replace("net.minecraft.resources.ResourceLocation", "net.minecraft.resources.Identifier")
     }
 
+    // NativeImage's ABGR pixel accessors were named after their RGBA byte order before 26.1.
+    replacements.string {
+        direction = eval(current.version, ">=26.1")
+        replace("getPixelRGBA(", "getPixelABGR(")
+    }
+
+    replacements.string {
+        direction = eval(current.version, ">=26.1")
+        replace("setPixelRGBA(", "setPixelABGR(")
+    }
+
     replacements.regex(eval(current.version, ">=1.21.11")) {
         replace("\\bResourceLocation\\b", "Identifier", "\\bIdentifier\\b", "ResourceLocation")
+    }
+
+    replacements.regex(eval(current.version, ">=1.21.11")) {
+        replace("\\bResourceLocationException\\b", "IdentifierException", "\\bIdentifierException\\b", "ResourceLocationException")
     }
 }
 

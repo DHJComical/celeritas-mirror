@@ -13,6 +13,7 @@ import net.irisshaders.iris.gl.texture.DepthCopyStrategy;
 import net.irisshaders.iris.gl.texture.InternalTextureFormat;
 import net.irisshaders.iris.gl.texture.PixelType;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
+import net.irisshaders.iris.targets.VanillaTargets;
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
 import net.minecraft.client.Minecraft;
 import org.apache.commons.io.IOUtils;
@@ -42,7 +43,7 @@ public class CenterDepthSampler {
 		InternalTextureFormat format = InternalTextureFormat.R32F;
 		setupColorTexture(texture, format);
 		setupColorTexture(altTexture, format);
-		RenderSystem.bindTexture(0);
+		GlStateManager._bindTexture(0);
 
 		this.framebuffer.addColorAttachment(0, texture);
 		ProgramBuilder builder;
@@ -77,7 +78,7 @@ public class CenterDepthSampler {
 		this.framebuffer.bind();
 		this.program.use();
 
-		RenderSystem.viewport(0, 0, 1, 1);
+		GlStateManager._viewport(0, 0, 1, 1);
 
 		FullScreenQuadRenderer.INSTANCE.render();
 
@@ -88,7 +89,7 @@ public class CenterDepthSampler {
 		DepthCopyStrategy.fastest(false).copy(this.framebuffer, texture, null, altTexture, 1, 1);
 
 		//Reset viewport
-		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+		VanillaTargets.bind(Minecraft.getInstance().getMainRenderTarget(), true);
 	}
 
 	public void setupColorTexture(int texture, InternalTextureFormat format) {

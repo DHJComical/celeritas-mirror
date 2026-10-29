@@ -130,7 +130,7 @@ public class SodiumMixinPlugin implements IMixinConfigPlugin {
             ClientLevelLambdaRemover.removeLambda(targetClass);
         }
 
-        //? if shaders {
+        //? if shaders && <26.1 {
         if (mixinClassName.equals("net.irisshaders.iris.mixin.MixinGameRenderer")) {
             org.embeddedt.embeddium.impl.asm.ShaderOverridePatcher.patchGameRenderer(targetClass);
         }

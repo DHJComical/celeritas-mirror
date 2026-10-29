@@ -1,5 +1,6 @@
 package net.irisshaders.iris.pipeline;
 
+//? if <26.1
 import net.minecraft.client.renderer.RenderType;
 
 public enum WorldRenderingPhase {
@@ -28,6 +29,7 @@ public enum WorldRenderingPhase {
 	WORLD_BORDER,
 	HAND_TRANSLUCENT;
 
+	//? if <26.1 {
 	public static WorldRenderingPhase fromTerrainRenderType(RenderType renderType) {
 		if (renderType == RenderType.solid()) {
 			return WorldRenderingPhase.TERRAIN_SOLID;
@@ -44,4 +46,5 @@ public enum WorldRenderingPhase {
             return WorldRenderingPhase.TERRAIN_CUTOUT_MIPPED;
 		}
 	}
+	//?}
 }

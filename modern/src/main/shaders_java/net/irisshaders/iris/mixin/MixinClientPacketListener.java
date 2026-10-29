@@ -23,13 +23,13 @@ public class MixinClientPacketListener {
         }
 
         Iris.getStoredError().ifPresent(e ->
-                Minecraft.getInstance().player.displayClientMessage(Component.translatable(e instanceof ShaderCompileException ? "iris.load.failure.shader" : "iris.load.failure.generic").append(Component.literal("Copy Info").withStyle(arg -> arg.withUnderlined(true).withColor(ChatFormatting.BLUE).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, e.getMessage())))), false));
+                Iris.showMessage(Minecraft.getInstance().player, Component.translatable(e instanceof ShaderCompileException ? "iris.load.failure.shader" : "iris.load.failure.generic").append(Component.literal("Copy Info").withStyle(arg -> arg.withUnderlined(true).withColor(ChatFormatting.BLUE).withClickEvent(/*? if <26.1 {*/new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, e.getMessage())/*?} else {*//*new ClickEvent.CopyToClipboard(e.getMessage())*//*?}*/)))));
 
 		if (Iris.loadedIncompatiblePack()) {
 			Minecraft.getInstance().gui.setTimes(10, 70, 140);
 			CeleritasShaders.logger().warn("Incompatible pack for DH!");
-			Minecraft.getInstance().player.displayClientMessage(Component.literal("This pack doesn't have DH support.").withStyle(ChatFormatting.BOLD, ChatFormatting.RED), false);
-			Minecraft.getInstance().player.displayClientMessage(Component.literal("Distant Horizons (DH) chunks won't show up. This isn't a bug, get another shader.").withStyle(ChatFormatting.RED), false);
+			Iris.showMessage(Minecraft.getInstance().player, Component.literal("This pack doesn't have DH support.").withStyle(ChatFormatting.BOLD, ChatFormatting.RED));
+			Iris.showMessage(Minecraft.getInstance().player, Component.literal("Distant Horizons (DH) chunks won't show up. This isn't a bug, get another shader.").withStyle(ChatFormatting.RED));
 		}
 	}
 }

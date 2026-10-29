@@ -10,6 +10,7 @@ import net.irisshaders.iris.gl.uniform.UniformHolder;
 import net.irisshaders.iris.layer.GbufferPrograms;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.irisshaders.iris.mixin.statelisteners.BooleanStateAccessor;
+//? if <26.1
 import net.irisshaders.iris.mixin.texture.TextureAtlasAccessor;
 import net.irisshaders.iris.shaderpack.IdMap;
 import net.irisshaders.iris.shaderpack.properties.PackDirectives;
@@ -73,6 +74,7 @@ public final class CommonUniforms {
 		// the shader will always be setup (and therefore uniforms will be re-uploaded)
 		// after the texture is changed and before rendering starts.
 		uniforms.uniform2i("atlasSize", () -> {
+			//? if <26.1 {
 			int glId = RenderSystem.getShaderTexture(0);
 
 			AbstractTexture texture = TextureTracker.INSTANCE.getTexture(glId);
@@ -80,6 +82,7 @@ public final class CommonUniforms {
 				TextureAtlasAccessor atlasAccessor = (TextureAtlasAccessor) atlas;
 				return new Vector2i(atlasAccessor.callGetWidth(), atlasAccessor.callGetHeight());
 			}
+			//?}
 
 			return ZERO_VECTOR_2i;
 		}, listener -> {
@@ -211,13 +214,11 @@ public final class CommonUniforms {
 	}
 
 	private static Vector3d getSkyColor() {
-		if (client.level == null || client.cameraEntity == null) {
+		if (client.level == null || client.getCameraEntity() == null) {
 			return ZERO_VECTOR_3d;
 		}
 
-        Vec3 vec = client.level.getSkyColor(client.cameraEntity.position(),
-            CapturedRenderingState.INSTANCE.getTickDelta());
-        return new Vector3d(vec.x(), vec.y(), vec.z());
+		return VanillaEnvironment.skyColor(client.level, client.getCameraEntity(), CapturedRenderingState.INSTANCE.getTickDelta());
 	}
 
 	static float getBlindness() {
@@ -261,12 +262,12 @@ public final class CommonUniforms {
 	}
 
 	private static float getPlayerMood() {
-		if (!(client.cameraEntity instanceof LocalPlayer)) {
+		if (!(client.getCameraEntity() instanceof LocalPlayer)) {
 			return 0.0F;
 		}
 
 		// This should always be 0 to 1 anyways but just making sure
-		return Math.clamp(0.0F, 1.0F, ((LocalPlayer) client.cameraEntity).getCurrentMood());
+		return Math.clamp(0.0F, 1.0F, ((LocalPlayer) client.getCameraEntity()).getCurrentMood());
 	}
 
 	static float getRainStrength() {
@@ -280,12 +281,12 @@ public final class CommonUniforms {
 	}
 
 	private static Vector2i getEyeBrightness() {
-		if (client.cameraEntity == null || client.level == null) {
+		if (client.getCameraEntity() == null || client.level == null) {
 			return ZERO_VECTOR_2i;
 		}
 
-		Vec3 feet = client.cameraEntity.position();
-		Vec3 eyes = new Vec3(feet.x, client.cameraEntity.getEyeY(), feet.z);
+		Vec3 feet = client.getCameraEntity().position();
+		Vec3 eyes = new Vec3(feet.x, client.getCameraEntity().getEyeY(), feet.z);
 		BlockPos eyeBlockPos = BlockPos.containing(eyes);
 
 		int blockLight = client.level.getBrightness(LightLayer.BLOCK, eyeBlockPos);

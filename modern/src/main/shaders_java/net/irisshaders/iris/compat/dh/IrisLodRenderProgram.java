@@ -18,6 +18,7 @@ import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
+import net.irisshaders.iris.texture.VanillaTextures;
 import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.builtin.BuiltinReplacementUniforms;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
@@ -27,6 +28,7 @@ import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
+import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL43C;
 import org.lwjgl.system.MemoryStack;
@@ -176,7 +178,7 @@ public class IrisLodRenderProgram {
 			matrix.get(buffer);
 			buffer.rewind();
 
-			RenderSystem.glUniformMatrix4(index, false, buffer);
+			GL20C.glUniformMatrix4fv(index, false, buffer);
 		}
 	}
 
@@ -188,7 +190,7 @@ public class IrisLodRenderProgram {
 			matrix.get(buffer);
 			buffer.rewind();
 
-			RenderSystem.glUniformMatrix3(index, false, buffer);
+			GL20C.glUniformMatrix3fv(index, false, buffer);
 		}
 	}
 
@@ -216,8 +218,7 @@ public class IrisLodRenderProgram {
 	public void fillUniformData(Matrix4fc projection, Matrix4fc modelView, int worldYOffset, float partialTicks) {
 		GL43C.glUseProgram(id);
 
-		Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
-		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, RenderSystem.getShaderTexture(2));
+		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, VanillaTextures.lightmap());
 		setUniform(modelViewUniform, modelView);
 		setUniform(modelViewInverseUniform, modelView.invert(new Matrix4f()));
 		setUniform(projectionUniform, projection);

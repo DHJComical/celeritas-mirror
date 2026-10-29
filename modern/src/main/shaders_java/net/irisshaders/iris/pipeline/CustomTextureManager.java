@@ -9,21 +9,21 @@ import net.irisshaders.iris.gl.texture.TextureAccess;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.gl.texture.TextureWrapper;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
-import net.irisshaders.iris.mixin.LightTextureAccessor;
 import net.irisshaders.iris.shaderpack.properties.PackDirectives;
 import net.irisshaders.iris.shaderpack.texture.CustomTextureData;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import net.irisshaders.iris.targets.backed.NativeImageBackedCustomTexture;
 import net.irisshaders.iris.targets.backed.NativeImageBackedNoiseTexture;
+import net.irisshaders.iris.texture.VanillaTextures;
 import net.irisshaders.iris.texture.format.TextureFormat;
 import net.irisshaders.iris.texture.format.TextureFormatLoader;
 import net.irisshaders.iris.texture.pbr.PBRTextureHolder;
+//? if <26.1
 import net.irisshaders.iris.texture.pbr.PBRTextureManager;
 import net.irisshaders.iris.texture.pbr.PBRType;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.io.FilenameUtils;
@@ -102,8 +102,7 @@ public class CustomTextureManager {
 		} else if (textureData instanceof CustomTextureData.LightmapMarker) {
 			// Special code path for the light texture. While shader packs hardcode the primary light texture, it's
 			// possible that a mod will create a different light texture, so this code path is robust to that.
-			return new TextureWrapper(((LightTextureAccessor) Minecraft.getInstance().gameRenderer.lightTexture())
-				.getLightTexture()::getId, TextureType.TEXTURE_2D);
+			return new TextureWrapper(VanillaTextures::lightmap, TextureType.TEXTURE_2D);
 		} else if (textureData instanceof CustomTextureData.RawData1D rawData1D) {
 			GlTexture texture = new GlTexture(TextureType.TEXTURE_1D, rawData1D.getSizeX(), 0, 0, rawData1D.getInternalFormat().getGlFormat(), rawData1D.getPixelFormat().getGlFormat(), rawData1D.getPixelType().getGlFormat(), rawData1D.getContent(), rawData1D.getFilteringData());
 			ownedRawTextures.add(texture);
@@ -158,9 +157,10 @@ public class CustomTextureManager {
 				//     now.
 				return new TextureWrapper(() -> {
 					AbstractTexture texture = textureManager.getTexture(textureLocation);
-					return texture != null ? texture.getId() : MissingTextureAtlasSprite.getTexture().getId();
+					return texture != null ? VanillaTextures.glId(texture) : VanillaTextures.missingTexture();
 				}, TextureType.TEXTURE_2D);
 			} else {
+				//? if <26.1 {
 				location = location.substring(0, extensionIndex - pbrType.getSuffix().length()) + location.substring(extensionIndex);
 				ResourceLocation textureLocation = ResourceLocationUtil.make(namespace, location);
 
@@ -187,8 +187,10 @@ public class CustomTextureManager {
 						return pbrTexture.getId();
 					}
 
-					return MissingTextureAtlasSprite.getTexture().getId();
+					return VanillaTextures.missingTexture();
 				}, TextureType.TEXTURE_2D);
+				//?} else
+				//return new TextureWrapper(VanillaTextures::missingTexture, TextureType.TEXTURE_2D);
 			}
 		}
 		throw new IllegalArgumentException("Don't know texture type!");

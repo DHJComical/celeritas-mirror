@@ -1,6 +1,7 @@
 package net.irisshaders.iris.targets;
 
 import com.google.common.collect.ImmutableSet;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
@@ -269,7 +270,7 @@ public class RenderTargets {
 	public void copyPreTranslucentDepth() {
 		if (translucentDepthDirty) {
 			translucentDepthDirty = false;
-			RenderSystem.bindTexture(noTranslucents.getTextureId());
+			GlStateManager._bindTexture(noTranslucents.getTextureId());
 			depthSourceFb.bindAsReadBuffer();
 			IrisRenderSystem.copyTexImage2D(GL20C.GL_TEXTURE_2D, 0, currentDepthFormat.getGlInternalFormat(), 0, 0, cachedWidth, cachedHeight, 0);
 		} else {
@@ -286,7 +287,7 @@ public class RenderTargets {
 
 		if (handDepthDirty) {
 			handDepthDirty = false;
-			RenderSystem.bindTexture(noHand.getTextureId());
+			GlStateManager._bindTexture(noHand.getTextureId());
 			depthSourceFb.bindAsReadBuffer();
 			IrisRenderSystem.copyTexImage2D(GL20C.GL_TEXTURE_2D, 0, currentDepthFormat.getGlInternalFormat(), 0, 0, cachedWidth, cachedHeight, 0);
 		} else {

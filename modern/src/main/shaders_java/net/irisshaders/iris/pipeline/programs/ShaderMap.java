@@ -1,5 +1,6 @@
 package net.irisshaders.iris.pipeline.programs;
 
+//? if <26.1
 import net.minecraft.client.renderer.ShaderInstance;
 import org.jetbrains.annotations.Nullable;
 
@@ -78,6 +79,7 @@ public class ShaderMap {
 		return programs[key.ordinal()];
 	}
 
+	//? if <26.1 {
 	/**
 	 * Returns the shader vanilla should draw with for the key, or null to draw with vanilla's own.
 	 */
@@ -85,6 +87,7 @@ public class ShaderMap {
 	public ShaderInstance getShader(ShaderKey key) {
 		return programs[key.ordinal()] != null ? IrisShaderInstance.get(key) : null;
 	}
+	//?}
 
 	public void destroy() {
 		for (GbufferProgram program : programs) {

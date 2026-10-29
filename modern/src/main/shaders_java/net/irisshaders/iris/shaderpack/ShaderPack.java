@@ -9,8 +9,10 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.Getter;
+//? if colorwheel {
 import net.irisshaders.iris.compat.flywheel.Colorwheel;
 import net.irisshaders.iris.compat.flywheel.shaderpack.ClrwlShaderProperties;
+//?}
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.texture.TextureDefinition;
 import net.irisshaders.iris.helpers.StringPair;
@@ -86,8 +88,10 @@ public class ShaderPack {
 	private final Consumer<AbsolutePackPath> sourcePrefetcher;
 	private final Map<AbsolutePackPath, CompletableFuture<String>> prefetchedSources = new HashMap<>();
 	private final ShaderProperties shaderProperties;
+	//? if colorwheel {
 	@Nullable
 	private final ClrwlShaderProperties clrwlProperties;
+	//?}
 	private final List<String> dimensionIds;
     @Getter
 	private Map<NamespacedId, String> dimensionMap;
@@ -332,12 +336,14 @@ public class ShaderPack {
 			}
 		};
 
+		//? if colorwheel {
 		// Read before any ProgramSet is built, since each one parses its Flywheel programs against these.
 		this.clrwlProperties = Colorwheel.isFlywheelLoaded()
 			? loadProperties(root, "colorwheel.properties")
 				.map(source -> new ClrwlShaderProperties(source, shaderPackOptions, finalEnvironmentDefines1))
 				.orElseGet(ClrwlShaderProperties::new)
 			: null;
+		//?}
 
 		this.base = createProgramSet(AbsolutePackPath.fromAbsolutePath("/" + dimensionMap.getOrDefault(new NamespacedId("*", "*"), "")));
 
@@ -648,6 +654,7 @@ public class ShaderPack {
 		return shaderProperties;
 	}
 
+	//? if colorwheel {
 	/**
 	 * @return the parsed {@code colorwheel.properties}, or {@code null} when Flywheel is not installed
 	 */
@@ -655,6 +662,7 @@ public class ShaderPack {
 	public ClrwlShaderProperties getClrwlProperties() {
 		return clrwlProperties;
 	}
+	//?}
 
 	public ShaderPackOptions getShaderPackOptions() {
 		return shaderPackOptions;

@@ -7,14 +7,15 @@ import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.helpers.Tri;
-import net.irisshaders.iris.mixin.LevelRendererAccessor;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.shaderpack.properties.CloudSetting;
 import net.irisshaders.iris.shaderpack.properties.ParticleRenderingSettings;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import net.irisshaders.iris.targets.RenderTargetStateListener;
+import net.irisshaders.iris.targets.VanillaTargets;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.Minecraft;
 
 import java.util.List;
@@ -35,12 +36,12 @@ public class VanillaRenderingPipeline implements WorldRenderingPipeline {
 	@Override
 	public void beginLevelRendering() {
 		// Use the default Minecraft framebuffer and ensure that no programs are in use
-		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+		VanillaTargets.bind(Minecraft.getInstance().getMainRenderTarget(), true);
 		GlStateManager._glUseProgram(0);
 	}
 
 	@Override
-	public void renderShadows(LevelRendererAccessor worldRenderer, Camera camera) {
+	public void renderShadows(LevelRenderer levelRenderer, Camera camera) {
 		// stub: nothing to do here
 	}
 

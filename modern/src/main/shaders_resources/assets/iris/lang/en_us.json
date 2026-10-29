@@ -14,6 +14,7 @@
   "iris.keybind.wireframe": "Wireframe (SP only)",
   "iris.keybind.toggleShaders": "Toggle Shaders",
   "iris.keybinds": "Celeritas",
+  "key.category.iris.keybinds": "Celeritas",
   "iris.shaders.reloaded.failure": "Failed to reload shaders! Reason: %s",
   "iris.shaders.toggled.failure": "Failed to toggle shaders! Reason: %s",
   "iris.sodium.failure.title": "Celeritas failed to load!",

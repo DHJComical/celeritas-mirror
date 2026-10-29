@@ -4,7 +4,10 @@ import it.unimi.dsi.fastutil.objects.Object2IntFunction;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.irisshaders.iris.modern.materialmap.FallbackTextureMaterials;
 import net.minecraft.client.Minecraft;
+//? if <26.1 {
 import net.minecraft.client.renderer.RenderType;
+//?} else
+//import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -18,7 +21,10 @@ public class WorldRenderingSettings {
 	private boolean reloadRequired;
     private Object2IntMap<BlockState> blockStateIds;
     private FallbackTextureMaterials fallbackTextureMaterialMapping;
+	//? if <26.1 {
 	private Map<Block, RenderType> blockTypeIds;
+	//?} else
+	//private Map<Block, ChunkSectionLayer> blockTypeIds;
 	private Object2IntFunction<NamespacedId> entityIds;
 	private Object2IntFunction<NamespacedId> itemIds;
 	private float ambientOcclusionLevel;
@@ -94,11 +100,17 @@ public class WorldRenderingSettings {
 
 
     @Nullable
+	//? if <26.1 {
 	public Map<Block, RenderType> getBlockTypeIds() {
+	//?} else
+	//public Map<Block, ChunkSectionLayer> getBlockTypeIds() {
 		return blockTypeIds;
 	}
 
+	//? if <26.1 {
 	public void setBlockTypeIds(Map<Block, RenderType> blockTypeIds) {
+	//?} else
+	//public void setBlockTypeIds(Map<Block, ChunkSectionLayer> blockTypeIds) {
 		if (Objects.equals(this.blockTypeIds, blockTypeIds)) {
 			return;
 		}

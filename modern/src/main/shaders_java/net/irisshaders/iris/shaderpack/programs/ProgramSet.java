@@ -1,7 +1,9 @@
 package net.irisshaders.iris.shaderpack.programs;
 
+//? if colorwheel {
 import net.irisshaders.iris.compat.flywheel.Colorwheel;
 import net.irisshaders.iris.compat.flywheel.shaderpack.ClrwlPackPrograms;
+//?}
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
 import net.irisshaders.iris.shaderpack.ShaderPack;
@@ -69,8 +71,10 @@ public class ProgramSet implements ProgramSetInterface {
 	private final ProgramSource dhShadow;
 	private final ShaderPack pack;
 	private final ProgramSource gbuffersDamagedBlock;
+	//? if colorwheel {
 	@Nullable
 	private final ClrwlPackPrograms clrwlPrograms;
+	//?}
 
 	public ProgramSet(AbsolutePackPath directory, Function<AbsolutePackPath, String> sourceProvider,
 					  ShaderProperties shaderProperties, ShaderPack pack) {
@@ -160,9 +164,11 @@ public class ProgramSet implements ProgramSetInterface {
 
 		locateDirectives();
 
+		//? if colorwheel {
 		this.clrwlPrograms = Colorwheel.isFlywheelLoaded()
 			? new ClrwlPackPrograms(directory, sourceProvider, this, shaderProperties, pack.getClrwlProperties())
 			: null;
+		//?}
 	}
 
 	@SafeVarargs
@@ -582,6 +588,7 @@ public class ProgramSet implements ProgramSetInterface {
 		return pack;
 	}
 
+	//? if colorwheel {
 	/**
 	 * @return this set's Flywheel programs, or {@code null} when Flywheel is not installed
 	 */
@@ -589,4 +596,5 @@ public class ProgramSet implements ProgramSetInterface {
 	public ClrwlPackPrograms getClrwlPrograms() {
 		return clrwlPrograms;
 	}
+	//?}
 }

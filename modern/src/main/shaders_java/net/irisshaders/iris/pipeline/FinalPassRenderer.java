@@ -36,6 +36,7 @@ import net.irisshaders.iris.shadows.ShadowRenderTargets;
 import net.irisshaders.iris.targets.Blaze3dRenderTargetExt;
 import net.irisshaders.iris.targets.RenderTarget;
 import net.irisshaders.iris.targets.RenderTargets;
+import net.irisshaders.iris.targets.VanillaTargets;
 import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
@@ -113,7 +114,7 @@ public class FinalPassRenderer {
 		// passes that write to framebuffers).
 		this.baseline = renderTargets.createGbufferFramebuffer(flippedBuffers, new int[]{0});
 		this.colorHolder = new GlFramebuffer();
-		this.lastColorTextureId = Minecraft.getInstance().getMainRenderTarget().getColorTextureId();
+		this.lastColorTextureId = VanillaTargets.colorTexture(Minecraft.getInstance().getMainRenderTarget());
 		this.lastColorTextureVersion = ((Blaze3dRenderTargetExt) Minecraft.getInstance().getMainRenderTarget()).iris$getColorBufferVersion();
 		this.colorHolder.addColorAttachment(0, lastColorTextureId);
 
@@ -159,12 +160,12 @@ public class FinalPassRenderer {
 		// elsewhere.
 		target.resetSamplingMode();
 
-		RenderSystem.bindTexture(0);
+		GlStateManager._bindTexture(0);
 	}
 
 	public void renderFinalPass() {
-		RenderSystem.disableBlend();
-		RenderSystem.depthMask(false);
+		GlStateManager._disableBlend();
+		GlStateManager._depthMask(false);
 
 		final com.mojang.blaze3d.pipeline.RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
 		final int baseWidth = main.width;
@@ -183,9 +184,9 @@ public class FinalPassRenderer {
 		//
 		// This is not a concern for depthtex1 / depthtex2 since the copy call extracts the depth values, and the
 		// shader pack only ever uses them to read the depth values.
-		if (((Blaze3dRenderTargetExt) main).iris$getColorBufferVersion() != lastColorTextureVersion || main.getColorTextureId() != lastColorTextureId) {
+		if (((Blaze3dRenderTargetExt) main).iris$getColorBufferVersion() != lastColorTextureVersion || VanillaTargets.colorTexture(main) != lastColorTextureId) {
 			lastColorTextureVersion = ((Blaze3dRenderTargetExt) main).iris$getColorBufferVersion();
-			this.lastColorTextureId = main.getColorTextureId();
+			this.lastColorTextureId = VanillaTargets.colorTexture(main);
 			colorHolder.addColorAttachment(0, lastColorTextureId);
 		}
 
@@ -214,7 +215,7 @@ public class FinalPassRenderer {
 			}
 
 			if (!finalPass.mipmappedBuffers.isEmpty()) {
-				RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+				GlStateManager._activeTexture(GL15C.GL_TEXTURE0);
 
 				for (int index : finalPass.mipmappedBuffers) {
 					setupMipmapping(renderTargets.get(index), finalPass.stageReadsFromAlt.contains(index));
@@ -243,10 +244,10 @@ public class FinalPassRenderer {
 			// https://stackoverflow.com/a/23994979/18166885
 			this.baseline.bindAsReadBuffer();
 
-			IrisRenderSystem.copyTexSubImage2D(main.getColorTextureId(), GL11C.GL_TEXTURE_2D, 0, 0, 0, 0, 0, baseWidth, baseHeight);
+			IrisRenderSystem.copyTexSubImage2D(VanillaTargets.colorTexture(main), GL11C.GL_TEXTURE_2D, 0, 0, 0, 0, 0, baseWidth, baseHeight);
 		}
 
-		RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+		GlStateManager._activeTexture(GL15C.GL_TEXTURE0);
 
 		for (int i = 0; i < renderTargets.getRenderTargetCount(); i++) {
 			// Reset mipmapping states at the end of the frame.
@@ -255,7 +256,7 @@ public class FinalPassRenderer {
 
 		// Make sure to reset the viewport to how it was before... Otherwise weird issues could occur.
 		// Also bind the "main" framebuffer if it isn't already bound.
-		main.bindWrite(true);
+		VanillaTargets.bind(main, true);
 		ProgramUniforms.clearActiveUniforms();
 		ProgramSamplers.clearActiveSamplers();
 		GlStateManager._glUseProgram(0);
@@ -264,12 +265,12 @@ public class FinalPassRenderer {
 			// Unbind all textures that we may have used.
 			// NB: This is necessary for shader pack reloading to work properly
 			if (GlStateManagerAccessor.getTEXTURES()[i].binding != 0) {
-				RenderSystem.activeTexture(GL15C.GL_TEXTURE0 + i);
-				RenderSystem.bindTexture(0);
+				GlStateManager._activeTexture(GL15C.GL_TEXTURE0 + i);
+				GlStateManager._bindTexture(0);
 			}
 		}
 
-		RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+		GlStateManager._activeTexture(GL15C.GL_TEXTURE0);
 	}
 
 	// TODO: Don't just copy this from DeferredWorldRenderingPipeline

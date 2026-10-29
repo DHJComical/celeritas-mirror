@@ -87,8 +87,10 @@ public class BlockRenderer {
     private Material defaultMaterial;
 
     public record BlockRendererConfig(ColorProviderRegistry colorProviderRegistry, LightPipelineProvider lighters
-                                      //? if shaders
+                                      //? if shaders && <26.1
                                       , @Nullable Map<net.minecraft.world.level.block.Block, net.minecraft.client.renderer.RenderType> renderTypeOverrides
+                                      //? if shaders && >=26.1
+                                      //, @Nullable Map<net.minecraft.world.level.block.Block, net.minecraft.client.renderer.chunk.ChunkSectionLayer> renderTypeOverrides
     ) {}
 
     public BlockRenderer(BlockRendererConfig config) {

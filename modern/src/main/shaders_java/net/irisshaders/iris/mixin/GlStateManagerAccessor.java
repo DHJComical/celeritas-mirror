@@ -11,10 +11,12 @@ public interface GlStateManagerAccessor {
 		throw new UnsupportedOperationException("Not accessed");
 	}
 
+	//? if <26.1 {
 	@Accessor("COLOR_MASK")
 	static GlStateManager.ColorMask getCOLOR_MASK() {
 		throw new UnsupportedOperationException("Not accessed");
 	}
+	//?}
 
 	@Accessor("DEPTH")
 	static GlStateManager.DepthState getDEPTH() {

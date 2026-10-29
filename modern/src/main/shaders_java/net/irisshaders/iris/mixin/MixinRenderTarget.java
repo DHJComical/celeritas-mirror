@@ -3,7 +3,6 @@ package net.irisshaders.iris.mixin;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.irisshaders.iris.targets.Blaze3dRenderTargetExt;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -15,9 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(RenderTarget.class)
 public class MixinRenderTarget implements Blaze3dRenderTargetExt {
-	@Shadow
-	protected int depthBufferId;
-
 	@Unique
 	private int iris$depthBufferVersion;
 	@Unique

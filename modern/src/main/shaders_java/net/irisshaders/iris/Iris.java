@@ -2,23 +2,30 @@ package net.irisshaders.iris;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+//? if <26.1
 import com.mojang.blaze3d.platform.GlDebug;
 import com.mojang.blaze3d.platform.InputConstants;
 //? if fabric
 //import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.irisshaders.iris.compat.dh.DHCompat;
+//? if colorwheel {
 import net.irisshaders.iris.compat.flywheel.ClrwlBackend;
 import net.irisshaders.iris.compat.flywheel.Colorwheel;
+//?}
 import net.irisshaders.iris.pipeline.ShaderLoadTimings;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.config.IrisConfig;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.gl.shader.StandardMacros;
+//? if <26.1 {
 import net.irisshaders.iris.gui.debug.DebugLoadFailedGridScreen;
 import net.irisshaders.iris.gui.screen.ShaderPackScreen;
+//?}
 import net.irisshaders.iris.helpers.OptionalBoolean;
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+//? if >=26.1
+//import net.irisshaders.iris.pipeline.LevelStageEvents;
 import net.irisshaders.iris.pipeline.PipelineManager;
 import net.irisshaders.iris.pipeline.VanillaRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
@@ -31,20 +38,27 @@ import net.irisshaders.iris.shaderpack.option.Profile;
 import net.irisshaders.iris.shaderpack.option.values.MutableOptionValues;
 import net.irisshaders.iris.shaderpack.option.values.OptionValues;
 import net.irisshaders.iris.shaderpack.programs.ProgramSet;
+//? if <26.1
 import net.irisshaders.iris.texture.pbr.PBRTextureManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+//? if <26.1
 import net.minecraft.world.level.Level;
+//? if >=26.1
+//import net.minecraft.world.level.dimension.DimensionType;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.embeddedt.embeddium.impl.util.PlatformUtil;
+//? if >=26.1
+//import org.embeddedt.embeddium.impl.util.ResourceLocationUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
@@ -102,6 +116,11 @@ public class Iris {
 	private static IrisConfig irisConfig;
 	private static FileSystem zipFileSystem;
 
+	//? if <26.1 {
+	public static final String KEYBIND_CATEGORY = "iris.keybinds";
+	//?} else
+	//public static final KeyMapping.Category KEYBIND_CATEGORY = new KeyMapping.Category(ResourceLocationUtil.make("iris", "keybinds"));
+
 	public static KeyMapping reloadKeybind;
     public static KeyMapping toggleShadersKeybind;
     public static KeyMapping shaderpackScreenKeybind;
@@ -133,6 +152,7 @@ public class Iris {
 			return;
 		}
 
+		//? if <26.1
 		PBRTextureManager.INSTANCE.init();
 
 		renderSystemInit = true;
@@ -174,14 +194,14 @@ public class Iris {
 				reload();
 
 				if (minecraft.player != null) {
-					minecraft.player.displayClientMessage(Component.translatable("iris.shaders.reloaded"), false);
+					showMessage(minecraft.player, Component.translatable("iris.shaders.reloaded"));
 				}
 
 			} catch (Exception e) {
 				CeleritasShaders.logger().error("Error while reloading Shaders for " + MODNAME + "!", e);
 
 				if (minecraft.player != null) {
-					minecraft.player.displayClientMessage(Component.translatable("iris.shaders.reloaded.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED), false);
+					showMessage(minecraft.player, Component.translatable("iris.shaders.reloaded.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED));
 				}
 			}
 		} else if (toggleShadersKeybind.consumeClick()) {
@@ -191,16 +211,17 @@ public class Iris {
 				CeleritasShaders.logger().error("Error while toggling shaders!", e);
 
 				if (minecraft.player != null) {
-					minecraft.player.displayClientMessage(Component.translatable("iris.shaders.toggled.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED), false);
+					showMessage(minecraft.player, Component.translatable("iris.shaders.toggled.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED));
 				}
 				setShadersDisabled();
 				fallback = true;
 			}
 		} else if (shaderpackScreenKeybind.consumeClick()) {
+			//? if <26.1
 			minecraft.setScreen(new ShaderPackScreen(null));
 		} else if (wireframeKeybind.consumeClick()) {
 			if (irisConfig.areDebugOptionsEnabled() && minecraft.player != null && !Minecraft.getInstance().isLocalServer()) {
-				minecraft.player.displayClientMessage(Component.literal("No cheating; wireframe only in singleplayer!"), false);
+				showMessage(minecraft.player, Component.literal("No cheating; wireframe only in singleplayer!"));
 			}
 		}
 	}
@@ -215,7 +236,7 @@ public class Iris {
 
 		reloadAfterToggle();
 		if (minecraft.player != null) {
-			minecraft.player.displayClientMessage(enabled ? Component.translatable("iris.shaders.toggled", currentPackName) : Component.translatable("iris.shaders.disabled"), false);
+			showMessage(minecraft.player, enabled ? Component.translatable("iris.shaders.toggled", currentPackName) : Component.translatable("iris.shaders.disabled"));
 		}
 	}
 
@@ -484,15 +505,16 @@ public class Iris {
 			success = GLDebug.setupDebugMessageCallback();
 		} else {
 			GLDebug.reloadDebugState();
+			//? if <26.1
 			GlDebug.enableDebugCallback(Minecraft.getInstance().options.glDebugVerbosity, false);
 			success = 1;
 		}
 
 		CeleritasShaders.logger().info("Debug functionality is " + (enable ? "enabled, logging will be more verbose!" : "disabled."));
 		if (Minecraft.getInstance().player != null) {
-			Minecraft.getInstance().player.displayClientMessage(Component.translatable(success != 0 ? (enable ? "iris.shaders.debug.enabled" : "iris.shaders.debug.disabled") : "iris.shaders.debug.failure"), false);
+			showMessage(Minecraft.getInstance().player, Component.translatable(success != 0 ? (enable ? "iris.shaders.debug.enabled" : "iris.shaders.debug.disabled") : "iris.shaders.debug.failure"));
 			if (success == 2) {
-				Minecraft.getInstance().player.displayClientMessage(Component.translatable("iris.shaders.debug.restart"), false);
+				showMessage(Minecraft.getInstance().player, Component.translatable("iris.shaders.debug.restart"));
 			}
 		}
 	}
@@ -664,10 +686,12 @@ public class Iris {
 		// Very important - we need to re-create the pipeline straight away.
 		// https://github.com/IrisShaders/Iris/issues/1330
 		if (Minecraft.getInstance().level != null) {
+			//? if colorwheel {
 			// Flywheel engines are built against the previous pack's programs; the level renderer reload resets them.
 			if (Colorwheel.isFlywheelLoaded()) {
 				WorldRenderingSettings.INSTANCE.requireReload();
 			}
+			//?}
 
 			Iris.getPipelineManager().preparePipeline(Iris.getCurrentDimension());
 		}
@@ -700,7 +724,8 @@ public class Iris {
 		ClientLevel level = Minecraft.getInstance().level;
 
 		if (level != null) {
-            NamespacedId dimensionId = new NamespacedId(level.dimension().location().getNamespace(), level.dimension().location().getPath());
+            ResourceLocation dimensionLocation = level.dimension()./*? if <26.1 {*/location()/*?} else {*//*identifier()*//*?}*/;
+            NamespacedId dimensionId = new NamespacedId(dimensionLocation.getNamespace(), dimensionLocation.getPath());
 
             ShaderPack pack = getCurrentPack().orElse(null);
 
@@ -714,6 +739,7 @@ public class Iris {
             // The appropriate shader for the dimension should be used by default in order to prevent buggy results.
             // More information at https://minecraft.wiki/w/Dimension_type
             // https://github.com/IrisShaders/Iris/issues/2200
+            //? if <26.1 {
             ResourceLocation effects = level.dimensionType().effectsLocation();
 
             if (Level.END.location().equals(effects)) {
@@ -723,6 +749,12 @@ public class Iris {
             if (Level.NETHER.location().equals(effects)) {
                 return DimensionId.NETHER;
             }
+            //?} else {
+            /*// 26.1 dimension types only choose a skybox, so nether-like dimensions can't be recognized.
+            if (level.dimensionType().skybox() == DimensionType.Skybox.END) {
+                return DimensionId.END;
+            }
+            *///?}
 
             return dimensionId;
 		} else {
@@ -747,11 +779,12 @@ public class Iris {
 		try {
 			return new IrisRenderingPipeline(programs);
 		} catch (Exception e) {
-			if (irisConfig.areDebugOptionsEnabled()) {
+			if (/*? if <26.1 {*/irisConfig.areDebugOptionsEnabled()/*?} else {*//*false*//*?}*/) {
+				//? if <26.1
 				Minecraft.getInstance().setScreen(new DebugLoadFailedGridScreen(Minecraft.getInstance().screen, Component.literal(e instanceof ShaderCompileException ? "Failed to compile shaders" : "Exception"), e));
 			} else {
 				if (Minecraft.getInstance().player != null) {
-					Minecraft.getInstance().player.displayClientMessage(Component.translatable(e instanceof ShaderCompileException ? "iris.load.failure.shader" : "iris.load.failure.generic").append(Component.literal("Copy Info").withStyle(arg -> arg.withUnderlined(true).withColor(ChatFormatting.BLUE).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, e.getMessage())))), false);
+					showMessage(Minecraft.getInstance().player, Component.translatable(e instanceof ShaderCompileException ? "iris.load.failure.shader" : "iris.load.failure.generic").append(Component.literal("Copy Info").withStyle(arg -> arg.withUnderlined(true).withColor(ChatFormatting.BLUE).withClickEvent(/*? if <26.1 {*/new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, e.getMessage())/*?} else {*//*new ClickEvent.CopyToClipboard(e.getMessage())*//*?}*/))));
 				} else {
 					storedError = Optional.of(e);
 				}
@@ -778,7 +811,7 @@ public class Iris {
 				CeleritasShaders.logger().error("Error while reloading Shaders for " + MODNAME + "!", e);
 
 				if (Minecraft.getInstance().player != null) {
-					Minecraft.getInstance().player.displayClientMessage(Component.translatable("iris.shaders.reloaded.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED), false);
+					showMessage(Minecraft.getInstance().player, Component.translatable("iris.shaders.reloaded.failure", Throwables.getRootCause(e).getMessage()).withStyle(ChatFormatting.RED));
 				}
 			}
 		}
@@ -839,7 +872,7 @@ public class Iris {
 	public static String getReleaseTarget() {
 		// If this is a snapshot, you must change backupVersionNumber!
 		SharedConstants.tryDetectVersion();
-		return SharedConstants.getCurrentVersion().isStable() ? SharedConstants.getCurrentVersion().getName() : backupVersionNumber;
+		return SharedConstants.getCurrentVersion()./*? if <26.1 {*/isStable()/*?} else {*//*stable()*//*?}*/ ? SharedConstants.getCurrentVersion()./*? if <26.1 {*/getName()/*?} else {*//*name()*//*?}*/ : backupVersionNumber;
 	}
 
 	public static String getBackupVersionNumber() {
@@ -867,6 +900,21 @@ public class Iris {
 	}
 
 	/**
+	 * Creates the key bindings, if they don't exist yet. NeoForge registers key bindings before options are loaded
+	 * on 26.1, so this runs before {@link #onEarlyInitialize()} there.
+	 */
+	public static void createKeybinds() {
+		if (reloadKeybind != null) {
+			return;
+		}
+
+		reloadKeybind = new KeyMapping("iris.keybind.reload", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, KEYBIND_CATEGORY);
+		toggleShadersKeybind = new KeyMapping("iris.keybind.toggleShaders", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, KEYBIND_CATEGORY);
+		shaderpackScreenKeybind = new KeyMapping("iris.keybind.shaderPackSelection", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_O, KEYBIND_CATEGORY);
+		wireframeKeybind = new KeyMapping("iris.keybind.wireframe", InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), KEYBIND_CATEGORY);
+	}
+
+	/**
 	 * Called very early on in Minecraft initialization. At this point we *cannot* safely access OpenGL, but we can do
 	 * some very basic setup, config loading, and environment checks.
 	 *
@@ -876,10 +924,7 @@ public class Iris {
 	 * <p>This is called right before options are loaded, so we can add key bindings here.</p>
 	 */
 	public static void onEarlyInitialize() {
-		reloadKeybind = new KeyMapping("iris.keybind.reload", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_R, "iris.keybinds");
-		toggleShadersKeybind = new KeyMapping("iris.keybind.toggleShaders", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, "iris.keybinds");
-		shaderpackScreenKeybind = new KeyMapping("iris.keybind.shaderPackSelection", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_O, "iris.keybinds");
-		wireframeKeybind = new KeyMapping("iris.keybind.wireframe", InputConstants.Type.KEYSYM, InputConstants.UNKNOWN.getValue(), "iris.keybinds");
+		createKeybinds();
 
         //? if fabric {
         /*KeyBindingHelper.registerKeyBinding(net.irisshaders.iris.Iris.reloadKeybind);
@@ -889,6 +934,9 @@ public class Iris {
         *///?}
 
 		DHCompat.run();
+
+		//? if >=26.1
+		//LevelStageEvents.register();
 
 		try {
 			if (!Files.exists(getShaderpacksDirectory())) {
@@ -908,12 +956,23 @@ public class Iris {
 			CeleritasShaders.logger().error("", e);
 		}
 
+		//? if colorwheel {
 		// Options load before Flywheel freezes its backend registry at the first resource reload.
 		if (Colorwheel.isFlywheelLoaded()) {
 			ClrwlBackend.init();
 		}
+		//?}
 
 		initialized = true;
 	}
 
+	/**
+	 * Shows a message in the player's chat.
+	 */
+	public static void showMessage(LocalPlayer player, Component message) {
+		//? if <26.1 {
+		player.displayClientMessage(message, false);
+		//?} else
+		//player.sendSystemMessage(message);
+	}
 }

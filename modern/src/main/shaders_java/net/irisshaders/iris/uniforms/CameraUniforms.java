@@ -40,7 +40,7 @@ public class CameraUniforms {
 	}
 
 	public static Vector3d getUnshiftedCameraPosition() {
-        Vec3 vec = client.gameRenderer.getMainCamera().getPosition();
+        Vec3 vec = client.gameRenderer.getMainCamera()./*? if <26.1 {*/getPosition()/*?} else {*//*position()*//*?}*/;
         return new Vector3d(vec.x(), vec.y(), vec.z());
 	}
 

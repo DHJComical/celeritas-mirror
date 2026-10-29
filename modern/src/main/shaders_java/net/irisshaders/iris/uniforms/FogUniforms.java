@@ -1,12 +1,11 @@
 package net.irisshaders.iris.uniforms;
 
-import com.mojang.blaze3d.shaders.FogShape;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.StateUpdateNotifiers;
 import net.irisshaders.iris.gl.state.ValueUpdateNotifier;
 import net.irisshaders.iris.gl.uniform.DynamicUniformHolder;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
@@ -34,7 +33,7 @@ public class FogUniforms {
 			});
 
 			// To keep a stable interface, 0 is defined as spherical while 1 is defined as cylindrical, even if Mojang's index changes.
-			uniforms.uniform1i(PER_FRAME, "fogShape", () -> RenderSystem.getShaderFogShape() == FogShape.CYLINDER ? 1 : 0);
+			uniforms.uniform1i(PER_FRAME, "fogShape", () -> FogHelper.INSTANCE.getFogShapeIndex() == 1 ? 1 : 0);
 		}
 
 		uniforms.uniform1f("fogDensity", () -> {
@@ -43,13 +42,13 @@ public class FogUniforms {
 		}, notifier -> {
 		});
 
-		uniforms.uniform1f("fogStart", RenderSystem::getShaderFogStart, ValueUpdateNotifier.NONE);
-		uniforms.uniform1f("fogEnd", RenderSystem::getShaderFogEnd, ValueUpdateNotifier.NONE);
+		uniforms.uniform1f("fogStart", FogHelper.INSTANCE::getFogStart, ValueUpdateNotifier.NONE);
+		uniforms.uniform1f("fogEnd", FogHelper.INSTANCE::getFogEnd, ValueUpdateNotifier.NONE);
 
 		uniforms
 			// TODO: Update frequency of continuous?
 			.uniform3f(PER_FRAME, "fogColor", () -> {
-				float[] fogColor = RenderSystem.getShaderFogColor();
+				float[] fogColor = FogHelper.INSTANCE.getFogColor();
 				return new Vector3f(fogColor[0], fogColor[1], fogColor[2]);
 			});
 	}

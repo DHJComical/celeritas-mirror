@@ -175,7 +175,7 @@ public class ShadowCompositeRenderer {
 	}
 
 	public void renderAll() {
-		RenderSystem.disableBlend();
+		GlStateManager._disableBlend();
 
 		FullScreenQuadRenderer.INSTANCE.begin();
 
@@ -202,7 +202,7 @@ public class ShadowCompositeRenderer {
 			}
 
 			if (!renderPass.mipmappedBuffers.isEmpty()) {
-				RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+				GlStateManager._activeTexture(GL15C.GL_TEXTURE0);
 
 				for (int index : renderPass.mipmappedBuffers) {
 					setupMipmapping(renderTargets.get(index), renderPass.stageReadsFromAlt.contains(index));
@@ -213,7 +213,7 @@ public class ShadowCompositeRenderer {
 			float scaledHeight = renderTargets.getResolution() * renderPass.viewportScale.scale();
 			int beginWidth = (int) (renderTargets.getResolution() * renderPass.viewportScale.viewportX());
 			int beginHeight = (int) (renderTargets.getResolution() * renderPass.viewportScale.viewportY());
-			RenderSystem.viewport(beginWidth, beginHeight, (int) scaledWidth, (int) scaledHeight);
+			GlStateManager._viewport(beginWidth, beginHeight, (int) scaledWidth, (int) scaledHeight);
 
 			renderPass.framebuffer.bind();
 			renderPass.program.use();
@@ -236,7 +236,7 @@ public class ShadowCompositeRenderer {
 			}
 		}
 
-		RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+		GlStateManager._activeTexture(GL15C.GL_TEXTURE0);
 	}
 
 	// TODO: Don't just copy this from DeferredWorldRenderingPipeline

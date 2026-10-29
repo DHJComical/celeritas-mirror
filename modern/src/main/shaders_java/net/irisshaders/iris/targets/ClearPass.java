@@ -1,9 +1,12 @@
 package net.irisshaders.iris.targets;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.minecraft.client.Minecraft;
 import org.joml.Vector4f;
+import org.lwjgl.opengl.GL11C;
 
 import java.util.Objects;
 import java.util.function.IntSupplier;
@@ -24,7 +27,7 @@ public class ClearPass {
 	}
 
 	public void execute(Vector4f defaultClearColor) {
-		RenderSystem.viewport(0, 0, viewportX.getAsInt(), viewportY.getAsInt());
+		GlStateManager._viewport(0, 0, viewportX.getAsInt(), viewportY.getAsInt());
 		framebuffer.bind();
 
 		Vector4f color = Objects.requireNonNull(defaultClearColor);
@@ -33,8 +36,8 @@ public class ClearPass {
 			color = this.color;
 		}
 
-		RenderSystem.clearColor(color.x, color.y, color.z, color.w);
-		RenderSystem.clear(clearFlags, Minecraft.ON_OSX);
+		GL11C.glClearColor(color.x, color.y, color.z, color.w);
+		IrisRenderSystem.clear(clearFlags);
 	}
 
 	public GlFramebuffer getFramebuffer() {

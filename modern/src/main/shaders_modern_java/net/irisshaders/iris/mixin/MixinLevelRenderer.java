@@ -172,7 +172,7 @@ public class MixinLevelRenderer {
 	// Do this before sky rendering so it's ready before the sky render starts.
 	@Inject(method = "renderLevel", at = @At(value = "INVOKE_STRING", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", args = "ldc=sky"))
 	private void iris$renderTerrainShadows(CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) Camera camera) {
-		pipeline.renderShadows((LevelRendererAccessor) this, camera);
+		pipeline.renderShadows((LevelRenderer) (Object) this, camera);
 	}
 
 	@ModifyVariable(method = "renderSky", at = @At(value = "HEAD"), index = 5, argsOnly = true)

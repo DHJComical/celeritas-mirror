@@ -63,7 +63,7 @@ public class ProgramSamplers {
 
 		if (initializer != null) {
 			for (GlUniform1iCall call : initializer) {
-				RenderSystem.glUniform1i(call.location(), call.value());
+				GlStateManager._glUniform1i(call.location(), call.value());
 			}
 
 			initializer = null;
@@ -77,7 +77,7 @@ public class ProgramSamplers {
 			samplerBinding.update();
 		}
 
-		RenderSystem.activeTexture(GL20C.GL_TEXTURE0 + activeTexture);
+		GlStateManager._activeTexture(GL20C.GL_TEXTURE0 + activeTexture);
 	}
 
 	public void removeListeners() {

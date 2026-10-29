@@ -40,6 +40,7 @@ import net.irisshaders.iris.shadows.ShadowRenderTargets;
 import net.irisshaders.iris.targets.BufferFlipper;
 import net.irisshaders.iris.targets.RenderTarget;
 import net.irisshaders.iris.targets.RenderTargets;
+import net.irisshaders.iris.targets.VanillaTargets;
 import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
@@ -227,7 +228,7 @@ public class CompositeRenderer {
 	}
 
 	public void renderAll() {
-		RenderSystem.disableBlend();
+		GlStateManager._disableBlend();
 
 		FullScreenQuadRenderer.INSTANCE.begin();
 		com.mojang.blaze3d.pipeline.RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
@@ -254,7 +255,7 @@ public class CompositeRenderer {
 			}
 
 			if (!renderPass.mipmappedBuffers.isEmpty()) {
-				RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+				GlStateManager._activeTexture(GL15C.GL_TEXTURE0);
 
 				for (int index : renderPass.mipmappedBuffers) {
 					setupMipmapping(CompositeRenderer.this.renderTargets.get(index), renderPass.stageReadsFromAlt.contains(index));
@@ -265,14 +266,14 @@ public class CompositeRenderer {
 			float scaledHeight = renderPass.viewHeight * renderPass.viewportScale.scale();
 			int beginWidth = (int) (renderPass.viewWidth * renderPass.viewportScale.viewportX());
 			int beginHeight = (int) (renderPass.viewHeight * renderPass.viewportScale.viewportY());
-			RenderSystem.viewport(beginWidth, beginHeight, (int) scaledWidth, (int) scaledHeight);
+			GlStateManager._viewport(beginWidth, beginHeight, (int) scaledWidth, (int) scaledHeight);
 
 			renderPass.framebuffer.bind();
 			renderPass.program.use();
 			if (renderPass.blendModeOverride != null) {
 				renderPass.blendModeOverride.apply();
 			} else {
-				RenderSystem.disableBlend();
+				GlStateManager._disableBlend();
 			}
 
 			// program is the identifier for composite :shrug:
@@ -287,7 +288,7 @@ public class CompositeRenderer {
 
 		// Make sure to reset the viewport to how it was before... Otherwise weird issues could occur.
 		// Also bind the "main" framebuffer if it isn't already bound.
-		Minecraft.getInstance().getMainRenderTarget().bindWrite(true);
+		VanillaTargets.bind(Minecraft.getInstance().getMainRenderTarget(), true);
 		ProgramUniforms.clearActiveUniforms();
 		ProgramSamplers.clearActiveSamplers();
 		GlStateManager._glUseProgram(0);
@@ -297,12 +298,12 @@ public class CompositeRenderer {
 			// Unbind all textures that we may have used.
 			// NB: This is necessary for shader pack reloading to work propely
 			if (GlStateManagerAccessor.getTEXTURES()[i].binding != 0) {
-				RenderSystem.activeTexture(GL15C.GL_TEXTURE0 + i);
-				RenderSystem.bindTexture(0);
+				GlStateManager._activeTexture(GL15C.GL_TEXTURE0 + i);
+				GlStateManager._bindTexture(0);
 			}
 		}
 
-		RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+		GlStateManager._activeTexture(GL15C.GL_TEXTURE0);
 	}
 
 	// TODO: Don't just copy this from DeferredWorldRenderingPipeline

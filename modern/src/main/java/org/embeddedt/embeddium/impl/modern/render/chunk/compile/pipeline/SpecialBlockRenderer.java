@@ -1,7 +1,10 @@
 //? if shaders {
 package org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline;
 
+//? if <26.1 {
 import net.minecraft.client.renderer.RenderType;
+//?} else
+//import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
@@ -14,7 +17,10 @@ public class SpecialBlockRenderer {
     private final ChunkVertexEncoder.Vertex[] vertices = ChunkVertexEncoder.Vertex.uninitializedQuad();
 
     public void voxelizeLightBlock(BlockPos relativeBlockPos, BlockState blockState, ChunkBuildBuffers buffers) {
+        //? if <26.1 {
         var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(RenderType.cutout());
+        //?} else
+        //var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(ChunkSectionLayer.CUTOUT);
 
         if (buffers.get(material).getEncoder() instanceof ContextAwareChunkVertexEncoder encoder) {
             int relX = relativeBlockPos.getX();

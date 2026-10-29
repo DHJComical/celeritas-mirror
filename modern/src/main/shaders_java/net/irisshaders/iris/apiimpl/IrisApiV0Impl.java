@@ -4,6 +4,7 @@ import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.api.v0.IrisApi;
 import net.irisshaders.iris.api.v0.IrisApiConfig;
 import net.irisshaders.iris.api.v0.IrisTextVertexSink;
+//? if <26.1
 import net.irisshaders.iris.gui.screen.ShaderPackScreen;
 import net.irisshaders.iris.pipeline.VanillaRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
@@ -41,7 +42,10 @@ public class IrisApiV0Impl implements IrisApi {
 
 	@Override
 	public Object openMainIrisScreenObj(Object parent) {
+		//? if <26.1 {
 		return new ShaderPackScreen((Screen) parent);
+		//?} else
+		//return parent;
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package net.irisshaders.iris.gl.program;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.shaders.ProgramManager;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
@@ -36,7 +35,7 @@ public final class ComputeProgram extends GlObject {
 
 	public static void unbind() {
 		ProgramUniforms.clearActiveUniforms();
-		ProgramManager.glUseProgram(0);
+		GlStateManager._glUseProgram(0);
 	}
 
 	public void setWorkGroupInfo(Vector2f relativeWorkGroups, Vector3i absoluteWorkGroups, FilledIndirectPointer indirectPointer) {
@@ -65,7 +64,7 @@ public final class ComputeProgram extends GlObject {
 	}
 
 	public void use() {
-		ProgramManager.glUseProgram(handle());
+		GlStateManager._glUseProgram(handle());
 
 		uniforms.update();
 		samplers.update();

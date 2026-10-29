@@ -40,7 +40,7 @@ public class IrisExclusiveUniforms {
 		uniforms.uniform1f(UniformUpdateFrequency.PER_TICK, "cloudTime", CapturedRenderingState.INSTANCE::getCloudTime);
 		uniforms.uniform3d(UniformUpdateFrequency.PER_FRAME, "relativeEyePosition", () -> CameraUniforms.getUnshiftedCameraPosition().sub(getEyePosition()));
 		uniforms.uniform3d(UniformUpdateFrequency.PER_FRAME, "playerLookVector", () -> {
-			if (Minecraft.getInstance().cameraEntity instanceof LivingEntity livingEntity) {
+			if (Minecraft.getInstance().getCameraEntity() instanceof LivingEntity livingEntity) {
                 Vec3 vec = livingEntity.getViewVector(CapturedRenderingState.INSTANCE.getTickDelta());
                 return new Vector3d(vec.x(), vec.y(), vec.z());
 			} else {
@@ -56,7 +56,9 @@ public class IrisExclusiveUniforms {
 			if (Minecraft.getInstance().level != null) {
 				return StreamSupport.stream(Minecraft.getInstance().level.entitiesForRendering().spliterator(), false).filter(bolt -> bolt instanceof LightningBolt).findAny().map(bolt -> {
 					Vector3d unshiftedCameraPosition = CameraUniforms.getUnshiftedCameraPosition();
-                    //? if >=1.21 {
+                    //? if >=26.1 {
+                    //float deltaFrameTime = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
+                    //?} else if >=1.21 {
                     //float deltaFrameTime = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
                     //?} else {
                     float deltaFrameTime = Minecraft.getInstance().getDeltaFrameTime();
@@ -156,7 +158,7 @@ public class IrisExclusiveUniforms {
 			});
 			uniforms.uniform1f(UniformUpdateFrequency.PER_FRAME, "cloudHeight", () -> {
 				if (level != null) {
-					return level.effects().getCloudHeight();
+					return VanillaEnvironment.cloudHeight(level);
 				} else {
 					return 192.0;
 				}

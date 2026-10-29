@@ -27,6 +27,7 @@ import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
+import net.irisshaders.iris.texture.VanillaTextures;
 import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.builtin.BuiltinReplacementUniforms;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
@@ -35,6 +36,7 @@ import org.embeddedt.embeddium.impl.gl.shader.GlShader;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL32C;
@@ -205,7 +207,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 			matrix.get(buffer);
 			buffer.rewind();
 
-			RenderSystem.glUniformMatrix4(index, false, buffer);
+			GL20C.glUniformMatrix4fv(index, false, buffer);
 		}
 	}
 
@@ -217,7 +219,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 			matrix.get(buffer);
 			buffer.rewind();
 
-			RenderSystem.glUniformMatrix3(index, false, buffer);
+			GL20C.glUniformMatrix3fv(index, false, buffer);
 		}
 	}
 
@@ -236,8 +238,7 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 		setUniform(projectionUniform, toJOML(renderParam.dhProjectionMatrix));
 		setUniform(projectionInverseUniform, toJOML(renderParam.dhModelViewMatrix).invert());
 		setUniform(normalMatrix3fUniform, toJOML(renderParam.dhModelViewMatrix).invert().transpose3x3(new Matrix3f()));
-		Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
-		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, RenderSystem.getShaderTexture(2));
+		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, VanillaTextures.lightmap());
 		this.setUniform(this.instancedShaderProjectionModelViewMatrixUniform, toJOML(renderParam.dhProjectionMatrix).mul(toJOML(renderParam.dhModelViewMatrix)));
 
 		samplers.update();
@@ -274,13 +275,13 @@ public class IrisGenericRenderProgram implements IDhApiGenericObjectShaderProgra
 
 	public void free() {
 		GL43C.glDeleteProgram(id);
-		GlStateManager._glDeleteVertexArrays(va);
+		GL30C.glDeleteVertexArrays(va);
 	}
 
 	public void fillIndirectUniformData(DhApiRenderParam dhApiRenderParam, DhApiRenderableBoxGroupShading dhApiRenderableBoxGroupShading, IDhApiRenderableBoxGroup boxGroup, DhApiVec3d camPos) {
 		bind(dhApiRenderParam);
-		RenderSystem.enableDepthTest();
-		RenderSystem.depthFunc(GL30C.GL_LEQUAL);
+		GlStateManager._enableDepthTest();
+		GlStateManager._depthFunc(GL30C.GL_LEQUAL);
 		this.setUniform(this.instancedShaderOffsetChunkUniform,
 			new DhApiVec3i(
 				getChunkPosFromDouble(boxGroup.getOriginBlockPos().x),

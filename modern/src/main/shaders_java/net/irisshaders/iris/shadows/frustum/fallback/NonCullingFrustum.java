@@ -29,7 +29,7 @@ public class NonCullingFrustum extends Frustum implements ViewportProvider, org.
 
     @Override
     public Viewport sodium$createViewport() {
-        var camPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+        var camPos = Minecraft.getInstance().gameRenderer.getMainCamera()./*? if <26.1 {*/getPosition()/*?} else {*//*position()*//*?}*/;
         return new Viewport(this, pos.set(camPos.x, camPos.y, camPos.z));
     }
 

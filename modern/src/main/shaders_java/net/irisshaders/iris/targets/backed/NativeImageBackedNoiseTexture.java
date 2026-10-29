@@ -1,9 +1,12 @@
 package net.irisshaders.iris.targets.backed;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.texture.TextureAccess;
 import net.irisshaders.iris.gl.texture.TextureType;
+import net.irisshaders.iris.texture.VanillaTextures;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import org.lwjgl.opengl.GL11C;
 
 import java.util.Objects;
 import java.util.Random;
@@ -11,7 +14,11 @@ import java.util.function.IntSupplier;
 
 public class NativeImageBackedNoiseTexture extends DynamicTexture implements TextureAccess {
 	public NativeImageBackedNoiseTexture(int size) {
-		super(create(size));
+		super(/*? if >=26.1 {*//*() -> "iris noise texture", *//*?}*/create(size));
+
+		int id = VanillaTextures.glId(this);
+		IrisRenderSystem.texParameteri(id, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, GL11C.GL_LINEAR);
+		IrisRenderSystem.texParameteri(id, GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MAG_FILTER, GL11C.GL_LINEAR);
 	}
 
 	private static NativeImage create(int size) {
@@ -29,6 +36,7 @@ public class NativeImageBackedNoiseTexture extends DynamicTexture implements Tex
 		return image;
 	}
 
+	//? if <26.1 {
 	@Override
 	public void upload() {
 		NativeImage image = Objects.requireNonNull(getPixels());
@@ -36,6 +44,7 @@ public class NativeImageBackedNoiseTexture extends DynamicTexture implements Tex
 		bind();
 		image.upload(0, 0, 0, 0, 0, image.getWidth(), image.getHeight(), true, false, false, false);
 	}
+	//?}
 
 	@Override
 	public TextureType getType() {
@@ -44,6 +53,6 @@ public class NativeImageBackedNoiseTexture extends DynamicTexture implements Tex
 
 	@Override
 	public IntSupplier getTextureId() {
-		return this::getId;
+		return () -> VanillaTextures.glId(this);
 	}
 }

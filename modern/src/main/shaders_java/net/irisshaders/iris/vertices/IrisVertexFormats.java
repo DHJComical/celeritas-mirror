@@ -78,7 +78,7 @@ public class IrisVertexFormats {
 		ENTITY = new VertexFormat(entityElements.build());
 		GLYPH = new VertexFormat(glyphElements.build());
 		CLOUDS = new VertexFormat(cloudsElements.build());
-        //?} else {
+        //?} else if <26.1 {
         /*int LAST_UV = 0;
         for (int i = 0; i < VertexFormatElement.MAX_COUNT; i++) {
             VertexFormatElement element = VertexFormatElement.byId(i);
@@ -92,8 +92,20 @@ public class IrisVertexFormats {
         MID_TEXTURE_ELEMENT = VertexFormatElement.register(getNextVertexFormatElementId(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 2);
         TANGENT_ELEMENT = VertexFormatElement.register(getNextVertexFormatElementId(), 0, VertexFormatElement.Type.BYTE, VertexFormatElement.Usage.GENERIC, 4);
         MID_BLOCK_ELEMENT = VertexFormatElement.register(getNextVertexFormatElementId(), 0, VertexFormatElement.Type.BYTE, VertexFormatElement.Usage.GENERIC, 3);
+        int glyphPadding = 1;
+        *///?} else {
+        /*// 26.1 binds non-normalized integer elements as integer attributes rather than converting them to floats.
+        ENTITY_ELEMENT = VertexFormatElement.register(getNextVertexFormatElementId(), 0, VertexFormatElement.Type.SHORT, false, 2);
+        // 26.1 requires vertex sizes to be a multiple of 4, which the fourth entity ID component pads the formats to.
+        ENTITY_ID_ELEMENT = VertexFormatElement.register(getNextVertexFormatElementId(), 0, VertexFormatElement.Type.USHORT, false, 4);
+        MID_TEXTURE_ELEMENT = VertexFormatElement.register(getNextVertexFormatElementId(), 0, VertexFormatElement.Type.FLOAT, false, 2);
+        TANGENT_ELEMENT = VertexFormatElement.register(getNextVertexFormatElementId(), 0, VertexFormatElement.Type.BYTE, true, 4);
+        MID_BLOCK_ELEMENT = VertexFormatElement.register(getNextVertexFormatElementId(), 0, VertexFormatElement.Type.BYTE, false, 3);
+        int glyphPadding = 0;
+        *///?}
 
-        TERRAIN = VertexFormat.builder()
+        //? if >=1.21 {
+        /*TERRAIN = VertexFormat.builder()
                 .add("Position", VertexFormatElement.POSITION)
                 .add("Color", VertexFormatElement.COLOR)
                 .add("UV0", VertexFormatElement.UV0)
@@ -130,7 +142,7 @@ public class IrisVertexFormats {
                 .add("iris_Entity", ENTITY_ID_ELEMENT)
                 .add("mc_midTexCoord", MID_TEXTURE_ELEMENT)
                 .add("at_tangent", TANGENT_ELEMENT)
-                .padding(1)
+                .padding(glyphPadding)
                 .build();
 
         CLOUDS = VertexFormat.builder()

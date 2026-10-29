@@ -33,10 +33,11 @@ import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.helpers.OptionalBoolean;
 import net.irisshaders.iris.helpers.Tri;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
-import net.irisshaders.iris.mixin.LevelRendererAccessor;
 import net.irisshaders.iris.modern.materialmap.BlockMaterialMapping;
+//? if <26.1
 import net.irisshaders.iris.modern.materialmap.ModelTextureAnalyzer;
 import net.irisshaders.iris.pathways.CenterDepthSampler;
+//? if <26.1
 import net.irisshaders.iris.pathways.HorizonRenderer;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 import net.irisshaders.iris.pathways.colorspace.ColorSpaceConverter;
@@ -73,11 +74,13 @@ import net.irisshaders.iris.targets.ClearPass;
 import net.irisshaders.iris.targets.ClearPassCreator;
 import net.irisshaders.iris.targets.RenderTargetStateListener;
 import net.irisshaders.iris.targets.RenderTargets;
+import net.irisshaders.iris.targets.VanillaTargets;
 import net.irisshaders.iris.targets.backed.NativeImageBackedSingleColorTexture;
 import net.irisshaders.iris.texture.TextureInfoCache;
 import net.irisshaders.iris.texture.format.TextureFormat;
 import net.irisshaders.iris.texture.format.TextureFormatLoader;
 import net.irisshaders.iris.texture.pbr.PBRTextureHolder;
+//? if <26.1
 import net.irisshaders.iris.texture.pbr.PBRTextureManager;
 import net.irisshaders.iris.texture.pbr.PBRType;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
@@ -85,7 +88,9 @@ import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import net.minecraft.client.Camera;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.Minecraft;
+//? if <26.1
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -139,6 +144,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 	private final ImmutableSet<Integer> flippedBeforeShadow;
 	private final ImmutableSet<Integer> flippedAfterPrepare;
 	private final ImmutableSet<Integer> flippedAfterTranslucent;
+	//? if <26.1
 	private final HorizonRenderer horizonRenderer = new HorizonRenderer();
 	@Nullable
 	private final ComputeProgram[] shadowComputes;
@@ -229,7 +235,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		pendingPrograms.submitComputes(programSet.getSetup(), TextureStage.SETUP);
 
 		RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
-		int depthTextureId = main.getDepthTextureId();
+		int depthTextureId = VanillaTargets.depthTexture(main);
 		int internalFormat = TextureInfoCache.INSTANCE.getInfo(depthTextureId).getInternalFormat();
 		DepthBufferFormat depthBufferFormat = DepthBufferFormat.fromGlEnumOrDefault(internalFormat);
 
@@ -859,6 +865,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 	@Override
 	public void onSetShaderTexture(int id) {
+		//? if <26.1 {
 		if (shouldBindPBR && isRenderingWorld) {
 			PBRTextureHolder pbrHolder = PBRTextureManager.INSTANCE.getOrLoadHolder(id);
 			currentNormalTexture = pbrHolder.normalTexture().getId();
@@ -874,6 +881,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 			PBRTextureManager.notifyPBRTexturesChanged();
 		}
+		//?}
 	}
 
 	private void rebuildClearPasses() {
@@ -895,17 +903,20 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
             WorldRenderingSettings.INSTANCE.setBlockStateIds(
                     BlockMaterialMapping.createBlockStateIdMap(pack.getIdMap().getBlockProperties()));
             WorldRenderingSettings.INSTANCE.setBlockTypeIds(BlockMaterialMapping.createBlockTypeMap(pack.getIdMap().getBlockRenderTypeMap()));
+            //? if <26.1 {
             if (Iris.getIrisConfig().isEnableTextureMaterialFallback()) {
                 WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(ModelTextureAnalyzer.runAnalysisSync(WorldRenderingSettings.INSTANCE.getBlockStateIds()));
             } else {
                 WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(null);
             }
+            //?} else
+            //WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(null);
             WorldRenderingSettings.INSTANCE.reloadRendererIfRequired();
             blockIdsNeedPopulation = false;
         }
 
 		// Make sure we're using texture unit 0 for this.
-		RenderSystem.activeTexture(GL15C.GL_TEXTURE0);
+		GlStateManager._activeTexture(GL15C.GL_TEXTURE0);
 		Vector4f emptyClearColor = new Vector4f(1.0F);
 
         GLDebug.pushGroup(100, "Clear textures");
@@ -927,7 +938,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			} else {
 				// Clear depth first, regardless of any color clearing.
 				shadowRenderTargets.getDepthSourceFb().bind();
-				RenderSystem.clear(GL21C.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+				IrisRenderSystem.clear(GL21C.GL_DEPTH_BUFFER_BIT);
 
 				ImmutableList<ClearPass> passes;
 
@@ -962,7 +973,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		RenderTarget main = Minecraft.getInstance().getMainRenderTarget();
 
-		int depthTextureId = main.getDepthTextureId();
+		int depthTextureId = VanillaTargets.depthTexture(main);
 		int internalFormat = TextureInfoCache.INSTANCE.getInfo(depthTextureId).getInternalFormat();
 		DepthBufferFormat depthBufferFormat = DepthBufferFormat.fromGlEnumOrDefault(internalFormat);
 
@@ -1017,7 +1028,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		//
 		// If we forget to do this, then weird lines appear at the top of the screen and the right of the screen
 		// on Sildur's Vibrant Shaders.
-		main.bindWrite(true);
+		VanillaTargets.bind(main, true);
 		isMainBound = true;
 
 		if (changed) {
@@ -1042,6 +1053,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		setPhase(WorldRenderingPhase.SKY);
 
+		//? if <26.1 {
 		// Render our horizon box before actual sky rendering to avoid being broken by mods that do weird things
 		// while rendering the sky.
 		//
@@ -1049,22 +1061,23 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		DimensionSpecialEffects.SkyType skyType = Minecraft.getInstance().level.effects().skyType();
 
 		if (skyType == DimensionSpecialEffects.SkyType.NORMAL) {
-			RenderSystem.depthMask(false);
+			GlStateManager._depthMask(false);
 
 			RenderSystem.setShaderColor(fogColor.x, fogColor.y, fogColor.z, fogColor.w);
 
 			horizonRenderer.renderHorizon(CapturedRenderingState.INSTANCE.getGbufferModelView(), CapturedRenderingState.INSTANCE.getGbufferProjection(), GameRenderer.getPositionShader());
 
-			RenderSystem.depthMask(true);
+			GlStateManager._depthMask(true);
 
 			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 		}
+		//?}
 	}
 
 	@Override
-	public void renderShadows(LevelRendererAccessor worldRenderer, Camera playerCamera) {
+	public void renderShadows(LevelRenderer levelRenderer, Camera playerCamera) {
 		if (shadowRenderer != null) {
-			this.shadowRenderer.renderShadows(worldRenderer, playerCamera);
+			this.shadowRenderer.renderShadows(levelRenderer, playerCamera);
 		}
 
 		prepareRenderer.renderAll();
@@ -1111,7 +1124,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		deferredRenderer.renderAll();
 
-		RenderSystem.enableBlend();
+		GlStateManager._enableBlend();
 
 		// note: we are careful not to touch the lightmap texture unit or overlay color texture unit here,
 		// so we don't need to do anything to restore them if needed.
@@ -1122,8 +1135,10 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		//
 		// Not good!
 
+		//? if <26.1 {
 		// Reset shader or whatever...
 		RenderSystem.setShader(GameRenderer::getPositionShader);
+		//?}
 	}
 
 	@Override
@@ -1136,7 +1151,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 	@Override
 	public void finalizeGameRendering() {
-		colorSpaceConverter.process(Minecraft.getInstance().getMainRenderTarget().getColorTextureId());
+		colorSpaceConverter.process(VanillaTargets.colorTexture(Minecraft.getInstance().getMainRenderTarget()));
 	}
 
 	@Override
@@ -1257,7 +1272,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		//
 		// Without this code, there will be weird issues when reloading certain shaderpacks.
 		for (int i = 0; i < 16; i++) {
-			GlStateManager.glActiveTexture(GL20C.GL_TEXTURE0 + i);
+			GlStateManager._activeTexture(GL20C.GL_TEXTURE0 + i);
 			IrisRenderSystem.unbindAllSamplers();
 			GlStateManager._bindTexture(0);
 		}
@@ -1265,12 +1280,14 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		// Set the active texture unit to unit 0
 		//
 		// This seems to be what most code expects. It's a sane default in any case.
-		GlStateManager.glActiveTexture(GL20C.GL_TEXTURE0);
+		GlStateManager._activeTexture(GL20C.GL_TEXTURE0);
 
+		//? if <26.1 {
 		for (int i = 0; i < 12; i++) {
 			// Clear all shader textures
 			RenderSystem.setShaderTexture(i, 0);
 		}
+		//?}
 
 		if (shadowCompositeRenderer != null) {
 			shadowCompositeRenderer.destroy();
@@ -1286,13 +1303,14 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		whitePixel.close();
 		colorSpaceConverter.destroy();
 
+		//? if <26.1
 		horizonRenderer.destroy();
 
 		GlStateManager._glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);
 		GlStateManager._glBindFramebuffer(GL30C.GL_DRAW_FRAMEBUFFER, 0);
 		GlStateManager._glBindFramebuffer(GL30C.GL_FRAMEBUFFER, 0);
 
-		Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+		VanillaTargets.bind(Minecraft.getInstance().getMainRenderTarget(), false);
 
 		renderTargets.destroy();
 		dhCompat.clearPipeline();

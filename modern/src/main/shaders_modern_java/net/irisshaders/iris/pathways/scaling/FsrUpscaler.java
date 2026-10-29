@@ -208,15 +208,15 @@ public class FsrUpscaler {
 		this.maxCoord.set(width - 1, height - 1);
 		this.sharpnessStops = sharpnessStops;
 
-		RenderSystem.disableBlend();
-		RenderSystem.depthMask(false);
-		RenderSystem.colorMask(true, true, true, true);
+		GlStateManager._disableBlend();
+		GlStateManager._depthMask(false);
+		IrisRenderSystem.colorMask(true, true, true, true);
 
 		FullScreenQuadRenderer.INSTANCE.begin();
 
 		// EASU: the reduced-resolution world image up to output resolution.
 		this.inputTexture = source.getColorTextureId();
-		RenderSystem.viewport(0, 0, width, height);
+		GlStateManager._viewport(0, 0, width, height);
 		easuFramebuffer.bind();
 		easuProgram.use();
 		FullScreenQuadRenderer.INSTANCE.renderQuad();
@@ -231,8 +231,8 @@ public class FsrUpscaler {
 		FullScreenQuadRenderer.INSTANCE.end();
 
 		Program.unbind();
-		RenderSystem.depthMask(true);
-		RenderSystem.activeTexture(GL13C.GL_TEXTURE0);
+		GlStateManager._depthMask(true);
+		GlStateManager._activeTexture(GL13C.GL_TEXTURE0);
 	}
 
 	public void destroy() {

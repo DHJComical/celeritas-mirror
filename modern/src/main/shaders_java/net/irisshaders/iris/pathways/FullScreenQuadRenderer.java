@@ -1,33 +1,61 @@
 package net.irisshaders.iris.pathways;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.GlStateManager;
+//? if <26.1 {
 import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexBuffer;
-import com.mojang.blaze3d.vertex.VertexFormat;
+//?}
 import net.irisshaders.iris.gl.IrisRenderSystem;
-import org.embeddedt.embeddium.api.vertex.format.common.TexturedVertex;
+import org.lwjgl.opengl.GL11C;
+import org.lwjgl.opengl.GL15C;
+import org.lwjgl.opengl.GL20C;
+import org.lwjgl.opengl.GL30C;
 import org.lwjgl.system.MemoryStack;
+
+import java.nio.FloatBuffer;
 
 /**
  * Renders a full-screen textured quad to the screen. Used in composite / deferred rendering.
+ * <p>
+ * The quad provides {@code Position} at attribute 0 and {@code UV0} at attribute 1, matching
+ * {@link net.irisshaders.iris.gl.shader.ProgramCreator#DEFAULT_ATTRIBUTE_LOCATIONS}.
  */
 public class FullScreenQuadRenderer {
 	public static final FullScreenQuadRenderer INSTANCE = new FullScreenQuadRenderer();
 
-	private final VertexBuffer quad;
+	private static final int POSITION_LOCATION = 0;
+	private static final int UV_LOCATION = 1;
+	private static final int STRIDE = 5 * Float.BYTES;
+
+	private final int vertexArray;
+	private final int vertexBuffer;
 
 	private FullScreenQuadRenderer() {
-        quad = BufferHelper.makeStaticBuffer(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX, consumer -> {
-            try (MemoryStack stack = MemoryStack.stackPush()) {
-                long ptr = stack.nmalloc(TexturedVertex.STRIDE * 4);
-                TexturedVertex.put(ptr + 0 * TexturedVertex.STRIDE, 0, 0, 0, 0, 0);
-                TexturedVertex.put(ptr + 1 * TexturedVertex.STRIDE, 1, 0, 0, 1, 0);
-                TexturedVertex.put(ptr + 2 * TexturedVertex.STRIDE, 1, 1, 0, 1, 1);
-                TexturedVertex.put(ptr + 3 * TexturedVertex.STRIDE, 0, 1, 0, 0, 1);
-                consumer.push(stack, ptr, 4, TexturedVertex.FORMAT);
-            }
-        });
+		vertexArray = GL30C.glGenVertexArrays();
+		vertexBuffer = GL15C.glGenBuffers();
+
+		GL30C.glBindVertexArray(vertexArray);
+		GL15C.glBindBuffer(GL15C.GL_ARRAY_BUFFER, vertexBuffer);
+
+		try (MemoryStack stack = MemoryStack.stackPush()) {
+			// x, y, z, u, v for each corner, in triangle strip order.
+			FloatBuffer vertices = stack.floats(
+				0, 0, 0, 0, 0,
+				1, 0, 0, 1, 0,
+				0, 1, 0, 0, 1,
+				1, 1, 0, 1, 1
+			);
+
+			GL15C.glBufferData(GL15C.GL_ARRAY_BUFFER, vertices, GL15C.GL_STATIC_DRAW);
+		}
+
+		GL20C.glEnableVertexAttribArray(POSITION_LOCATION);
+		GL20C.glVertexAttribPointer(POSITION_LOCATION, 3, GL11C.GL_FLOAT, false, STRIDE, 0);
+		GL20C.glEnableVertexAttribArray(UV_LOCATION);
+		GL20C.glVertexAttribPointer(UV_LOCATION, 2, GL11C.GL_FLOAT, false, STRIDE, 3 * Float.BYTES);
+
+		GL30C.glBindVertexArray(0);
+		GL15C.glBindBuffer(GL15C.GL_ARRAY_BUFFER, 0);
 	}
 
 	public void render() {
@@ -39,26 +67,24 @@ public class FullScreenQuadRenderer {
 	}
 
 	public void begin() {
-        VertexBuffer.unbind();
-		RenderSystem.disableDepthTest();
-		BufferUploader.reset();
-		quad.bind();
+		GlStateManager._disableDepthTest();
+		GL30C.glBindVertexArray(vertexArray);
 	}
 
 	public void renderQuad() {
 		IrisRenderSystem.overridePolygonMode();
-		quad.draw();
+		GL11C.glDrawArrays(GL11C.GL_TRIANGLE_STRIP, 0, 4);
 		IrisRenderSystem.restorePolygonMode();
 	}
 
 	public void end() {
-		// NB: No need to clear the buffer state by calling glDisableVertexAttribArray - this VAO will always
-		// have the same format, and buffer state is only associated with a given VAO, so we can keep it bound.
-		//
-		// Using quad.getFormat().clearBufferState() causes some Intel drivers to freak out:
-		// https://github.com/IrisShaders/Iris/issues/1214
+		GlStateManager._enableDepthTest();
+		GL30C.glBindVertexArray(0);
 
-		RenderSystem.enableDepthTest();
-        VertexBuffer.unbind();
+		//? if <26.1 {
+		// Vanilla caches its bound vertex array and immediate-mode buffer.
+		VertexBuffer.unbind();
+		BufferUploader.reset();
+		//?}
 	}
 }

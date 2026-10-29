@@ -4,12 +4,6 @@ import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 import net.irisshaders.iris.pathways.scaling.RenderScalePreset;
 import net.irisshaders.iris.pathways.scaling.UpscaleMode;
-import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
-import net.minecraft.client.OptionInstance;
-import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.network.chat.Component;
-
-import java.io.IOException;
 
 public class IrisVideoSettings {
 	public static int shadowDistance = 32;

@@ -103,7 +103,7 @@ public class GlFramebuffer extends GlObject {
 	public int getStatus() {
 		GlStateManager._glBindFramebuffer(GL30C.GL_FRAMEBUFFER, handle());
 
-		return GlStateManager.glCheckFramebufferStatus(GL30C.GL_FRAMEBUFFER);
+		return GL30C.glCheckFramebufferStatus(GL30C.GL_FRAMEBUFFER);
 	}
 
 	public int getId() {

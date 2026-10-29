@@ -212,6 +212,8 @@ tasks.named<ProcessResources>("processResources") {
     val isFabric = modLoader == ModLoader.FABRIC
     val modId = rootProject.property("mod_id").toString()
     val mixinConfigs = modMixinConfigs
+    val declareAllMixinConfigs = (stonecutterExt?.compare(stonecutterExt.current.version, "26.1") ?: -1) >= 0
+    inputs.property("mixinConfigs", mixinConfigs)
     // The shader pack Flywheel backend depends on Flywheel internals that changed in 1.0.6, and replaces Colorwheel.
     val minFlywheelVersion = if (versionedProperty("flywheel_version") != null) "1.0.6" else null
     inputs.property("minFlywheelVersion", minFlywheelVersion ?: "")
@@ -236,7 +238,11 @@ tasks.named<ProcessResources>("processResources") {
 
         if (isNeoForge) {
             if (Files.exists(modsTOML)) {
-                modsTOML.toFile().appendText("\n\n[[mixins]]\nconfig = \"${modId}.mixins.json\"")
+                // 26.1 no longer reads mixin configs from the jar manifest or the --mixin.config argument.
+                val declaredConfigs = if (declareAllMixinConfigs) mixinConfigs else listOf("${modId}.mixins.json")
+                for (config in declaredConfigs) {
+                    modsTOML.toFile().appendText("\n\n[[mixins]]\nconfig = \"${config}\"")
+                }
 
                 Files.copy(modsTOML, outputDir.resolve("META-INF/neoforge.mods.toml"), StandardCopyOption.REPLACE_EXISTING)
             }

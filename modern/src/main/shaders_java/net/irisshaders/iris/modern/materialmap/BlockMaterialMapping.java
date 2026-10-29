@@ -6,7 +6,10 @@ import it.unimi.dsi.fastutil.objects.*;
 import net.irisshaders.iris.shaderpack.materialmap.BlockEntry;
 import net.irisshaders.iris.shaderpack.materialmap.BlockRenderType;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
+//? if <26.1 {
 import net.minecraft.client.renderer.RenderType;
+//?} else
+//import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -41,13 +44,18 @@ public class BlockMaterialMapping {
 		return blockStateIds;
 	}
 
+	//? if <26.1 {
 	public static Map<Block, RenderType> createBlockTypeMap(Map<NamespacedId, BlockRenderType> blockPropertiesMap) {
 		Map<Block, RenderType> blockTypeIds = new Object2ObjectOpenHashMap<>();
+	//?} else {
+	/*public static Map<Block, ChunkSectionLayer> createBlockTypeMap(Map<NamespacedId, BlockRenderType> blockPropertiesMap) {
+		Map<Block, ChunkSectionLayer> blockTypeIds = new Object2ObjectOpenHashMap<>();
+	*///?}
 
 		blockPropertiesMap.forEach((id, blockType) -> {
 			ResourceLocation resourceLocation = ResourceLocationUtil.make(id.getNamespace(), id.getName());
 
-            Block block = BuiltInRegistries.BLOCK.get(resourceLocation);
+            Block block = BuiltInRegistries.BLOCK./*? if <26.1 {*/get/*?} else {*//*getValue*//*?}*/(resourceLocation);
 
             if (block != Blocks.AIR) {
                 blockTypeIds.put(block, convertBlockToRenderType(blockType));
@@ -57,6 +65,7 @@ public class BlockMaterialMapping {
 		return blockTypeIds;
 	}
 
+	//? if <26.1 {
 	private static RenderType convertBlockToRenderType(BlockRenderType type) {
 		if (type == null) {
 			return null;
@@ -69,6 +78,20 @@ public class BlockMaterialMapping {
 			case TRANSLUCENT -> RenderType.translucent();
 		};
 	}
+	//?} else {
+	/*private static ChunkSectionLayer convertBlockToRenderType(BlockRenderType type) {
+		if (type == null) {
+			return null;
+		}
+
+		// 26.1 has a single cutout layer.
+		return switch (type) {
+			case SOLID -> ChunkSectionLayer.SOLID;
+			case CUTOUT, CUTOUT_MIPPED -> ChunkSectionLayer.CUTOUT;
+			case TRANSLUCENT -> ChunkSectionLayer.TRANSLUCENT;
+		};
+	}
+	*///?}
 
     private static final ClassValue<Boolean> IS_APPEARANCE_CHANGING = new ClassValue<>() {
         @Override
@@ -95,7 +118,7 @@ public class BlockMaterialMapping {
     private static Iterable<BlockEntry> getTagEntryBlocks(BlockEntry tagEntry) {
         //? if >=1.19.3 {
         var tag = TagKey.create(Registries.BLOCK, ResourceLocationUtil.make(tagEntry.id().getNamespace().toLowerCase(Locale.ROOT), tagEntry.id().getName().toLowerCase(Locale.ROOT)));
-        var tagOpt = BuiltInRegistries.BLOCK.getTag(tag);
+        var tagOpt = BuiltInRegistries.BLOCK./*? if <26.1 {*/getTag/*?} else {*//*get*//*?}*/(tag);
         //?} else {
         /*var tag = TagKey.create(Registry.BLOCK_REGISTRY, ResourceLocationUtil.make(tagEntry.id().getNamespace().toLowerCase(Locale.ROOT), tagEntry.id().getName().toLowerCase(Locale.ROOT)));
         var tagOpt = Registry.BLOCK.getTag(tag);
@@ -108,7 +131,7 @@ public class BlockMaterialMapping {
 
         var holderSet = tagOpt.orElseThrow();
         return () -> Iterators.transform(holderSet.iterator(), holder -> {
-            var location = holder.unwrapKey().orElseThrow().location();
+            var location = holder.unwrapKey().orElseThrow()./*? if <26.1 {*/location()/*?} else {*//*identifier()*//*?}*/;
             return new BlockEntry(new NamespacedId(location.getNamespace(), location.getPath()), tagEntry.propertyPredicates(), false);
         });
     }
@@ -127,7 +150,7 @@ public class BlockMaterialMapping {
 			throw new IllegalStateException("Failed to get entry for " + intId, exception);
 		}
 
-		Block block = BuiltInRegistries.BLOCK.get(resourceLocation);
+		Block block = BuiltInRegistries.BLOCK./*? if <26.1 {*/get/*?} else {*//*getValue*//*?}*/(resourceLocation);
 
 		// If the block doesn't exist, by default the registry will return AIR. That probably isn't what we want.
 		if (block == Blocks.AIR) {

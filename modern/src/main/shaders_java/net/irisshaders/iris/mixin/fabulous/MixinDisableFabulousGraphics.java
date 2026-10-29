@@ -1,7 +1,10 @@
 package net.irisshaders.iris.mixin.fabulous;
 
 import net.irisshaders.iris.Iris;
+//? if <26.1 {
 import net.minecraft.client.GraphicsStatus;
+//?} else
+//import net.minecraft.client.GraphicsPreset;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -35,10 +38,18 @@ public class MixinDisableFabulousGraphics {
 			return;
 		}
 
+		//? if <26.1 {
 		if (options.graphicsMode().get() == GraphicsStatus.FABULOUS) {
             CeleritasShaders.logger().warn("Fabulous mode is forcefully disabled if shaders are on");
 			// Disable fabulous graphics when shaders are enabled.
 			options.graphicsMode().set(GraphicsStatus.FANCY);
 		}
+		//?} else {
+		/*if (options.improvedTransparency().get()) {
+            CeleritasShaders.logger().warn("Improved transparency is forcefully disabled if shaders are on");
+			options.improvedTransparency().set(false);
+			options.graphicsPreset().set(GraphicsPreset.CUSTOM);
+		}
+		*///?}
 	}
 }

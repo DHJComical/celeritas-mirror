@@ -15,7 +15,6 @@ import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderTextureSlot;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
-import org.embeddedt.embeddium.impl.util.TextureUtil;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
 import net.irisshaders.iris.gl.blending.BufferBlendOverride;
@@ -25,6 +24,8 @@ import net.irisshaders.iris.gl.program.ProgramUniforms;
 import net.irisshaders.iris.gl.texture.TextureType;
 import net.irisshaders.iris.pipeline.SodiumTerrainPipeline;
 import net.irisshaders.iris.samplers.IrisSamplers;
+import net.irisshaders.iris.targets.VanillaTargets;
+import net.irisshaders.iris.texture.VanillaTextures;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import net.irisshaders.iris.vertices.ImmediateState;
@@ -97,12 +98,12 @@ public class IrisChunkShaderInterface implements ChunkShaderInterface {
         if (ShadowRenderingState.areShadowsCurrentlyBeingRendered()) {
             // No back face culling during the shadow pass
             // TODO: Hopefully this won't be necessary in the future...
-            RenderSystem.disableCull();
+            GlStateManager._disableCull();
         }
 
 		// See IrisSamplers#addLevelSamplers
-		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.ALBEDO_TEXTURE_UNIT, TextureUtil.getBlockTextureId());
-		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, TextureUtil.getLightTextureId());
+		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.ALBEDO_TEXTURE_UNIT, VanillaTextures.blockAtlas());
+		IrisRenderSystem.bindTextureToUnit(TextureType.TEXTURE_2D.getGlType(), IrisSamplers.LIGHTMAP_TEXTURE_UNIT, VanillaTextures.lightmap());
 		// This is what is expected by the rest of rendering state, failure to do this will cause blurry textures on particles.
 		GlStateManager._activeTexture(GL32C.GL_TEXTURE0 + IrisSamplers.LIGHTMAP_TEXTURE_UNIT);
 		CapturedRenderingState.INSTANCE.setCurrentAlphaTest(alpha);
@@ -228,7 +229,7 @@ public class IrisChunkShaderInterface implements ChunkShaderInterface {
         SodiumTerrainPipeline pipeline = getSodiumTerrainPipeline();
 
         if (pipeline != null) {
-            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
+            VanillaTargets.bind(Minecraft.getInstance().getMainRenderTarget(), false);
         }
     }
 }

@@ -2,11 +2,12 @@ package net.irisshaders.iris.gl.shader;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.GlUtil;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.compat.dh.DHCompat;
+//? if colorwheel {
 import net.irisshaders.iris.compat.flywheel.Colorwheel;
 import net.irisshaders.iris.compat.flywheel.engine.ClrwlRenderingPhase;
+//?}
 import net.irisshaders.iris.helpers.StringPair;
 import net.irisshaders.iris.pathways.HandRenderer;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
@@ -17,6 +18,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.loader.common.EarlyLoaderServices;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30C;
 import org.taumc.celeritas.shaders.CeleritasShaders;
@@ -56,6 +58,7 @@ public class StandardMacros {
 		define(standardDefines, getRenderer());
 		define(standardDefines, "IS_IRIS");
 
+		//? if colorwheel {
 		if (Colorwheel.isFlywheelLoaded()) {
 			define(standardDefines, "HAS_COLORWHEEL");
 			define(standardDefines, "COLORWHEEL_VERSION", Colorwheel.FORMATTED_VERSION);
@@ -64,6 +67,7 @@ public class StandardMacros {
 				define(standardDefines, "CLRWL_RENDER_STAGE_" + phase.name(), Integer.toString(phase.getValue()));
 			}
 		}
+		//?}
         define(standardDefines, "IRIS_HAS_TRANSLUCENCY_SORTING");
         define(standardDefines, "IRIS_TAG_SUPPORT", "2");
 
@@ -112,7 +116,7 @@ public class StandardMacros {
 			define(standardDefines, irisDefine);
 		}
 
-        BiomeUniforms.getBiomeMap().forEach((biome, id) -> define(standardDefines, "BIOME_" + biome.location().getPath().toUpperCase(Locale.ROOT), String.valueOf(id)));
+        BiomeUniforms.getBiomeMap().forEach((biome, id) -> define(standardDefines, "BIOME_" + biome./*? if <26.1 {*/location()/*?} else {*//*identifier()*//*?}*/.getPath().toUpperCase(Locale.ROOT), String.valueOf(id)));
 
 		return ImmutableList.copyOf(standardDefines);
 	}
@@ -229,7 +233,7 @@ public class StandardMacros {
 	 * @see <a href="https://github.com/sp614x/optifine/blob/9c6a5b5326558ccc57c6490b66b3be3b2dc8cbef/OptiFineDoc/doc/shaders.txt#L716-L723">Optifine Doc</a>
 	 */
 	public static String getVendor() {
-		String vendor = Objects.requireNonNull(GlUtil.getVendor()).toLowerCase(Locale.ROOT);
+		String vendor = Objects.requireNonNull(GL11C.glGetString(GL11C.GL_VENDOR)).toLowerCase(Locale.ROOT);
 		if (vendor.startsWith("ati")) {
 			return "MC_GL_VENDOR_ATI";
 		} else if (vendor.startsWith("intel")) {
@@ -251,7 +255,7 @@ public class StandardMacros {
 	 * @see <a href="https://github.com/sp614x/optifine/blob/9c6a5b5326558ccc57c6490b66b3be3b2dc8cbef/OptiFineDoc/doc/shaders.txt#L725-L733">Optifine Doc</a>
 	 */
 	public static String getRenderer() {
-		String renderer = Objects.requireNonNull(GlUtil.getRenderer()).toLowerCase(Locale.ROOT);
+		String renderer = Objects.requireNonNull(GL11C.glGetString(GL11C.GL_RENDERER)).toLowerCase(Locale.ROOT);
 		if (renderer.startsWith("amd")) {
 			return "MC_GL_RENDERER_RADEON";
 		} else if (renderer.startsWith("ati")) {

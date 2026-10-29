@@ -1,6 +1,7 @@
 package net.irisshaders.iris.compat.dh;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.seibel.distanthorizons.api.DhApi;
 import com.seibel.distanthorizons.api.interfaces.override.rendering.IDhApiFramebuffer;
@@ -276,7 +277,7 @@ public class DHCompatInternal {
 	public void copyTranslucents(int width, int height) {
 		if (translucentDepthDirty) {
 			translucentDepthDirty = false;
-			RenderSystem.bindTexture(depthTexNoTranslucent.getTextureId());
+			GlStateManager._bindTexture(depthTexNoTranslucent.getTextureId());
 			dhTerrainFramebuffer.bindAsReadBuffer();
 			IrisRenderSystem.copyTexImage2D(GL20C.GL_TEXTURE_2D, 0, DepthBufferFormat.DEPTH32F.getGlInternalFormat(), 0, 0, width, height, 0);
 		} else {
