@@ -15,13 +15,11 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.shader.ShaderLoader;
 import org.taumc.glsl.ShaderParser;
 import org.taumc.glsl.ShaderPrinter;
-import org.taumc.glsl.StorageCollector;
 import org.taumc.glsl.Transformer;
 import org.taumc.glsl.grammar.GLSLLexer;
 import org.taumc.glsl.grammar.GLSLParser;
 import org.taumc.glsl.shadowed.org.antlr.v4.runtime.CommonToken;
 import org.taumc.glsl.shadowed.org.antlr.v4.runtime.tree.ParseTree;
-import org.taumc.glsl.shadowed.org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.taumc.glsl.shadowed.org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.*;
@@ -110,38 +108,83 @@ public class ShaderTransformer {
         versionedReservedWords.put(400, List.of("sample"));
     }
 
-    private static final Pattern texturePattern = Pattern.compile("\\btexture\\s*\\(|(\\btexture\\b)");
-
-    private static String replaceTexture(String input) {
-        var matcher = texturePattern.matcher(input);
-
-        StringBuilder builder = new StringBuilder();
-        while (matcher.find()) {
-            String texMatch = matcher.group(1);
-            matcher.appendReplacement(builder, texMatch != null ? matcher.group(0).replaceFirst(Pattern.quote(texMatch), "iris_renamed_texture") : matcher.group(0));
-        }
-        matcher.appendTail(builder);
-
-        return builder.toString();
-    }
-
     /**
      * Renames identifiers that are keywords to the AST parser but valid in the given GLSL version, prefixing them
      * with {@code iris_renamed_}.
      */
     public static String renameReservedWords(String input, int version) {
-        input = replaceTexture(input);
+        // texture() calls keep their name, only variables called texture are renamed.
+        input = renameWord(input, "texture", true);
 
         for (int reservedVersion : versionedReservedWords.keySet()) {
             if (version < reservedVersion) {
                 for (String reservedWord : versionedReservedWords.get(reservedVersion)) {
-                    String newName = "iris_renamed_" + reservedWord;
-                    input = input.replaceAll("\\b" + reservedWord + "\\b", newName);
+                    input = renameWord(input, reservedWord, false);
                 }
             }
         }
 
         return input;
+    }
+
+    /**
+     * Prefixes every whole-word occurrence of {@code word} with {@code iris_renamed_}, matching what the regex
+     * {@code \bword\b} finds. A regex starting with {@code \b} can't use Java's fast literal search and tries a match
+     * at every position of these large sources, so this searches for the word directly.
+     */
+    private static String renameWord(String input, String word, boolean skipCalls) {
+        int index = input.indexOf(word);
+
+        if (index < 0) {
+            return input;
+        }
+
+        StringBuilder builder = null;
+        int copiedUpTo = 0;
+
+        while (index >= 0) {
+            int end = index + word.length();
+
+            if ((index == 0 || !isWordChar(input.charAt(index - 1))) && (end == input.length() || !isWordChar(input.charAt(end)))
+                    && !(skipCalls && isFollowedByParenthesis(input, end))) {
+                if (builder == null) {
+                    builder = new StringBuilder(input.length() + 64);
+                }
+
+                builder.append(input, copiedUpTo, index).append("iris_renamed_").append(word);
+                copiedUpTo = end;
+            }
+
+            index = input.indexOf(word, end);
+        }
+
+        if (builder == null) {
+            return input;
+        }
+
+        return builder.append(input, copiedUpTo, input.length()).toString();
+    }
+
+    // The characters Java 17's regex \b treats as part of a word.
+    private static boolean isWordChar(char c) {
+        return Character.isLetterOrDigit(c) || c == '_';
+    }
+
+    // Matches the regex \s*\(
+    private static boolean isFollowedByParenthesis(String input, int index) {
+        while (index < input.length()) {
+            char c = input.charAt(index);
+
+            if (c == '(') {
+                return true;
+            } else if (c != ' ' && c != '\t' && c != '\n' && c != '\u000B' && c != '\f' && c != '\r') {
+                return false;
+            }
+
+            index++;
+        }
+
+        return false;
     }
 
     private static <P extends Parameters> Map<ShaderType, String> transformInternal(String name, Map<ShaderType, String> inputs, Patch patchType, P parameters) {
@@ -413,12 +456,7 @@ public class ShaderTransformer {
 
 
     public static void upgradeStorageQualifiers(Transformer root, Parameters parameters) {
-        List<TerminalNode> tokens = new ArrayList<>();
-        root.mutateTree(tree -> {
-            ParseTreeWalker.DEFAULT.walk(new StorageCollector(tokens), tree);
-        });
-
-        for (TerminalNode node : tokens) {
+        for (TerminalNode node : root.collectStorage()) {
             if (!(node.getSymbol() instanceof CommonToken token)) {
                 return;
             }
