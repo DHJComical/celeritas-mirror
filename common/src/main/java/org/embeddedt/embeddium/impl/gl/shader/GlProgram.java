@@ -15,6 +15,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
@@ -79,6 +81,7 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
     public static class Builder {
         private final String name;
         private final int program;
+        private final List<GlShader.Deferred> deferredShaders = new ArrayList<>();
 
         public Builder(String name) {
             this.name = name;
@@ -87,6 +90,17 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
 
         public Builder attachShader(GlShader shader) {
             LWJGL.glAttachShader(this.program, shader.handle());
+
+            return this;
+        }
+
+        /**
+         * Attaches a shader that may still be compiling. It belongs to the program from here on, and is waited for
+         * and deleted when the program is linked.
+         */
+        public Builder attachShader(GlShader.Deferred shader) {
+            shader.attachTo(this.program);
+            this.deferredShaders.add(shader);
 
             return this;
         }
@@ -101,23 +115,15 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
          * @return An instantiated shader container as provided by the factory
          */
         public <U> GlProgram<U> link(Function<ShaderBindingContext, U> factory) {
+            return this.linkDeferred().finish(factory);
+        }
+
+        public Deferred linkDeferred() {
             LWJGL.glLinkProgram(this.program);
-
-            String log = LWJGL.glGetProgramInfoLog(this.program, 4096);
-
-            if (!log.isEmpty()) {
-                LOGGER.warn("Program link log for " + this.name + ": " + log);
-            }
-
-            int result = LWJGL.glGetProgrami(this.program, GL20.GL_LINK_STATUS);
-
-            if (result != GL20.GL_TRUE) {
-                throw new RuntimeException("Shader program linking failed, see log for details");
-            }
 
             GLDebug.nameObject(GL43.GL_PROGRAM, this.program, this.name);
 
-            return new GlProgram<>(this.program, factory);
+            return new Deferred(this.name, this.program, List.copyOf(this.deferredShaders));
         }
 
         public Builder bindAttribute(String name, int index) {
@@ -140,6 +146,56 @@ public class GlProgram<T> extends GlObject implements ShaderBindingContext {
             LWJGL.glBindFragDataLocation(this.program, index, name);
 
             return this;
+        }
+    }
+
+    /**
+     * A program whose shaders may still be compiling and linking. The program itself is only handed out by
+     * {@link #finish}, once it is known to have linked.
+     */
+    public static final class Deferred {
+        private final String name;
+        private final int program;
+        private final List<GlShader.Deferred> shaders;
+
+        private Deferred(String name, int program, List<GlShader.Deferred> shaders) {
+            this.name = name;
+            this.program = program;
+            this.shaders = shaders;
+        }
+
+        /**
+         * Waits for the shaders to compile and the program to link, then wraps it like {@link Builder#link}. On
+         * failure, the shaders and program are deleted before the exception is rethrown.
+         */
+        public <U> GlProgram<U> finish(Function<ShaderBindingContext, U> factory) {
+            try {
+                GlShader.Deferred.awaitAll(this.shaders).forEach(GlShader::delete);
+            } catch (GlShader.CompileException e) {
+                LWJGL.glDeleteProgram(this.program);
+                throw e;
+            }
+
+            String log = LWJGL.glGetProgramInfoLog(this.program, 4096);
+
+            if (!log.isEmpty()) {
+                LOGGER.warn("Program link log for " + this.name + ": " + log);
+            }
+
+            if (LWJGL.glGetProgrami(this.program, GL20.GL_LINK_STATUS) != GL20.GL_TRUE) {
+                LWJGL.glDeleteProgram(this.program);
+                throw new RuntimeException("Shader program linking failed, see log for details");
+            }
+
+            return new GlProgram<>(this.program, factory);
+        }
+
+        /**
+         * Deletes a program that is no longer needed, without waiting for it to finish linking.
+         */
+        public void delete() {
+            this.shaders.forEach(GlShader.Deferred::delete);
+            LWJGL.glDeleteProgram(this.program);
         }
     }
 }

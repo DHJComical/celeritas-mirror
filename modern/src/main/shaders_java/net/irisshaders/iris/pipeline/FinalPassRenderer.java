@@ -16,13 +16,13 @@ import net.irisshaders.iris.gl.program.ProgramBuilder;
 import net.irisshaders.iris.gl.program.ProgramSamplers;
 import net.irisshaders.iris.gl.program.ProgramUniforms;
 import net.irisshaders.iris.gl.sampler.SamplerLimits;
+import net.irisshaders.iris.gl.shader.ProgramCreator;
 import net.irisshaders.iris.gl.shader.ShaderCompileException;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.texture.TextureAccess;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.irisshaders.iris.pathways.CenterDepthSampler;
 import net.irisshaders.iris.pathways.FullScreenQuadRenderer;
-import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.samplers.IrisImages;
 import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.shaderpack.FilledIndirectPointer;
@@ -41,7 +41,6 @@ import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import net.minecraft.client.Minecraft;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
-import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL15C;
@@ -69,7 +68,7 @@ public class FinalPassRenderer {
 	private final Object2ObjectMap<String, TextureAccess> customTextureIds;
 	private final CustomUniforms customUniforms;
 	private final WorldRenderingPipeline pipeline;
-	private final PendingTransforms transforms;
+	private final PendingPrograms pendingPrograms;
 	private int lastColorTextureId;
 	private int lastColorTextureVersion;
 
@@ -80,9 +79,9 @@ public class FinalPassRenderer {
 							 Supplier<ShadowRenderTargets> shadowTargetsSupplier,
 							 Object2ObjectMap<String, TextureAccess> customTextureIds,
 							 Object2ObjectMap<String, TextureAccess> irisCustomTextures, Set<GlImage> customImages, ImmutableSet<Integer> flippedAtLeastOnce
-		, CustomUniforms customUniforms, PendingTransforms transforms) {
+		, CustomUniforms customUniforms, PendingPrograms pendingPrograms) {
 		this.pipeline = pipeline;
-		this.transforms = transforms;
+		this.pendingPrograms = pendingPrograms;
 		this.updateNotifier = updateNotifier;
 		this.centerDepthSampler = centerDepthSampler;
 		this.customTextureIds = customTextureIds;
@@ -278,20 +277,14 @@ public class FinalPassRenderer {
 								  Supplier<ShadowRenderTargets> shadowTargetsSupplier) {
 		// TODO: Properly handle empty shaders
         Preconditions.checkArgument(source.isValid());
-        Map<ShaderType, String> transformed = transforms.takeComposite(source, TextureStage.COMPOSITE_AND_FINAL);
-		String vertex = transformed.get(ShaderType.VERTEX);
-		String geometry = transformed.get(ShaderType.GEOMETRY);
-		String fragment = transformed.get(ShaderType.FRAGMENT);
-
-		ShaderPrinter.printProgram(source.getName()).addSources(transformed).print();
+		ProgramCreator.Submitted submitted = pendingPrograms.takeComposite(source, TextureStage.COMPOSITE_AND_FINAL);
 
 		Objects.requireNonNull(flipped);
 
 		ProgramBuilder builder;
 
 		try {
-			builder = ProgramBuilder.begin(source.getName(), vertex, geometry, fragment,
-				IrisSamplers.COMPOSITE_RESERVED_TEXTURE_UNITS);
+			builder = ProgramBuilder.finish(submitted, IrisSamplers.COMPOSITE_RESERVED_TEXTURE_UNITS);
 		} catch (ShaderCompileException e) {
 			throw e;
 		} catch (RuntimeException e) {
@@ -342,11 +335,7 @@ public class FinalPassRenderer {
 				ProgramBuilder builder;
 
 				try {
-					String transformed = transforms.takeCompute(source, TextureStage.COMPOSITE_AND_FINAL);
-
-					ShaderPrinter.printProgram(source.getName()).addSource(ShaderType.COMPUTE, transformed).print();
-
-					builder = ProgramBuilder.beginCompute(source.getName(), transformed, IrisSamplers.COMPOSITE_RESERVED_TEXTURE_UNITS);
+					builder = ProgramBuilder.finish(pendingPrograms.takeCompute(source, TextureStage.COMPOSITE_AND_FINAL), IrisSamplers.COMPOSITE_RESERVED_TEXTURE_UNITS);
 				} catch (ShaderCompileException e) {
 					throw e;
 				} catch (RuntimeException e) {

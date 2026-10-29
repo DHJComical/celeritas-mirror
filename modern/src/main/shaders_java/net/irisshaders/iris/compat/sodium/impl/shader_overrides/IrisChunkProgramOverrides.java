@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL43C;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class IrisChunkProgramOverrides {
     private static final List<ShaderType> RELEVANT_SHADER_TYPES = List.of(ShaderType.VERTEX, ShaderType.GEOM, ShaderType.TESS_CTRL, ShaderType.TESS_EVALUATE, ShaderType.FRAGMENT);
@@ -28,7 +29,9 @@ public class IrisChunkProgramOverrides {
 	private boolean shadersCreated = false;
 	private int versionCounterForSodiumShaderReload = -1;
 
-	private GlShader createShader(ShaderType type, IrisTerrainPass pass, SodiumTerrainPipeline pipeline) {
+	private record SubmittedProgram(GlProgram.Deferred program, Function<ShaderBindingContext, IrisChunkShaderInterface> factory) {}
+
+	private GlShader.Deferred createShader(ShaderType type, IrisTerrainPass pass, SodiumTerrainPipeline pipeline) {
 		Optional<String> irisVertexShader;
 
         if (pass == IrisTerrainPass.SHADOW_CUTOUT && type != ShaderType.FRAGMENT) {
@@ -49,7 +52,7 @@ public class IrisChunkProgramOverrides {
 			return null;
 		}
 
-		return new GlShader(type, "iris:" +
+		return GlShader.compileDeferred(type, "iris:" +
 			"sodium-terrain-" + pass.toString().toLowerCase(Locale.ROOT) + "." + type.fileExtension, source);
 	}
 
@@ -62,8 +65,8 @@ public class IrisChunkProgramOverrides {
 	}
 
 	@Nullable
-	private GlProgram<IrisChunkShaderInterface> createShader(IrisTerrainPass pass, SodiumTerrainPipeline pipeline, RenderPassConfiguration configuration) {
-        Map<ShaderType, GlShader> createdShaders = new EnumMap<>(ShaderType.class);
+	private SubmittedProgram submitProgram(IrisTerrainPass pass, SodiumTerrainPipeline pipeline, RenderPassConfiguration configuration) {
+        Map<ShaderType, GlShader.Deferred> createdShaders = new EnumMap<>(ShaderType.class);
 
         for (var type : RELEVANT_SHADER_TYPES) {
             var shader = createShader(type, pass, pipeline);
@@ -77,34 +80,32 @@ public class IrisChunkProgramOverrides {
 		float alpha = getAlphaReference(pass, pipeline);
 
 		if (createdShaders.get(ShaderType.VERTEX) == null || createdShaders.get(ShaderType.FRAGMENT) == null) {
-            createdShaders.values().forEach(GlShader::delete);
+            createdShaders.values().forEach(GlShader.Deferred::delete);
 
 			// TODO: Partial shader programs?
 			return null;
 		}
 
-		try {
-			GlProgram.Builder builder = GlProgram.builder("sodium:chunk_shader_for_"
-				+ pass.getName());
+		GlProgram.Builder builder = GlProgram.builder("sodium:chunk_shader_for_"
+			+ pass.getName());
 
-            createdShaders.values().forEach(builder::attachShader);
+        createdShaders.values().forEach(builder::attachShader);
 
-            int i = 0;
-            var vertexType = configuration.getVertexTypeForPass(pass.toTerrainPass(configuration));
-            for (var attr : vertexType.getVertexFormat().getAttributes()) {
-                builder.bindAttribute(attr.getName(), i++);
-            }
-			return builder
-				.link((shader) -> {
-					int handle = ((GlObject) shader).handle();
-					ShaderBindingContext contextExt = shader;
-					GLDebug.nameObject(GL43C.GL_PROGRAM, handle, "sodium-terrain-" + pass.toString().toLowerCase(Locale.ROOT));
-					return new IrisChunkShaderInterface(handle, contextExt, pipeline, new ChunkShaderOptions(List.of(ChunkFogMode.SMOOTH), pass.toTerrainPass(configuration)),
-						createdShaders.get(ShaderType.TESS_CTRL) != null || createdShaders.get(ShaderType.TESS_EVALUATE) != null, pass == IrisTerrainPass.SHADOW || pass == IrisTerrainPass.SHADOW_CUTOUT, blendOverride, bufferOverrides, alpha, pipeline.getCustomUniforms());
-				});
-		} finally {
-            createdShaders.values().forEach(GlShader::delete);
-		}
+        int i = 0;
+        var vertexType = configuration.getVertexTypeForPass(pass.toTerrainPass(configuration));
+        for (var attr : vertexType.getVertexFormat().getAttributes()) {
+            builder.bindAttribute(attr.getName(), i++);
+        }
+
+		boolean hasTessellation = createdShaders.get(ShaderType.TESS_CTRL) != null || createdShaders.get(ShaderType.TESS_EVALUATE) != null;
+
+		return new SubmittedProgram(builder.linkDeferred(), (shader) -> {
+			int handle = ((GlObject) shader).handle();
+			ShaderBindingContext contextExt = shader;
+			GLDebug.nameObject(GL43C.GL_PROGRAM, handle, "sodium-terrain-" + pass.toString().toLowerCase(Locale.ROOT));
+			return new IrisChunkShaderInterface(handle, contextExt, pipeline, new ChunkShaderOptions(List.of(ChunkFogMode.SMOOTH), pass.toTerrainPass(configuration)),
+				hasTessellation, pass == IrisTerrainPass.SHADOW || pass == IrisTerrainPass.SHADOW_CUTOUT, blendOverride, bufferOverrides, alpha, pipeline.getCustomUniforms());
+		});
 	}
 
 	private float getAlphaReference(IrisTerrainPass pass, SodiumTerrainPipeline pipeline) {
@@ -114,13 +115,31 @@ public class IrisChunkProgramOverrides {
 	public void createShaders(SodiumTerrainPipeline pipeline, RenderPassConfiguration configuration) {
 		if (pipeline != null) {
 			pipeline.patchShaders(configuration);
-			for (IrisTerrainPass pass : IrisTerrainPass.values()) {
-				if (pass.isShadow() && !pipeline.hasShadowPass()) {
-					this.programs.put(pass, null);
-					continue;
-				}
 
-				this.programs.put(pass, createShader(pass, pipeline, configuration));
+			// Every pass is submitted before any is finished, so the driver can compile them together.
+			List<Map.Entry<IrisTerrainPass, SubmittedProgram>> submitted = new ArrayList<>();
+
+			for (IrisTerrainPass pass : IrisTerrainPass.values()) {
+				SubmittedProgram program = pass.isShadow() && !pipeline.hasShadowPass() ? null : submitProgram(pass, pipeline, configuration);
+
+				if (program != null) {
+					submitted.add(Map.entry(pass, program));
+				} else {
+					this.programs.put(pass, null);
+				}
+			}
+
+			for (int i = 0; i < submitted.size(); i++) {
+				var entry = submitted.get(i);
+
+				try {
+					this.programs.put(entry.getKey(), entry.getValue().program().finish(entry.getValue().factory()));
+				} catch (RuntimeException e) {
+					for (int j = i + 1; j < submitted.size(); j++) {
+						submitted.get(j).getValue().program().delete();
+					}
+					throw e;
+				}
 			}
 		} else {
 			for (GlProgram<?> program : this.programs.values()) {
