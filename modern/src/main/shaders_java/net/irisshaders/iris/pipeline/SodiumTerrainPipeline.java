@@ -27,8 +27,11 @@ import net.irisshaders.iris.targets.RenderTargets;
 import net.irisshaders.iris.uniforms.CommonUniforms;
 import net.irisshaders.iris.uniforms.builtin.BuiltinReplacementUniforms;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.IntFunction;
 
 public class SodiumTerrainPipeline {
@@ -113,8 +116,11 @@ public class SodiumTerrainPipeline {
 		return Optional.empty();
 	}
 
+	private record PendingPass(String name, CompletableFuture<Map<ShaderType, String>> transformed) {}
+
 	public void patchShaders(RenderPassConfiguration<?> configuration) {
 		ShaderAttributeInputs inputs = new ShaderAttributeInputs(true, true, false, true, true);
+        Map<IrisTerrainPass, PendingPass> transforms = new EnumMap<>(IrisTerrainPass.class);
 
         for (var pass : IrisTerrainPass.values()) {
             var passInfo = passInfoMap.get(pass);
@@ -145,17 +151,12 @@ public class SodiumTerrainPipeline {
 
                 passInfo.alphaTest = sources.getDirectives().getAlphaTestOverride().or(() -> Optional.of(defaultPassAlpha));
 
-                Map<ShaderType, String> transformed = TransformPatcherBridge.patchSodium(
+                AlphaTest alphaTest = passInfo.alphaTest.orElseThrow();
+                TerrainRenderPass terrainPass = pass.toTerrainPass(configuration);
+                transforms.put(pass, new PendingPass(sources.getName(), CompletableFuture.supplyAsync(() -> TransformPatcherBridge.patchSodium(
                         sources.getName(),
                         sources.getSourcesMap(),
-                        passInfo.alphaTest.orElseThrow(), inputs, parent.getTextureMap(), pass.toTerrainPass(configuration));
-
-                for (var type : ShaderType.values()) {
-                    passInfo.sources.put(type, Optional.ofNullable(transformed.get(type)));
-                }
-
-                ShaderPrinter.printProgram(sources.getName() + "_sodium_" + pass.getName()).addSources(transformed).print();
-
+                        alphaTest, inputs, parent.getTextureMap(), terrainPass), TransformPatcherBridge.EXECUTOR)));
             }, () -> {
                 passInfo.blendModeOverride = null;
                 passInfo.bufferOverrides = Collections.emptyList();
@@ -164,6 +165,25 @@ public class SodiumTerrainPipeline {
                 }
             });
         }
+
+        transforms.forEach((pass, pending) -> {
+            Map<ShaderType, String> transformed;
+            try {
+                transformed = pending.transformed().join();
+            } catch (CompletionException e) {
+                if (e.getCause() instanceof RuntimeException cause) {
+                    throw cause;
+                }
+                throw e;
+            }
+
+            var passInfo = passInfoMap.get(pass);
+            for (var type : ShaderType.values()) {
+                passInfo.sources.put(type, Optional.ofNullable(transformed.get(type)));
+            }
+
+            ShaderPrinter.printProgram(pending.name() + "_sodium_" + pass.getName()).addSources(transformed).print();
+        });
 	}
 
 	public ProgramUniforms.Builder initUniforms(int programId) {

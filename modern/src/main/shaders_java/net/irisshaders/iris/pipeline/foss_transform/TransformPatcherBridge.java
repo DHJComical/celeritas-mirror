@@ -17,8 +17,31 @@ import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TransformPatcherBridge {
+    /**
+     * Runs shader transformations. Kept apart from the game's background executor, where they would queue behind
+     * integrated-server worldgen while the render thread waits on them.
+     */
+    public static final Executor EXECUTOR = createExecutor();
+
+    private static Executor createExecutor() {
+        int threads = Runtime.getRuntime().availableProcessors();
+        AtomicInteger threadCounter = new AtomicInteger();
+        // Core and maximum size must match: with an unbounded queue, the pool never grows past its core size.
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(threads, threads, 30, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), runnable -> {
+            Thread thread = new Thread(runnable, "Iris Shader Transform #" + threadCounter.incrementAndGet());
+            thread.setDaemon(true);
+            return thread;
+        });
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
+    }
 
     private static Map<ShaderType, String> transform(String name, Map<ShaderType, String> sources,
                                                      Parameters parameters) {

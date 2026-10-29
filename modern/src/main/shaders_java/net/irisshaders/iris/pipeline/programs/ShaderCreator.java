@@ -23,7 +23,6 @@ import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.irisshaders.iris.uniforms.VanillaUniforms;
 import net.irisshaders.iris.uniforms.builtin.BuiltinReplacementUniforms;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -68,7 +67,7 @@ public class ShaderCreator {
                     name,
                     source.getSourcesMap(),
                     alpha, isLines, true, inputs, pipeline.getTextureMap());
-        }, Util.backgroundExecutor()).thenApplyAsync(transformed -> {
+        }, TransformPatcherBridge.EXECUTOR).thenApplyAsync(transformed -> {
 
             String vertex = transformed.get(ShaderType.VERTEX);
             String geometry = transformed.get(ShaderType.GEOMETRY);

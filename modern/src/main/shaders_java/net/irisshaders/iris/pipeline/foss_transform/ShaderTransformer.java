@@ -57,7 +57,7 @@ public class ShaderTransformer {
                     if(shaderTransformationCache.size() >= CACHE_SIZE) {
                         shaderTransformationCache.removeLast();
                     }
-                    shaderTransformationCache.putAndMoveToLast(key, result);
+                    shaderTransformationCache.putAndMoveToFirst(key, result);
                 }
             }
 
@@ -89,7 +89,7 @@ public class ShaderTransformer {
                     if(shaderTransformationCache.size() >= CACHE_SIZE) {
                         shaderTransformationCache.removeLast();
                     }
-                    shaderTransformationCache.putAndMoveToLast(key, result);
+                    shaderTransformationCache.putAndMoveToFirst(key, result);
                 }
             }
 

@@ -21,8 +21,8 @@ import net.irisshaders.iris.gl.program.ProgramUniforms;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.texture.TextureAccess;
 import net.irisshaders.iris.pathways.FullScreenQuadRenderer;
+import net.irisshaders.iris.pipeline.PendingTransforms;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
-import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.samplers.IrisImages;
 import net.irisshaders.iris.samplers.IrisSamplers;
@@ -60,11 +60,13 @@ public class ShadowCompositeRenderer {
 	private final Object2ObjectMap<String, TextureAccess> irisCustomTextures;
 	private final WorldRenderingPipeline pipeline;
 	private final Set<GlImage> irisCustomImages;
+	private final PendingTransforms transforms;
 
 	public ShadowCompositeRenderer(WorldRenderingPipeline pipeline, PackDirectives packDirectives, ProgramSource[] sources, ComputeSource[][] computes, ShadowRenderTargets renderTargets, ShaderStorageBufferHolder holder,
 								   TextureAccess noiseTexture, FrameUpdateNotifier updateNotifier,
-								   Object2ObjectMap<String, TextureAccess> customTextureIds, Set<GlImage> customImages, ImmutableMap<Integer, Boolean> explicitPreFlips, Object2ObjectMap<String, TextureAccess> irisCustomTextures, CustomUniforms customUniforms) {
+								   Object2ObjectMap<String, TextureAccess> customTextureIds, Set<GlImage> customImages, ImmutableMap<Integer, Boolean> explicitPreFlips, Object2ObjectMap<String, TextureAccess> irisCustomTextures, CustomUniforms customUniforms, PendingTransforms transforms) {
 		this.pipeline = pipeline;
+		this.transforms = transforms;
 		this.noiseTexture = noiseTexture;
 		this.updateNotifier = updateNotifier;
 		this.renderTargets = renderTargets;
@@ -243,9 +245,7 @@ public class ShadowCompositeRenderer {
 								  ShadowRenderTargets targets) {
 		// TODO: Properly handle empty shaders
         Preconditions.checkArgument(source.isValid());
-		Map<ShaderType, String> transformed = TransformPatcherBridge.patchComposite(
-			source.getName(),
-			source.getSourcesMap(), TextureStage.SHADOWCOMP, pipeline.getTextureMap());
+		Map<ShaderType, String> transformed = transforms.takeComposite(source, TextureStage.SHADOWCOMP);
 		String vertex = transformed.get(ShaderType.VERTEX);
 		String geometry = transformed.get(ShaderType.GEOMETRY);
 		String fragment = transformed.get(ShaderType.FRAGMENT);
@@ -292,7 +292,7 @@ public class ShadowCompositeRenderer {
 				ProgramBuilder builder;
 
 				try {
-					String transformed = TransformPatcherBridge.patchCompute(source.getName(), source.getSource().orElse(null), TextureStage.SHADOWCOMP, pipeline.getTextureMap());
+					String transformed = transforms.takeCompute(source, TextureStage.SHADOWCOMP);
 
 					ShaderPrinter.printProgram(source.getName()).addSource(ShaderType.COMPUTE, transformed).print();
 

@@ -22,7 +22,6 @@ import net.irisshaders.iris.gl.texture.TextureAccess;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.irisshaders.iris.pathways.CenterDepthSampler;
 import net.irisshaders.iris.pathways.FullScreenQuadRenderer;
-import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.samplers.IrisImages;
 import net.irisshaders.iris.samplers.IrisSamplers;
@@ -70,6 +69,7 @@ public class FinalPassRenderer {
 	private final Object2ObjectMap<String, TextureAccess> customTextureIds;
 	private final CustomUniforms customUniforms;
 	private final WorldRenderingPipeline pipeline;
+	private final PendingTransforms transforms;
 	private int lastColorTextureId;
 	private int lastColorTextureVersion;
 
@@ -80,8 +80,9 @@ public class FinalPassRenderer {
 							 Supplier<ShadowRenderTargets> shadowTargetsSupplier,
 							 Object2ObjectMap<String, TextureAccess> customTextureIds,
 							 Object2ObjectMap<String, TextureAccess> irisCustomTextures, Set<GlImage> customImages, ImmutableSet<Integer> flippedAtLeastOnce
-		, CustomUniforms customUniforms) {
+		, CustomUniforms customUniforms, PendingTransforms transforms) {
 		this.pipeline = pipeline;
+		this.transforms = transforms;
 		this.updateNotifier = updateNotifier;
 		this.centerDepthSampler = centerDepthSampler;
 		this.customTextureIds = customTextureIds;
@@ -277,9 +278,7 @@ public class FinalPassRenderer {
 								  Supplier<ShadowRenderTargets> shadowTargetsSupplier) {
 		// TODO: Properly handle empty shaders
         Preconditions.checkArgument(source.isValid());
-        Map<ShaderType, String> transformed = TransformPatcherBridge.patchComposite(
-                source.getName(),
-                source.getSourcesMap(), TextureStage.COMPOSITE_AND_FINAL, pipeline.getTextureMap());
+        Map<ShaderType, String> transformed = transforms.takeComposite(source, TextureStage.COMPOSITE_AND_FINAL);
 		String vertex = transformed.get(ShaderType.VERTEX);
 		String geometry = transformed.get(ShaderType.GEOMETRY);
 		String fragment = transformed.get(ShaderType.FRAGMENT);
@@ -343,7 +342,7 @@ public class FinalPassRenderer {
 				ProgramBuilder builder;
 
 				try {
-					String transformed = TransformPatcherBridge.patchCompute(source.getName(), source.getSource().orElse(null), TextureStage.COMPOSITE_AND_FINAL, pipeline.getTextureMap());
+					String transformed = transforms.takeCompute(source, TextureStage.COMPOSITE_AND_FINAL);
 
 					ShaderPrinter.printProgram(source.getName()).addSource(ShaderType.COMPUTE, transformed).print();
 
