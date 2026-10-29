@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import lombok.Getter;
 import lombok.Setter;
 //? if shaders
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
@@ -59,15 +60,22 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
     // shader will be enabled appropriately
     private boolean blockEntityRequestedOutline;
 
+    @Getter
     @Setter
     private Matrix4f currentChunkRenderPose;
 
     //? if >=26.1 {
-    /*@Setter
+    /*@Getter
+    @Setter
     private Matrix4f currentChunkRenderProjection;
     *///?}
 
     private boolean useEntityCulling;
+
+    //? if >=26.1 {
+    /*// Shared by the terrain and shadow passes, since each search must use a frame number no other has used.
+    private int frame;
+    *///?}
 
 
     public CeleritasWorldRenderer(Minecraft client) {
@@ -308,6 +316,12 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
     public boolean isBoxVisible(AABB box) {
         return this.isBoxVisible(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
     }
+
+    //? if >=26.1 {
+    /*public int nextFrame() {
+        return this.frame++;
+    }
+    *///?}
 
     public void setCurrentViewport(Viewport viewport) {
         this.currentViewport = viewport;

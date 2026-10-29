@@ -35,10 +35,6 @@ public class IrisChunkProgramOverrides {
 	private GlShader.Deferred createShader(ShaderType type, IrisTerrainPass pass, SodiumTerrainPipeline pipeline) {
 		Optional<String> irisVertexShader;
 
-        if (pass == IrisTerrainPass.SHADOW_CUTOUT && type != ShaderType.FRAGMENT) {
-            pass = IrisTerrainPass.SHADOW;
-        }
-
         var info = pipeline.getPassInfo(pass);
 
         if (info == null) {
@@ -105,7 +101,7 @@ public class IrisChunkProgramOverrides {
 			ShaderBindingContext contextExt = shader;
 			GLDebug.nameObject(GL43C.GL_PROGRAM, handle, "sodium-terrain-" + pass.toString().toLowerCase(Locale.ROOT));
 			return new IrisChunkShaderInterface(handle, contextExt, pipeline, new ChunkShaderOptions(List.of(ChunkFogMode.SMOOTH), pass.toTerrainPass(configuration)),
-				hasTessellation, pass == IrisTerrainPass.SHADOW || pass == IrisTerrainPass.SHADOW_CUTOUT, blendOverride, bufferOverrides, alpha, pipeline.getCustomUniforms());
+				hasTessellation, pass.isShadow(), blendOverride, bufferOverrides, alpha, pipeline.getCustomUniforms());
 		});
 	}
 
@@ -185,7 +181,9 @@ public class IrisChunkProgramOverrides {
 				throw new IllegalStateException("Shadow program requested, but the pack does not have a shadow pass?");
 			}
 
-			if (pass.supportsFragmentDiscard() && !pass.isReverseOrder()) {
+			if (pass.isReverseOrder()) {
+				return this.programs.get(IrisTerrainPass.SHADOW_TRANSLUCENT);
+			} else if (pass.supportsFragmentDiscard()) {
 				return this.programs.get(IrisTerrainPass.SHADOW_CUTOUT);
 			} else {
 				return this.programs.get(IrisTerrainPass.SHADOW);

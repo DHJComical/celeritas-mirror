@@ -86,6 +86,8 @@ accessible field com/mojang/blaze3d/opengl/GlRenderPass pipeline Lcom/mojang/bla
 accessible field com/mojang/blaze3d/opengl/GlRenderPass uniforms Ljava/util/HashMap;
 accessible field com/mojang/blaze3d/opengl/GlRenderPass samplers Ljava/util/HashMap;
 accessible class com/mojang/blaze3d/opengl/GlCommandEncoder
+accessible method net/minecraft/client/renderer/rendertype/RenderType <init> (Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)V
+accessible field net/minecraft/client/renderer/rendertype/RenderType state Lnet/minecraft/client/renderer/rendertype/RenderSetup;
 accessible  class   net/minecraft/client/renderer/RenderStateShard$DepthTestStateShard
 accessible  class   net/minecraft/client/renderer/RenderStateShard$TransparencyStateShard
 accessible  class   net/minecraft/client/renderer/RenderType$CompositeRenderType

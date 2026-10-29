@@ -5,7 +5,9 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import net.irisshaders.iris.pathways.HorizonRenderer;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
+import net.irisshaders.iris.shadows.ShadowRenderingState;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.ShaderDefines;
 import net.minecraft.resources.Identifier;
@@ -20,17 +22,20 @@ import java.util.Set;
 import java.util.function.Function;
 
 /**
- * The gbuffer program each render pipeline draws with in the main pass. A pipeline vanilla doesn't define, such as a
- * mod's, draws with the program of the vanilla pipeline it matches in shaders, vertex format, color target and defines,
- * or failing that in all but the defines.
+ * The gbuffer program each render pipeline draws with in the main and shadow passes. A pipeline vanilla doesn't
+ * define, such as a mod's, draws with the programs of the vanilla pipeline it matches in shaders, vertex format, color
+ * target and defines, or failing that in all but the defines.
  */
 public final class IrisPipelines {
 	private static final Function<IrisRenderingPipeline, ShaderKey> NONE = pipeline -> null;
 
 	private static final Map<RenderPipeline, Function<IrisRenderingPipeline, ShaderKey>> MAIN = new Reference2ObjectOpenHashMap<>();
-	private static final Map<Signature, Function<IrisRenderingPipeline, ShaderKey>> BY_SIGNATURE = new HashMap<>();
-	private static final Map<Signature, Function<IrisRenderingPipeline, ShaderKey>> BY_SIGNATURE_WITHOUT_DEFINES = new HashMap<>();
+	private static final Map<RenderPipeline, Function<IrisRenderingPipeline, ShaderKey>> SHADOW = new Reference2ObjectOpenHashMap<>();
+	private static final Map<Signature, RenderPipeline> BY_SIGNATURE = new HashMap<>();
+	private static final Map<Signature, RenderPipeline> BY_SIGNATURE_WITHOUT_DEFINES = new HashMap<>();
 	private static final Set<RenderPipeline> VANILLA_PIPELINES = findVanillaPipelines();
+	// Each pipeline drawn with, and the one whose assignments it takes.
+	private static final Map<RenderPipeline, RenderPipeline> EQUIVALENTS = new Reference2ObjectOpenHashMap<>();
 
 	static {
 		// Terrain is drawn by Celeritas, but these keep the assignments complete for pipelines that copy them.
@@ -91,6 +96,7 @@ public final class IrisPipelines {
 		assign(RenderPipelines.TEXT_INTENSITY, IrisPipelines::textIntensity);
 		assign(RenderPipelines.CRUMBLING, p -> ShaderKey.CRUMBLING);
 		assign(RenderPipelines.LEASH, p -> ShaderKey.LEASH);
+		assign(HorizonRenderer.PIPELINE, p -> ShaderKey.SKY_BASIC);
 		assign(RenderPipelines.CLOUDS, p -> ShaderKey.CLOUDS);
 		assign(RenderPipelines.FLAT_CLOUDS, p -> ShaderKey.CLOUDS);
 		assign(RenderPipelines.BANNER_PATTERN, IrisPipelines::translucent);
@@ -98,6 +104,48 @@ public final class IrisPipelines {
 		// NeoForge's unlit item models use their own vertex shader, so no vanilla pipeline matches them.
 		assign(NeoForgeRenderPipelines.ITEM_CUTOUT_UNLIT, IrisPipelines::cutout);
 		assign(NeoForgeRenderPipelines.ITEM_TRANSLUCENT_UNLIT, IrisPipelines::translucent);
+
+		for (RenderPipeline pipeline : new RenderPipeline[]{RenderPipelines.SOLID_TERRAIN, RenderPipelines.CUTOUT_TERRAIN,
+			RenderPipelines.SOLID_BLOCK, RenderPipelines.CUTOUT_BLOCK}) {
+			assignShadow(pipeline, p -> ShaderKey.SHADOW_TERRAIN_CUTOUT);
+		}
+
+		assignShadow(RenderPipelines.TRANSLUCENT_TERRAIN, p -> ShaderKey.SHADOW_TRANSLUCENT);
+		assignShadow(RenderPipelines.TRANSLUCENT_BLOCK, p -> ShaderKey.SHADOW_TRANSLUCENT);
+
+		for (RenderPipeline pipeline : new RenderPipeline[]{RenderPipelines.ENTITY_CUTOUT, RenderPipelines.ENTITY_CUTOUT_CULL,
+			RenderPipelines.ENTITY_CUTOUT_Z_OFFSET, RenderPipelines.ENTITY_CUTOUT_DISSOLVE, RenderPipelines.ENTITY_SOLID,
+			RenderPipelines.ENTITY_SOLID_Z_OFFSET_FORWARD, RenderPipelines.ENTITY_TRANSLUCENT, RenderPipelines.ENTITY_TRANSLUCENT_CULL,
+			RenderPipelines.ENTITY_TRANSLUCENT_EMISSIVE, RenderPipelines.ARMOR_CUTOUT_NO_CULL, RenderPipelines.ARMOR_DECAL_CUTOUT_NO_CULL,
+			RenderPipelines.ARMOR_TRANSLUCENT, RenderPipelines.ITEM_CUTOUT, RenderPipelines.ITEM_TRANSLUCENT, RenderPipelines.END_CRYSTAL_BEAM,
+			RenderPipelines.BREEZE_WIND, RenderPipelines.EYES, RenderPipelines.ENERGY_SWIRL, RenderPipelines.BANNER_PATTERN,
+			RenderPipelines.GLINT, NeoForgeRenderPipelines.ITEM_CUTOUT_UNLIT, NeoForgeRenderPipelines.ITEM_TRANSLUCENT_UNLIT}) {
+			assignShadow(pipeline, p -> ShaderKey.SHADOW_ENTITIES_CUTOUT);
+		}
+
+		assignShadow(RenderPipelines.CRUMBLING, p -> ShaderKey.SHADOW_TEX);
+		assignShadow(RenderPipelines.WATER_MASK, p -> ShaderKey.SHADOW_BASIC);
+		assignShadow(RenderPipelines.OPAQUE_PARTICLE, p -> ShaderKey.SHADOW_PARTICLES);
+		assignShadow(RenderPipelines.TRANSLUCENT_PARTICLE, p -> ShaderKey.SHADOW_PARTICLES);
+		assignShadow(RenderPipelines.WEATHER_DEPTH_WRITE, p -> ShaderKey.SHADOW_PARTICLES);
+		assignShadow(RenderPipelines.WEATHER_NO_DEPTH_WRITE, p -> ShaderKey.SHADOW_PARTICLES);
+		assignShadow(RenderPipelines.LINES, p -> ShaderKey.SHADOW_LINES);
+		assignShadow(RenderPipelines.SECONDARY_BLOCK_OUTLINE, p -> ShaderKey.SHADOW_LINES);
+		assignShadow(RenderPipelines.LEASH, p -> ShaderKey.SHADOW_LEASH);
+		assignShadow(RenderPipelines.TEXT, p -> ShaderKey.SHADOW_TEXT);
+		assignShadow(RenderPipelines.TEXT_POLYGON_OFFSET, p -> ShaderKey.SHADOW_TEXT);
+		assignShadow(RenderPipelines.TEXT_SEE_THROUGH, p -> ShaderKey.SHADOW_TEXT);
+		assignShadow(RenderPipelines.TEXT_INTENSITY, p -> ShaderKey.SHADOW_TEXT_INTENSITY);
+		assignShadow(RenderPipelines.TEXT_INTENSITY_SEE_THROUGH, p -> ShaderKey.SHADOW_TEXT_INTENSITY);
+		assignShadow(RenderPipelines.TEXT_BACKGROUND, p -> ShaderKey.SHADOW_TEXT_BG);
+		assignShadow(RenderPipelines.TEXT_BACKGROUND_SEE_THROUGH, p -> ShaderKey.SHADOW_TEXT_BG);
+		assignShadow(RenderPipelines.BEACON_BEAM_OPAQUE, p -> ShaderKey.SHADOW_BEACON_BEAM);
+		assignShadow(RenderPipelines.BEACON_BEAM_TRANSLUCENT, p -> ShaderKey.SHADOW_BEACON_BEAM);
+		assignShadow(RenderPipelines.END_PORTAL, p -> ShaderKey.SHADOW_BLOCK);
+		assignShadow(RenderPipelines.END_GATEWAY, p -> ShaderKey.SHADOW_BLOCK);
+		assignShadow(RenderPipelines.LIGHTNING, p -> ShaderKey.SHADOW_LIGHTNING);
+		assignShadow(RenderPipelines.DRAGON_RAYS, p -> ShaderKey.SHADOW_LIGHTNING);
+		assignShadow(RenderPipelines.DRAGON_RAYS_DEPTH, p -> ShaderKey.SHADOW_LIGHTNING);
 	}
 
 	private IrisPipelines() {
@@ -130,8 +178,12 @@ public final class IrisPipelines {
 	private static void assign(RenderPipeline pipeline, Function<IrisRenderingPipeline, ShaderKey> key) {
 		MAIN.put(pipeline, key);
 		// Where vanilla pipelines differ only in other state, the first assigned stands for all of them.
-		BY_SIGNATURE.putIfAbsent(Signature.of(pipeline, true), key);
-		BY_SIGNATURE_WITHOUT_DEFINES.putIfAbsent(Signature.of(pipeline, false), key);
+		BY_SIGNATURE.putIfAbsent(Signature.of(pipeline, true), pipeline);
+		BY_SIGNATURE_WITHOUT_DEFINES.putIfAbsent(Signature.of(pipeline, false), pipeline);
+	}
+
+	private static void assignShadow(RenderPipeline pipeline, Function<IrisRenderingPipeline, ShaderKey> key) {
+		SHADOW.put(pipeline, key);
 	}
 
 	/**
@@ -139,22 +191,25 @@ public final class IrisPipelines {
 	 */
 	@Nullable
 	public static ShaderKey getKey(IrisRenderingPipeline pipeline, RenderPipeline renderPipeline) {
-		return MAIN.computeIfAbsent(renderPipeline, IrisPipelines::match).apply(pipeline);
+		RenderPipeline equivalent = EQUIVALENTS.computeIfAbsent(renderPipeline, IrisPipelines::findEquivalent);
+		var keys = ShadowRenderingState.areShadowsCurrentlyBeingRendered() ? SHADOW : MAIN;
+
+		return keys.getOrDefault(equivalent, NONE).apply(pipeline);
 	}
 
-	private static Function<IrisRenderingPipeline, ShaderKey> match(RenderPipeline renderPipeline) {
+	private static RenderPipeline findEquivalent(RenderPipeline renderPipeline) {
 		// Mods often name their pipelines in the minecraft namespace, so vanilla's are told apart by identity.
-		if (VANILLA_PIPELINES.contains(renderPipeline)) {
-			return NONE;
+		if (MAIN.containsKey(renderPipeline) || SHADOW.containsKey(renderPipeline) || VANILLA_PIPELINES.contains(renderPipeline)) {
+			return renderPipeline;
 		}
 
-		Function<IrisRenderingPipeline, ShaderKey> key = BY_SIGNATURE.get(Signature.of(renderPipeline, true));
+		RenderPipeline equivalent = BY_SIGNATURE.get(Signature.of(renderPipeline, true));
 
-		if (key == null) {
-			key = BY_SIGNATURE_WITHOUT_DEFINES.getOrDefault(Signature.of(renderPipeline, false), NONE);
+		if (equivalent == null) {
+			equivalent = BY_SIGNATURE_WITHOUT_DEFINES.getOrDefault(Signature.of(renderPipeline, false), renderPipeline);
 		}
 
-		return key;
+		return equivalent;
 	}
 
 	// 26.1 doesn't render the hand separately yet, so these never choose hand keys.

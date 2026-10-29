@@ -12,6 +12,7 @@ import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.pipeline.IrisPipelines;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
+import net.irisshaders.iris.shadows.ShadowRenderingState;
 import net.irisshaders.iris.texture.AtlasTextures;
 import net.irisshaders.iris.vertices.ImmediateState;
 import net.minecraft.client.Minecraft;
@@ -24,30 +25,59 @@ public final class GbufferProgramBinder {
 	private static final VanillaDrawState STATE = new VanillaDrawState();
 	@Nullable
 	private static GbufferProgram bound;
+	// What the draw being set up uses, chosen before vanilla sets it up.
+	@Nullable
+	private static IrisRenderingPipeline overridingPipeline;
+	@Nullable
+	private static GbufferProgram program;
 
 	private GbufferProgramBinder() {
 	}
 
-	public static void afterSetup(GlRenderPass renderPass) {
-		if (!(Iris.getPipelineManager().getPipelineNullable() instanceof IrisRenderingPipeline pipeline)
-			|| !pipeline.shouldOverrideShaders()) {
-			unbind();
-			return;
-		}
+	/**
+	 * Chooses the program for the draw, and unbinds the previous one if it differs. Unbinding resets texture samplers
+	 * and blending, so it must happen before vanilla sets up its own.
+	 */
+	public static void beforeSetup(GlRenderPass renderPass) {
+		overridingPipeline = null;
+		program = null;
 
-		GlRenderPipeline compiled = renderPass.pipeline;
-		ShaderKey key = IrisPipelines.getKey(pipeline, compiled.info());
-		GbufferProgram program = key != null ? pipeline.getShaderMap().getProgram(key) : null;
-
-		if (program == null) {
-			unbind();
-			pipeline.bindDefault();
-			return;
+		if (renderPass.pipeline != null && Iris.getPipelineManager().getPipelineNullable() instanceof IrisRenderingPipeline pipeline
+			&& pipeline.shouldOverrideShaders()) {
+			ShaderKey key = IrisPipelines.getKey(pipeline, renderPass.pipeline.info());
+			overridingPipeline = pipeline;
+			program = key != null ? pipeline.getShaderMap().getProgram(key) : null;
 		}
 
 		if (bound != null && bound != program) {
 			bound.unbind();
+			bound = null;
 		}
+
+		if (program == null) {
+			ImmediateState.usingTessellation = false;
+		}
+	}
+
+	public static void afterSetup(GlRenderPass renderPass) {
+		if (overridingPipeline == null) {
+			return;
+		}
+
+		boolean shadows = ShadowRenderingState.areShadowsCurrentlyBeingRendered();
+
+		if (program == null) {
+			if (shadows) {
+				overridingPipeline.bindDefaultShadow();
+				ShadowRenderingState.applyViewport();
+			} else {
+				overridingPipeline.bindDefault();
+			}
+
+			return;
+		}
+
+		GlRenderPipeline compiled = renderPass.pipeline;
 
 		STATE.vanillaProgram = compiled.program();
 		STATE.uniforms = renderPass.uniforms;
@@ -82,16 +112,12 @@ public final class GbufferProgramBinder {
 		program.bind(STATE);
 		bound = program;
 
-		IrisRenderSystem.invalidateVanillaRenderState();
-	}
-
-	private static void unbind() {
-		if (bound != null) {
-			bound.unbind();
-			bound = null;
+		// Vanilla sets the viewport to its own target's size when it begins a render pass.
+		if (shadows) {
+			ShadowRenderingState.applyViewport();
 		}
 
-		ImmediateState.usingTessellation = false;
+		IrisRenderSystem.invalidateVanillaRenderState();
 	}
 
 	private static int glId(GpuTextureView view) {

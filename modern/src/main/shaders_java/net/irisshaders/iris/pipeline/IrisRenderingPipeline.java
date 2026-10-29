@@ -37,7 +37,6 @@ import net.irisshaders.iris.modern.materialmap.BlockMaterialMapping;
 //? if <26.1
 import net.irisshaders.iris.modern.materialmap.ModelTextureAnalyzer;
 import net.irisshaders.iris.pathways.CenterDepthSampler;
-//? if <26.1
 import net.irisshaders.iris.pathways.HorizonRenderer;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 import net.irisshaders.iris.pathways.colorspace.ColorSpaceConverter;
@@ -144,7 +143,6 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 	private final ImmutableSet<Integer> flippedBeforeShadow;
 	private final ImmutableSet<Integer> flippedAfterPrepare;
 	private final ImmutableSet<Integer> flippedAfterTranslucent;
-	//? if <26.1
 	private final HorizonRenderer horizonRenderer = new HorizonRenderer();
 	@Nullable
 	private final ComputeProgram[] shadowComputes;
@@ -1083,6 +1081,12 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		IrisRenderSystem.invalidateVanillaRenderState();
 	}
 
+	//? if >=26.1 {
+	/*public void renderHorizon() {
+		horizonRenderer.renderHorizon();
+	}
+	*///?}
+
 	@Override
 	public void renderShadows(LevelRenderer levelRenderer, Camera playerCamera) {
 		if (shadowRenderer != null) {
@@ -1316,7 +1320,6 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		whitePixel.close();
 		colorSpaceConverter.destroy();
 
-		//? if <26.1
 		horizonRenderer.destroy();
 
 		GlStateManager._glBindFramebuffer(GL30C.GL_READ_FRAMEBUFFER, 0);

@@ -11,6 +11,10 @@ public enum ProgramId {
 	Shadow(ProgramGroup.Shadow, ""),
 	ShadowSolid(ProgramGroup.Shadow, "solid", Shadow),
 	ShadowCutout(ProgramGroup.Shadow, "cutout", Shadow),
+	ShadowWater(ProgramGroup.Shadow, "water", Shadow),
+	ShadowEntities(ProgramGroup.Shadow, "entities", Shadow),
+	ShadowLightning(ProgramGroup.Shadow, "lightning", ShadowEntities),
+	ShadowBlock(ProgramGroup.Shadow, "block", Shadow),
 
 	Basic(ProgramGroup.Gbuffers, "basic"),
 	Line(ProgramGroup.Gbuffers, "line", Basic),

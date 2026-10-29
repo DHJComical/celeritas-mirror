@@ -1,15 +1,22 @@
 package net.irisshaders.iris.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.framegraph.FrameGraphBuilder;
 import com.mojang.blaze3d.framegraph.FramePass;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
+import com.mojang.blaze3d.systems.CommandEncoder;
+import com.mojang.blaze3d.textures.GpuTexture;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.gl.IrisRenderSystem;
+import net.irisshaders.iris.layer.GbufferPrograms;
+import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
+import net.irisshaders.iris.shadows.frustum.fallback.NonCullingFrustum;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.IrisTimeUniforms;
 import net.minecraft.client.DeltaTracker;
@@ -18,6 +25,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.profiling.Profiler;
 import org.joml.Matrix4f;
@@ -85,7 +93,9 @@ public class MixinLevelRenderer {
 		targets.main = pass.readsAndWrites(targets.main);
 		pass.executes(() -> {
 			pipeline.beginLevelRendering();
-			pipeline.setPhase(WorldRenderingPhase.NONE);
+			pipeline.renderShadows((LevelRenderer) (Object) this, Minecraft.getInstance().gameRenderer.getMainCamera());
+			// Whatever is drawn before vanilla's sky disc, such as by skybox mods, is a custom sky.
+			pipeline.setPhase(WorldRenderingPhase.CUSTOM_SKY);
 		});
 	}
 
@@ -101,5 +111,24 @@ public class MixinLevelRenderer {
 		if (Iris.shouldActivateWireframe() && this.minecraft.isLocalServer()) {
 			IrisRenderSystem.setPolygonMode(GL43C.GL_FILL);
 		}
+	}
+
+	// The outline is only drawn once the buffer source's batches end, so its phase is ended by whatever comes next.
+	@Inject(method = "renderBlockOutline", at = @At("HEAD"))
+	private void iris$beginOutline(CallbackInfo ci) {
+		GbufferPrograms.setPhase(WorldRenderingPhase.OUTLINE);
+	}
+
+	@ModifyExpressionValue(method = {"update", "extractLevel"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;getCullFrustum()Lnet/minecraft/client/renderer/culling/Frustum;"))
+	private Frustum iris$disableFrustumCulling(Frustum frustum) {
+		WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
+
+		return pipeline != null && pipeline.shouldDisableFrustumCulling() ? new NonCullingFrustum() : frustum;
+	}
+
+	// Vanilla clears depth to draw debug overlays on top, but shader packs still read it in their composite passes.
+	@WrapWithCondition(method = "lambda$addLateDebugPass$0", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/CommandEncoder;clearDepthTexture(Lcom/mojang/blaze3d/textures/GpuTexture;D)V"))
+	private boolean iris$keepDepthForComposites(CommandEncoder encoder, GpuTexture texture, double depth) {
+		return !(Iris.getPipelineManager().getPipelineNullable() instanceof IrisRenderingPipeline);
 	}
 }

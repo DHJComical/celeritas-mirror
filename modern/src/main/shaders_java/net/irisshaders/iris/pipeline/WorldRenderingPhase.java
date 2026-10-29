@@ -1,7 +1,9 @@
 package net.irisshaders.iris.pipeline;
 
-//? if <26.1
+//? if <26.1 {
 import net.minecraft.client.renderer.RenderType;
+//?} else
+//import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 
 public enum WorldRenderingPhase {
 	NONE,
@@ -46,5 +48,13 @@ public enum WorldRenderingPhase {
             return WorldRenderingPhase.TERRAIN_CUTOUT_MIPPED;
 		}
 	}
-	//?}
+	//?} else {
+	/*public static WorldRenderingPhase fromTerrainLayer(ChunkSectionLayer layer) {
+		return switch (layer) {
+			case SOLID -> WorldRenderingPhase.TERRAIN_SOLID;
+			case CUTOUT -> WorldRenderingPhase.TERRAIN_CUTOUT;
+			case TRANSLUCENT -> WorldRenderingPhase.TERRAIN_TRANSLUCENT;
+		};
+	}
+	*///?}
 }

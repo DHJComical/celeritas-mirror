@@ -99,6 +99,7 @@ public class IrisChunkShaderInterface implements ChunkShaderInterface {
             // No back face culling during the shadow pass
             // TODO: Hopefully this won't be necessary in the future...
             GlStateManager._disableCull();
+            ShadowRenderingState.applyViewport();
         }
 
 		// See IrisSamplers#addLevelSamplers

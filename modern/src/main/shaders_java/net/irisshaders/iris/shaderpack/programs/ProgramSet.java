@@ -8,6 +8,7 @@ import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
 import net.irisshaders.iris.shaderpack.ShaderPack;
 import net.irisshaders.iris.shaderpack.include.AbsolutePackPath;
+import net.irisshaders.iris.shaderpack.loading.ProgramGroup;
 import net.irisshaders.iris.shaderpack.loading.ProgramId;
 import net.irisshaders.iris.shaderpack.parsing.ComputeDirectiveParser;
 import net.irisshaders.iris.shaderpack.parsing.ConstDirectiveParser;
@@ -26,6 +27,8 @@ public class ProgramSet implements ProgramSetInterface {
 	private final PackDirectives packDirectives;
 
 	private final ProgramSource shadow;
+	// The shadow programs for particular kinds of geometry, such as shadow_water, which fall back to shadow.
+	private final Map<ProgramId, ProgramSource> shadowVariants = new EnumMap<>(ProgramId.class);
 	private final ComputeSource[] shadowCompute;
 
 	private final ProgramSource[] shadowcomp;
@@ -96,6 +99,13 @@ public class ProgramSet implements ProgramSetInterface {
 		this.shadow = readProgramSource(directory, sourceProvider, "shadow", this, shaderProperties,
 			BlendModeOverride.OFF, readTesselation);
 		this.shadowCompute = readComputeArray(directory, sourceProvider, "shadow", shaderProperties);
+
+		for (ProgramId id : ProgramId.values()) {
+			if (id.getGroup() == ProgramGroup.Shadow && id != ProgramId.Shadow) {
+				shadowVariants.put(id, readProgramSource(directory, sourceProvider, id.getSourceName(), this, shaderProperties,
+					BlendModeOverride.OFF, readTesselation));
+			}
+		}
 
 		this.shadowcomp = readProgramArray(directory, sourceProvider, "shadowcomp", shaderProperties, readTesselation);
 
@@ -296,6 +306,7 @@ public class ProgramSet implements ProgramSetInterface {
 		List<ComputeSource> computes = new ArrayList<>();
 
 		programs.add(shadow);
+		programs.addAll(shadowVariants.values());
 		programs.addAll(Arrays.asList(shadowcomp));
 		programs.addAll(Arrays.asList(begin));
 		programs.addAll(Arrays.asList(prepare));
@@ -499,6 +510,7 @@ public class ProgramSet implements ProgramSetInterface {
 	public Optional<ProgramSource> get(ProgramId programId) {
 		return switch (programId) {
 			case Shadow -> getShadow();
+			case ShadowSolid, ShadowCutout, ShadowWater, ShadowEntities, ShadowLightning, ShadowBlock -> shadowVariants.get(programId).requireValid();
 			case Basic -> getGbuffersBasic();
 			case Line -> gbuffersLine.requireValid();
 			case Textured -> getGbuffersTextured();

@@ -21,6 +21,7 @@ import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
 import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
 import net.irisshaders.iris.shaderpack.loading.ProgramId;
+import net.irisshaders.iris.shaderpack.programs.ProgramFallbackResolver;
 import net.irisshaders.iris.shaderpack.programs.ProgramSet;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
 import net.irisshaders.iris.targets.RenderTargets;
@@ -75,7 +76,10 @@ public class SodiumTerrainPipeline {
         gbufferProgramSource.put(IrisTerrainPass.GBUFFER_SOLID, first(programSet.getGbuffersTerrainSolid(), programSet.getGbuffersTerrain(), programSet.getGbuffersTexturedLit(), programSet.getGbuffersTextured(), programSet.getGbuffersBasic()));
         gbufferProgramSource.put(IrisTerrainPass.GBUFFER_CUTOUT, first(programSet.getGbuffersTerrainCutout(), programSet.getGbuffersTerrain(), programSet.getGbuffersTexturedLit(), programSet.getGbuffersTextured(), programSet.getGbuffersBasic()));
         gbufferProgramSource.put(IrisTerrainPass.GBUFFER_TRANSLUCENT, first(programSet.getGbuffersWater(), gbufferProgramSource.get(IrisTerrainPass.GBUFFER_CUTOUT)));
-        gbufferProgramSource.put(IrisTerrainPass.SHADOW, programSet.getShadow());
+        ProgramFallbackResolver resolver = new ProgramFallbackResolver(programSet);
+        gbufferProgramSource.put(IrisTerrainPass.SHADOW, resolver.resolve(ProgramId.ShadowSolid));
+        gbufferProgramSource.put(IrisTerrainPass.SHADOW_CUTOUT, resolver.resolve(ProgramId.ShadowCutout));
+        gbufferProgramSource.put(IrisTerrainPass.SHADOW_TRANSLUCENT, resolver.resolve(ProgramId.ShadowWater));
 
 		this.programSet = programSet;
         this.passInfoMap = new EnumMap<>(IrisTerrainPass.class);
@@ -84,7 +88,7 @@ public class SodiumTerrainPipeline {
             var passInfo = new PassInfo();
             this.passInfoMap.put(pass, passInfo);
 
-            if (pass == IrisTerrainPass.SHADOW || pass == IrisTerrainPass.SHADOW_CUTOUT) {
+            if (pass.isShadow()) {
                 passInfo.framebuffer = shadowFramebuffer;
             } else {
                 var programSource = gbufferProgramSource.get(pass);
@@ -126,10 +130,12 @@ public class SodiumTerrainPipeline {
             var passInfo = passInfoMap.get(pass);
             var programId = switch (pass) {
                 case GBUFFER_TRANSLUCENT -> ProgramId.Water;
-                case SHADOW -> ProgramId.Shadow;
+                case SHADOW -> ProgramId.ShadowSolid;
+                case SHADOW_CUTOUT -> ProgramId.ShadowCutout;
+                case SHADOW_TRANSLUCENT -> ProgramId.ShadowWater;
                 default -> ProgramId.Terrain;
             };
-            var programSource = gbufferProgramSource.get(pass == IrisTerrainPass.SHADOW_CUTOUT ? IrisTerrainPass.SHADOW : pass);
+            var programSource = gbufferProgramSource.get(pass);
             if (programSource == null) {
                 Celeritas.logger().warn("Missing program source for pass {}", pass.name());
                 continue;
@@ -160,7 +166,7 @@ public class SodiumTerrainPipeline {
             }, () -> {
                 passInfo.blendModeOverride = null;
                 passInfo.bufferOverrides = Collections.emptyList();
-                if (pass != IrisTerrainPass.SHADOW && pass != IrisTerrainPass.SHADOW_CUTOUT) {
+                if (!pass.isShadow()) {
                     throw new UnsupportedOperationException("Fallback vertex/fragment shaders are no longer implemented, but are needed by pass " + pass.name());
                 }
             });

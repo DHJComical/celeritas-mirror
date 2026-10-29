@@ -38,6 +38,11 @@ public class MixinGlCommandEncoder {
 		}
 	}
 
+	@Inject(method = "trySetup", at = @At("HEAD"))
+	private void iris$chooseGbufferProgram(GlRenderPass renderPass, Collection<String> dynamicUniforms, CallbackInfoReturnable<Boolean> cir) {
+		GbufferProgramBinder.beforeSetup(renderPass);
+	}
+
 	@Inject(method = "trySetup", at = @At("RETURN"))
 	private void iris$bindGbuffers(GlRenderPass renderPass, Collection<String> dynamicUniforms, CallbackInfoReturnable<Boolean> cir) {
 		// Vanilla binds sampler objects to its texture units for each draw and leaves them bound.

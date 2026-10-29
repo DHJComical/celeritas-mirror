@@ -155,7 +155,7 @@ public class ShaderOverrideEngine {
         iris$overrides.put("rendertype_cutout_mipped", cutout);
         Supplier<ShaderInstance> translucentShader = () -> {
             if (ShadowRenderer.ACTIVE) {
-                return iris$findOverride(ShaderKey.SHADOW_TERRAIN_CUTOUT);
+                return iris$findOverride(ShaderKey.SHADOW_TRANSLUCENT);
             } else if (isBlockEntities() || isEntities()) {
                 return iris$findOverride(ShaderKey.MOVING_BLOCK);
             } else if (shouldOverrideShaders()) {
@@ -330,7 +330,7 @@ public class ShaderOverrideEngine {
             if (ShadowRenderer.ACTIVE) {
                 return iris$findOverride(ShaderKey.SHADOW_TEXT);
             } else if (HandRenderer.INSTANCE.isActive()) {
-                return iris$findOverride(ShaderKey.HAND_TEXT);
+                return iris$findOverride(HandRenderer.INSTANCE.isRenderingSolid() ? ShaderKey.HAND_TEXT : ShaderKey.HAND_TEXT_TRANSLUCENT);
             } else if (isBlockEntities()) {
                 return iris$findOverride(ShaderKey.TEXT_BE);
             } else if (shouldOverrideShaders()) {

@@ -59,9 +59,6 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
     @Unique
     private CeleritasWorldRenderer celeritas$renderer;
 
-    @Unique
-    private int frame;
-
     @Inject(method = "<init>", at = @At("RETURN"))
     private void initializeRenderer(CallbackInfo ci) {
         this.celeritas$renderer = new CeleritasWorldRenderer(this.minecraft);
@@ -121,7 +118,7 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
         RenderDevice.enterManagedCode();
 
         try {
-            this.celeritas$renderer.setupTerrain(viewport, cameraState, this.frame++, spectator, false);
+            this.celeritas$renderer.setupTerrain(viewport, cameraState, this.celeritas$renderer.nextFrame(), spectator, false);
         } finally {
             RenderDevice.exitManagedCode();
         }
@@ -144,8 +141,12 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
         var cameraPos = this.levelRenderState.cameraRenderState.pos;
         try {
             for (ChunkSectionLayer layer : group.layers()) {
+                //? if shaders
+                net.irisshaders.iris.layer.GbufferPrograms.setPhase(net.irisshaders.iris.pipeline.WorldRenderingPhase.fromTerrainLayer(layer));
                 celeritas$renderer.drawChunkLayer(layer, cameraPos.x, cameraPos.y, cameraPos.z);
             }
+            //? if shaders
+            net.irisshaders.iris.layer.GbufferPrograms.setPhase(net.irisshaders.iris.pipeline.WorldRenderingPhase.NONE);
         } finally {
             RenderDevice.exitManagedCode();
         }

@@ -49,6 +49,19 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 //?}
 import net.minecraft.client.renderer.culling.Frustum;
+//? if >=26.1 {
+/*import com.mojang.blaze3d.ProjectionType;
+import net.irisshaders.iris.pipeline.WorldRenderingPhase;
+import net.minecraft.client.renderer.ProjectionMatrixBuffer;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.phys.Vec3;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
+import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
+import org.embeddedt.embeddium.impl.render.viewport.Viewport;
+*///?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -79,6 +92,8 @@ public class ShadowRenderer {
 	public static Matrix4f MODELVIEW;
 	public static Matrix4f PROJECTION;
 	public static Frustum FRUSTUM;
+	// The width and height of the shadow map being rendered.
+	public static int RESOLUTION;
 	private final float halfPlaneLength;
 	private final float nearPlane, farPlane;
 	private final float voxelDistance;
@@ -112,6 +127,10 @@ public class ShadowRenderer {
 	private String debugStringTerrain = "(unavailable)";
 	private int renderedShadowEntities = 0;
 	private int renderedShadowBlockEntities = 0;
+	//? if >=26.1 {
+	/*private final ShadowEntityRenderer entities = new ShadowEntityRenderer();
+	private final ProjectionMatrixBuffer projectionBuffer = new ProjectionMatrixBuffer("Iris shadow projection");
+	*///?}
 
 	public ShadowRenderer(IrisRenderingPipeline pipeline, ProgramSource shadow, PackDirectives directives,
                           ShadowRenderTargets shadowRenderTargets, ShadowCompositeRenderer compositeRenderer, CustomUniforms customUniforms, boolean separateHardwareSamplers) {
@@ -627,8 +646,150 @@ public class ShadowRenderer {
 
 		levelRenderer.getLevel().getProfiler().pop();
 		levelRenderer.getLevel().getProfiler().popPush("updatechunks");
-		//?}
+		//?} else {
+		/*ProfilerFiller profiler = Profiler.get();
+		profiler.push("shadows");
+		ACTIVE = true;
+		RESOLUTION = resolution;
+
+		renderDistance = (int) ((halfPlaneLength * renderDistanceMultiplier) / 16);
+
+		if (renderDistanceMultiplier < 0) {
+			renderDistance = IrisVideoSettings.shadowDistance;
+		}
+
+		setupShadowViewport();
+
+		PoseStack modelView = createShadowModelView(this.sunPathRotation, this.intervalSize);
+		MODELVIEW = new Matrix4f(modelView.last().pose());
+
+		terrainFrustumHolder = createShadowFrustum(renderDistanceMultiplier, terrainFrustumHolder);
+		FRUSTUM = terrainFrustumHolder.getFrustum();
+
+		Vector3d cameraPos = CameraUniforms.getUnshiftedCameraPosition();
+		double cameraX = cameraPos.x();
+		double cameraY = cameraPos.y();
+		double cameraZ = cameraPos.z();
+
+		FRUSTUM.prepare(cameraX, cameraY, cameraZ);
+
+		Matrix4f shadowProjection;
+		if (this.fov != null) {
+			// If FOV is not null, the pack wants a perspective based projection matrix. (This is to support legacy packs)
+			shadowProjection = ShadowMatrices.createPerspectiveMatrix(this.fov);
+		} else {
+			shadowProjection = ShadowMatrices.createOrthoMatrix(halfPlaneLength, this.resolvedNearPlane(), this.resolvedFarPlane());
+		}
+
+		PROJECTION = shadowProjection;
+
+		// Vanilla's draws read the projection from its uniform block and the model-view matrix from its stack.
+		RenderSystem.backupProjectionMatrix();
+		RenderSystem.setProjectionMatrix(projectionBuffer.getBuffer(shadowProjection), this.fov != null ? ProjectionType.PERSPECTIVE : ProjectionType.ORTHOGRAPHIC);
+		RenderSystem.getModelViewStack().pushMatrix();
+		RenderSystem.getModelViewStack().set(MODELVIEW);
+
+		CeleritasWorldRenderer celeritas = WorldRendererExtended.forVanilla(vanillaLevelRenderer);
+		Matrix4f playerPose = celeritas.getCurrentChunkRenderPose();
+		Matrix4f playerProjection = celeritas.getCurrentChunkRenderProjection();
+		Viewport playerViewport = ((ViewportProvider) playerCamera.getCullFrustum()).sodium$createViewport();
+		celeritas.setCurrentChunkRenderPose(MODELVIEW);
+		celeritas.setCurrentChunkRenderProjection(shadowProjection);
+
+		profiler.push("terrain_setup");
+		celeritas.getRenderSectionManager().markShadowGraphDirty();
+
+		Vec3 playerPos = playerCamera.position();
+		var cameraState = new SimpleWorldRenderer.CameraState(playerPos.x, playerPos.y, playerPos.z,
+			playerCamera.xRot(), playerCamera.yRot(), FogHelper.INSTANCE.getFogCutoff());
+		boolean spectator = Minecraft.getInstance().player != null && Minecraft.getInstance().player.isSpectator();
+
+		RenderDevice.enterManagedCode();
+
+		try {
+			celeritas.setupShadowTerrain(playerViewport, ((ViewportProvider) FRUSTUM).sodium$createViewport(), cameraState, celeritas.nextFrame(), spectator);
+
+			if (shouldRenderTerrain) {
+				profiler.popPush("terrain");
+				drawTerrainLayer(celeritas, ChunkSectionLayer.SOLID, playerPos);
+				drawTerrainLayer(celeritas, ChunkSectionLayer.CUTOUT, playerPos);
+			}
+		} finally {
+			RenderDevice.exitManagedCode();
+		}
+
+		profiler.popPush("entities");
+
+		// Create a constrained shadow frustum for entities to avoid rendering faraway entities in the shadow pass,
+		// if the shader pack has requested it. Otherwise, use the same frustum as for terrain.
+		if (entityShadowDistanceMultiplier == 1.0F || entityShadowDistanceMultiplier < 0.0F) {
+			entityFrustumHolder.setInfo(terrainFrustumHolder.getFrustum(), terrainFrustumHolder.getDistanceInfo(), terrainFrustumHolder.getCullingInfo());
+		} else {
+			entityFrustumHolder = createShadowFrustum(renderDistanceMultiplier * entityShadowDistanceMultiplier, entityFrustumHolder);
+		}
+
+		Frustum entityShadowFrustum = entityFrustumHolder.getFrustum();
+		entityShadowFrustum.prepare(cameraX, cameraY, cameraZ);
+		celeritas.setCurrentViewport(((ViewportProvider) entityShadowFrustum).sodium$createViewport());
+
+		renderedShadowEntities = shouldRenderEntities || shouldRenderPlayer
+			? entities.extractEntities(playerCamera, entityShadowFrustum, !shouldRenderEntities) : 0;
+
+		if (shouldRenderBlockEntities || shouldRenderLightBlockEntities) {
+			Predicate<BlockEntity> blockEntityFilter = shouldRenderBlockEntities ? null
+				: be -> WorldUtil.getLightEmission(be.getBlockState(), be.getLevel(), be.getBlockPos()) > 0;
+			renderedShadowBlockEntities = entities.extractBlockEntities(celeritas, playerCamera, CapturedRenderingState.INSTANCE.getTickDelta(), blockEntityFilter);
+		} else {
+			renderedShadowBlockEntities = 0;
+		}
+
+		entities.render(vanillaLevelRenderer);
+
+		profiler.popPush("translucent depth copy");
+		targets.copyPreTranslucentDepth();
+
+		if (shouldRenderTranslucent) {
+			profiler.popPush("translucent terrain");
+			RenderDevice.enterManagedCode();
+
+			try {
+				drawTerrainLayer(celeritas, ChunkSectionLayer.TRANSLUCENT, playerPos);
+			} finally {
+				RenderDevice.exitManagedCode();
+			}
+		}
+
+		celeritas.setCurrentViewport(playerViewport);
+		celeritas.setCurrentChunkRenderPose(playerPose);
+		celeritas.setCurrentChunkRenderProjection(playerProjection);
+		RenderSystem.getModelViewStack().popMatrix();
+		RenderSystem.restoreProjectionMatrix();
+
+		profiler.popPush("generate mipmaps");
+		generateMipmaps();
+
+		profiler.popPush("restore gl state");
+		GlStateManager._enableCull();
+		VanillaTargets.bind(Minecraft.getInstance().getMainRenderTarget(), false);
+		GlStateManager._viewport(0, 0, Minecraft.getInstance().getMainRenderTarget().width, Minecraft.getInstance().getMainRenderTarget().height);
+
+		pipeline.removePhaseIfNeeded();
+		GLDebug.pushGroup(901, "shadowcomp");
+		compositeRenderer.renderAll();
+		GLDebug.popGroup();
+
+		ACTIVE = false;
+		profiler.pop();
+		*///?}
 	}
+
+	//? if >=26.1 {
+	/*private void drawTerrainLayer(CeleritasWorldRenderer celeritas, ChunkSectionLayer layer, Vec3 cameraPos) {
+		pipeline.setPhase(WorldRenderingPhase.fromTerrainLayer(layer));
+		celeritas.drawChunkLayer(layer, cameraPos.x, cameraPos.y, cameraPos.z);
+		pipeline.setPhase(WorldRenderingPhase.NONE);
+	}
+	*///?}
 
 	//? if <26.1 {
 	public int renderBlockEntities(MultiBufferSource.BufferSource bufferSource, PoseStack modelView, Camera camera, double cameraX, double cameraY, double cameraZ, float tickDelta, boolean hasEntityFrustum, boolean lightsOnly) {
@@ -778,8 +939,10 @@ public class ShadowRenderer {
 
 	public void destroy() {
 		targets.destroy();
-		//? if <26.1
+		//? if <26.1 {
 		((MemoryTrackingRenderBuffers) buffers).freeAndDeleteBuffers();
+		//?} else
+		//projectionBuffer.close();
 	}
 
 	private record MipmapPass(int texture, int targetFilteringMode) {

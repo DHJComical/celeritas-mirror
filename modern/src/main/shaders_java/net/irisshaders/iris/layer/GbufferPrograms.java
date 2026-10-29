@@ -72,7 +72,7 @@ public class GbufferPrograms {
 		}
 	}
 
-	private static void setPhase(WorldRenderingPhase phase) {
+	public static void setPhase(WorldRenderingPhase phase) {
 		WorldRenderingPipeline pipeline = Iris.getPipelineManager().getPipelineNullable();
 
 		if (pipeline != null) {
