@@ -25,11 +25,7 @@ public class JcppProcessor {
 		//
 		// TODO: This allows #version to not appear as the first non-comment non-whitespace thing in the file.
 		//       That's not the behavior we want. If you're reading this, don't rely on this behavior.
-		source = source.replace("#version", GlslCollectingListener.VERSION_MARKER);
-		source = source.replace("#extension", GlslCollectingListener.EXTENSION_MARKER);
-
-		// Remove null characters. Some packs, such as Chocapic High Performance, have random null characters that trip up JCPP.
-		source = source.replace("\u0000", "");
+		source = hideDirectivesAndNulls(source);
 
 		GlslCollectingListener listener = new GlslCollectingListener();
 
@@ -68,5 +64,37 @@ public class JcppProcessor {
 		source = listener.collectLines() + builder;
 
 		return source;
+	}
+
+	/**
+	 * Replaces #version and #extension with their markers, then removes null characters, which some packs (such as
+	 * Chocapic High Performance) contain and which trip up JCPP. Done in one pass that jumps between '#' and null
+	 * characters, because String.replace checks every character one by one once the source contains anything
+	 * outside Latin-1, and on large packs that took longer than the preprocessing itself.
+	 */
+	private static String hideDirectivesAndNulls(String source) {
+		StringBuilder builder = new StringBuilder(source.length() + 256);
+		int copiedUpTo = 0;
+		int hash = source.indexOf('#');
+		int nul = source.indexOf('\u0000');
+
+		while (hash >= 0 || nul >= 0) {
+			if (nul >= 0 && (hash < 0 || nul < hash)) {
+				builder.append(source, copiedUpTo, nul);
+				copiedUpTo = nul + 1;
+				nul = source.indexOf('\u0000', copiedUpTo);
+			} else {
+				if (source.startsWith("#version", hash)) {
+					builder.append(source, copiedUpTo, hash).append(GlslCollectingListener.VERSION_MARKER);
+					copiedUpTo = hash + "#version".length();
+				} else if (source.startsWith("#extension", hash)) {
+					builder.append(source, copiedUpTo, hash).append(GlslCollectingListener.EXTENSION_MARKER);
+					copiedUpTo = hash + "#extension".length();
+				}
+				hash = source.indexOf('#', hash + 1);
+			}
+		}
+
+		return builder.append(source, copiedUpTo, source.length()).toString();
 	}
 }
