@@ -14,27 +14,31 @@ import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.KHRDebug;
 
 import java.util.List;
+import java.util.Map;
 
 public class ProgramCreator {
 	private static final Logger LOGGER = LogManager.getLogger(ProgramCreator.class);
+
+	public static final Map<String, Integer> DEFAULT_ATTRIBUTE_LOCATIONS = Map.of(
+		"iris_Entity", 11,
+		"mc_Entity", 11,
+		"mc_midTexCoord", 12,
+		"at_tangent", 13,
+		"at_midBlock", 14,
+		"Position", 0,
+		"UV0", 1
+	);
 
 	/**
 	 * Compiles and links a program without waiting for either to finish, so that the driver can work on it while
 	 * further programs are submitted. The program must not be used before {@link Submitted#finish()} returns.
 	 */
-	public static Submitted submit(String name, List<GlShader.Deferred> shaders) {
+	public static Submitted submit(String name, List<GlShader.Deferred> shaders, Map<String, Integer> attributeLocations) {
 		RenderSystem.assertOnRenderThread();
 
 		int program = GlStateManager.glCreateProgram();
 
-		GlStateManager._glBindAttribLocation(program, 11, "iris_Entity");
-		GlStateManager._glBindAttribLocation(program, 11, "mc_Entity");
-		GlStateManager._glBindAttribLocation(program, 12, "mc_midTexCoord");
-		GlStateManager._glBindAttribLocation(program, 13, "at_tangent");
-		GlStateManager._glBindAttribLocation(program, 14, "at_midBlock");
-
-		GlStateManager._glBindAttribLocation(program, 0, "Position");
-		GlStateManager._glBindAttribLocation(program, 1, "UV0");
+		attributeLocations.forEach((attribute, location) -> GlStateManager._glBindAttribLocation(program, location, attribute));
 
 		for (GlShader.Deferred shader : shaders) {
 			shader.attachTo(program);

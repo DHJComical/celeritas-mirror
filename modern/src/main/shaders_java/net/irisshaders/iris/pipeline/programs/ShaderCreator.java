@@ -11,249 +11,112 @@ import net.irisshaders.iris.gl.blending.BufferBlendOverride;
 import net.irisshaders.iris.gl.framebuffer.GlFramebuffer;
 import net.irisshaders.iris.gl.state.FogMode;
 import net.irisshaders.iris.gl.state.ShaderAttributeInputs;
+import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
-import net.irisshaders.iris.pipeline.ShaderLoadTimings;
-import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.pipeline.fallback.ShaderSynthesizer;
 import net.irisshaders.iris.pipeline.foss_transform.TransformPatcherBridge;
-import net.irisshaders.iris.pipeline.transform.ShaderPrinter;
+import net.irisshaders.iris.samplers.IrisSamplers;
 import net.irisshaders.iris.shaderpack.loading.ProgramId;
 import net.irisshaders.iris.shaderpack.programs.ProgramSource;
+import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.CommonUniforms;
-import net.irisshaders.iris.uniforms.FrameUpdateNotifier;
 import net.irisshaders.iris.uniforms.VanillaUniforms;
 import net.irisshaders.iris.uniforms.builtin.BuiltinReplacementUniforms;
 import net.irisshaders.iris.uniforms.custom.CustomUniforms;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackResources;
-import net.minecraft.server.packs.PathPackResources;
-//? if >=1.20.6 {
-/*import net.minecraft.server.packs.PackLocationInfo;
-import net.minecraft.server.packs.repository.KnownPack;
-import net.minecraft.server.packs.repository.PackSource;
-*///?}
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceProvider;
-import org.apache.commons.io.IOUtils;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
-import org.embeddedt.embeddium.impl.util.PlatformUtil;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 public class ShaderCreator {
-	public static CompletableFuture<ExtendedShader> create(WorldRenderingPipeline pipeline, Executor syncExecutor, String name, ProgramSource source, ProgramId programId, GlFramebuffer writingToBeforeTranslucent,
-                                                           GlFramebuffer writingToAfterTranslucent, AlphaTest fallbackAlpha,
-                                                           VertexFormat vertexFormat, ShaderAttributeInputs inputs, FrameUpdateNotifier updateNotifier,
-                                                           IrisRenderingPipeline parent, Supplier<ImmutableSet<Integer>> flipped, FogMode fogMode, boolean isIntensity,
-                                                           boolean isFullbright, boolean isShadowPass, boolean isLines, CustomUniforms customUniforms) throws IOException {
+	// Gbuffer programs see these vertex attributes with an iris_ prefix, so that they can't clash with names in the
+	// shader pack's code.
+	private static final Set<String> PREFIXED_ATTRIBUTES = Set.of("Position", "Color", "Normal", "UV0", "UV1", "UV2");
+
+	public static PendingGbufferProgram create(IrisRenderingPipeline parent, String name, ProgramSource source, ProgramId programId,
+											   GlFramebuffer writingToBeforeTranslucent, GlFramebuffer writingToAfterTranslucent,
+											   AlphaTest fallbackAlpha, VertexFormat vertexFormat, ShaderAttributeInputs inputs,
+											   Supplier<ImmutableSet<Integer>> flipped, boolean isIntensity, boolean isShadowPass,
+											   boolean isLines, CustomUniforms customUniforms) {
 		AlphaTest alpha = source.getDirectives().getAlphaTestOverride().orElse(fallbackAlpha);
 		BlendModeOverride blendModeOverride = source.getDirectives().getBlendModeOverride().orElse(programId.getBlendModeOverride());
 
-        return CompletableFuture.supplyAsync(() -> {
-            Preconditions.checkArgument(source.isValid());
-            return TransformPatcherBridge.patchVanilla(
-                    name,
-                    source.getSourcesMap(),
-                    alpha, isLines, true, inputs, pipeline.getTextureMap());
-        }, TransformPatcherBridge.EXECUTOR).thenApplyAsync(transformed -> {
+		List<BufferBlendOverride> bufferBlendOverrides = new ArrayList<>();
+		source.getDirectives().getBufferBlendOverrides().forEach(information -> {
+			int index = Ints.indexOf(source.getDirectives().getDrawBuffers(), information.index());
+			if (index > -1) {
+				bufferBlendOverrides.add(new BufferBlendOverride(index, information.blendMode()));
+			}
+		});
 
-            String vertex = transformed.get(ShaderType.VERTEX);
-            String geometry = transformed.get(ShaderType.GEOMETRY);
-            String tessControl = transformed.get(ShaderType.TESS_CTRL);
-            String tessEval = transformed.get(ShaderType.TESS_EVALUATE);
-            String fragment = transformed.get(ShaderType.FRAGMENT);
+		CompletableFuture<Map<ShaderType, String>> transformed = CompletableFuture.supplyAsync(() -> {
+			Preconditions.checkArgument(source.isValid());
+			return TransformPatcherBridge.patchVanilla(name, source.getSourcesMap(), alpha, isLines, true, inputs, parent.getTextureMap());
+		}, TransformPatcherBridge.EXECUTOR);
 
-            String shaderJsonString = String.format("""
-			    {
-			    "blend": {
-			        "func": "add",
-			        "srcrgb": "srcalpha",
-			        "dstrgb": "1-srcalpha"
-			    },
-			    "vertex": "%s",
-			    "fragment": "%s",
-			    "attributes": [
-			        "Position",
-			        "Color",
-			        "UV0",
-			        "UV1",
-			        "UV2",
-			        "Normal"
-			    ],
-			    "uniforms": [
-			        { "name": "iris_TextureMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
-			        { "name": "iris_ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
-			        { "name": "iris_ModelViewMatInverse", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
-			        { "name": "iris_ProjMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
-			        { "name": "iris_ProjMatInverse", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
-			        { "name": "iris_NormalMat", "type": "matrix3x3", "count": 9, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 ] },
-			        { "name": "iris_ChunkOffset", "type": "float", "count": 3, "values": [ 0.0, 0.0, 0.0 ] },
-			        { "name": "iris_ColorModulator", "type": "float", "count": 4, "values": [ 1.0, 1.0, 1.0, 1.0 ] },
-			        { "name": "iris_GlintAlpha", "type": "float", "count": 1, "values": [ 1.0 ] },
-			        { "name": "iris_FogStart", "type": "float", "count": 1, "values": [ 0.0 ] },
-			        { "name": "iris_FogEnd", "type": "float", "count": 1, "values": [ 1.0 ] },
-			        { "name": "iris_FogColor", "type": "float", "count": 4, "values": [ 0.0, 0.0, 0.0, 0.0 ] }
-			    ]
-			}""", name, name);
+		return new PendingGbufferProgram(name, attributeLocations(vertexFormat), transformed, (builder, sources) -> {
+			CommonUniforms.addDynamicUniforms(builder, FogMode.PER_VERTEX);
+			customUniforms.assignTo(builder);
+			BuiltinReplacementUniforms.addBuiltinReplacementUniforms(builder);
+			VanillaUniforms.addVanillaUniforms(builder);
+			parent.addGbufferOrShadowSamplers(builder, builder, flipped, isShadowPass, inputs.hasTex(), inputs.hasLight(), inputs.hasOverlay());
 
-            ShaderPrinter.printProgram(name).addSources(transformed).addJson(shaderJsonString).print();
+			boolean usesTessellation = sources.get(ShaderType.TESS_CTRL) != null || sources.get(ShaderType.TESS_EVALUATE) != null;
 
-            ResourceProvider shaderResourceFactory = new IrisProgramResourceFactory(shaderJsonString, vertex, geometry, tessControl, tessEval, fragment);
-
-            List<BufferBlendOverride> overrides = new ArrayList<>();
-            source.getDirectives().getBufferBlendOverrides().forEach(information -> {
-                int index = Ints.indexOf(source.getDirectives().getDrawBuffers(), information.index());
-                if (index > -1) {
-                    overrides.add(new BufferBlendOverride(index, information.blendMode()));
-                }
-            });
-
-            long constructStart = ShaderLoadTimings.now();
-
-            try {
-                return new ExtendedShader(shaderResourceFactory, name, vertexFormat, tessControl != null || tessEval != null, writingToBeforeTranslucent, writingToAfterTranslucent, blendModeOverride, alpha, uniforms -> {
-                    CommonUniforms.addDynamicUniforms(uniforms, FogMode.PER_VERTEX);
-                    customUniforms.assignTo(uniforms);
-                    BuiltinReplacementUniforms.addBuiltinReplacementUniforms(uniforms);
-                    VanillaUniforms.addVanillaUniforms(uniforms);
-                }, (samplerHolder, imageHolder) -> {
-                    parent.addGbufferOrShadowSamplers(samplerHolder, imageHolder, flipped, isShadowPass, inputs.hasTex(), inputs.hasLight(), inputs.hasOverlay());
-                }, isIntensity, parent, overrides, customUniforms);
-            } catch (IOException e) {
-                throw new CompletionException(e);
-            } finally {
-                ShaderLoadTimings.record(ShaderLoadTimings.Stage.EXTENDED_SHADER, constructStart);
-            }
-        }, syncExecutor);
+			return new GbufferProgram(builder, customUniforms, parent, writingToBeforeTranslucent, writingToAfterTranslucent,
+				blendModeOverride, bufferBlendOverrides, alpha.reference(), isIntensity, usesTessellation);
+		});
 	}
 
-	public static FallbackShader createFallback(String name, GlFramebuffer writingToBeforeTranslucent,
-												GlFramebuffer writingToAfterTranslucent, AlphaTest alpha,
-												VertexFormat vertexFormat, BlendModeOverride blendModeOverride,
-												IrisRenderingPipeline parent, FogMode fogMode, boolean entityLighting,
-												boolean isGlint, boolean isText, boolean intensityTex, boolean isFullbright) throws IOException {
+	public static PendingGbufferProgram createFallback(String name, GlFramebuffer writingToBeforeTranslucent,
+													   GlFramebuffer writingToAfterTranslucent, AlphaTest alpha,
+													   VertexFormat vertexFormat, @Nullable BlendModeOverride blendModeOverride,
+													   IrisRenderingPipeline parent, FogMode fogMode, boolean entityLighting,
+													   boolean isGlint, boolean isText, boolean intensityTex, boolean isFullbright) {
 		ShaderAttributeInputs inputs = new ShaderAttributeInputs(vertexFormat, isFullbright, false, isGlint, isText);
 
 		// TODO: Is this check sound in newer versions?
 		boolean isLeash = vertexFormat == DefaultVertexFormat.POSITION_COLOR_LIGHTMAP;
-		String vertex = ShaderSynthesizer.vsh(true, inputs, fogMode, entityLighting, isLeash);
-		String fragment = ShaderSynthesizer.fsh(inputs, fogMode, alpha, intensityTex, isLeash);
+		Map<ShaderType, String> sources = new EnumMap<>(ShaderType.class);
+		sources.put(ShaderType.VERTEX, ShaderSynthesizer.vsh(true, inputs, fogMode, entityLighting, isLeash));
+		sources.put(ShaderType.FRAGMENT, ShaderSynthesizer.fsh(inputs, fogMode, alpha, intensityTex, isLeash));
 
+		return new PendingGbufferProgram(name, attributeLocations(vertexFormat), CompletableFuture.completedFuture(sources), (builder, s) -> {
+			builder.addExternalSampler(IrisSamplers.ALBEDO_TEXTURE_UNIT, "gtexture");
+			builder.addExternalSampler(IrisSamplers.OVERLAY_TEXTURE_UNIT, "overlay");
+			builder.addExternalSampler(IrisSamplers.LIGHTMAP_TEXTURE_UNIT, "lightmap");
 
-		String shaderJsonString = String.format("""
-			    {
-			    "blend": {
-			        "func": "add",
-			        "srcrgb": "srcalpha",
-			        "dstrgb": "1-srcalpha"
-			    },
-			    "vertex": "%s",
-			    "fragment": "%s",
-			    "attributes": [
-			        "Position",
-			        "Color",
-			        "UV0",
-			        "UV1",
-			        "UV2",
-			        "Normal"
-			    ],
-			    "uniforms": [
-			        		{ "name": "TextureMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
-			        		{ "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
-			        		{ "name": "ProjMat", "type": "matrix4x4", "count": 16, "values": [ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 ] },
-			        		{ "name": "ChunkOffset", "type": "float", "count": 3, "values": [ 0.0, 0.0, 0.0 ] },
-			        		{ "name": "ColorModulator", "type": "float", "count": 4, "values": [ 1.0, 1.0, 1.0, 1.0 ] },
-			        		{ "name": "GlintAlpha", "type": "float", "count": 1, "values": [ 1.0 ] },
-			        		{ "name": "Light0_Direction", "type": "float", "count": 3, "values": [0.0, 0.0, 0.0] },
-			        		{ "name": "Light1_Direction", "type": "float", "count": 3, "values": [0.0, 0.0, 0.0] },
-			        		{ "name": "FogStart", "type": "float", "count": 1, "values": [ 0.0 ] },
-			        		{ "name": "FogEnd", "type": "float", "count": 1, "values": [ 1.0 ] },
-			        		{ "name": "FogDensity", "type": "float", "count": 1, "values": [ 1.0 ] },
-			        		{ "name": "FogIsExp2", "type": "int", "count": 1, "values": [ 0 ] },
-			        		{ "name": "AlphaTestValue", "type": "float", "count": 1, "values": [ 0.0 ] },
-			        		{ "name": "LineWidth", "type": "float", "count": 1, "values": [ 1.0 ] },
-			        		{ "name": "ScreenSize", "type": "float", "count": 2, "values": [ 1.0, 1.0 ] },
-			        		{ "name": "FogColor", "type": "float", "count": 4, "values": [ 0.0, 0.0, 0.0, 0.0 ] }
-			    ]
-			}""", name, name);
-		ShaderPrinter.printProgram(name)
-			.addSource(ShaderType.VERTEX, vertex)
-			.addSource(ShaderType.FRAGMENT, fragment)
-			.addJson(shaderJsonString)
-			.print();
+			VanillaUniforms.addVanillaUniforms(builder);
+			builder.uniform1f(UniformUpdateFrequency.ONCE, "iris_AlphaTestValue", alpha::reference);
+			builder.uniform1f("iris_FogDensity", () -> Math.max(0.0F, CapturedRenderingState.INSTANCE.getFogDensity()), listener -> {
+			});
+			builder.uniform1i("iris_FogIsExp2", () -> CapturedRenderingState.INSTANCE.getFogDensity() >= 0.0F ? 1 : 0, listener -> {
+			});
 
-		ResourceProvider shaderResourceFactory = new IrisProgramResourceFactory(shaderJsonString, vertex, null, null, null, fragment);
-
-		return new FallbackShader(shaderResourceFactory, name, vertexFormat, writingToBeforeTranslucent,
-			writingToAfterTranslucent, blendModeOverride, alpha.reference(), parent);
+			return new GbufferProgram(builder, null, parent, writingToBeforeTranslucent, writingToAfterTranslucent,
+				blendModeOverride, List.of(), alpha.reference(), false, false);
+		});
 	}
 
-	private record IrisProgramResourceFactory(String json, String vertex, String geometry, String tessControl,
-											  String tessEval, String fragment) implements ResourceProvider {
+	/**
+	 * Binds each attribute to its index in the vertex format, which is where vanilla's buffers provide it.
+	 */
+	private static Map<String, Integer> attributeLocations(VertexFormat vertexFormat) {
+		List<String> names = vertexFormat.getElementAttributeNames();
+		Map<String, Integer> locations = new HashMap<>();
 
-		@Override
-		public Optional<Resource> getResource(ResourceLocation id) {
-			final String path = id.getPath();
-
-			if (path.endsWith("json")) {
-				return Optional.of(new StringResource(id, json));
-			} else if (path.endsWith("vsh")) {
-				return Optional.of(new StringResource(id, vertex));
-			} else if (path.endsWith("gsh")) {
-				if (geometry == null) {
-					return Optional.empty();
-				}
-				return Optional.of(new StringResource(id, geometry));
-			} else if (path.endsWith("tcs")) {
-				if (tessControl == null) {
-					return Optional.empty();
-				}
-				return Optional.of(new StringResource(id, tessControl));
-			} else if (path.endsWith("tes")) {
-				if (tessEval == null) {
-					return Optional.empty();
-				}
-				return Optional.of(new StringResource(id, tessEval));
-			} else if (path.endsWith("fsh")) {
-				return Optional.of(new StringResource(id, fragment));
-			}
-
-			return Optional.empty();
-		}
-	}
-
-	private static class StringResource extends Resource {
-		private final String content;
-
-        private static PackResources fabricateResourcePack() {
-            //? if >=1.20.6 {
-            //return new PathPackResources(new PackLocationInfo("<iris shaderpack shaders>", Component.literal("iris"), PackSource.BUILT_IN, Optional.of(new KnownPack("iris", "shader", "1.0"))), PlatformUtil.getConfigDir());
-            //?} else
-            return new PathPackResources("<iris shaderpack shaders>", PlatformUtil.getConfigDir(), true);
-        }
-
-		private StringResource(ResourceLocation id, String content) {
-			super(fabricateResourcePack(),
-                    () -> new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
-			this.content = content;
+		for (int i = 0; i < names.size(); i++) {
+			String name = names.get(i);
+			locations.put(PREFIXED_ATTRIBUTES.contains(name) ? "iris_" + name : name, i);
 		}
 
-		@Override
-		public InputStream open() {
-			return IOUtils.toInputStream(content, StandardCharsets.UTF_8);
-		}
+		return locations;
 	}
 }

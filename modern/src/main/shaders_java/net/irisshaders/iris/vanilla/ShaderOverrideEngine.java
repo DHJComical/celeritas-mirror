@@ -7,7 +7,7 @@ import net.irisshaders.iris.pathways.HandRenderer;
 import net.irisshaders.iris.pipeline.ShaderRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
-import net.irisshaders.iris.pipeline.programs.ExtendedShader;
+import net.irisshaders.iris.pipeline.programs.IrisShaderInstance;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
 import net.irisshaders.iris.shadows.ShadowRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
@@ -24,7 +24,7 @@ public class ShaderOverrideEngine {
 
     @SuppressWarnings("unused") // called from ShaderOverridePatcher injection
     public static @Nullable ShaderInstance wrapGameRendererReturn(@Nullable ShaderInstance shader) {
-        if (shader != null && !(shader instanceof ExtendedShader)) {
+        if (shader != null && !(shader instanceof IrisShaderInstance)) {
             var override = getOverride(shader.getName());
             if (override != null) {
                 return override;

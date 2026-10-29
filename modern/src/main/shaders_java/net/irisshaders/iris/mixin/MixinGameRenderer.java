@@ -1,14 +1,11 @@
 package net.irisshaders.iris.mixin;
 
-import com.google.common.collect.Lists;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.platform.GlUtil;
-import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.api.v0.IrisApi;
-import net.irisshaders.iris.gl.program.IrisProgramTypes;
 import net.irisshaders.iris.pathways.scaling.RenderScale;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
@@ -25,11 +22,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.taumc.celeritas.shaders.CeleritasShaders;
-
-import java.util.ArrayList;
 
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
@@ -91,14 +85,5 @@ public class MixinGameRenderer {
 	@Inject(method = "render", at = @At("TAIL"))
 	private void iris$ensureScaledWorldResolved(CallbackInfo ci) {
 		RenderScale.end();
-	}
-
-	@Redirect(method = "reloadShaders", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList()Ljava/util/ArrayList;"))
-	private ArrayList<Program> iris$reloadGeometryShaders() {
-		ArrayList<Program> programs = Lists.newArrayList();
-		programs.addAll(IrisProgramTypes.GEOMETRY.getPrograms().values());
-		programs.addAll(IrisProgramTypes.TESS_CONTROL.getPrograms().values());
-		programs.addAll(IrisProgramTypes.TESS_EVAL.getPrograms().values());
-		return programs;
 	}
 }

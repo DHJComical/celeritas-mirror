@@ -1,72 +1,96 @@
 package net.irisshaders.iris.pipeline.programs;
 
 import net.minecraft.client.renderer.ShaderInstance;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * A specialized map mapping {@link ShaderKey} to {@link ShaderInstance}.
- * Avoids much of the complexity / overhead of an EnumMap while ultimately
- * fulfilling the same function.
+ * The gbuffer programs of a pipeline, by {@link ShaderKey}.
  */
 public class ShaderMap {
-	private final ShaderInstance[] shaders;
+	private final GbufferProgram[] programs;
 
-    @SuppressWarnings("unchecked")
-    private static <E extends Throwable> void sneakyThrow(Throwable e) throws E {
-        throw (E) e;
-    }
+	/**
+	 * Builds the program the factory creates for each key. Each is compiled as soon as its sources are transformed,
+	 * and none is waited for until all are compiling, so that the driver can work on them together. If any fails,
+	 * the others are deleted and the failure is thrown.
+	 */
+	public ShaderMap(ShaderFactory factory) {
+		ShaderKey[] keys = ShaderKey.values();
+		PendingGbufferProgram[] pending = new PendingGbufferProgram[keys.length];
 
-	public ShaderMap(ShaderFactory factory) throws IOException {
-		ShaderKey[] ids = ShaderKey.values();
+		this.programs = new GbufferProgram[keys.length];
 
-		this.shaders = new ShaderInstance[ids.length];
+		try {
+			LinkedBlockingQueue<PendingGbufferProgram> transformed = new LinkedBlockingQueue<>();
+			int count = 0;
 
-        LinkedBlockingQueue<Runnable> renderThreadTasks = new LinkedBlockingQueue<>();
-        Executor syncExecutor = renderThreadTasks::add;
+			for (int i = 0; i < keys.length; i++) {
+				PendingGbufferProgram program = factory.create(keys[i]);
 
-        CompletableFuture<ShaderInstance>[] futures = new CompletableFuture[ids.length];
+				if (program != null) {
+					pending[i] = program;
+					program.whenTransformed(() -> transformed.add(program));
+					count++;
+				}
+			}
 
-        for (int i = 0; i < ids.length; i++) {
-            futures[i] = factory.create(ids[i], syncExecutor);
-            if (futures[i] == null) {
-                throw new IllegalArgumentException("Factory for " + ids[i] + " returned null");
-            }
-        }
+			for (int i = 0; i < count; i++) {
+				transformed.take().submit();
+			}
 
-        var combinedFuture = CompletableFuture.allOf(futures);
-        // A failed transform completes its future on a worker thread without queueing a render thread task, so
-        // completion has to wake the loop below itself.
-        combinedFuture.whenComplete((result, throwable) -> renderThreadTasks.add(() -> {}));
-
-        while (!combinedFuture.isDone()) {
-            try {
-                var task = renderThreadTasks.take();
-                task.run();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-		for (int i = 0; i < ids.length; i++) {
-            try {
-                this.shaders[i] = futures[i].join();
-            } catch (CompletionException e) {
-                Throwable trueCause = e;
-                while (trueCause instanceof CompletionException) {
-                    trueCause = trueCause.getCause();
-                }
-                sneakyThrow(trueCause);
-            }
+			for (int i = 0; i < keys.length; i++) {
+				if (pending[i] != null) {
+					programs[i] = pending[i].finish();
+					pending[i] = null;
+				}
+			}
+		} catch (InterruptedException e) {
+			destroy(pending);
+			throw new RuntimeException(e);
+		} catch (RuntimeException | Error e) {
+			destroy(pending);
+			throw e;
 		}
 	}
 
-    public interface ShaderFactory {
-        CompletableFuture<ShaderInstance> create(ShaderKey key, Executor syncExecutor) throws IOException;
-    }
+	private void destroy(PendingGbufferProgram[] pending) {
+		for (PendingGbufferProgram program : pending) {
+			if (program != null) {
+				program.delete();
+			}
+		}
 
-	public ShaderInstance getShader(ShaderKey id) {
-		return shaders[id.ordinal()];
+		destroy();
+	}
+
+	public interface ShaderFactory {
+		/**
+		 * Returns the program for the key, or null if the pipeline has none.
+		 */
+		@Nullable
+		PendingGbufferProgram create(ShaderKey key);
+	}
+
+	@Nullable
+	public GbufferProgram getProgram(ShaderKey key) {
+		return programs[key.ordinal()];
+	}
+
+	/**
+	 * Returns the shader vanilla should draw with for the key, or null to draw with vanilla's own.
+	 */
+	@Nullable
+	public ShaderInstance getShader(ShaderKey key) {
+		return programs[key.ordinal()] != null ? IrisShaderInstance.get(key) : null;
+	}
+
+	public void destroy() {
+		for (GbufferProgram program : programs) {
+			if (program != null) {
+				program.destroy();
+			}
+		}
 	}
 }

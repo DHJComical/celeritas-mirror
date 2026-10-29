@@ -15,10 +15,16 @@ import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.IntSupplier;
 
 public class ProgramBuilder extends ProgramUniforms.Builder implements SamplerHolder, ImageHolder {
+	private static final ShaderType[] GRAPHICS_STAGES = {
+		ShaderType.VERTEX, ShaderType.TESS_CTRL, ShaderType.TESS_EVALUATE, ShaderType.GEOM, ShaderType.FRAGMENT
+	};
+
 	private final int program;
 	private final ProgramSamplers.Builder samplers;
 	private final ProgramImages.Builder images;
@@ -45,18 +51,32 @@ public class ProgramBuilder extends ProgramUniforms.Builder implements SamplerHo
 	 */
 	public static ProgramCreator.Submitted submit(String name, @Nullable String vertexSource, @Nullable String geometrySource,
 												  @Nullable String fragmentSource) {
+		Map<ShaderType, String> sources = new EnumMap<>(ShaderType.class);
+		sources.put(ShaderType.VERTEX, vertexSource);
+		sources.put(ShaderType.GEOM, geometrySource);
+		sources.put(ShaderType.FRAGMENT, fragmentSource);
+
+		return submit(name, sources, ProgramCreator.DEFAULT_ATTRIBUTE_LOCATIONS);
+	}
+
+	/**
+	 * Starts compiling and linking a program from its vertex and fragment shaders, plus any tessellation or geometry
+	 * shaders present in {@code sources}.
+	 */
+	public static ProgramCreator.Submitted submit(String name, Map<ShaderType, String> sources, Map<String, Integer> attributeLocations) {
 		RenderSystem.assertOnRenderThread();
 
-		List<GlShader.Deferred> shaders = new ArrayList<>(3);
-		shaders.add(buildShader(ShaderType.VERTEX, name + ".vsh", vertexSource));
+		List<GlShader.Deferred> shaders = new ArrayList<>(GRAPHICS_STAGES.length);
 
-		if (geometrySource != null) {
-			shaders.add(buildShader(ShaderType.GEOMETRY, name + ".gsh", geometrySource));
+		for (ShaderType type : GRAPHICS_STAGES) {
+			String source = sources.get(type);
+
+			if (source != null || type == ShaderType.VERTEX || type == ShaderType.FRAGMENT) {
+				shaders.add(buildShader(type, name + "." + type.fileExtension, source));
+			}
 		}
 
-		shaders.add(buildShader(ShaderType.FRAGMENT, name + ".fsh", fragmentSource));
-
-		return ProgramCreator.submit(name, shaders);
+		return ProgramCreator.submit(name, shaders, attributeLocations);
 	}
 
 	public static ProgramCreator.Submitted submitCompute(String name, @Nullable String source) {
@@ -66,7 +86,7 @@ public class ProgramBuilder extends ProgramUniforms.Builder implements SamplerHo
 			throw new IllegalStateException("This PC does not support compute shaders, but it's attempting to be used???");
 		}
 
-		return ProgramCreator.submit(name, List.of(buildShader(ShaderType.COMPUTE, name + ".csh", source)));
+		return ProgramCreator.submit(name, List.of(buildShader(ShaderType.COMPUTE, name + ".csh", source)), ProgramCreator.DEFAULT_ATTRIBUTE_LOCATIONS);
 	}
 
 	public static ProgramBuilder finish(ProgramCreator.Submitted program, ImmutableSet<Integer> reservedTextureUnits) {

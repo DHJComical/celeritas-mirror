@@ -41,8 +41,8 @@ import net.irisshaders.iris.pathways.HorizonRenderer;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
 import net.irisshaders.iris.pathways.colorspace.ColorSpaceConverter;
 import net.irisshaders.iris.pathways.colorspace.ColorSpaceFragmentConverter;
-import net.irisshaders.iris.pipeline.programs.ExtendedShader;
-import net.irisshaders.iris.pipeline.programs.FallbackShader;
+import net.irisshaders.iris.pipeline.programs.GbufferProgram;
+import net.irisshaders.iris.pipeline.programs.PendingGbufferProgram;
 import net.irisshaders.iris.pipeline.programs.ShaderCreator;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
 import net.irisshaders.iris.pipeline.programs.ShaderMap;
@@ -88,10 +88,8 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.server.ChainedJsonException;
 import org.apache.commons.lang3.StringUtils;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.jetbrains.annotations.Nullable;
@@ -105,7 +103,6 @@ import org.lwjgl.opengl.GL30C;
 import org.lwjgl.opengl.GL43C;
 import org.taumc.celeritas.shaders.CeleritasShaders;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -115,8 +112,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
@@ -130,7 +125,6 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 	private final boolean separateHardwareSamplers;
 	private final ProgramFallbackResolver resolver;
 	private final Supplier<ShadowRenderTargets> shadowTargetsSupplier;
-	private final Set<ShaderInstance> loadedShaders;
 	private final CompositeRenderer beginRenderer;
 	private final CompositeRenderer prepareRenderer;
 	private final CompositeRenderer deferredRenderer;
@@ -443,36 +437,15 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			return builder.build();
 		};
 
-		this.loadedShaders = new HashSet<>();
-
         stageStart = ShaderLoadTimings.record(ShaderLoadTimings.Stage.PIPELINE_REST, stageStart);
 
-        try {
-            this.shaderMap = new ShaderMap((key, syncExecutor) -> {
-                if (key.isShadow()) {
-                    if (shadowRenderTargets != null) {
-                        return createShadowShader(key.getName(), resolver.resolve(key.getProgram()), key, syncExecutor);
-                    } else {
-                        return CompletableFuture.completedFuture(null);
-                    }
-                } else {
-                    return createShader(key.getName(), resolver.resolve(key.getProgram()), key, syncExecutor);
-                }
-            });
-        } catch (ChainedJsonException e) {
-            destroyShaders();
-            if (e.getCause() instanceof ShaderCompileException compileException) {
-                throw compileException;
+        this.shaderMap = new ShaderMap(key -> {
+            if (key.isShadow()) {
+                return shadowRenderTargets != null ? createShadowShader(key.getName(), resolver.resolve(key.getProgram()), key) : null;
             } else {
-                throw new RuntimeException(e);
+                return createShader(key.getName(), resolver.resolve(key.getProgram()), key);
             }
-        } catch (IOException e) {
-            destroyShaders();
-            throw new RuntimeException(e);
-        } catch (RuntimeException e) {
-            destroyShaders();
-            throw e;
-        }
+        });
 
         stageStart = ShaderLoadTimings.record(ShaderLoadTimings.Stage.GBUFFER_BUILD, stageStart);
 
@@ -493,12 +466,8 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		}
 
 		if (shadowRenderTargets != null) {
-			ShaderInstance shader = shaderMap.getShader(ShaderKey.SHADOW_TERRAIN_CUTOUT);
-			boolean shadowUsesImages = false;
-
-			if (shader instanceof ExtendedShader shader2) {
-				shadowUsesImages = shader2.hasActiveImages();
-			}
+			GbufferProgram shadowTerrain = shaderMap.getProgram(ShaderKey.SHADOW_TERRAIN_CUTOUT);
+			boolean shadowUsesImages = shadowTerrain != null && shadowTerrain.hasActiveImages();
 
 			stageStart = ShaderLoadTimings.record(ShaderLoadTimings.Stage.PIPELINE_REST, stageStart);
 			this.shadowCompositeRenderer = new ShadowCompositeRenderer(this, programSet.getPackDirectives(), programSet.getShadowComposite(), programSet.getShadowCompCompute(), this.shadowRenderTargets, this.shaderStorageBufferHolder, customTextureManager.getNoiseTexture(), updateNotifier,
@@ -720,12 +689,12 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		return programs;
 	}
 
-	private CompletableFuture<ShaderInstance> createShader(String name, Optional<ProgramSource> source, ShaderKey key, Executor syncExecutor) throws IOException {
-		if (!source.isPresent()) {
-			return CompletableFuture.completedFuture(createFallbackShader(name, key));
+	private PendingGbufferProgram createShader(String name, Optional<ProgramSource> source, ShaderKey key) {
+		if (source.isEmpty()) {
+			return createFallbackShader(name, key);
 		}
 
-		return createShader(name, syncExecutor, source.get(), key.getProgram(), key.getAlphaTest(), key.getVertexFormat(), key.getFogMode(),
+		return createShader(name, source.get(), key.getProgram(), key.getAlphaTest(), key.getVertexFormat(),
 			key.isIntensity(), key.shouldIgnoreLightmap(), key.isGlint(), key.isText());
 	}
 
@@ -734,65 +703,49 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		return customTextureMap;
 	}
 
-	private CompletableFuture<ShaderInstance> createShader(String name, Executor syncExecutor, ProgramSource source, ProgramId programId, AlphaTest fallbackAlpha,
-										VertexFormat vertexFormat, FogMode fogMode,
-										boolean isIntensity, boolean isFullbright, boolean isGlint, boolean isText) throws IOException {
+	private PendingGbufferProgram createShader(String name, ProgramSource source, ProgramId programId, AlphaTest fallbackAlpha,
+											   VertexFormat vertexFormat, boolean isIntensity, boolean isFullbright, boolean isGlint, boolean isText) {
 		GlFramebuffer beforeTranslucent = renderTargets.createGbufferFramebuffer(flippedAfterPrepare, source.getDirectives().getDrawBuffers());
 		GlFramebuffer afterTranslucent = renderTargets.createGbufferFramebuffer(flippedAfterTranslucent, source.getDirectives().getDrawBuffers());
 		boolean isLines = programId == ProgramId.Line && resolver.has(ProgramId.Line);
-
 
 		ShaderAttributeInputs inputs = new ShaderAttributeInputs(vertexFormat, isFullbright, isLines, isGlint, isText);
 
 		Supplier<ImmutableSet<Integer>> flipped =
 			() -> isBeforeTranslucent ? flippedAfterPrepare : flippedAfterTranslucent;
 
-
-        CompletableFuture<ExtendedShader> extendedShaderFuture = ShaderCreator.create(this, syncExecutor, name, source, programId, beforeTranslucent, afterTranslucent,
-			fallbackAlpha, vertexFormat, inputs, updateNotifier, this, flipped, fogMode, isIntensity, isFullbright, false, isLines, customUniforms);
-
-        return extendedShaderFuture.thenApplyAsync(shader -> {
-            loadedShaders.add(shader);
-            return shader;
-        }, syncExecutor);
+		return ShaderCreator.create(this, name, source, programId, beforeTranslucent, afterTranslucent,
+			fallbackAlpha, vertexFormat, inputs, flipped, isIntensity, false, isLines, customUniforms);
 	}
 
-	private ShaderInstance createFallbackShader(String name, ShaderKey key) throws IOException {
+	private PendingGbufferProgram createFallbackShader(String name, ShaderKey key) {
 		GlFramebuffer beforeTranslucent = renderTargets.createGbufferFramebuffer(flippedAfterPrepare, new int[]{0});
 		GlFramebuffer afterTranslucent = renderTargets.createGbufferFramebuffer(flippedAfterTranslucent, new int[]{0});
 
-		FallbackShader shader = ShaderCreator.createFallback(name, beforeTranslucent, afterTranslucent,
+		return ShaderCreator.createFallback(name, beforeTranslucent, afterTranslucent,
 			key.getAlphaTest(), key.getVertexFormat(), null, this, key.getFogMode(),
 			key == ShaderKey.GLINT, key.isText(), key.hasDiffuseLighting(), key.isIntensity(), key.shouldIgnoreLightmap());
-
-		loadedShaders.add(shader);
-
-		return shader;
 	}
 
-	private CompletableFuture<ShaderInstance> createShadowShader(String name, Optional<ProgramSource> source, ShaderKey key, Executor syncExecutor) throws IOException {
-		if (!source.isPresent()) {
-			return CompletableFuture.completedFuture(createFallbackShadowShader(name, key));
+	private PendingGbufferProgram createShadowShader(String name, Optional<ProgramSource> source, ShaderKey key) {
+		if (source.isEmpty()) {
+			return createFallbackShadowShader(name, key);
 		}
 
-		return createShadowShader(name, syncExecutor, source.get(), key.getProgram(), key.getAlphaTest(), key.getVertexFormat(),
+		return createShadowShader(name, source.get(), key.getProgram(), key.getAlphaTest(), key.getVertexFormat(),
 			key.isIntensity(), key.shouldIgnoreLightmap(), key.isText());
 	}
 
-	private ShaderInstance createFallbackShadowShader(String name, ShaderKey key) throws IOException {
+	private PendingGbufferProgram createFallbackShadowShader(String name, ShaderKey key) {
 		GlFramebuffer framebuffer = shadowRenderTargets.createShadowFramebuffer(ImmutableSet.of(), new int[]{0});
 
-		FallbackShader shader = ShaderCreator.createFallback(name, framebuffer, framebuffer,
+		return ShaderCreator.createFallback(name, framebuffer, framebuffer,
 			key.getAlphaTest(), key.getVertexFormat(), BlendModeOverride.OFF, this, key.getFogMode(),
 			key == ShaderKey.GLINT, key.isText(), key.hasDiffuseLighting(), key.isIntensity(), key.shouldIgnoreLightmap());
-
-		loadedShaders.add(shader);
-
-		return shader;
 	}
 
-	private CompletableFuture<ShaderInstance> createShadowShader(String name, Executor syncExecutor, ProgramSource source, ProgramId programId, AlphaTest fallbackAlpha,
-											  VertexFormat vertexFormat, boolean isIntensity, boolean isFullbright, boolean isText) throws IOException {
+	private PendingGbufferProgram createShadowShader(String name, ProgramSource source, ProgramId programId, AlphaTest fallbackAlpha,
+													 VertexFormat vertexFormat, boolean isIntensity, boolean isFullbright, boolean isText) {
 		GlFramebuffer framebuffer = shadowRenderTargets.createShadowFramebuffer(ImmutableSet.of(), source.getDirectives().hasUnknownDrawBuffers() ? new int[]{0, 1} : source.getDirectives().getDrawBuffers());
 		boolean isLines = programId == ProgramId.Line && resolver.has(ProgramId.Line);
 
@@ -800,13 +753,8 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 		Supplier<ImmutableSet<Integer>> flipped = () -> flippedBeforeShadow;
 
-		CompletableFuture<ExtendedShader> extendedShaderFuture = ShaderCreator.create(this, syncExecutor, name, source, programId, framebuffer, framebuffer,
-			fallbackAlpha, vertexFormat, inputs, updateNotifier, this, flipped, FogMode.PER_VERTEX, isIntensity, isFullbright, true, isLines, customUniforms);
-
-        return extendedShaderFuture.thenApplyAsync(shader -> {
-            loadedShaders.add(shader);
-            return shader;
-        }, syncExecutor);
+		return ShaderCreator.create(this, name, source, programId, framebuffer, framebuffer,
+			fallbackAlpha, vertexFormat, inputs, flipped, isIntensity, true, isLines, customUniforms);
 	}
 
 	public void addGbufferOrShadowSamplers(SamplerHolder samplers, ImageHolder images, Supplier<ImmutableSet<Integer>> flipped,
@@ -1262,14 +1210,6 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		return shaderMap;
 	}
 
-	private void destroyShaders() {
-		// NB: If you forget this, shader reloads won't work!
-		loadedShaders.forEach(shader -> {
-			shader.clear();
-			shader.close();
-		});
-	}
-
 	public RenderTargets getRenderTargets() {
 		return renderTargets;
 	}
@@ -1307,7 +1247,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 	public void destroy() {
 		destroyed = true;
 
-		destroyShaders();
+		shaderMap.destroy();
 
 		// Unbind all textures
 		//

@@ -27,6 +27,13 @@ public final class Program extends GlObject {
 
 	public void use() {
 		IrisRenderSystem.memoryBarrier(GL43C.GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL43C.GL_TEXTURE_FETCH_BARRIER_BIT | GL43C.GL_SHADER_STORAGE_BARRIER_BIT);
+		bind();
+	}
+
+	/**
+	 * Like {@link #use()}, but without waiting for image and storage buffer writes by earlier draws to be visible.
+	 */
+	public void bind() {
 		ProgramManager.glUseProgram(handle());
 
 		uniforms.update();

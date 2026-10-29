@@ -189,7 +189,7 @@ public class PendingPrograms {
 		return Collections.singletonMap(ShaderType.COMPUTE, TransformPatcherBridge.patchCompute(source.getName(), source.getSource().orElse(null), stage, textureMap));
 	}
 
-	private static <T> T await(CompletableFuture<T> future) {
+	public static <T> T await(CompletableFuture<T> future) {
 		try {
 			return future.join();
 		} catch (CompletionException e) {
