@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.mixin.core.GlStateManagerAccessor;
 import org.embeddedt.embeddium.impl.render.chunk.DefaultChunkRenderer;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
@@ -35,11 +36,7 @@ public class ModernChunkRenderer extends DefaultChunkRenderer {
 
     @Override
     protected int activateTextureUnit(int unit) {
-        //? if >=26.1 {
-        /*int previous = GL13C.GL_TEXTURE0 + org.embeddedt.embeddium.impl.mixin.core.GlStateManagerAccessor.celeritas$getActiveTexture();
-        *///?} else {
-        int previous = GlStateManager._getActiveTexture();
-        //?}
+        int previous = GL13C.GL_TEXTURE0 + GlStateManagerAccessor.celeritas$getActiveTexture();
         GlStateManager._activeTexture(unit);
         return previous;
     }
