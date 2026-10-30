@@ -56,10 +56,15 @@ public final class IrisPipelines {
 		assign(RenderPipelines.LINES, p -> ShaderKey.LINES);
 		assign(RenderPipelines.LINES_TRANSLUCENT, p -> ShaderKey.LINES);
 		assign(RenderPipelines.SECONDARY_BLOCK_OUTLINE, p -> ShaderKey.LINES);
+		assign(RenderPipelines.LINES_DEPTH_BIAS, p -> ShaderKey.LINES);
 		assign(RenderPipelines.STARS, p -> ShaderKey.SKY_BASIC);
-		assign(RenderPipelines.SUNRISE_SUNSET, p -> ShaderKey.SKY_BASIC_COLOR);
+		// These use vanilla's generic position shaders, so mod pipelines drawn outside the sky match them too.
+		assign(RenderPipelines.SUNRISE_SUNSET, p -> isSky(p) ? ShaderKey.SKY_BASIC_COLOR : ShaderKey.BASIC_COLOR);
 		assign(RenderPipelines.SKY, p -> ShaderKey.SKY_BASIC);
-		assign(RenderPipelines.CELESTIAL, p -> ShaderKey.SKY_TEXTURED);
+		assign(RenderPipelines.CELESTIAL, p -> isSky(p) ? ShaderKey.SKY_TEXTURED : ShaderKey.TEXTURED);
+		assign(RenderPipelines.DEBUG_FILLED_BOX, p -> ShaderKey.BASIC_COLOR);
+		assign(RenderPipelines.DEBUG_QUADS, p -> ShaderKey.BASIC_COLOR);
+		assign(RenderPipelines.DEBUG_TRIANGLE_FAN, p -> ShaderKey.BASIC_COLOR);
 		assign(RenderPipelines.OPAQUE_PARTICLE, p -> ShaderKey.PARTICLES);
 		assign(RenderPipelines.TRANSLUCENT_PARTICLE, p -> ShaderKey.PARTICLES_TRANS);
 		assign(RenderPipelines.WATER_MASK, p -> ShaderKey.BASIC);
@@ -82,7 +87,7 @@ public final class IrisPipelines {
 		assign(RenderPipelines.BEACON_BEAM_OPAQUE, p -> ShaderKey.BEACON);
 		assign(RenderPipelines.BEACON_BEAM_TRANSLUCENT, p -> ShaderKey.BEACON);
 		assign(RenderPipelines.END_PORTAL, p -> ShaderKey.BLOCK_ENTITY);
-		assign(RenderPipelines.END_SKY, p -> ShaderKey.SKY_TEXTURED);
+		assign(RenderPipelines.END_SKY, p -> isSky(p) ? ShaderKey.SKY_TEXTURED : ShaderKey.TEXTURED_COLOR);
 		assign(RenderPipelines.WEATHER_DEPTH_WRITE, p -> ShaderKey.WEATHER);
 		assign(RenderPipelines.WEATHER_NO_DEPTH_WRITE, p -> ShaderKey.WEATHER);
 		assign(RenderPipelines.TEXT, IrisPipelines::text);
@@ -129,6 +134,13 @@ public final class IrisPipelines {
 		assignShadow(RenderPipelines.WEATHER_NO_DEPTH_WRITE, p -> ShaderKey.SHADOW_PARTICLES);
 		assignShadow(RenderPipelines.LINES, p -> ShaderKey.SHADOW_LINES);
 		assignShadow(RenderPipelines.SECONDARY_BLOCK_OUTLINE, p -> ShaderKey.SHADOW_LINES);
+		assignShadow(RenderPipelines.LINES_DEPTH_BIAS, p -> ShaderKey.SHADOW_LINES);
+		assignShadow(RenderPipelines.SUNRISE_SUNSET, p -> ShaderKey.SHADOW_BASIC_COLOR);
+		assignShadow(RenderPipelines.CELESTIAL, p -> ShaderKey.SHADOW_TEX);
+		assignShadow(RenderPipelines.END_SKY, p -> ShaderKey.SHADOW_TEX_COLOR);
+		assignShadow(RenderPipelines.DEBUG_FILLED_BOX, p -> ShaderKey.SHADOW_BASIC_COLOR);
+		assignShadow(RenderPipelines.DEBUG_QUADS, p -> ShaderKey.SHADOW_BASIC_COLOR);
+		assignShadow(RenderPipelines.DEBUG_TRIANGLE_FAN, p -> ShaderKey.SHADOW_BASIC_COLOR);
 		assignShadow(RenderPipelines.LEASH, p -> ShaderKey.SHADOW_LEASH);
 		assignShadow(RenderPipelines.TEXT, p -> ShaderKey.SHADOW_TEXT);
 		assignShadow(RenderPipelines.TEXT_POLYGON_OFFSET, p -> ShaderKey.SHADOW_TEXT);
@@ -277,5 +289,12 @@ public final class IrisPipelines {
 
 	private static boolean isBlockEntities(IrisRenderingPipeline pipeline) {
 		return pipeline.getPhase() == WorldRenderingPhase.BLOCK_ENTITIES;
+	}
+
+	private static boolean isSky(IrisRenderingPipeline pipeline) {
+		return switch (pipeline.getPhase()) {
+			case CUSTOM_SKY, SKY, SUNSET, SUN, MOON, STARS, VOID -> true;
+			default -> false;
+		};
 	}
 }
