@@ -9,10 +9,11 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @Getter
 public enum AlphaCutoffParameter {
+    // Must stay in step with ALPHA_CUTOFF in chunk_material.glsl, which is indexed by ordinal.
     ZERO(0.0f),
+    ONE_HUNDREDTH(0.01f),
     ONE_TENTH(0.1f),
-    HALF(0.5f),
-    ONE(1.0f);
+    HALF(0.5f);
 
     private final float cutoff;
 

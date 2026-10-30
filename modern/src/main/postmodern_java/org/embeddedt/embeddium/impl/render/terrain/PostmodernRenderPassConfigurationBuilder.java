@@ -15,7 +15,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayerGroup;
 import net.minecraft.data.AtlasIds;
-import net.minecraft.util.Mth;
 import org.embeddedt.embeddium.impl.blaze3d.CeleritasCommandEncoder;
 import org.embeddedt.embeddium.impl.mixin.core.GlCommandEncoderMixin;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
@@ -152,13 +151,7 @@ public class PostmodernRenderPassConfigurationBuilder {
                 renderPasses.computeIfAbsent(layer, $ -> new ArrayList<>()).add(pass);
                 return pass;
             });
-            var alphaCutoff = getAlphaCutoff(layer).map(a -> {
-                if (Mth.equal(a, 0.01f)) {
-                    return AlphaCutoffParameter.ONE_TENTH; // TODO figure out how to deal with 0.01
-                } else {
-                    return AlphaCutoffParameter.valueOf(a);
-                }
-            }).orElse(AlphaCutoffParameter.ZERO);
+            var alphaCutoff = getAlphaCutoff(layer).map(AlphaCutoffParameter::valueOf).orElse(AlphaCutoffParameter.ZERO);
             materialMap.put(layer, new Material(terrainPass, alphaCutoff, true));
         }
         renderPasses.replaceAll((layer, list) -> List.copyOf(list));
