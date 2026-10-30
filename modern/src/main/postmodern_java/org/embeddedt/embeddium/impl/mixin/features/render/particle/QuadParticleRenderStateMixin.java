@@ -2,7 +2,7 @@ package org.embeddedt.embeddium.impl.mixin.features.render.particle;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
-import org.embeddedt.embeddium.impl.render.vertex.ParticleVertexWriter;
+import org.embeddedt.embeddium.impl.render.vertex.FastVertexWriter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
@@ -42,7 +42,7 @@ public class QuadParticleRenderStateMixin {
         float py = (r10 * nx + r11 * ny) * scale + y;
         float pz = (r20 * nx + r21 * ny) * scale + z;
 
-        if (!(builder instanceof ParticleVertexWriter writer) || !writer.celeritas$putParticleVertex(px, py, pz, u, v, color, lightCoords)) {
+        if (!(builder instanceof FastVertexWriter writer) || !writer.celeritas$putParticleVertex(px, py, pz, u, v, color, lightCoords)) {
             builder.addVertex(px, py, pz).setUv(u, v).setColor(color).setLight(lightCoords);
         }
     }
