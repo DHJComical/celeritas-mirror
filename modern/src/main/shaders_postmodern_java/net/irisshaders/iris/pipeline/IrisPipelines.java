@@ -1,8 +1,7 @@
 package net.irisshaders.iris.pipeline;
 
-import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.irisshaders.iris.pathways.HandRenderer;
@@ -10,30 +9,28 @@ import net.irisshaders.iris.pathways.HorizonRenderer;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
 import net.irisshaders.iris.shadows.ShadowRenderingState;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.ShaderDefines;
-import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.NeoForgeRenderPipelines;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
 /**
  * The gbuffer program each render pipeline draws with in the main and shadow passes. A pipeline vanilla doesn't
- * define, such as a mod's, draws with the programs of the vanilla pipeline it matches in shaders, vertex format, color
- * target and defines, or failing that in all but the defines.
+ * define, such as a mod's, draws with the programs of the vanilla pipeline it most closely matches in shaders, vertex
+ * format, defines and color target.
  */
 public final class IrisPipelines {
 	private static final Function<IrisRenderingPipeline, ShaderKey> NONE = pipeline -> null;
 
-	private static final Map<RenderPipeline, Function<IrisRenderingPipeline, ShaderKey>> MAIN = new Reference2ObjectOpenHashMap<>();
+	private static final int NO_MATCH = Integer.MAX_VALUE;
+
+	// Ordered by assignment, which decides between vanilla pipelines that match equally well.
+	private static final Map<RenderPipeline, Function<IrisRenderingPipeline, ShaderKey>> MAIN = new Reference2ObjectLinkedOpenHashMap<>();
 	private static final Map<RenderPipeline, Function<IrisRenderingPipeline, ShaderKey>> SHADOW = new Reference2ObjectOpenHashMap<>();
-	private static final Map<Signature, RenderPipeline> BY_SIGNATURE = new HashMap<>();
-	private static final Map<Signature, RenderPipeline> BY_SIGNATURE_WITHOUT_DEFINES = new HashMap<>();
 	private static final Set<RenderPipeline> VANILLA_PIPELINES = findVanillaPipelines();
 	// Each pipeline drawn with, and the one whose assignments it takes.
 	private static final Map<RenderPipeline, RenderPipeline> EQUIVALENTS = new Reference2ObjectOpenHashMap<>();
@@ -152,14 +149,6 @@ public final class IrisPipelines {
 	private IrisPipelines() {
 	}
 
-	private record Signature(Identifier vertexShader, Identifier fragmentShader, VertexFormat vertexFormat,
-							 VertexFormat.Mode mode, ColorTargetState colorTarget, @Nullable ShaderDefines defines) {
-		static Signature of(RenderPipeline pipeline, boolean withDefines) {
-			return new Signature(pipeline.getVertexShader(), pipeline.getFragmentShader(), pipeline.getVertexFormat(),
-				pipeline.getVertexFormatMode(), pipeline.getColorTargetState(), withDefines ? pipeline.getShaderDefines() : null);
-		}
-	}
-
 	private static Set<RenderPipeline> findVanillaPipelines() {
 		Set<RenderPipeline> pipelines = new ReferenceOpenHashSet<>();
 
@@ -178,9 +167,6 @@ public final class IrisPipelines {
 
 	private static void assign(RenderPipeline pipeline, Function<IrisRenderingPipeline, ShaderKey> key) {
 		MAIN.put(pipeline, key);
-		// Where vanilla pipelines differ only in other state, the first assigned stands for all of them.
-		BY_SIGNATURE.putIfAbsent(Signature.of(pipeline, true), pipeline);
-		BY_SIGNATURE_WITHOUT_DEFINES.putIfAbsent(Signature.of(pipeline, false), pipeline);
 	}
 
 	private static void assignShadow(RenderPipeline pipeline, Function<IrisRenderingPipeline, ShaderKey> key) {
@@ -204,13 +190,49 @@ public final class IrisPipelines {
 			return renderPipeline;
 		}
 
-		RenderPipeline equivalent = BY_SIGNATURE.get(Signature.of(renderPipeline, true));
+		RenderPipeline equivalent = renderPipeline;
+		int bestLevel = NO_MATCH;
 
-		if (equivalent == null) {
-			equivalent = BY_SIGNATURE_WITHOUT_DEFINES.getOrDefault(Signature.of(renderPipeline, false), renderPipeline);
+		// Where vanilla pipelines match equally well, the first assigned stands for all of them.
+		for (RenderPipeline vanilla : MAIN.keySet()) {
+			int level = matchLevel(renderPipeline, vanilla);
+
+			if (level < bestLevel) {
+				equivalent = vanilla;
+				bestLevel = level;
+
+				if (level == 0) {
+					break;
+				}
+			}
 		}
 
 		return equivalent;
+	}
+
+	/**
+	 * How closely a pipeline matches a vanilla one, lower being closer, or {@link #NO_MATCH} if they draw differently.
+	 */
+	private static int matchLevel(RenderPipeline pipeline, RenderPipeline vanilla) {
+		if (!pipeline.getVertexShader().equals(vanilla.getVertexShader())
+			|| !pipeline.getFragmentShader().equals(vanilla.getFragmentShader())
+			|| !pipeline.getVertexFormat().equals(vanilla.getVertexFormat())
+			|| pipeline.getVertexFormatMode() != vanilla.getVertexFormatMode()) {
+			return NO_MATCH;
+		}
+
+		int level = 0;
+
+		if (!pipeline.getShaderDefines().equals(vanilla.getShaderDefines())) {
+			level |= 1;
+		}
+
+		// Blend ranks below defines, since programs were chosen by shader alone before 26.1.
+		if (!pipeline.getColorTargetState().equals(vanilla.getColorTargetState())) {
+			level |= 2;
+		}
+
+		return level;
 	}
 
 	private static ShaderKey cutout(IrisRenderingPipeline pipeline) {
