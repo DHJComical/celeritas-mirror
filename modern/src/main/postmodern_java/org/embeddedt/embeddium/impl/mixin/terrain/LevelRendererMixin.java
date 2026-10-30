@@ -98,6 +98,33 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
         this.celeritas$renderer.scheduleTerrainUpdate();
     }
 
+    /**
+     * @reason Redirect the check to our renderer
+     * @author JellySquid
+     */
+    @Overwrite
+    public int countRenderedSections() {
+        return this.celeritas$renderer.getVisibleChunkCount();
+    }
+
+    /**
+     * @reason Redirect the check to our renderer
+     * @author JellySquid
+     */
+    @Overwrite
+    public boolean hasRenderedAllSections() {
+        return this.celeritas$renderer.isTerrainRenderComplete();
+    }
+
+    /**
+     * @reason Redirect the check to our renderer
+     * @author JellySquid
+     */
+    @Overwrite
+    public String getSectionStatistics() {
+        return this.celeritas$renderer.getChunksDebugString();
+    }
+
     @Overwrite
     private void cullTerrain(Camera camera, Frustum frustum, boolean spectator) {
         var viewport = ((ViewportProvider) frustum).sodium$createViewport();
