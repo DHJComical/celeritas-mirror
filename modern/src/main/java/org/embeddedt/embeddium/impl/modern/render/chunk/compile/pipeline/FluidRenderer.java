@@ -140,6 +140,54 @@ public class FluidRenderer {
     }
     *///?}
 
+    //? if >=26.1 && neoforge {
+    /*private final net.minecraft.client.renderer.block.FluidRenderer vanillaFluidRenderer = new net.minecraft.client.renderer.block.FluidRenderer(fluidModels);
+    private final MojangVertexConsumer[] customFluidConsumers = new MojangVertexConsumer[net.minecraft.client.renderer.chunk.ChunkSectionLayer.values().length];
+    private final boolean[] customFluidConsumersInUse = new boolean[customFluidConsumers.length];
+    private BlockRenderContext customFluidCtx;
+    private ChunkBuildBuffers customFluidBuffers;
+    private final net.minecraft.client.renderer.block.FluidRenderer.Output customFluidOutput = this::getCustomFluidConsumer;
+
+    private com.mojang.blaze3d.vertex.VertexConsumer getCustomFluidConsumer(net.minecraft.client.renderer.chunk.ChunkSectionLayer layer) {
+        int index = layer.ordinal();
+        var consumer = this.customFluidConsumers[index];
+        if (consumer == null) {
+            consumer = this.customFluidConsumers[index] = new MojangVertexConsumer();
+        }
+        if (!this.customFluidConsumersInUse[index]) {
+            var material = this.customFluidBuffers.getRenderPassConfiguration().getMaterialForRenderType(layer);
+            var meshBuilder = this.customFluidBuffers.get(material);
+            if (meshBuilder.getEncoder() instanceof ContextAwareChunkVertexEncoder contextAwareEncoder) {
+                contextAwareEncoder.prepareToRenderFluidFace(this.customFluidCtx);
+            }
+            consumer.initialize(meshBuilder, material, this.customFluidCtx);
+            this.customFluidConsumersInUse[index] = true;
+        }
+        return consumer;
+    }
+
+    /^*
+     * Runs NeoForge's custom fluid renderer for this fluid, as vanilla's SectionCompiler does.
+     * @return true if the custom renderer replaced the regular fluid geometry
+     ^/
+    private boolean renderCustom(net.neoforged.neoforge.client.fluid.CustomFluidRenderer customRenderer, BlockRenderContext ctx, FluidState fluidState, ChunkBuildBuffers buffers) {
+        this.customFluidCtx = ctx;
+        this.customFluidBuffers = buffers;
+        try {
+            return customRenderer.renderFluid(this.vanillaFluidRenderer, fluidState, ctx.localSlice(), ctx.pos(), this.customFluidOutput, ctx.state());
+        } finally {
+            for (int i = 0; i < this.customFluidConsumers.length; i++) {
+                if (this.customFluidConsumersInUse[i]) {
+                    this.customFluidConsumers[i].close();
+                    this.customFluidConsumersInUse[i] = false;
+                }
+            }
+            this.customFluidCtx = null;
+            this.customFluidBuffers = null;
+        }
+    }
+    *///?}
+
     public FluidRenderer(ColorProviderRegistry colorProviderRegistry, LightPipelineProvider lighters) {
         this.quad.setLightFace(ModelQuadFacing.POS_Y);
 
@@ -311,6 +359,14 @@ public class FluidRenderer {
         *///?} else {
         var renderLayer = ctx.renderLayer();
         //?}
+
+        //? if >=26.1 && neoforge {
+        /*var customRenderer = fluidModel.customRenderer();
+        if (customRenderer != null && this.renderCustom(customRenderer, ctx, fluidState, buffers)) {
+            return;
+        }
+        *///?}
+
         var material = buffers.getRenderPassConfiguration().getMaterialForRenderType(renderLayer);
         var encoder = buffers.get(material).getEncoder();
         var meshBuilder = buffers.get(material);
