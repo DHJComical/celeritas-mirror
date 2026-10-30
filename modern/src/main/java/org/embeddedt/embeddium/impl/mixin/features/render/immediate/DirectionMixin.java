@@ -1,8 +1,10 @@
 package org.embeddedt.embeddium.impl.mixin.features.render.immediate;
 
+//? if <1.21.11 {
 import org.embeddedt.embeddium.impl.mixin.core.render.immediate.consumer.OverlayVertexConsumerMixin;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.FaceBakery;
+//?}
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.BlockHitResult;
 import org.spongepowered.asm.mixin.Mixin;
@@ -28,7 +30,7 @@ public class DirectionMixin {
      */
     @SuppressWarnings({ "StatementWithEmptyBody", "JavadocReference" })
     @Overwrite
-    public static Direction getNearest(float x, float y, float z) {
+    public static Direction /*? if <1.21.2 {*/ getNearest /*?} else {*/ /*getApproximateNearest *//*?}*/(float x, float y, float z) {
         // Vanilla quirk: return NORTH if all coordinates are zero
         if (x == 0 && y == 0 && z == 0)
             return Direction.NORTH;
