@@ -9,7 +9,14 @@ public interface FontMetricsProvider {
 
     int getStringWidth(TextComponent component);
 
-    String substrByWidth(String str, int maxWidth);
+    default String substrByWidth(String str, int maxWidth) {
+        return substrByWidth(str, maxWidth, false);
+    }
+
+    /**
+     * @param reverse take the substring from the end of {@code str} instead of the start
+     */
+    String substrByWidth(String str, int maxWidth, boolean reverse);
 
     List<TextComponent> split(TextComponent component, int maxWidth);
 

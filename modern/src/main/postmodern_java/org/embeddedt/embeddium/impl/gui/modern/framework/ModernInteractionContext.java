@@ -20,4 +20,14 @@ public class ModernInteractionContext implements InteractionContext {
             case ALT -> minecraft.hasAltDown();
         };
     }
+
+    @Override
+    public String getClipboard() {
+        return Minecraft.getInstance().keyboardHandler.getClipboard();
+    }
+
+    @Override
+    public void setClipboard(String text) {
+        Minecraft.getInstance().keyboardHandler.setClipboard(text);
+    }
 }

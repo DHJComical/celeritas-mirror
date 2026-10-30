@@ -19,6 +19,16 @@ public enum VintageInteractionContext implements InteractionContext {
     }
 
     @Override
+    public String getClipboard() {
+        return GuiScreen.getClipboardString();
+    }
+
+    @Override
+    public void setClipboard(String text) {
+        GuiScreen.setClipboardString(text);
+    }
+
+    @Override
     public void playClickSound() {
         Minecraft.getMinecraft().getSoundHandler().playSound(
                 PositionedSoundRecord.getMasterRecord(SoundEvents.UI_BUTTON_CLICK, 1.0F)

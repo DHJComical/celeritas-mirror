@@ -8,6 +8,8 @@ import org.taumc.celeritas.api.options.structure.OptionPage;
 import org.taumc.celeritas.api.options.structure.OptionStorage;
 import org.embeddedt.embeddium.impl.gui.frame.AbstractFrame;
 import org.embeddedt.embeddium.impl.gui.frame.BasicFrame;
+import org.embeddedt.embeddium.impl.gui.frame.components.SearchTextFieldComponent;
+import org.embeddedt.embeddium.impl.gui.frame.components.SearchTextFieldModel;
 import org.embeddedt.embeddium.impl.gui.frame.tab.Tab;
 import org.embeddedt.embeddium.impl.gui.frame.tab.TabFrame;
 import org.embeddedt.embeddium.impl.gui.framework.*;
@@ -33,6 +35,8 @@ public class CeleritasVideoOptionsController implements Renderable {
     @Getter
     private AbstractFrame frame;
     private FlatButtonWidget applyButton, closeButton, undoButton;
+    private SearchTextFieldComponent searchTextField;
+    private final SearchTextFieldModel searchTextModel;
 
     @Getter
     private boolean hasPendingChanges;
@@ -48,11 +52,17 @@ public class CeleritasVideoOptionsController implements Renderable {
         OptionGUIConstructionEvent.BUS.post(new OptionGUIConstructionEvent(this.pages));
 
         this.font = font;
+        this.searchTextModel = new SearchTextFieldModel(this.pages, font, this::rebuildUI);
     }
 
     public void init(int width, int height) {
         this.width = width;
         this.height = height;
+        this.frame = this.parentFrameBuilder().build();
+    }
+
+    private void rebuildUI() {
+        this.optionPageScrollBarOffset.set(0);
         this.frame = this.parentFrameBuilder().build();
     }
 
@@ -71,11 +81,12 @@ public class CeleritasVideoOptionsController implements Renderable {
         Dim2i undoButtonDim = new Dim2i(tabFrameDim.getLimitX() - 203, tabFrameDim.getLimitY() + 5, 65, 20);
         Dim2i applyButtonDim = new Dim2i(tabFrameDim.getLimitX() - 134, tabFrameDim.getLimitY() + 5, 65, 20);
         Dim2i closeButtonDim = new Dim2i(tabFrameDim.getLimitX() - 65, tabFrameDim.getLimitY() + 5, 65, 20);
-
+        Dim2i searchTextFieldDim = new Dim2i(tabFrameDim.x(), tabFrameDim.y() - 26, tabFrameDim.width(), 20);
 
         this.undoButton = new FlatButtonWidget(undoButtonDim, TextComponent.translatable("sodium.options.buttons.undo"), this::undoChanges);
         this.applyButton = new FlatButtonWidget(applyButtonDim, TextComponent.translatable("sodium.options.buttons.apply"), this::applyChanges);
         this.closeButton = new FlatButtonWidget(closeButtonDim, TextComponent.translatable("gui.done"), this.onClose);
+        this.searchTextField = new SearchTextFieldComponent(searchTextFieldDim, this.searchTextModel);
 
         basicFrameBuilder = this.parentBasicFrameBuilder(basicFrameDim, tabFrameDim);
 
@@ -86,6 +97,18 @@ public class CeleritasVideoOptionsController implements Renderable {
     public void render(DrawContext drawContext, int mouseX, int mouseY, float partialTicks) {
         this.updateControls();
         this.frame.render(drawContext, mouseX, mouseY, partialTicks);
+    }
+
+    public boolean charTyped(int codePoint) {
+        return this.searchTextField.charTyped(codePoint);
+    }
+
+    public boolean keyPressed(InteractionContext context, InteractionContext.EditAction action) {
+        return this.searchTextField.keyPressed(context, action);
+    }
+
+    public boolean isSearchFocused() {
+        return this.searchTextModel.isFocused();
     }
 
     private void updateControls() {
@@ -136,7 +159,7 @@ public class CeleritasVideoOptionsController implements Renderable {
     }
 
     private boolean canShowPage(OptionPage page) {
-        return !page.getGroups().isEmpty();
+        return !page.getGroups().isEmpty() && page.getOptions().stream().anyMatch(this.searchTextModel.getOptionPredicate());
     }
 
     protected void createExtraTabs(Map<String, List<Tab<?>>> tabs) {
@@ -153,7 +176,7 @@ public class CeleritasVideoOptionsController implements Renderable {
                 .addTabs(tabs -> this.pages
                         .stream()
                         .filter(this::canShowPage)
-                        .forEach(page -> tabs.computeIfAbsent(page.getId().getModId(), $ -> new ArrayList<>()).add(Tab.from(page, o -> true, optionPageScrollBarOffset)))
+                        .forEach(page -> tabs.computeIfAbsent(page.getId().getModId(), $ -> new ArrayList<>()).add(Tab.from(page, this.searchTextModel.getOptionPredicate(), optionPageScrollBarOffset)))
                 )
                 .addTabs(this::createExtraTabs)
                 .onSetTab(() -> {
@@ -166,6 +189,8 @@ public class CeleritasVideoOptionsController implements Renderable {
         return BasicFrame.createBuilder()
                 .setDimension(parentBasicFrameDim)
                 .shouldRenderOutline(false)
+                // First, so that clicks anywhere reach it and can unfocus it
+                .addChild(dim -> this.searchTextField)
                 .addChild(parentDim -> this.createTabFrame(tabFrameDim))
                 .addChild(dim -> this.undoButton)
                 .addChild(dim -> this.applyButton)

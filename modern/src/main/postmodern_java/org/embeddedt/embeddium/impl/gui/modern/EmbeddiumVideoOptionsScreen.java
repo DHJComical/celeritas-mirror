@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import org.embeddedt.embeddium.api.EmbeddiumConstants;
@@ -11,11 +12,13 @@ import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gui.CeleritasVideoOptionsController;
 import org.embeddedt.embeddium.impl.gui.frame.tab.Tab;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
+import org.embeddedt.embeddium.impl.gui.framework.InteractionContext.EditAction;
 import org.embeddedt.embeddium.impl.gui.modern.framework.ModernDrawContext;
 import org.embeddedt.embeddium.impl.gui.modern.framework.ModernInteractionContext;
 import org.embeddedt.embeddium.impl.gui.options.CommonOptionPages;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.taumc.celeritas.api.options.OptionIdentifier;
 import org.taumc.celeritas.api.options.structure.OptionFlag;
@@ -108,13 +111,45 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (event.key() == GLFW.GLFW_KEY_P && event.hasShiftDown()) {
+        EditAction editAction = toEditAction(event);
+        if (editAction != null && this.controller.keyPressed(ModernInteractionContext.INSTANCE, editAction)) {
+            return true;
+        }
+
+        if (!this.controller.isSearchFocused() && event.key() == GLFW.GLFW_KEY_P && event.hasShiftDown()) {
             Minecraft.getInstance().setScreen(new VideoSettingsScreen(this.prevScreen, Minecraft.getInstance(), Minecraft.getInstance().options));
 
             return true;
         }
 
         return super.keyPressed(event);
+    }
+
+    private static @Nullable EditAction toEditAction(KeyEvent event) {
+        if (event.isSelectAll()) {
+            return EditAction.SELECT_ALL;
+        } else if (event.isCopy()) {
+            return EditAction.COPY;
+        } else if (event.isPaste()) {
+            return EditAction.PASTE;
+        } else if (event.isCut()) {
+            return EditAction.CUT;
+        }
+
+        return switch (event.key()) {
+            case GLFW.GLFW_KEY_BACKSPACE -> EditAction.BACKSPACE;
+            case GLFW.GLFW_KEY_DELETE -> EditAction.DELETE;
+            case GLFW.GLFW_KEY_LEFT -> EditAction.LEFT;
+            case GLFW.GLFW_KEY_RIGHT -> EditAction.RIGHT;
+            case GLFW.GLFW_KEY_HOME -> EditAction.HOME;
+            case GLFW.GLFW_KEY_END -> EditAction.END;
+            default -> null;
+        };
+    }
+
+    @Override
+    public boolean charTyped(CharacterEvent event) {
+        return this.controller.charTyped(event.codepoint()) || super.charTyped(event);
     }
 
     @Override

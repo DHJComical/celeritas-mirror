@@ -177,8 +177,8 @@ public class ModernDrawContext implements DrawContext {
     }
 
     @Override
-    public String substrByWidth(String str, int maxWidth) {
-        return font.plainSubstrByWidth(str, maxWidth);
+    public String substrByWidth(String str, int maxWidth, boolean reverse) {
+        return font.plainSubstrByWidth(str, maxWidth, reverse);
     }
 
     @Override

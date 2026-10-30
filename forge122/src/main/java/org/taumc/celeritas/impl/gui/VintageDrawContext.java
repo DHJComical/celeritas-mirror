@@ -161,8 +161,8 @@ public class VintageDrawContext implements DrawContext {
     }
 
     @Override
-    public String substrByWidth(String str, int maxWidth) {
-        return font.trimStringToWidth(str, maxWidth);
+    public String substrByWidth(String str, int maxWidth, boolean reverse) {
+        return font.trimStringToWidth(str, maxWidth, reverse);
     }
 
     @Override

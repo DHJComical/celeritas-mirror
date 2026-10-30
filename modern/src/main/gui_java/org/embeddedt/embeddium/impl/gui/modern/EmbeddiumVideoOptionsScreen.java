@@ -9,12 +9,14 @@ import org.embeddedt.embeddium.impl.gui.frame.tab.Tab;
 import org.embeddedt.embeddium.impl.gui.modern.framework.ModernDrawContext;
 import org.embeddedt.embeddium.impl.gui.modern.framework.ModernInteractionContext;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
+import org.embeddedt.embeddium.impl.gui.framework.InteractionContext.EditAction;
 import org.embeddedt.embeddium.impl.gui.options.CommonOptionPages;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
 import org.embeddedt.embeddium.impl.util.ComponentUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens./*? if >=1.21 {*//*options.*//*?}*/VideoSettingsScreen;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -123,13 +125,45 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_P && (modifiers & GLFW.GLFW_MOD_SHIFT) != 0) {
+        EditAction editAction = toEditAction(keyCode);
+        if (editAction != null && this.controller.keyPressed(ModernInteractionContext.INSTANCE, editAction)) {
+            return true;
+        }
+
+        if (!this.controller.isSearchFocused() && keyCode == GLFW.GLFW_KEY_P && (modifiers & GLFW.GLFW_MOD_SHIFT) != 0) {
             Minecraft.getInstance().setScreen(new VideoSettingsScreen(this.prevScreen, /*? if >=1.21 {*/ /*Minecraft.getInstance(), *//*?}*/ Minecraft.getInstance().options));
 
             return true;
         }
 
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    private static @Nullable EditAction toEditAction(int keyCode) {
+        if (Screen.isSelectAll(keyCode)) {
+            return EditAction.SELECT_ALL;
+        } else if (Screen.isCopy(keyCode)) {
+            return EditAction.COPY;
+        } else if (Screen.isPaste(keyCode)) {
+            return EditAction.PASTE;
+        } else if (Screen.isCut(keyCode)) {
+            return EditAction.CUT;
+        }
+
+        return switch (keyCode) {
+            case GLFW.GLFW_KEY_BACKSPACE -> EditAction.BACKSPACE;
+            case GLFW.GLFW_KEY_DELETE -> EditAction.DELETE;
+            case GLFW.GLFW_KEY_LEFT -> EditAction.LEFT;
+            case GLFW.GLFW_KEY_RIGHT -> EditAction.RIGHT;
+            case GLFW.GLFW_KEY_HOME -> EditAction.HOME;
+            case GLFW.GLFW_KEY_END -> EditAction.END;
+            default -> null;
+        };
+    }
+
+    @Override
+    public boolean charTyped(char codePoint, int modifiers) {
+        return this.controller.charTyped(codePoint) || super.charTyped(codePoint, modifiers);
     }
 
     @Override

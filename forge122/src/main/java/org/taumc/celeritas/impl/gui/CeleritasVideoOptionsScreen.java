@@ -7,8 +7,11 @@ import org.taumc.celeritas.api.options.structure.OptionFlag;
 import org.embeddedt.embeddium.impl.gui.CeleritasVideoOptionsController;
 import org.embeddedt.embeddium.impl.gui.frame.tab.Tab;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
+import org.embeddedt.embeddium.impl.gui.framework.InteractionContext.EditAction;
 import org.embeddedt.embeddium.impl.gui.options.CommonOptionPages;
 import org.embeddedt.embeddium.impl.render.ShaderModBridge;
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.taumc.celeritas.CeleritasVintage;
 
@@ -112,6 +115,38 @@ public class CeleritasVideoOptionsScreen extends GuiScreen {
             double scrollDelta = dWheel > 0 ? 1 : -1;
             this.controller.getFrame().mouseScrolled(VintageInteractionContext.INSTANCE, mouseX, mouseY, 0, scrollDelta);
         }
+    }
+
+    @Override
+    protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        EditAction editAction = toEditAction(keyCode);
+        if (editAction != null ? this.controller.keyPressed(VintageInteractionContext.INSTANCE, editAction) : this.controller.charTyped(typedChar)) {
+            return;
+        }
+
+        super.keyTyped(typedChar, keyCode);
+    }
+
+    private static @Nullable EditAction toEditAction(int keyCode) {
+        if (isKeyComboCtrlA(keyCode)) {
+            return EditAction.SELECT_ALL;
+        } else if (isKeyComboCtrlC(keyCode)) {
+            return EditAction.COPY;
+        } else if (isKeyComboCtrlV(keyCode)) {
+            return EditAction.PASTE;
+        } else if (isKeyComboCtrlX(keyCode)) {
+            return EditAction.CUT;
+        }
+
+        return switch (keyCode) {
+            case Keyboard.KEY_BACK -> EditAction.BACKSPACE;
+            case Keyboard.KEY_DELETE -> EditAction.DELETE;
+            case Keyboard.KEY_LEFT -> EditAction.LEFT;
+            case Keyboard.KEY_RIGHT -> EditAction.RIGHT;
+            case Keyboard.KEY_HOME -> EditAction.HOME;
+            case Keyboard.KEY_END -> EditAction.END;
+            default -> null;
+        };
     }
 
     @Override
