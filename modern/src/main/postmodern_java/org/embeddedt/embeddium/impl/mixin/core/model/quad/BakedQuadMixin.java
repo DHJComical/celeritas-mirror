@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.mixin.core.model.quad;
 
-import com.mojang.blaze3d.platform.Transparency;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -118,14 +117,11 @@ public abstract class BakedQuadMixin implements BakedQuadView {
 
     @Override
     public @Nullable SpriteTransparencyLevel getTransparencyLevel() {
-        var transparency = this.materialInfo().sprite().contents().transparency();
-        if (transparency.equals(Transparency.NONE)) {
-            return SpriteTransparencyLevel.OPAQUE;
-        } else if (transparency.hasTranslucent()) {
-            return SpriteTransparencyLevel.TRANSLUCENT;
-        } else {
-            return SpriteTransparencyLevel.TRANSPARENT;
-        }
+        return switch (this.materialInfo().layer()) {
+            case SOLID -> SpriteTransparencyLevel.OPAQUE;
+            case CUTOUT -> SpriteTransparencyLevel.TRANSPARENT;
+            case TRANSLUCENT -> SpriteTransparencyLevel.TRANSLUCENT;
+        };
     }
 
     @Override
