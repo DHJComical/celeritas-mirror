@@ -120,6 +120,17 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
             event.includeInProfile(rendererInfo,
                     net.minecraft.client.gui.components.debug.DebugScreenProfile.DEFAULT,
                     net.minecraft.client.gui.components.debug.DebugScreenEntryStatus.IN_OVERLAY);
+
+            var nativeMemory = ResourceLocationUtil.make(MODID, "native_memory");
+            event.register(nativeMemory, (displayer, level, clientChunk, serverChunk) -> {
+                long used = java.lang.management.ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage().getUsed()
+                        + org.embeddedt.embeddium.impl.common.util.NativeBuffer.getTotalAllocated();
+                displayer.addToGroup(net.minecraft.client.gui.components.debug.DebugEntryMemory.GROUP,
+                        "Off-Heap: +" + org.embeddedt.embeddium.impl.common.util.MathUtil.toMib(used) + "MB");
+            });
+            event.includeInProfile(nativeMemory,
+                    net.minecraft.client.gui.components.debug.DebugScreenProfile.DEFAULT,
+                    net.minecraft.client.gui.components.debug.DebugScreenEntryStatus.IN_OVERLAY);
         });
         *///?}
 
