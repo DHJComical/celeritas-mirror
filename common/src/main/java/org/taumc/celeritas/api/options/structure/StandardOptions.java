@@ -54,6 +54,7 @@ public final class StandardOptions {
         public static final OptionIdentifier<Void> ENTITY_DISTANCE = OptionIdentifier.create("minecraft", "entity_distance");
         public static final OptionIdentifier<Void> ENTITY_SHADOWS = OptionIdentifier.create("minecraft", "entity_shadows");
         public static final OptionIdentifier<Void> VIGNETTE = OptionIdentifier.create("minecraft", "vignette");
+        public static final OptionIdentifier<Void> CHUNK_FADE = OptionIdentifier.create("minecraft", "chunk_fade");
         public static final OptionIdentifier<Void> MIPMAP_LEVEL = OptionIdentifier.create("minecraft", "mipmap_levels");
         public static final OptionIdentifier<Void> TEXTURE_FILTERING = OptionIdentifier.create("minecraft", "texture_filtering");
         public static final OptionIdentifier<Void> MAX_ANISOTROPY = OptionIdentifier.create("minecraft", "max_anisotropy");

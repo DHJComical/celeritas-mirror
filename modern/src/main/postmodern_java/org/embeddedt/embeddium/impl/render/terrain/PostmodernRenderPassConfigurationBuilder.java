@@ -134,6 +134,11 @@ public class PostmodernRenderPassConfigurationBuilder {
         Map<ChunkSectionLayer, Material> materialMap = new EnumMap<>(ChunkSectionLayer.class);
         Map<ChunkSectionLayer, Collection<TerrainRenderPass>> renderPasses = new EnumMap<>(ChunkSectionLayer.class);
         Map<VanillaTerrainConfig, TerrainRenderPass> vanillaPasses = new HashMap<>();
+        Map<String, String> extraDefines = new HashMap<>();
+        int fadeInMillis = (int) Math.round(Minecraft.getInstance().options.chunkSectionFadeInTime().get() * 1000.0);
+        if (fadeInMillis > 0) {
+            extraDefines.put("CHUNK_FADE_IN_DURATION_MS", String.valueOf(fadeInMillis));
+        }
         AtomicInteger id = new AtomicInteger(1);
         for (ChunkSectionLayer layer : ChunkSectionLayer.values()) {
             var config = VanillaTerrainConfig.fromLayer(layer);
@@ -147,6 +152,7 @@ public class PostmodernRenderPassConfigurationBuilder {
                         .useReverseOrder(c.translucencySorted())
                         .pipelineState(new PostmodernPipeline(name, c))
                         .useTranslucencySorting(c.translucencySorted())
+                        .extraDefines(extraDefines)
                         .build();
                 renderPasses.computeIfAbsent(layer, $ -> new ArrayList<>()).add(pass);
                 return pass;

@@ -24,6 +24,7 @@ import org.taumc.celeritas.api.options.structure.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class SodiumGameOptionPages {
@@ -284,6 +285,18 @@ public class SodiumGameOptionPages {
                         .setControl(TickBoxControl::new)
                         .setBinding(new VanillaBooleanOptionBinding(Minecraft.getInstance().options.vignette()))
                         .setImpact(OptionImpact.LOW)
+                        .build())
+                // In twentieths of a second, as vanilla's slider steps.
+                .add(OptionImpl.createBuilder(int.class, vanillaOpts)
+                        .setId(StandardOptions.Option.CHUNK_FADE.cast())
+                        .setName(TextComponent.translatable("options.chunkFade"))
+                        .setTooltip(TextComponent.translatable("options.chunkFade.tooltip"))
+                        .setControl(option -> new SliderControl(option, 0, 40, 1, value -> value == 0
+                                ? TextComponent.translatable("options.chunkFade.none")
+                                : TextComponent.translatable("options.chunkFade.seconds", String.format(Locale.ROOT, "%.2f", value / 20.0))))
+                        .setBinding((opts, value) -> opts.chunkSectionFadeInTime().set(value / 20.0), opts -> (int) Math.round(opts.chunkSectionFadeInTime().get() * 20.0))
+                        .setImpact(OptionImpact.LOW)
+                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
                 .build());
 
