@@ -85,8 +85,9 @@ public class BlockRenderer {
     private final ArrayList<ContextAwareChunkVertexEncoder> usedContextEncoders = new ArrayList<>(4);
 
     private Material defaultMaterial;
-    //? if shaders && >=26.1 {
-    /*@Nullable
+    //? if >=26.1 {
+    /*private final boolean cutoutLeaves;
+    @Nullable
     private Material overrideMaterial;
     *///?}
 
@@ -105,6 +106,8 @@ public class BlockRenderer {
         this.useAmbientOcclusion = Minecraft.useAmbientOcclusion();
         //?} else
         //this.useAmbientOcclusion = Minecraft.getInstance().options.ambientOcclusion().get();
+        //? if >=26.1
+        //this.cutoutLeaves = Minecraft.getInstance().options.cutoutLeaves().get();
         //? if ffapi && >=1.20 {
         this.fabricModelRenderingHandler = FRAPIRenderHandler.INDIGO_PRESENT ? new IndigoBlockRenderContext(this.occlusionCache, config.lighters.getLightData()) : null;
         //?} else if ffapi {
@@ -145,9 +148,14 @@ public class BlockRenderer {
         }
         //?}
         this.defaultMaterial = buffers.getRenderPassConfiguration().getMaterialForRenderType(blockRenderType);
-        //?} else if shaders {
-        /*// Quads choose their own layer on 26.1, unless the shader pack moves the whole block to another.
-        var layerOverride = config.renderTypeOverrides() != null ? config.renderTypeOverrides().get(ctx.state().getBlock()) : null;
+        //?} else {
+        /*// Quads choose their own layer on 26.1, unless the whole block is moved to another.
+        net.minecraft.client.renderer.chunk.ChunkSectionLayer layerOverride = null;
+        //? if shaders
+        //layerOverride = config.renderTypeOverrides() != null ? config.renderTypeOverrides().get(ctx.state().getBlock()) : null;
+        if (layerOverride == null && net.minecraft.client.renderer.block.ModelBlockRenderer.forceOpaque(this.cutoutLeaves, ctx.state())) {
+            layerOverride = net.minecraft.client.renderer.chunk.ChunkSectionLayer.SOLID;
+        }
         this.overrideMaterial = layerOverride != null ? buffers.getRenderPassConfiguration().getMaterialForRenderType(layerOverride) : null;
         *///?}
 
@@ -258,7 +266,7 @@ public class BlockRenderer {
                 case TRANSLUCENT -> renderPassConfig.defaultTranslucentMaterial();
             };
             *///?}
-            //? if shaders && >=26.1 {
+            //? if >=26.1 {
             /*if (this.overrideMaterial != null) {
                 quadMaterial = this.overrideMaterial;
             }
