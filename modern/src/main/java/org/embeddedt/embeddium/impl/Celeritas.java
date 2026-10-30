@@ -92,6 +92,9 @@ public class Celeritas /*? if fabric {*/ /*implements ClientModInitializer *//*?
             MixinAuditUtil.auditAndExit();
         }
 
+        //? if neoforge && settings_gui
+        //ModList.get().getModContainerById(MODID).get().registerExtensionPoint(net.neoforged.neoforge.client.gui.IConfigScreenFactory.class, (container, screen) -> new org.embeddedt.embeddium.impl.gui.modern.EmbeddiumVideoOptionsScreen(screen));
+
         //? if forge {
         IEventBus mainEventBus = MinecraftForge.EVENT_BUS;
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
