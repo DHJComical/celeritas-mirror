@@ -7,7 +7,9 @@ import org.embeddedt.embeddium.impl.gl.arena.GlBufferArena;
 import org.embeddedt.embeddium.impl.gl.arena.staging.StagingBuffer;
 import org.embeddedt.embeddium.impl.gl.buffer.GlBuffer;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
+import org.embeddedt.embeddium.impl.gl.functions.DeviceFunctions;
 import org.embeddedt.embeddium.impl.gl.tessellation.GlTessellation;
+import org.embeddedt.embeddium.impl.gl.texture.GlBufferTexture;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.RenderSection;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
@@ -162,15 +164,17 @@ public class RenderRegion {
         var storage = this.sectionRenderData.get(pass);
 
         if (storage == null) {
-            int stride = renderPassConfiguration.getVertexTypeForPass(pass).getVertexFormat().getStride();
+            var primitiveType = renderPassConfiguration.getPrimitiveTypeForPass(pass);
+            int bytesPerPrimitive = renderPassConfiguration.getVertexTypeForPass(pass).getLayout().bytesPerPrimitive(primitiveType);
 
-            if (this.commonVertexStride % stride != 0) {
-                throw new IllegalStateException("Pass " + pass + " uses a vertex stride of " + stride
+            if (this.commonVertexStride % bytesPerPrimitive != 0) {
+                throw new IllegalStateException("Pass " + pass + " uses " + bytesPerPrimitive + " bytes per primitive"
                         + ", which does not divide the region's common vertex stride of " + this.commonVertexStride
                         + "; its vertex format was not declared by the render pass configuration");
             }
 
-            this.sectionRenderData.put(pass, storage = new SectionRenderDataStorage(renderPassConfiguration.getPrimitiveTypeForPass(pass), pass.isSorted(), this.commonVertexStride / stride));
+            int verticesPerArenaElement = (this.commonVertexStride / bytesPerPrimitive) * primitiveType.getVerticesPerPrimitive();
+            this.sectionRenderData.put(pass, storage = new SectionRenderDataStorage(primitiveType, pass.isSorted(), verticesPerArenaElement));
             this.passSetUpdateCount++;
         }
 
@@ -307,6 +311,7 @@ public class RenderRegion {
         private final GlBufferArena geometryArena;
         private final StagingBuffer stagingBuffer;
         private GlBufferArena indexArena;
+        private GlBufferTexture vertexDataTexture;
         private final Map<TerrainRenderPass.TessellationKey, GlTessellation> tessellations = new Object2ReferenceOpenHashMap<>();
 
         public DeviceResources(CommandList commandList, StagingBuffer stagingBuffer, int commonVertexStride) {
@@ -338,6 +343,24 @@ public class RenderRegion {
             return this.geometryArena.getBufferObject();
         }
 
+        /**
+         * Binds a texture buffer over the geometry arena to the active texture unit, for passes that pull vertex data.
+         */
+        public void bindVertexDataTexture(DeviceFunctions functions) {
+            long texels = this.geometryArena.getDeviceAllocatedMemoryL() / 4;
+
+            if (texels > functions.maxTextureBufferTexels()) {
+                throw new IllegalStateException("Geometry arena of " + texels + " texels exceeds the device's texture buffer limit of "
+                        + functions.maxTextureBufferTexels());
+            }
+
+            if (this.vertexDataTexture == null) {
+                this.vertexDataTexture = new GlBufferTexture();
+            }
+
+            this.vertexDataTexture.bind(functions.textureBufferFunctions(), this.geometryArena.getBufferObject());
+        }
+
         public GlBuffer getIndexBuffer() {
             if (this.indexArena == null) {
                 throw new IllegalStateException("Attempted to retrieve index buffer for a non-indexed region");
@@ -347,6 +370,10 @@ public class RenderRegion {
 
         public void delete(CommandList commandList) {
             this.deleteTessellations(commandList);
+            if (this.vertexDataTexture != null) {
+                this.vertexDataTexture.delete();
+                this.vertexDataTexture = null;
+            }
             this.geometryArena.delete(commandList);
             if (this.indexArena != null) {
                 this.indexArena.delete(commandList);

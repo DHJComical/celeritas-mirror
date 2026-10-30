@@ -10,23 +10,27 @@ import net.irisshaders.iris.pipeline.transform.Patch;
 import net.irisshaders.iris.shaderpack.texture.TextureStage;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.VertexFetchMode;
 
 @EqualsAndHashCode(callSuper = true)
 public class SodiumParameters extends Parameters {
 	public final ShaderAttributeInputs inputs;
 	public final AlphaTest alpha;
     public final ChunkVertexType vertexType;
+    public final VertexFetchMode vertexFetchMode;
 
 	public SodiumParameters(Patch patch,
                             Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap,
                             AlphaTest alpha,
                             ShaderAttributeInputs inputs,
-                            ChunkVertexType vertexType) {
+                            ChunkVertexType vertexType,
+                            VertexFetchMode vertexFetchMode) {
 		super(patch, textureMap);
 		this.inputs = inputs;
 
 		this.alpha = alpha;
         this.vertexType = vertexType;
+        this.vertexFetchMode = vertexFetchMode;
 	}
 
 	@Override

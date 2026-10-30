@@ -1,6 +1,5 @@
 package net.irisshaders.iris.pipeline.foss_transform;
 
-import net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp.XHFPModelVertexType;
 import net.irisshaders.iris.pipeline.transform.parameter.SodiumParameters;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.taumc.glsl.Transformer;
@@ -28,7 +27,8 @@ public class SodiumTransformer {
             translationUnit.rename("vaUV2", "_vert_tex_light_coord");
 
             translationUnit.replaceExpression("textureMatrix", "mat4(1.0f)");
-            replaceMidTexCoord(translationUnit, XHFPModelVertexType.MID_TEX_SCALE);
+            replaceMidBlock(translationUnit, parameters);
+            replaceQuadInputs(translationUnit, parameters);
 
             injectVertInit(translationUnit, parameters);
         }
@@ -36,8 +36,6 @@ public class SodiumTransformer {
 
     public static void patchSodium(Transformer translationUnit, SodiumParameters parameters) {
         commonPatch(translationUnit, parameters, false);
-
-        replaceMidTexCoord(translationUnit, XHFPModelVertexType.MID_TEX_SCALE);
 
         translationUnit.replaceExpression("gl_TextureMatrix[0]", "mat4(1.0f)");
         translationUnit.replaceExpression("gl_TextureMatrix[1]", "iris_LightmapTextureMatrix");
@@ -97,6 +95,9 @@ public class SodiumTransformer {
                     // _draw_translation replaced with Chunks[_draw_id].offset.xyz
                     "vec4 getVertexPosition() { return vec4(_vert_position + u_RegionOffset + _get_draw_translation(_draw_id), 1.0f); }");
             translationUnit.replaceExpression("gl_Vertex", "getVertexPosition()");
+
+            replaceMidBlock(translationUnit, parameters);
+            replaceQuadInputs(translationUnit, parameters);
 
             // inject here so that _vert_position is available to the above. (injections
             // inject in reverse order if performed piece-wise but in correct order if

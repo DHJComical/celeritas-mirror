@@ -54,6 +54,7 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public abstract class RenderSectionManager {
     /**
@@ -1130,6 +1131,10 @@ public abstract class RenderSectionManager {
 
         list.add(String.format("G: %d/%d, I: %d/%d MiB (%d buffers)", MathUtil.toMib(deviceUsed), MathUtil.toMib(deviceAllocated), MathUtil.toMib(indexUsed), MathUtil.toMib(indexAllocated), count));
         list.add(String.format("Transfer Queue: %s", this.regions.getStagingBuffer().toString()));
+        list.add("Vertex: " + this.renderPassConfiguration.getAllKnownRenderPasses()
+                .map(pass -> pass.vertexType().getClass().getSimpleName() + " (" + pass.vertexFetchMode().name().toLowerCase(Locale.ROOT) + ")")
+                .distinct()
+                .collect(Collectors.joining(", ")));
 
         var rebuildLists = this.getCurrentRenderListManager().getRebuildLists();
 

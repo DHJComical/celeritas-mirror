@@ -79,6 +79,9 @@ public record LWJGL3Service(
             case ARB_texture_storage -> caps.GL_ARB_texture_storage;
             case ARB_base_instance -> caps.GL_ARB_base_instance;
             case ARB_compatibility -> caps.GL_ARB_compatibility;
+            case ARB_texture_buffer_object -> caps.GL_ARB_texture_buffer_object;
+            case EXT_texture_buffer_object -> caps.GL_EXT_texture_buffer_object;
+            case EXT_gpu_shader4 -> caps.GL_EXT_gpu_shader4;
         };
     }
 
@@ -648,6 +651,21 @@ public record LWJGL3Service(
     @Override
     public void glTexParameteri(int target, int pname, int param) {
         GL11C.glTexParameteri(target, pname, param);
+    }
+
+    @Override
+    public void glTexBuffer(int target, int internalFormat, int buffer) {
+        GL31C.glTexBuffer(target, internalFormat, buffer);
+    }
+
+    @Override
+    public void glTexBufferARB(int target, int internalFormat, int buffer) {
+        ARBTextureBufferObject.glTexBufferARB(target, internalFormat, buffer);
+    }
+
+    @Override
+    public void glTexBufferEXT(int target, int internalFormat, int buffer) {
+        EXTTextureBufferObject.glTexBufferEXT(target, internalFormat, buffer);
     }
 
     // ===================== FRAMEBUFFER OPERATIONS =====================

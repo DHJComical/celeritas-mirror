@@ -13,10 +13,12 @@ import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.APPLEVertexArrayObject;
 import org.lwjgl.opengl.ARBBufferStorage;
 import org.lwjgl.opengl.ARBInstancedArrays;
+import org.lwjgl.opengl.ARBTextureBufferObject;
 import org.lwjgl.opengl.ARBTimerQuery;
 import org.lwjgl.opengl.ARBVertexArrayObject;
 import org.lwjgl.opengl.ContextCapabilities;
 import org.lwjgl.opengl.EXTGpuShader4;
+import org.lwjgl.opengl.EXTTextureBufferObject;
 import org.lwjgl.opengl.EXTTimerQuery;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -255,6 +257,9 @@ public record LWJGL2Service(
             case ARB_texture_storage -> caps.GL_ARB_texture_storage;
             case ARB_base_instance -> caps.GL_ARB_base_instance;
             case ARB_compatibility -> caps.GL_ARB_compatibility;
+            case ARB_texture_buffer_object -> caps.GL_ARB_texture_buffer_object;
+            case EXT_texture_buffer_object -> caps.GL_EXT_texture_buffer_object;
+            case EXT_gpu_shader4 -> caps.GL_EXT_gpu_shader4;
         };
     }
 
@@ -751,6 +756,21 @@ public record LWJGL2Service(
     @Override
     public void glTexParameteri(int target, int pname, int param) {
         GL11.glTexParameteri(target, pname, param);
+    }
+
+    @Override
+    public void glTexBuffer(int target, int internalFormat, int buffer) {
+        GL31.glTexBuffer(target, internalFormat, buffer);
+    }
+
+    @Override
+    public void glTexBufferARB(int target, int internalFormat, int buffer) {
+        ARBTextureBufferObject.glTexBufferARB(target, internalFormat, buffer);
+    }
+
+    @Override
+    public void glTexBufferEXT(int target, int internalFormat, int buffer) {
+        EXTTextureBufferObject.glTexBufferEXT(target, internalFormat, buffer);
     }
 
     // ===================== FRAMEBUFFER OPERATIONS =====================

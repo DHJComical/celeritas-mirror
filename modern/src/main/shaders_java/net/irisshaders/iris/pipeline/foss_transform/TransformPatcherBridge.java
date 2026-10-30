@@ -83,7 +83,7 @@ public class TransformPatcherBridge {
                                                       AlphaTest alpha, ShaderAttributeInputs inputs,
                                                       Object2ObjectMap<Tri<String, TextureType, TextureStage>, String> textureMap, TerrainRenderPass pass) {
         return transform(name, sources,
-                new SodiumParameters(Patch.SODIUM, textureMap, alpha, inputs, pass.vertexType()));
+                new SodiumParameters(Patch.SODIUM, textureMap, alpha, inputs, pass.vertexType(), pass.vertexFetchMode()));
     }
 
     public static Map<ShaderType, String> patchComposite(

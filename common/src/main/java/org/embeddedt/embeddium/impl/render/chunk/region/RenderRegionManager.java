@@ -45,7 +45,7 @@ public class RenderRegionManager {
      */
     private static int computeCommonVertexStride(RenderPassConfiguration<?> renderPassConfiguration) {
         return renderPassConfiguration.getAllKnownRenderPasses()
-                .mapToInt(pass -> pass.vertexType().getVertexFormat().getStride() * pass.primitiveType().getVerticesPerPrimitive())
+                .mapToInt(pass -> pass.vertexType().getLayout().bytesPerPrimitive(pass.primitiveType()))
                 .reduce(1, MathUtil::lcm);
     }
 

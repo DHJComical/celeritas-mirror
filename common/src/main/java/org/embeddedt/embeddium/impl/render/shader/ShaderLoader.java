@@ -8,6 +8,8 @@ import org.embeddedt.embeddium.impl.gl.shader.ShaderConstants;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderParser;
 import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 
+import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
@@ -24,7 +26,22 @@ public class ShaderLoader {
      * @return An OpenGL shader object compiled with the given user defines
      */
     public static GlShader loadShader(ShaderType type, String name, ShaderConstants constants) {
-        return new GlShader(type, name, downgradeIfNeeded(type, ShaderParser.parseShader(getShaderSource(name), ShaderLoader::getShaderSource, constants)));
+        return loadShader(type, name, constants, Map.of());
+    }
+
+    /**
+     * Like {@link #loadShader(ShaderType, String, ShaderConstants)}, but imports of names in {@code generatedSources}
+     * resolve to the given source instead of the classpath.
+     */
+    public static GlShader loadShader(ShaderType type, String name, ShaderConstants constants, Map<String, String> generatedSources) {
+        return new GlShader(type, name, downgradeIfNeeded(type, ShaderParser.parseShader(getShaderSource(name), sourceProvider(generatedSources), constants)));
+    }
+
+    public static Function<String, String> sourceProvider(Map<String, String> generatedSources) {
+        return name -> {
+            String generated = generatedSources.get(name);
+            return generated != null ? generated : getShaderSource(name);
+        };
     }
 
     private static final Pattern VERSION_DIRECTIVE = Pattern.compile("^#version.*$", Pattern.MULTILINE);

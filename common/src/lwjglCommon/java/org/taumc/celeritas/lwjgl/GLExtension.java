@@ -20,5 +20,8 @@ public enum GLExtension {
     ARB_copy_buffer,
     ARB_texture_storage,
     ARB_base_instance,
-    ARB_compatibility
+    ARB_compatibility,
+    ARB_texture_buffer_object,
+    EXT_texture_buffer_object,
+    EXT_gpu_shader4
 }

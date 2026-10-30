@@ -1,6 +1,5 @@
 package org.embeddedt.embeddium.impl.render.chunk.vertex.format;
 
-import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 import java.util.HashMap;
@@ -22,7 +21,7 @@ public interface ChunkVertexType {
      */
     float getTextureScale();
 
-    GlVertexFormat getVertexFormat();
+    ChunkVertexLayout getLayout();
 
     /**
      * {@return a newly constructed instance of a vertex encoder for the given vertex type}

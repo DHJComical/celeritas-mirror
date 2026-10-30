@@ -2,8 +2,10 @@ package net.irisshaders.iris.samplers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.mojang.blaze3d.platform.GlStateManager;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import net.irisshaders.iris.gl.image.GlImage;
+import net.irisshaders.iris.gl.program.ProgramSamplers;
 import net.irisshaders.iris.gl.sampler.GlSampler;
 import net.irisshaders.iris.gl.sampler.SamplerHolder;
 import net.irisshaders.iris.gl.state.StateUpdateNotifiers;
@@ -17,6 +19,8 @@ import net.irisshaders.iris.targets.RenderTarget;
 import net.irisshaders.iris.targets.RenderTargets;
 import net.irisshaders.iris.texture.VanillaTextures;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import org.embeddedt.embeddium.impl.render.chunk.DefaultChunkRenderer;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.VertexFetchGenerator;
 
 import java.util.Set;
 import java.util.function.IntSupplier;
@@ -32,6 +36,14 @@ public class IrisSamplers {
 	public static final int CLOUD_FACES_TEXTURE_UNIT = 3;
 	public static final ImmutableSet<Integer> CLOUDS_RESERVED_TEXTURE_UNITS = ImmutableSet.of(0, 1, 2, CLOUD_FACES_TEXTURE_UNIT);
 
+	/**
+	 * Terrain programs that pull vertex data also reserve the unit Celeritas binds it to.
+	 */
+	private static final ImmutableSet<Integer> PULLED_TERRAIN_RESERVED_TEXTURE_UNITS = ImmutableSet.<Integer>builder()
+		.addAll(WORLD_RESERVED_TEXTURE_UNITS)
+		.add(DefaultChunkRenderer.VERTEX_DATA_TEXTURE_UNIT)
+		.build();
+
 	// TODO: In composite programs, there shouldn't be any reserved textures.
 	// We need a way to restore these texture bindings.
 	public static final ImmutableSet<Integer> COMPOSITE_RESERVED_TEXTURE_UNITS = ImmutableSet.of(1, 2);
@@ -42,6 +54,23 @@ public class IrisSamplers {
 
 	private IrisSamplers() {
 		// no construction allowed
+	}
+
+	/**
+	 * Starts the samplers of a Celeritas terrain program. Units are only reserved for vertex data when the program reads
+	 * it, so that other programs keep every unit for the pack.
+	 */
+	public static ProgramSamplers.Builder terrainSamplerBuilder(int programId) {
+		boolean pulled = GlStateManager._glGetUniformLocation(programId, VertexFetchGenerator.VERTEX_DATA_SAMPLER) != -1;
+
+		if (!pulled) {
+			return ProgramSamplers.builder(programId, WORLD_RESERVED_TEXTURE_UNITS);
+		}
+
+		ProgramSamplers.Builder builder = ProgramSamplers.builder(programId, PULLED_TERRAIN_RESERVED_TEXTURE_UNITS);
+		builder.addExternalSampler(DefaultChunkRenderer.VERTEX_DATA_TEXTURE_UNIT, VertexFetchGenerator.VERTEX_DATA_SAMPLER);
+
+		return builder;
 	}
 
 	public static void initRenderer() {

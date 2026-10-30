@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.render.chunk;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import org.embeddedt.embeddium.impl.gl.array.GlVertexArray;
+import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeFormat;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
@@ -16,14 +17,35 @@ import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.multidraw.BatchAssembler;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
+import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderTextureSlot;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexLayout;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.VertexFetchMode;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
+import org.taumc.celeritas.lwjgl.GL13;
+
+import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
+
 import java.util.Iterator;
 
 public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
     private final Reference2ReferenceMap<ChunkPrimitiveType, SharedQuadIndexBuffer> sharedIndexBuffers;
 
     private final BatchAssembler.TessellationProvider tessellationProvider = this::prepareTessellation;
+
+    /**
+     * The texture unit that pulled passes read vertex data from. Loaders bind their own textures to low units, so this
+     * stays clear of them. Shader pack programs reserve it when they pull vertex data.
+     */
+    public static final int VERTEX_DATA_TEXTURE_UNIT = 15;
+
+    /**
+     * Stands in for vertex attributes in pulled passes. Compatibility profiles leave a draw undefined when attribute
+     * array 0 is disabled, and pulled shaders don't declare any attributes.
+     */
+    private static final GlVertexFormat PLACEHOLDER_ATTRIBUTE_FORMAT = GlVertexFormat.builder(4)
+            .addElement("celeritas_Placeholder", 0, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true, false)
+            .build();
 
     private TerrainRenderPass currentRenderPass;
     private GlVertexFormat currentVertexFormat;
@@ -77,9 +99,23 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             Iterator<ChunkRenderList> iterator = renderLists.iterator(renderPass.isReverseOrder());
 
             this.currentRenderPass = renderPass;
-            this.currentVertexFormat = this.renderPassConfiguration.getVertexTypeForPass(this.currentRenderPass).getVertexFormat();
+
+            boolean pulled = renderPass.vertexFetchMode() == VertexFetchMode.PULLED;
+
+            int previousActiveTexture = 0;
+
+            if (pulled) {
+                this.currentVertexFormat = PLACEHOLDER_ATTRIBUTE_FORMAT;
+                previousActiveTexture = this.activateTextureUnit(GL13.GL_TEXTURE0 + VERTEX_DATA_TEXTURE_UNIT);
+            } else {
+                this.currentVertexFormat = ChunkVertexLayout.requireAttributes(renderPass.vertexType().getLayout());
+            }
 
             this.configureShaderInterface(shader);
+
+            if (pulled) {
+                shader.setTextureSlot(ChunkShaderTextureSlot.VERTEX_DATA, VERTEX_DATA_TEXTURE_UNIT);
+            }
 
             long timestamp = System.nanoTime();
 
@@ -117,10 +153,18 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
                                 .ensureCapacity(commandList, batch.getIndexBufferSize());
                     }
 
+                    if (pulled) {
+                        region.getResources().bindVertexDataTexture(this.device.getDeviceFunctions());
+                    }
+
                     setModelMatrixUniforms(shader, region, camera);
                     shader.setSectionAges(timestamp, region.getSectionLoadTimes());
                     batch.execute(commandList, cached.getTessellation(), primitiveType);
                 }
+            }
+
+            if (pulled) {
+                this.activateTextureUnit(previousActiveTexture);
             }
 
             this.currentVertexFormat = null;
@@ -130,6 +174,18 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         }
 
         this.end(renderPass);
+    }
+
+    /**
+     * Makes the given texture unit active. Platforms whose renderer caches the active unit must update that cache.
+     *
+     * @param unit the unit, as {@code GL_TEXTURE0 + n}
+     * @return the unit that was active before, in the same form
+     */
+    protected int activateTextureUnit(int unit) {
+        LWJGL.glActiveTexture(unit);
+        // TODO: don't assume unit 0 was active before the pass
+        return GL13.GL_TEXTURE0;
     }
 
     private static void setModelMatrixUniforms(ChunkShaderInterface shader, RenderRegion region, CameraTransform camera) {

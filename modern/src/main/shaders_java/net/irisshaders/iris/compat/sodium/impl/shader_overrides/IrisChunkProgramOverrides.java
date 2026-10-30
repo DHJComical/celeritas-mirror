@@ -11,6 +11,8 @@ import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkFogMode;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.sampling.TerrainSampling;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexLayout;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.VertexFetchMode;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
 import net.irisshaders.iris.gl.blending.BufferBlendOverride;
@@ -89,10 +91,13 @@ public class IrisChunkProgramOverrides {
 
         createdShaders.values().forEach(builder::attachShader);
 
-        int i = 0;
-        var vertexType = configuration.getVertexTypeForPass(pass.toTerrainPass(configuration));
-        for (var attr : vertexType.getVertexFormat().getAttributes()) {
-            builder.bindAttribute(attr.getName(), i++);
+        var terrainPass = pass.toTerrainPass(configuration);
+        if (terrainPass.vertexFetchMode() == VertexFetchMode.ATTRIBUTES) {
+            int i = 0;
+            var vertexType = configuration.getVertexTypeForPass(terrainPass);
+            for (var attr : ChunkVertexLayout.requireAttributes(vertexType.getLayout()).getAttributes()) {
+                builder.bindAttribute(attr.getName(), i++);
+            }
         }
 
 		boolean hasTessellation = createdShaders.get(ShaderType.TESS_CTRL) != null || createdShaders.get(ShaderType.TESS_EVALUATE) != null;

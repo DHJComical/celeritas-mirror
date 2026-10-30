@@ -14,29 +14,22 @@ import org.embeddedt.embeddium.impl.modern.render.chunk.ContextAwareChunkVertexE
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
-import net.irisshaders.iris.vertices.ExtendedDataHelper;
-import net.irisshaders.iris.vertices.NormI8;
-import net.irisshaders.iris.vertices.NormalHelper;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.impl.VanillaLikeChunkVertex;
 //? if <26.1
 import org.embeddedt.embeddium.impl.render.texture.TextureAtlasExtended;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp.XHFPModelVertexType.STRIDE;
+import static net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp.XHFPModelVertexType.HEADER_STRIDE;
+import static net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp.XHFPModelVertexType.VERTEX_STRIDE;
 
 public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkVertexEncoder {
 
-	private final QuadViewTerrain.QuadViewTerrainUnsafe quad = new QuadViewTerrain.QuadViewTerrainUnsafe();
-	private final Vector3f normal = new Vector3f();
 
-	private int vertexCount;
-	private float uSum;
-	private float vSum;
 
     private static final BlockState AIR = Blocks.AIR.defaultBlockState();
 
@@ -57,13 +50,8 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
 
     private final FallbackTextureMaterials fallbackMaterials = WorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
 
-    private final ChunkVertexEncoder baseEncoder = XHFPModelVertexType.BASE_VERTEX_TYPE.createEncoder();
-
-    private static final int MID_TEX_OFFSET = XHFPModelVertexType.VERTEX_FORMAT.getAttribute("mc_midTexCoord").getPointer();
-    private static final int MC_ENTITY_OFFSET = XHFPModelVertexType.VERTEX_FORMAT.getAttribute("mc_Entity").getPointer();
-    private static final int MID_BLOCK_OFFSET = XHFPModelVertexType.VERTEX_FORMAT.getAttribute("at_midBlock").getPointer();
-    private static final int NORMAL_OFFSET = XHFPModelVertexType.VERTEX_FORMAT.getAttribute("iris_Normal").getPointer();
-    private static final int TANGENT_OFFSET = XHFPModelVertexType.VERTEX_FORMAT.getAttribute("at_tangent").getPointer();
+    private static final int MC_ENTITY_OFFSET = XHFPModelVertexType.HEADER_FORMAT.getAttribute("mc_Entity").getPointer();
+    private static final int BLOCK_INFO_OFFSET = XHFPModelVertexType.HEADER_FORMAT.getAttribute(XHFPModelVertexType.BLOCK_INFO).getPointer();
 
     private static final ClassValue<AtomicBoolean> GET_APPEARANCE_CRASHED = new ClassValue<>() {
         @Override
@@ -150,76 +138,47 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
 		return false;
 	}
 
-    @Override
-	public long write(long ptr,
-					  Material material, Vertex vertex, int chunkId) {
-		uSum += vertex.u;
-		vSum += vertex.v;
-		vertexCount++;
+	@Override
+	public long writePrimitive(long ptr, Material material, Vertex[] vertices, int chunkId) {
+		long vertexPtr = ptr + HEADER_STRIDE;
+		float uSum = 0.0f;
+		float vSum = 0.0f;
 
-        vertex.rdhFactor = 0;
-        this.baseEncoder.write(ptr, material, vertex, chunkId);
+		for (Vertex vertex : vertices) {
+			uSum += vertex.u;
+			vSum += vertex.v;
 
-        MemoryUtil.memPutShort(ptr + MC_ENTITY_OFFSET + 2, renderType);
-        MemoryUtil.memPutInt(ptr + MID_BLOCK_OFFSET, ignoreMidBlock ? 0 : ExtendedDataHelper.computeMidBlock(vertex.x, vertex.y, vertex.z, localPosX, localPosY, localPosZ));
-        MemoryUtil.memPutByte(ptr + MID_BLOCK_OFFSET + 3, lightValue);
+			VanillaLikeChunkVertex.writeVertexWithoutRdhFactor(vertexPtr, material, vertex, chunkId);
 
-		if (vertexCount == 4) {
-			vertexCount = 0;
-
-			uSum *= 0.25f;
-			vSum *= 0.25f;
-
-			int midUV = XHFPModelVertexType.encodeTexture(uSum, vSum);
-
-			MemoryUtil.memPutInt(ptr + MID_TEX_OFFSET, midUV);
-			MemoryUtil.memPutInt(ptr + MID_TEX_OFFSET - STRIDE, midUV);
-			MemoryUtil.memPutInt(ptr + MID_TEX_OFFSET - STRIDE * 2, midUV);
-			MemoryUtil.memPutInt(ptr + MID_TEX_OFFSET - STRIDE * 3, midUV);
-
-            short blockId = this.blockId;
-
-            //? if <26.1 {
-            if (blockId == -1 && fallbackMaterials != null) {
-                // Try to fall back to the "canonical" block ID for the texture, this can often greatly improve
-                // the visuals of facade-style blocks
-                TextureAtlasSprite sprite = ((TextureAtlasExtended)blocksAtlas).celeritas$findFromUV(uSum, vSum);
-                if (sprite != null) {
-                    blockId = (short) fallbackMaterials.getFallbackId(sprite, this.blockState);
-                }
-            }
-            //?}
-
-            MemoryUtil.memPutShort(ptr + MC_ENTITY_OFFSET, blockId);
-            MemoryUtil.memPutShort(ptr + MC_ENTITY_OFFSET - STRIDE, blockId);
-            MemoryUtil.memPutShort(ptr + MC_ENTITY_OFFSET - STRIDE * 2, blockId);
-            MemoryUtil.memPutShort(ptr + MC_ENTITY_OFFSET - STRIDE * 3, blockId);
-
-			uSum = 0;
-			vSum = 0;
-
-			// normal computation
-			// Implementation based on the algorithm found here:
-			// https://github.com/IrisShaders/ShaderDoc/blob/master/vertex-format-extensions.md#surface-normal-vector
-
-			quad.setup(ptr, STRIDE);
-			NormalHelper.computeFaceNormal(normal, quad);
-			int packedNormal = NormI8.pack(normal);
-
-
-			MemoryUtil.memPutInt(ptr + NORMAL_OFFSET, packedNormal);
-			MemoryUtil.memPutInt(ptr + NORMAL_OFFSET - STRIDE, packedNormal);
-			MemoryUtil.memPutInt(ptr + NORMAL_OFFSET - STRIDE * 2, packedNormal);
-			MemoryUtil.memPutInt(ptr + NORMAL_OFFSET - STRIDE * 3, packedNormal);
-
-			int tangent = NormalHelper.computeTangent(normal.x, normal.y, normal.z, quad);
-
-			MemoryUtil.memPutInt(ptr + TANGENT_OFFSET, tangent);
-			MemoryUtil.memPutInt(ptr + TANGENT_OFFSET - STRIDE, tangent);
-			MemoryUtil.memPutInt(ptr + TANGENT_OFFSET - STRIDE * 2, tangent);
-			MemoryUtil.memPutInt(ptr + TANGENT_OFFSET - STRIDE * 3, tangent);
+			vertexPtr += VERTEX_STRIDE;
 		}
 
-		return ptr + STRIDE;
+		float midU = uSum / vertices.length;
+		float midV = vSum / vertices.length;
+
+		short blockId = this.blockId;
+
+		//? if <26.1 {
+		if (blockId == -1 && fallbackMaterials != null) {
+			// Try to fall back to the "canonical" block ID for the texture, this can often greatly improve
+			// the visuals of facade-style blocks
+			TextureAtlasSprite sprite = ((TextureAtlasExtended)blocksAtlas).celeritas$findFromUV(midU, midV);
+			if (sprite != null) {
+				blockId = (short) fallbackMaterials.getFallbackId(sprite, this.blockState);
+			}
+		}
+		//?}
+
+		MemoryUtil.memPutShort(ptr + MC_ENTITY_OFFSET, blockId);
+		MemoryUtil.memPutShort(ptr + MC_ENTITY_OFFSET + 2, renderType);
+
+		// Vertex positions are relative to the section, so only the block's position within it is needed
+		MemoryUtil.memPutInt(ptr + BLOCK_INFO_OFFSET, (localPosX & 15)
+				| ((localPosY & 15) << 4)
+				| ((localPosZ & 15) << 8)
+				| (ignoreMidBlock ? 0 : 1 << 12)
+				| ((lightValue & 0xFF) << 16));
+
+		return vertexPtr;
 	}
 }

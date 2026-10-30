@@ -56,7 +56,7 @@ public final class ChunkBuildBuffers {
 
     private ChunkModelBuilder createBuilder(TerrainRenderPass pass) {
         var vertexType = this.renderPassConfiguration.getVertexTypeForPass(pass);
-        var builder = new BakedChunkModelBuilder(vertexType.createEncoder(), vertexType.getVertexFormat().getStride(), pass);
+        var builder = new BakedChunkModelBuilder(vertexType.createEncoder(), pass);
         Objects.requireNonNull(renderData, "Buffers have not been started");
         builder.begin(renderData, sectionIndex);
         this.builders.put(pass, builder);
@@ -112,7 +112,8 @@ public final class ChunkBuildBuffers {
         var vertexType = renderPassConfiguration.getVertexTypeForPass(pass);
         var primitiveType = renderPassConfiguration.getPrimitiveTypeForPass(pass);
 
-        var mergedBuffer = new NativeBuffer(vertexCount * vertexType.getVertexFormat().getStride());
+        int numPrimitives = vertexCount / primitiveType.getVerticesPerPrimitive();
+        var mergedBuffer = new NativeBuffer(numPrimitives * vertexType.getLayout().bytesPerPrimitive(primitiveType));
         var mergedBufferBuilder = mergedBuffer.getDirectBuffer();
 
         for (var buffer : vertexBuffers) {
@@ -124,7 +125,6 @@ public final class ChunkBuildBuffers {
         NativeBuffer mergedIndexBuffer;
 
         if (pass.isSorted()) {
-            int numPrimitives = vertexCount / primitiveType.getVerticesPerPrimitive();
             // Generate the canonical index buffer
             mergedIndexBuffer = new NativeBuffer(primitiveType.getIndexBufferSize(numPrimitives));
 

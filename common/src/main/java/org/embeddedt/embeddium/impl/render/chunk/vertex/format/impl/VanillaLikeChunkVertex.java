@@ -4,6 +4,7 @@ import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeFormat;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexLayout;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
@@ -22,6 +23,8 @@ public class VanillaLikeChunkVertex implements ChunkVertexType {
             .addElement("a_RdhFactor", 28, GlVertexAttributeFormat.BYTE, 4, true, false)
             .build();
 
+    public static final ChunkVertexLayout LAYOUT = ChunkVertexLayout.of(VERTEX_FORMAT);
+
     @Override
     public float getPositionScale() {
         return 1f;
@@ -38,24 +41,35 @@ public class VanillaLikeChunkVertex implements ChunkVertexType {
     }
 
     @Override
-    public GlVertexFormat getVertexFormat() {
-        return VERTEX_FORMAT;
+    public ChunkVertexLayout getLayout() {
+        return LAYOUT;
     }
 
     @Override
     public ChunkVertexEncoder createEncoder() {
-        return (ptr, material, vertex, sectionIndex) -> {
-            LWJGL.memPutFloat(ptr + 0, vertex.x);
-            LWJGL.memPutFloat(ptr + 4, vertex.y);
-            LWJGL.memPutFloat(ptr + 8, vertex.z);
-            LWJGL.memPutInt(ptr + 12, vertex.color);
-            LWJGL.memPutFloat(ptr + 16, encodeTexture(vertex.u));
-            LWJGL.memPutFloat(ptr + 20, encodeTexture(vertex.v));
-            LWJGL.memPutInt(ptr + 24, (encodeDrawParameters(material, sectionIndex) << 0) | (encodeLight(vertex.light) << 16));
-            LWJGL.memPutInt(ptr + 28, vertex.rdhFactor);
+        return (ptr, material, vertices, sectionIndex) -> {
+            for (var vertex : vertices) {
+                writeVertex(ptr, material, vertex, sectionIndex);
+                ptr += STRIDE;
+            }
 
-            return ptr + STRIDE;
+            return ptr;
         };
+    }
+
+    public static void writeVertex(long ptr, Material material, ChunkVertexEncoder.Vertex vertex, int sectionIndex) {
+        writeVertexWithoutRdhFactor(ptr, material, vertex, sectionIndex);
+        LWJGL.memPutInt(ptr + 28, vertex.rdhFactor);
+    }
+
+    public static void writeVertexWithoutRdhFactor(long ptr, Material material, ChunkVertexEncoder.Vertex vertex, int sectionIndex) {
+        LWJGL.memPutFloat(ptr + 0, vertex.x);
+        LWJGL.memPutFloat(ptr + 4, vertex.y);
+        LWJGL.memPutFloat(ptr + 8, vertex.z);
+        LWJGL.memPutInt(ptr + 12, vertex.color);
+        LWJGL.memPutFloat(ptr + 16, encodeTexture(vertex.u));
+        LWJGL.memPutFloat(ptr + 20, encodeTexture(vertex.v));
+        LWJGL.memPutInt(ptr + 24, (encodeDrawParameters(material, sectionIndex) << 0) | (encodeLight(vertex.light) << 16));
     }
 
     private static int encodeDrawParameters(Material material, int sectionIndex) {

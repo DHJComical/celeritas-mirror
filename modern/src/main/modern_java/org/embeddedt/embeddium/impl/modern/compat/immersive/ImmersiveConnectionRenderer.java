@@ -189,12 +189,7 @@ public class ImmersiveConnectionRenderer implements ResourceManagerReloadListene
             int color,
             boolean lightForStart
     ) {
-        static final ThreadLocal<ChunkVertexEncoder.Vertex[]> vertexHolder = ThreadLocal.withInitial(() -> new ChunkVertexEncoder.Vertex[1]);
-
-        void write(
-                ChunkMeshBufferBuilder vertexSink, Material material, int offX, int offY, int offZ, int lightStart, int lightEnd
-        ) {
-            ChunkVertexEncoder.Vertex sodiumVertex = new ChunkVertexEncoder.Vertex();
+        void copyTo(ChunkVertexEncoder.Vertex sodiumVertex, int offX, int offY, int offZ, int lightStart, int lightEnd) {
             sodiumVertex.x = offX + posX;
             sodiumVertex.y = offY + posY;
             sodiumVertex.z = offZ + posZ;
@@ -202,28 +197,32 @@ public class ImmersiveConnectionRenderer implements ResourceManagerReloadListene
             sodiumVertex.u = texU;
             sodiumVertex.v = texV;
             sodiumVertex.light = lightForStart ? lightStart : lightEnd;
-            ChunkVertexEncoder.Vertex[] array = vertexHolder.get();
-            array[0] = sodiumVertex;
-            vertexSink.push(array, material);
         }
     }
 
     private record Quad(Vertex v0, Vertex v1, Vertex v2, Vertex v3) {
+        static final ThreadLocal<ChunkVertexEncoder.Vertex[]> vertexHolder = ThreadLocal.withInitial(ChunkVertexEncoder.Vertex::uninitializedQuad);
+
         void write(
                 ChunkModelBuilder out, Material material, int offX, int offY, int offZ, int lightStart, int lightEnd
         ) {
             var vertexSink = out.getVertexBuffer(ModelQuadFacing.UNASSIGNED);
-            int quadStart = vertexSink.count();
+            var vertices = vertexHolder.get();
             // clockwise
-            v0.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
-            v1.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
-            v2.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
-            v3.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
+            push(vertexSink, vertices, material, v0, v1, v2, v3, offX, offY, offZ, lightStart, lightEnd);
             // counter-clockwise
-            v0.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
-            v3.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
-            v2.write(vertexSink ,material, offX, offY, offZ, lightStart, lightEnd);
-            v1.write(vertexSink, material, offX, offY, offZ, lightStart, lightEnd);
+            push(vertexSink, vertices, material, v0, v3, v2, v1, offX, offY, offZ, lightStart, lightEnd);
+        }
+
+        private static void push(
+                ChunkMeshBufferBuilder vertexSink, ChunkVertexEncoder.Vertex[] vertices, Material material,
+                Vertex a, Vertex b, Vertex c, Vertex d, int offX, int offY, int offZ, int lightStart, int lightEnd
+        ) {
+            a.copyTo(vertices[0], offX, offY, offZ, lightStart, lightEnd);
+            b.copyTo(vertices[1], offX, offY, offZ, lightStart, lightEnd);
+            c.copyTo(vertices[2], offX, offY, offZ, lightStart, lightEnd);
+            d.copyTo(vertices[3], offX, offY, offZ, lightStart, lightEnd);
+            vertexSink.push(vertices, material);
         }
     }
 

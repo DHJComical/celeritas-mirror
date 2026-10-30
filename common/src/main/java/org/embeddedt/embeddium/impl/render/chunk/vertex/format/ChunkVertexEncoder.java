@@ -2,8 +2,15 @@ package org.embeddedt.embeddium.impl.render.chunk.vertex.format;
 
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 
+@FunctionalInterface
 public interface ChunkVertexEncoder {
-    long write(long ptr, Material material, Vertex vertex, int sectionIndex);
+    /**
+     * Writes one primitive starting at {@code ptr}.
+     *
+     * @return the pointer just past the primitive, which is {@code ptr} plus the layout's
+     *         {@link ChunkVertexLayout#bytesPerPrimitive bytesPerPrimitive}
+     */
+    long writePrimitive(long ptr, Material material, Vertex[] vertices, int sectionIndex);
 
     default boolean supportsBilinearCorrection() {
         return true;

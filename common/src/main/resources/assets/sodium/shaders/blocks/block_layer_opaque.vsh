@@ -76,7 +76,7 @@ void main() {
     v_RdhFactor.rgb *= lightColor.rgb;
 #endif
     
-    int corner = gl_VertexID & 3;
+    int corner = _vert_corner;
     v_QuadCoord = vec2(corner >= 2 ? 1.0 : 0.0,
             corner == 1 || corner == 2 ? 1.0 : 0.0);
     v_TexCoord = _vert_tex_diffuse_coord;

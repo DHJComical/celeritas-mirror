@@ -10,7 +10,8 @@ import java.nio.ByteBuffer;
 
 public class ChunkMeshBufferBuilder {
     private final ChunkVertexEncoder encoder;
-    private final int stride;
+    private final int bytesPerPrimitive;
+    private final int verticesPerPrimitive;
 
     private final int initialCapacity;
     private final TranslucentQuadRecorder analyzer;
@@ -20,9 +21,10 @@ public class ChunkMeshBufferBuilder {
     private int capacity;
     private int sectionIndex;
 
-    public ChunkMeshBufferBuilder(ChunkVertexEncoder encoder, int stride, int initialCapacity, boolean collectSortState) {
+    public ChunkMeshBufferBuilder(ChunkVertexEncoder encoder, int bytesPerPrimitive, int verticesPerPrimitive, int initialCapacity, boolean collectSortState) {
         this.encoder = encoder;
-        this.stride = stride;
+        this.bytesPerPrimitive = bytesPerPrimitive;
+        this.verticesPerPrimitive = verticesPerPrimitive;
 
         this.buffer = null;
 
@@ -33,18 +35,21 @@ public class ChunkMeshBufferBuilder {
     }
 
     public void push(ChunkVertexEncoder.Vertex[] vertices, Material material) {
+        if (vertices.length != this.verticesPerPrimitive) {
+            throw new IllegalArgumentException("Expected one primitive of " + this.verticesPerPrimitive + " vertices, got " + vertices.length);
+        }
+
         if (this.encoder.supportsBilinearCorrection()) {
             postprocessVertices(vertices);
         }
 
-        var vertexStart = this.count * this.stride;
-        var vertexSize = vertices.length * this.stride;
+        var primitiveStart = this.byteSize();
 
-        if (vertexStart + vertexSize >= this.capacity) {
-            this.grow(vertexSize);
+        if (primitiveStart + this.bytesPerPrimitive >= this.capacity) {
+            this.grow(this.bytesPerPrimitive);
         }
 
-        long ptr = LWJGL.memAddress(this.buffer, vertexStart);
+        long ptr = LWJGL.memAddress(this.buffer, primitiveStart);
 
         if (this.analyzer != null) {
             for (ChunkVertexEncoder.Vertex vertex : vertices) {
@@ -52,9 +57,7 @@ public class ChunkMeshBufferBuilder {
             }
         }
 
-        for (ChunkVertexEncoder.Vertex vertex : vertices) {
-            ptr = this.encoder.write(ptr, material, vertex, this.sectionIndex);
-        }
+        this.encoder.writePrimitive(ptr, material, vertices, this.sectionIndex);
 
         this.count += vertices.length;
     }
@@ -137,10 +140,14 @@ public class ChunkMeshBufferBuilder {
             throw new IllegalStateException("No vertex data in buffer");
         }
 
-        return LWJGL.memSlice(this.buffer, 0, this.stride * this.count);
+        return LWJGL.memSlice(this.buffer, 0, this.byteSize());
     }
 
     public int count() {
         return this.count;
+    }
+
+    private int byteSize() {
+        return (this.count / this.verticesPerPrimitive) * this.bytesPerPrimitive;
     }
 }

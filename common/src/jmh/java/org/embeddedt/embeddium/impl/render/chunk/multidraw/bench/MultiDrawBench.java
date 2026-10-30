@@ -51,7 +51,7 @@ import java.util.concurrent.TimeUnit;
 @Warmup(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS)
 public class MultiDrawBench {
-    private static final int ROTATION_STEPS = 8;
+    public static final int ROTATION_STEPS = 8;
     private static final int TARGET_QUEUE_SIZE = 32 * 10;
     private static final int UPLOAD_BATCH = 256;
 

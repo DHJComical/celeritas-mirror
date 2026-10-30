@@ -4,6 +4,7 @@ import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeFormat;
 import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexLayout;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
@@ -20,6 +21,8 @@ public class CompactChunkVertex implements ChunkVertexType {
             .build();
 
     public static final int STRIDE = 24;
+
+    public static final ChunkVertexLayout LAYOUT = ChunkVertexLayout.of(VERTEX_FORMAT);
 
     private static final int POSITION_BITS = 21;
     private static final int POSITION_LOW_BITS = 5;
@@ -61,37 +64,44 @@ public class CompactChunkVertex implements ChunkVertexType {
     }
 
     @Override
-    public GlVertexFormat getVertexFormat() {
-        return VERTEX_FORMAT;
+    public ChunkVertexLayout getLayout() {
+        return LAYOUT;
     }
 
     @Override
     public ChunkVertexEncoder createEncoder() {
-        return (ptr, material, vertex, sectionIndex) -> {
-            int x = encodePosition(vertex.x);
-            int y = encodePosition(vertex.y);
-            int z = encodePosition(vertex.z);
+        return (ptr, material, vertices, sectionIndex) -> {
+            for (var vertex : vertices) {
+                writeVertex(ptr, material, vertex, sectionIndex);
+                ptr += STRIDE;
+            }
 
-            LWJGL.memPutShort(ptr + 0, (short) (x >>> POSITION_LOW_BITS));
-            LWJGL.memPutShort(ptr + 2, (short) (y >>> POSITION_LOW_BITS));
-            LWJGL.memPutShort(ptr + 4, (short) (z >>> POSITION_LOW_BITS));
-            LWJGL.memPutShort(ptr + 6, (short) ((x & POSITION_LOW_MASK)
-                    | ((y & POSITION_LOW_MASK) << POSITION_LOW_BITS)
-                    | ((z & POSITION_LOW_MASK) << (POSITION_LOW_BITS * 2))));
-
-            LWJGL.memPutInt(ptr + 8, vertex.color);
-
-            int u = encodeTexture(vertex.u);
-            int v = encodeTexture(vertex.v);
-
-            LWJGL.memPutShort(ptr + 12, (short) (u >>> TEXTURE_LOW_BITS));
-            LWJGL.memPutShort(ptr + 14, (short) (v >>> TEXTURE_LOW_BITS));
-
-            LWJGL.memPutInt(ptr + 16, (encodeDrawParameters(material, sectionIndex, u, v) << 0) | (encodeLight(vertex.light) << 16));
-            LWJGL.memPutInt(ptr + 20, vertex.rdhFactor);
-
-            return ptr + STRIDE;
+            return ptr;
         };
+    }
+
+    private static void writeVertex(long ptr, Material material, ChunkVertexEncoder.Vertex vertex, int sectionIndex) {
+        int x = encodePosition(vertex.x);
+        int y = encodePosition(vertex.y);
+        int z = encodePosition(vertex.z);
+
+        LWJGL.memPutShort(ptr + 0, (short) (x >>> POSITION_LOW_BITS));
+        LWJGL.memPutShort(ptr + 2, (short) (y >>> POSITION_LOW_BITS));
+        LWJGL.memPutShort(ptr + 4, (short) (z >>> POSITION_LOW_BITS));
+        LWJGL.memPutShort(ptr + 6, (short) ((x & POSITION_LOW_MASK)
+                | ((y & POSITION_LOW_MASK) << POSITION_LOW_BITS)
+                | ((z & POSITION_LOW_MASK) << (POSITION_LOW_BITS * 2))));
+
+        LWJGL.memPutInt(ptr + 8, vertex.color);
+
+        int u = encodeTexture(vertex.u);
+        int v = encodeTexture(vertex.v);
+
+        LWJGL.memPutShort(ptr + 12, (short) (u >>> TEXTURE_LOW_BITS));
+        LWJGL.memPutShort(ptr + 14, (short) (v >>> TEXTURE_LOW_BITS));
+
+        LWJGL.memPutInt(ptr + 16, (encodeDrawParameters(material, sectionIndex, u, v) << 0) | (encodeLight(vertex.light) << 16));
+        LWJGL.memPutInt(ptr + 20, vertex.rdhFactor);
     }
 
     @Override

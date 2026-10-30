@@ -7,6 +7,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.sampling.TerrainSampling;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 
 import java.util.List;
 import java.util.Map;
@@ -28,11 +29,24 @@ public final class BenchRenderPasses {
     private BenchRenderPasses() {
     }
 
+    /**
+     * Selected with {@code -Dceleritas.bench.vertexType=COMPACT|VANILLA_LIKE}, since passes are built once per JVM.
+     */
+    private static ChunkVertexType vertexType() {
+        String name = System.getProperty("celeritas.bench.vertexType", "COMPACT");
+
+        return switch (name) {
+            case "COMPACT" -> ChunkMeshFormats.COMPACT;
+            case "VANILLA_LIKE" -> ChunkMeshFormats.VANILLA_LIKE;
+            default -> throw new IllegalArgumentException("Unknown bench vertex type " + name);
+        };
+    }
+
     private static TerrainRenderPass.TerrainRenderPassBuilder builder() {
-        // No GL state: the benchmark never draws.
+        // No GL state: draw benchmarks set up the pipeline themselves.
         return TerrainRenderPass.builder()
                 .pipelineState(TerrainRenderPass.PipelineState.DEFAULT)
-                .vertexType(ChunkMeshFormats.COMPACT)
+                .vertexType(vertexType())
                 .primitiveType(QuadPrimitiveType.TRIANGULATED);
     }
 

@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
@@ -7,6 +8,7 @@ import org.embeddedt.embeddium.impl.render.chunk.DefaultChunkRenderer;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderTextureSlot;
+import org.lwjgl.opengl.GL13C;
 
 public class ModernChunkRenderer extends DefaultChunkRenderer {
     public static final int ATLAS_EDGE_MASK_TEXTURE_UNIT = 3;
@@ -29,6 +31,17 @@ public class ModernChunkRenderer extends DefaultChunkRenderer {
     @Override
     protected boolean useBlockFaceCulling() {
         return Celeritas.options().performance.useBlockFaceCulling /*? if shaders {*/ && !net.irisshaders.iris.shadows.ShadowRenderingState.areShadowsCurrentlyBeingRendered() /*?}*/;
+    }
+
+    @Override
+    protected int activateTextureUnit(int unit) {
+        //? if >=26.1 {
+        /*int previous = GL13C.GL_TEXTURE0 + org.embeddedt.embeddium.impl.mixin.core.GlStateManagerAccessor.celeritas$getActiveTexture();
+        *///?} else {
+        int previous = GlStateManager._getActiveTexture();
+        //?}
+        GlStateManager._activeTexture(unit);
+        return previous;
     }
 
     @Override

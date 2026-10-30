@@ -5,10 +5,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Singular;
 import lombok.experimental.Accessors;
-import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexLayout;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.VertexFetchMode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -56,8 +57,9 @@ public class TerrainRenderPass {
 
     private final @NotNull ChunkPrimitiveType primitiveType;
     private final @NotNull ChunkVertexType vertexType;
+    private final @NotNull VertexFetchMode vertexFetchMode;
 
-    public record TessellationKey(GlVertexFormat vertexFormat, ChunkPrimitiveType primitiveType, boolean sorted) {}
+    public record TessellationKey(ChunkVertexLayout vertexLayout, VertexFetchMode vertexFetchMode, ChunkPrimitiveType primitiveType, boolean sorted) {}
 
     @Getter
     @EqualsAndHashCode.Exclude
@@ -89,7 +91,8 @@ public class TerrainRenderPass {
         this.hasNoLightmap = hasNoLightmap;
         this.primitiveType = primitiveType;
         this.vertexType = vertexType;
-        this.tessellationKey = new TessellationKey(vertexType.getVertexFormat(), primitiveType, useTranslucencySorting);
+        this.vertexFetchMode = VertexFetchMode.select(vertexType.getLayout());
+        this.tessellationKey = new TessellationKey(vertexType.getLayout(), this.vertexFetchMode, primitiveType, useTranslucencySorting);
         this.extraDefines = Map.copyOf(extraDefines);
     }
 
@@ -123,6 +126,10 @@ public class TerrainRenderPass {
 
     public ChunkVertexType vertexType() {
         return this.vertexType;
+    }
+
+    public VertexFetchMode vertexFetchMode() {
+        return this.vertexFetchMode;
     }
 
     public Map<String, String> extraDefines() {

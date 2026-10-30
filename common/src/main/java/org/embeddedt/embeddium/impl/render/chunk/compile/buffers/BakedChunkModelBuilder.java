@@ -17,11 +17,14 @@ public class BakedChunkModelBuilder implements ChunkModelBuilder {
 
     private BuiltRenderSectionData renderData;
 
-    public BakedChunkModelBuilder(ChunkVertexEncoder encoder, int stride, TerrainRenderPass pass) {
+    public BakedChunkModelBuilder(ChunkVertexEncoder encoder, TerrainRenderPass pass) {
         var vertexBuffers = new ChunkMeshBufferBuilder[ModelQuadFacing.COUNT];
+        var primitiveType = pass.primitiveType();
+        int bytesPerPrimitive = pass.vertexType().getLayout().bytesPerPrimitive(primitiveType);
 
         for (int facing = 0; facing < ModelQuadFacing.COUNT; facing++) {
-            vertexBuffers[facing] = new ChunkMeshBufferBuilder(encoder, stride, 64 * 1024, pass.isSorted() && facing == ModelQuadFacing.UNASSIGNED.ordinal());
+            vertexBuffers[facing] = new ChunkMeshBufferBuilder(encoder, bytesPerPrimitive, primitiveType.getVerticesPerPrimitive(),
+                    64 * 1024, pass.isSorted() && facing == ModelQuadFacing.UNASSIGNED.ordinal());
         }
 
         this.encoder = encoder;

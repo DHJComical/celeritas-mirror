@@ -138,6 +138,9 @@ public interface LWJGLService {
     void glPixelStorei(int pname, int param);
     void glTexImage2D(int target, int level, int internalFormat, int width, int height, int border, int format, int type, ByteBuffer pixels);
     void glTexParameteri(int target, int pname, int param);
+    void glTexBuffer(int target, int internalFormat, int buffer);
+    void glTexBufferARB(int target, int internalFormat, int buffer);
+    void glTexBufferEXT(int target, int internalFormat, int buffer);
 
     // ===================== FRAMEBUFFER OPERATIONS =====================
 
