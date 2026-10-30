@@ -31,15 +31,14 @@ public abstract class LevelMixin {
     private ArrayList<BlockEntity> pendingFreshBlockEntities;
 
     @Shadow
-    @Final
-    public boolean isClientSide;
+    public abstract boolean isClientSide();
 
     @Shadow
     public abstract void sendBlockUpdated(BlockPos pos, BlockState oldState, BlockState newState, int flags);
 
     @Inject(method = "tickBlockEntities", at = @At("HEAD"))
     private void captureBlockEntitiesForModelDataScan(CallbackInfo ci, @Share("capturedBlockEntities") LocalRef<List<BlockEntity>> listRef) {
-        if (!this.isClientSide || (this.pendingFreshBlockEntities.isEmpty() && this.freshBlockEntities.isEmpty())) {
+        if (!this.isClientSide() || (this.pendingFreshBlockEntities.isEmpty() && this.freshBlockEntities.isEmpty())) {
             return;
         }
 
