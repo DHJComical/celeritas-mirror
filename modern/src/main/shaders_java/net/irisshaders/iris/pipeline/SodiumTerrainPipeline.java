@@ -151,6 +151,11 @@ public class SodiumTerrainPipeline {
                 });
 
                 AlphaTest defaultPassAlpha = switch (pass) {
+                    //? if >=26.1 {
+                    /*// Vanilla's mipmap generator preserves alpha-test coverage at a 0.5 cutoff.
+                    case SHADOW_CUTOUT, GBUFFER_CUTOUT -> AlphaTests.HALF_ALPHA;
+                    case GBUFFER_TRANSLUCENT -> AlphaTests.NON_ZERO_ALPHA;
+                    *///?} else
                     case SHADOW_CUTOUT, GBUFFER_CUTOUT -> AlphaTests.ONE_TENTH_ALPHA;
                     default -> AlphaTest.ALWAYS;
                 };
