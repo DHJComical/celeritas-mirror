@@ -7,11 +7,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+//? if >=1.20.3 {
+/*@Mixin(net.minecraft.client.multiplayer.LevelLoadStatusManager.class)
+*///?} else
 @Mixin(net.minecraft.client.gui.screens.ReceivingLevelScreen.class)
 public class DownloadingTerrainScreenMixin {
     @Redirect(method = {
             "tick"
-    }, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;blockPosition()Lnet/minecraft/core/BlockPos;"), require = 0)
+    }, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;blockPosition()Lnet/minecraft/core/BlockPos;"))
     private BlockPos redirect$getPlayerBlockPosition(LocalPlayer instance) {
         // Ensure the "eye" position (which the chunk rendering code is actually concerned about) is used instead of
         // the "feet" position. This solves a problem where the loading screen can become stuck waiting for the chunk
