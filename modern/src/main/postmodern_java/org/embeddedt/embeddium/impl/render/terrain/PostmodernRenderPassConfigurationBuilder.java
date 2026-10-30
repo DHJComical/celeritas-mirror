@@ -24,6 +24,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL32C;
 import org.lwjgl.opengl.GL33C;
 
@@ -35,21 +36,26 @@ public class PostmodernRenderPassConfigurationBuilder {
         return Optional.ofNullable(layer.pipeline().getShaderDefines().values().get("ALPHA_CUTOUT")).map(Float::parseFloat);
     }
 
-    private record VanillaTerrainConfig(RenderTarget target, RenderPipeline pipeline, boolean hasAlphaCutoff, boolean translucencySorted) {
-        private static RenderTarget getRenderTarget(ChunkSectionLayer layer) {
+    private record VanillaTerrainConfig(@Nullable ChunkSectionLayerGroup group, RenderPipeline pipeline, boolean hasAlphaCutoff, boolean translucencySorted) {
+        private static @Nullable ChunkSectionLayerGroup getGroup(ChunkSectionLayer layer) {
             for (ChunkSectionLayerGroup g : ChunkSectionLayerGroup.values()) {
                 for (ChunkSectionLayer other : g.layers()) {
                     if (other == layer) {
-                        return g.outputTarget();
+                        return g;
                     }
                 }
             }
-            return Minecraft.getInstance().getMainRenderTarget();
+            return null;
         }
 
         private static VanillaTerrainConfig fromLayer(ChunkSectionLayer layer) {
             boolean hasAlphaCutoff = getAlphaCutoff(layer).orElse(0f) > 0;
-            return new VanillaTerrainConfig(getRenderTarget(layer), layer.pipeline(), hasAlphaCutoff, layer.translucent());
+            return new VanillaTerrainConfig(getGroup(layer), layer.pipeline(), hasAlphaCutoff, layer.translucent());
+        }
+
+        // Resolved for every pass, since both the main and the translucent target can change between frames.
+        private RenderTarget target() {
+            return group != null ? group.outputTarget() : Minecraft.getInstance().getMainRenderTarget();
         }
     }
 
