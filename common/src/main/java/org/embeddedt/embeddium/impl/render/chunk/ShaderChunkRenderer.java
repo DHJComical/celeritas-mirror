@@ -95,7 +95,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
     protected void begin(TerrainRenderPass pass) {
         pass.startDrawing();
 
-        ChunkShaderOptions options = new ChunkShaderOptions(getShaderComponents(), pass);
+        ChunkShaderOptions options = new ChunkShaderOptions(getShaderComponents(), pass, this.renderPassConfiguration.terrainSampling());
 
         this.activeProgram = this.compileProgram(options);
 
@@ -121,6 +121,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
     public void delete(CommandList commandList) {
         this.programs.values().stream().filter(Objects::nonNull)
                 .forEach(GlProgram::delete);
+        this.renderPassConfiguration.terrainSampling().delete();
     }
 
     @Override

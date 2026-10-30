@@ -9,6 +9,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.sampling.TerrainSampling;
 import org.lwjgl.opengl.GL11;
 
 import com.github.bsideup.jabel.Desugar;
@@ -90,6 +91,7 @@ public class ArchaicRenderPassConfigurationBuilder {
                 vanillaRenderStageMap.asMap(),
                 CUTOUT_MIPPED_MATERIAL,
                 CUTOUT_MIPPED_MATERIAL,
-                TRANSLUCENT_MATERIAL);
+                TRANSLUCENT_MATERIAL,
+                TerrainSampling.NATIVE);
     }
 }

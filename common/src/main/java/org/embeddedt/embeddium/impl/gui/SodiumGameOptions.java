@@ -99,6 +99,8 @@ public class SodiumGameOptions implements OptionStorage<SodiumGameOptions> {
 
         public int chunkFadeInDuration = 0;
 
+        public boolean useRgssTextureFiltering = false;
+
         public int legacyBiomeBlendRadius = 0;
     }
 

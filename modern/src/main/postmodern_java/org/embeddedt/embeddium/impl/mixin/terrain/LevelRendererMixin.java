@@ -25,6 +25,7 @@ import net.minecraft.world.phys.Vec3;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.CeleritasWorldRenderer;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
+import org.embeddedt.embeddium.impl.render.terrain.PostmodernRenderPassConfigurationBuilder;
 import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
 import org.embeddedt.embeddium.impl.world.WorldRendererExtended;
@@ -139,6 +140,7 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
     private void renderChunksWithCeleritas(ChunkSectionsToRender sectionsToRender, ChunkSectionLayerGroup group, GpuSampler terrainSampler) {
         RenderDevice.enterManagedCode();
         var cameraPos = this.levelRenderState.cameraRenderState.pos;
+        PostmodernRenderPassConfigurationBuilder.PostmodernPipeline.vanillaTerrainSampler = terrainSampler;
         try {
             for (ChunkSectionLayer layer : group.layers()) {
                 //? if shaders

@@ -5,6 +5,7 @@
 #endif
 
 #import <sodium:include/fog.glsl>
+#import <sodium:include/terrain_sampling.glsl>
 
 in vec4 v_Color;
 in vec4 v_RdhFactor;
@@ -55,7 +56,7 @@ out vec4 fragColor; // The output fragment for the color framebuffer
 #endif
 
 void main() {
-    vec4 diffuseColor = texture(u_BlockTex, v_TexCoord, v_MaterialMipBias);
+    vec4 diffuseColor = _sample_terrain(u_BlockTex, v_TexCoord, v_MaterialMipBias);
 
 #ifdef USE_FRAGMENT_DISCARD
     if (diffuseColor.a < v_MaterialAlphaCutoff) {

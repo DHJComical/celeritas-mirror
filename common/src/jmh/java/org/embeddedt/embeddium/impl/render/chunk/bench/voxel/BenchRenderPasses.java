@@ -6,6 +6,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.sampling.TerrainSampling;
 
 import java.util.List;
 import java.util.Map;
@@ -77,6 +78,7 @@ public final class BenchRenderPasses {
                 Map.of("solid", List.of(SOLID, CUTOUT_MIPPED), "translucent", List.of(TRANSLUCENT)),
                 SOLID_MATERIAL,
                 CUTOUT_MIPPED_MATERIAL,
-                TRANSLUCENT_MATERIAL);
+                TRANSLUCENT_MATERIAL,
+                TerrainSampling.NATIVE);
     }
 }

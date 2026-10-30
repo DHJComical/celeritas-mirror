@@ -36,9 +36,13 @@ public class MixinTextureAtlas implements TextureAtlasExtended {
 
     private QuadTree<TextureAtlasSprite> celeritas$quadTree = QuadTree.empty();
 
+    @Unique
+    private int celeritas$mipLevel;
+
     //? if >=1.19.3 {
     @Inject(method = "upload", at = @At("RETURN"))
     private void generateQuadTree(SpriteLoader.Preparations preparations, CallbackInfo ci) {
+        this.celeritas$mipLevel = preparations.mipLevel();
     //?} else {
     /*@Inject(method = "reload", at = @At("RETURN"))
     private void generateQuadTree(TextureAtlas.Preparations preparations, CallbackInfo ci) {
@@ -67,11 +71,48 @@ public class MixinTextureAtlas implements TextureAtlasExtended {
     @Inject(method = "clearTextureData", at = @At("RETURN"))
     private void clearQuadTree(CallbackInfo ci) {
         this.celeritas$quadTree = QuadTree.empty();
+        this.celeritas$mipLevel = 0;
     }
 
     @Override
     public QuadTree<TextureAtlasSprite> celeritas$getQuadTree() {
         return this.celeritas$quadTree;
+    }
+
+    @Override
+    public int celeritas$getWidth() {
+        return this.width;
+    }
+
+    @Override
+    public int celeritas$getHeight() {
+        return this.height;
+    }
+
+    @Override
+    public int celeritas$getMipLevel() {
+        return this.celeritas$mipLevel;
+    }
+
+    @Override
+    public int[] celeritas$getSpriteRects() {
+        var sprites = this.texturesByName.values();
+        int[] rects = new int[sprites.size() * 4];
+        int i = 0;
+        for (TextureAtlasSprite s : sprites) {
+            //? if >=1.19.3 {
+            rects[i++] = s.getX();
+            rects[i++] = s.getY();
+            rects[i++] = s.contents().width();
+            rects[i++] = s.contents().height();
+            //?} else {
+            /*rects[i++] = s.x;
+            rects[i++] = s.y;
+            rects[i++] = s.getWidth();
+            rects[i++] = s.getHeight();
+            *///?}
+        }
+        return rects;
     }
 
     @Override

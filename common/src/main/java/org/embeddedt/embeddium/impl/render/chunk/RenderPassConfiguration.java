@@ -3,6 +3,7 @@ package org.embeddedt.embeddium.impl.render.chunk;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.sampling.TerrainSampling;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 
 import java.util.Collection;
@@ -15,7 +16,8 @@ public record RenderPassConfiguration<R>(Map<R, Material> chunkRenderTypeToMater
                                       Map<R, Collection<TerrainRenderPass>> vanillaRenderStages,
                                       Material defaultSolidMaterial,
                                       Material defaultCutoutMippedMaterial,
-                                      Material defaultTranslucentMaterial) {
+                                      Material defaultTranslucentMaterial,
+                                      TerrainSampling terrainSampling) {
     @Deprecated
     public ChunkVertexType getVertexTypeForPass(TerrainRenderPass pass) {
         return pass.vertexType();

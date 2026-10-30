@@ -9,6 +9,8 @@ import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderTextureSlot;
 
 public class ModernChunkRenderer extends DefaultChunkRenderer {
+    public static final int ATLAS_EDGE_MASK_TEXTURE_UNIT = 3;
+
     public ModernChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
         super(device, renderPassConfiguration, FogHelper.INSTANCE);
     }
@@ -33,5 +35,6 @@ public class ModernChunkRenderer extends DefaultChunkRenderer {
     protected void configureShaderInterface(ChunkShaderInterface shader) {
         shader.setTextureSlot(ChunkShaderTextureSlot.BLOCK, 0);
         shader.setTextureSlot(ChunkShaderTextureSlot.LIGHT, 2);
+        shader.setTextureSlot(ChunkShaderTextureSlot.ATLAS_EDGE_MASK, ATLAS_EDGE_MASK_TEXTURE_UNIT);
     }
 }

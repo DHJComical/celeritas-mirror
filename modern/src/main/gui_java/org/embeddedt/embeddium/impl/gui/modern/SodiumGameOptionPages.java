@@ -310,6 +310,17 @@ public class SodiumGameOptionPages {
                         .setImpact(OptionImpact.MEDIUM)
                         .setFlags(OptionFlag.REQUIRES_ASSET_RELOAD)
                         .build())
+                //? if >=1.19.3 {
+                .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
+                        .setId(StandardOptions.Option.RGSS_TEXTURE_FILTERING.cast())
+                        .setName(TextComponent.translatable("celeritas.options.rgss_texture_filtering.name"))
+                        .setTooltip(TextComponent.translatable("celeritas.options.rgss_texture_filtering.tooltip"))
+                        .setControl(TickBoxControl::new)
+                        .setBinding((opts, value) -> opts.quality.useRgssTextureFiltering = value, opts -> opts.quality.useRgssTextureFiltering)
+                        .setImpact(OptionImpact.MEDIUM)
+                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
+                        .build())
+                //?}
                 .build());
 
         groups.add(CommonOptionPages.sortingGroup(sodiumOpts));

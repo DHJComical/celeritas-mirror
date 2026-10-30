@@ -9,6 +9,7 @@ import org.embeddedt.embeddium.impl.gl.shader.ShaderType;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkFogMode;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderOptions;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.sampling.TerrainSampling;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.blending.BlendModeOverride;
@@ -100,7 +101,7 @@ public class IrisChunkProgramOverrides {
 			int handle = ((GlObject) shader).handle();
 			ShaderBindingContext contextExt = shader;
 			GLDebug.nameObject(GL43C.GL_PROGRAM, handle, "sodium-terrain-" + pass.toString().toLowerCase(Locale.ROOT));
-			return new IrisChunkShaderInterface(handle, contextExt, pipeline, new ChunkShaderOptions(List.of(ChunkFogMode.SMOOTH), pass.toTerrainPass(configuration)),
+			return new IrisChunkShaderInterface(handle, contextExt, pipeline, new ChunkShaderOptions(List.of(ChunkFogMode.SMOOTH), pass.toTerrainPass(configuration), TerrainSampling.NATIVE),
 				hasTessellation, pass.isShadow(), blendOverride, bufferOverrides, alpha, pipeline.getCustomUniforms());
 		});
 	}

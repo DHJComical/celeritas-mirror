@@ -48,6 +48,11 @@ public class DefaultChunkShaderInterface implements ChunkShaderInterface {
             this.uniformTextures.put(ChunkShaderTextureSlot.LIGHT, context.bindUniform("u_LightTex", GlUniformInt::new));
         }
 
+        var edgeMaskUniform = context.bindUniformIfPresent("u_AtlasEdgeMask", GlUniformInt::new);
+        if (edgeMaskUniform != null) {
+            this.uniformTextures.put(ChunkShaderTextureSlot.ATLAS_EDGE_MASK, edgeMaskUniform);
+        }
+
         this.components = options.components().stream().map(c -> c.create(context, environment)).toList();
     }
 

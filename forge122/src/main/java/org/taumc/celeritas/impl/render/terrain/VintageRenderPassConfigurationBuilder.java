@@ -12,6 +12,7 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.parameters.AlphaCutoffParameter;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.embeddedt.embeddium.impl.render.chunk.terrain.sampling.TerrainSampling;
 import org.taumc.celeritas.CeleritasVintage;
 
 import java.util.HashMap;
@@ -119,6 +120,7 @@ public class VintageRenderPassConfigurationBuilder {
                 vanillaRenderStageMap.asMap(),
                 solidMaterial,
                 cutoutMippedMaterial,
-                translucentMaterial);
+                translucentMaterial,
+                TerrainSampling.NATIVE);
     }
 }
