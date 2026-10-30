@@ -11,6 +11,7 @@ import net.irisshaders.iris.vertices.ExtendedDataHelper;
 import net.minecraft.client.renderer.block.BlockQuadOutput;
 import net.minecraft.client.renderer.block.ModelBlockRenderer;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.feature.BlockFeatureRenderer;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
@@ -21,9 +22,11 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 /**
- * Tells block-sensitive consumers which moving block, such as a piston's or a falling block, their quads belong to.
+ * Tells block-sensitive consumers which moving block, such as a piston's or a falling block, their quads belong to,
+ * and moves those quads to the layer the shader pack assigns the block.
  */
 @Mixin(BlockFeatureRenderer.class)
 public class MixinBlockFeatureRenderer {
@@ -49,6 +52,34 @@ public class MixinBlockFeatureRenderer {
 			iris$level = null;
 			iris$pos = null;
 		}
+	}
+
+	// Vanilla draws a moving block in the solid or translucent features by whether its model has translucent quads.
+	// A block the pack moves to another layer has to follow it, since the pack's deferred passes run in between.
+	@WrapOperation(method = "renderMovingBlockSubmits", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/block/dispatch/BlockStateModel;hasMaterialFlag(Lnet/minecraft/client/renderer/block/BlockAndTintGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"))
+	private boolean iris$choosePassFromLayerOverride(BlockStateModel model, BlockAndTintGetter level, BlockPos pos, BlockState state, int flag,
+													 Operation<Boolean> original) {
+		var overrides = WorldRenderingSettings.INSTANCE.getBlockTypeIds();
+		ChunkSectionLayer override = overrides != null && flag == BakedQuad.FLAG_TRANSLUCENT ? overrides.get(state.getBlock()) : null;
+
+		if (override == null) {
+			return original.call(model, level, pos, state, flag);
+		}
+
+		return override.translucent();
+	}
+
+	@ModifyVariable(method = "putBakedQuad", at = @At("HEAD"), argsOnly = true)
+	private static ChunkSectionLayer iris$applyLayerOverride(ChunkSectionLayer layer) {
+		BlockState state = iris$block;
+		var overrides = WorldRenderingSettings.INSTANCE.getBlockTypeIds();
+
+		if (state == null || overrides == null) {
+			return layer;
+		}
+
+		ChunkSectionLayer override = overrides.get(state.getBlock());
+		return override != null ? override : layer;
 	}
 
 	@WrapOperation(method = "putBakedQuad", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/VertexConsumer;putBakedQuad(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lnet/minecraft/client/resources/model/geometry/BakedQuad;Lcom/mojang/blaze3d/vertex/QuadInstance;)V"))
