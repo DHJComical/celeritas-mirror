@@ -389,6 +389,19 @@ public class FluidRenderer {
         }
         //?}
 
+        // NeoForge's renderFluid hook, which vanilla runs from BlockRenderDispatcher.renderLiquid. Fluids rendered
+        // through renderVanilla above have already been offered to it.
+        //? if neoforge && <1.21.11 {
+        /*if (encoder instanceof ContextAwareChunkVertexEncoder contextAwareEncoder) {
+            contextAwareEncoder.prepareToRenderFluidFace(ctx);
+        }
+        try (var consumer = this.vertexConsumer.initialize(meshBuilder, material, ctx)) {
+            if (net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(fluidState).renderFluid(fluidState, world, blockPos, consumer, ctx.state())) {
+                return;
+            }
+        }
+        *///?}
+
         int posX = blockPos.getX();
         int posY = blockPos.getY();
         int posZ = blockPos.getZ();
