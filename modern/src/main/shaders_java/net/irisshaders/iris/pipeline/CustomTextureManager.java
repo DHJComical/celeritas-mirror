@@ -18,7 +18,6 @@ import net.irisshaders.iris.texture.VanillaTextures;
 import net.irisshaders.iris.texture.format.TextureFormat;
 import net.irisshaders.iris.texture.format.TextureFormatLoader;
 import net.irisshaders.iris.texture.pbr.PBRTextureHolder;
-//? if <26.1
 import net.irisshaders.iris.texture.pbr.PBRTextureManager;
 import net.irisshaders.iris.texture.pbr.PBRType;
 import net.minecraft.ResourceLocationException;
@@ -189,8 +188,27 @@ public class CustomTextureManager {
 
 					return VanillaTextures.missingTexture();
 				}, TextureType.TEXTURE_2D);
-				//?} else
-				//return new TextureWrapper(VanillaTextures::missingTexture, TextureType.TEXTURE_2D);
+				//?} else {
+				/*location = location.substring(0, extensionIndex - pbrType.getSuffix().length()) + location.substring(extensionIndex);
+				ResourceLocation textureLocation = ResourceLocationUtil.make(namespace, location);
+
+				return new TextureWrapper(() -> {
+					AbstractTexture texture = textureManager.getTexture(textureLocation);
+					PBRTextureHolder pbrHolder = PBRTextureManager.INSTANCE.getOrLoadHolder(texture.getTexture());
+					AbstractTexture pbrTexture = switch (pbrType) {
+						case NORMAL -> pbrHolder.normalTexture();
+						case SPECULAR -> pbrHolder.specularTexture();
+						default -> throw new IllegalArgumentException("Unknown PBRType '" + pbrType + "'");
+					};
+
+					TextureFormat textureFormat = TextureFormatLoader.getFormat();
+					if (textureFormat != null) {
+						textureFormat.setupTextureParameters(pbrType, pbrTexture);
+					}
+
+					return VanillaTextures.glId(pbrTexture);
+				}, TextureType.TEXTURE_2D);
+				*///?}
 			}
 		}
 		throw new IllegalArgumentException("Don't know texture type!");

@@ -38,7 +38,6 @@ import net.irisshaders.iris.shaderpack.option.Profile;
 import net.irisshaders.iris.shaderpack.option.values.MutableOptionValues;
 import net.irisshaders.iris.shaderpack.option.values.OptionValues;
 import net.irisshaders.iris.shaderpack.programs.ProgramSet;
-//? if <26.1
 import net.irisshaders.iris.texture.pbr.PBRTextureManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
@@ -152,7 +151,6 @@ public class Iris {
 			return;
 		}
 
-		//? if <26.1
 		PBRTextureManager.INSTANCE.init();
 
 		renderSystemInit = true;

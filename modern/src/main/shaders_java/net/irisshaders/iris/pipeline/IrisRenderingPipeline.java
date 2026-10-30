@@ -76,10 +76,10 @@ import net.irisshaders.iris.targets.RenderTargets;
 import net.irisshaders.iris.targets.VanillaTargets;
 import net.irisshaders.iris.targets.backed.NativeImageBackedSingleColorTexture;
 import net.irisshaders.iris.texture.TextureInfoCache;
+import net.irisshaders.iris.texture.VanillaTextures;
 import net.irisshaders.iris.texture.format.TextureFormat;
 import net.irisshaders.iris.texture.format.TextureFormatLoader;
 import net.irisshaders.iris.texture.pbr.PBRTextureHolder;
-//? if <26.1
 import net.irisshaders.iris.texture.pbr.PBRTextureManager;
 import net.irisshaders.iris.texture.pbr.PBRType;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
@@ -889,6 +889,35 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 		//?}
 	}
 
+	//? if >=26.1 {
+	/*// Called for each draw in the world, with the texture it samples its albedo from.
+	public void onBindAlbedoTexture(com.mojang.blaze3d.textures.GpuTexture texture) {
+		if (!shouldBindPBR || !isRenderingWorld) {
+			return;
+		}
+
+		PBRTextureHolder pbrHolder = PBRTextureManager.INSTANCE.getOrLoadHolder(texture);
+		int normalTexture = VanillaTextures.glId(pbrHolder.normalTexture());
+		int specularTexture = VanillaTextures.glId(pbrHolder.specularTexture());
+
+		if (normalTexture == currentNormalTexture && specularTexture == currentSpecularTexture) {
+			return;
+		}
+
+		currentNormalTexture = normalTexture;
+		currentSpecularTexture = specularTexture;
+
+		TextureFormat textureFormat = TextureFormatLoader.getFormat();
+
+		if (textureFormat != null) {
+			textureFormat.setupTextureParameters(PBRType.NORMAL, pbrHolder.normalTexture());
+			textureFormat.setupTextureParameters(PBRType.SPECULAR, pbrHolder.specularTexture());
+		}
+
+		PBRTextureManager.notifyPBRTexturesChanged();
+	}
+	*///?}
+
 	private void rebuildClearPasses() {
 		this.clearPassesFull = ClearPassCreator.createClearPasses(renderTargets, true,
 			packDirectives.getRenderTargetDirectives());
@@ -899,6 +928,9 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 	@Override
 	public void beginLevelRendering() {
 		isRenderingWorld = true;
+
+		//? if >=26.1
+		//PBRTextureManager.INSTANCE.loadPending();
 
 		// Swap the roles of the two textures of every buffer that ends the frame flipped. Must happen before
 		// anything in the pipeline is bound, including the clear passes below.

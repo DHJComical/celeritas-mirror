@@ -94,6 +94,7 @@ public final class GbufferProgramBinder {
 			STATE.albedoSampler = albedo.sampler().getId();
 			STATE.atlasWidth = atlas ? texture.getWidth(0) : 0;
 			STATE.atlasHeight = atlas ? texture.getHeight(0) : 0;
+			overridingPipeline.onBindAlbedoTexture(texture);
 		} else {
 			STATE.albedoTexture = 0;
 			STATE.albedoSampler = 0;
