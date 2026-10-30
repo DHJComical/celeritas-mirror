@@ -7,7 +7,6 @@ import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.config.IrisConfig;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
-//? if <26.1
 import net.irisshaders.iris.pathways.scaling.RenderScale;
 import net.irisshaders.iris.pathways.scaling.RenderScalePreset;
 import net.irisshaders.iris.pathways.scaling.UpscaleMode;
@@ -51,11 +50,9 @@ public class IrisSodiumOptions {
         OptionGroupConstructionEvent.BUS.addListener(ev -> {
             if(ev.getId().matches(StandardOptions.Group.RENDERING)) {
                 ev.getOptions().add(1, createMaxShadowDistanceSlider(SodiumGameOptionPages.getVanillaOpts()));
-                //? if <26.1 {
                 ev.getOptions().add(2, createRenderScaleButton());
                 ev.getOptions().add(3, createUpscaleModeButton());
                 ev.getOptions().add(4, createUpscaleSharpnessSlider());
-                //?}
             } else if(ev.getId().matches(StandardOptions.Group.GRAPHICS)) {
                 ev.getOptions().add(createColorSpaceButton(SodiumGameOptionPages.getVanillaOpts()));
             }
@@ -130,7 +127,6 @@ public class IrisSodiumOptions {
 				new TextComponent[]{TextComponent.literal("Bilinear"), TextComponent.literal("FSR 1.0")}))
 			.setBinding((options, value) -> {
 					IrisVideoSettings.upscaleMode = value;
-					//? if <26.1
 					RenderScale.onSettingsChanged();
 					saveConfig();
 				},

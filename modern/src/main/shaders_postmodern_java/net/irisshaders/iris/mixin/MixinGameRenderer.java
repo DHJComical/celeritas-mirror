@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.irisshaders.iris.Iris;
+import net.irisshaders.iris.pathways.scaling.RenderScale;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
@@ -34,9 +35,25 @@ public class MixinGameRenderer {
 		CapturedRenderingState.INSTANCE.setGbufferProjection(new Matrix4f(projectionMatrix));
 	}
 
+	// Everything renderLevel draws reads the main render target through the getter, so it all follows the scaled target.
+	@Inject(method = "renderLevel", at = @At("HEAD"))
+	private void iris$beginScaledWorld(CallbackInfo ci) {
+		RenderScale.begin();
+	}
+
 	@Inject(method = "renderLevel", at = @At("TAIL"))
 	private void iris$runColorSpace(CallbackInfo ci) {
 		Iris.getPipelineManager().getPipeline().ifPresent(WorldRenderingPipeline::finalizeGameRendering);
+
+		// After the color space pass, which works on the scaled image, and before the entity outline,
+		// post chain and GUI, which draw at native resolution.
+		RenderScale.end();
+	}
+
+	// Undoes the redirect if renderLevel exited before reaching its tail.
+	@Inject(method = "render", at = @At("TAIL"))
+	private void iris$ensureScaledWorldResolved(CallbackInfo ci) {
+		RenderScale.end();
 	}
 
 	// The hand is drawn into the pack's gbuffers by HandRenderer instead.

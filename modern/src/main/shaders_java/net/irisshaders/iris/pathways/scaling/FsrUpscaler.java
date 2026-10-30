@@ -13,6 +13,7 @@ import net.irisshaders.iris.gl.texture.PixelFormat;
 import net.irisshaders.iris.gl.texture.PixelType;
 import net.irisshaders.iris.gl.uniform.UniformUpdateFrequency;
 import net.irisshaders.iris.pathways.FullScreenQuadRenderer;
+import net.irisshaders.iris.targets.VanillaTargets;
 import org.apache.commons.io.IOUtils;
 import org.joml.Vector2i;
 import org.joml.Vector4i;
@@ -215,16 +216,15 @@ public class FsrUpscaler {
 		FullScreenQuadRenderer.INSTANCE.begin();
 
 		// EASU: the reduced-resolution world image up to output resolution.
-		this.inputTexture = source.getColorTextureId();
+		this.inputTexture = VanillaTargets.colorTexture(source);
 		GlStateManager._viewport(0, 0, width, height);
 		easuFramebuffer.bind();
 		easuProgram.use();
 		FullScreenQuadRenderer.INSTANCE.renderQuad();
 
-		// RCAS: sharpen the result into the destination. bindWrite(true) restores the
-		// destination's own viewport for us.
+		// RCAS: sharpen the result into the destination, restoring the destination's own viewport.
 		this.inputTexture = easuTexture;
-		destination.bindWrite(true);
+		VanillaTargets.bind(destination, true);
 		rcasProgram.use();
 		FullScreenQuadRenderer.INSTANCE.renderQuad();
 

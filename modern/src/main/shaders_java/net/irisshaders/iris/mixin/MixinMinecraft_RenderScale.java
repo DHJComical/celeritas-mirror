@@ -16,9 +16,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * while {@link RenderScale} is active, so the whole shader pipeline renders at that resolution.
  *
  * <p>Minecraft's own bind/unbind/blit in {@code runTick} touches the {@code mainRenderTarget}
- * field directly, so the GUI and final present stay at native resolution. {@code resizeDisplay}
- * does go through the getter, so the redirect is suspended around it to avoid resizing our
- * scaled target and leaving Minecraft's own stale.</p>
+ * field directly, so the GUI and final present stay at native resolution. Before 26.1,
+ * {@code resizeDisplay} goes through the getter, so the redirect is suspended around it to
+ * avoid resizing our scaled target and leaving Minecraft's own stale.</p>
  */
 @Mixin(Minecraft.class)
 public class MixinMinecraft_RenderScale {
@@ -27,6 +27,7 @@ public class MixinMinecraft_RenderScale {
 		return RenderScale.isActive() ? RenderScale.getWorldTarget() : original;
 	}
 
+	//? if <26.1 {
 	@Inject(method = "resizeDisplay", at = @At("HEAD"))
 	private void celeritas$beginResizeDisplay(CallbackInfo ci, @Share("wasActive") LocalBooleanRef wasActive) {
 		wasActive.set(RenderScale.isActive());
@@ -37,4 +38,5 @@ public class MixinMinecraft_RenderScale {
 	private void celeritas$endResizeDisplay(CallbackInfo ci, @Share("wasActive") LocalBooleanRef wasActive) {
 		RenderScale.setActive(wasActive.get());
 	}
+	//?}
 }

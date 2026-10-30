@@ -5,6 +5,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.irisshaders.iris.api.v0.IrisApi;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.gui.option.IrisVideoSettings;
+import net.irisshaders.iris.targets.VanillaTargets;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import org.lwjgl.opengl.GL30C;
@@ -66,20 +67,26 @@ public final class RenderScale {
 			// MainTarget rather than TextureTarget so that the colour and depth attachments,
 			// including the driver-specific fallbacks in allocateAttachments, match what
 			// Minecraft would have allocated itself.
+			//? if <26.1 {
 			worldTarget = new MainTarget(width, height);
 			worldTarget.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+			//?} else
+			//worldTarget = new MainTarget(width, height, main.useStencil);
 		} else if (worldTarget.width != width || worldTarget.height != height) {
+			//? if <26.1 {
 			worldTarget.resize(width, height, Minecraft.ON_OSX);
+			//?} else
+			//worldTarget.resize(width, height);
 		}
 
-		//? if forgelike {
+		//? if forgelike && <26.1 {
 		if (main.isStencilEnabled() && !worldTarget.isStencilEnabled()) {
 			worldTarget.enableStencil();
 		}
 		//?}
 
 		active = true;
-		worldTarget.bindWrite(true);
+		VanillaTargets.bind(worldTarget, true);
 	}
 
 	/**
@@ -106,17 +113,17 @@ public final class RenderScale {
 
 			if (fsr != null) {
 				fsr.process(worldTarget, main, sharpnessStops());
-				main.bindWrite(true);
+				VanillaTargets.bind(main, true);
 				return;
 			}
 		}
 
-		IrisRenderSystem.blitFramebuffer(worldTarget.frameBufferId, main.frameBufferId,
+		IrisRenderSystem.blitFramebuffer(VanillaTargets.framebuffer(worldTarget), VanillaTargets.framebuffer(main),
 			0, 0, worldTarget.width, worldTarget.height,
 			0, 0, main.width, main.height,
 			GL30C.GL_COLOR_BUFFER_BIT, GL30C.GL_LINEAR);
 
-		main.bindWrite(true);
+		VanillaTargets.bind(main, true);
 	}
 
 	private static float sharpnessStops() {
