@@ -38,7 +38,8 @@ public class EmbeddiumVideoOptionsScreen extends Screen {
         this.controller = new CeleritasVideoOptionsController(this::onClose, List.of(
                 SodiumGameOptionPages.general(),
                 SodiumGameOptionPages.quality(),
-                CommonOptionPages.performance(Celeritas.options())
+                CommonOptionPages.performance(Celeritas.options()),
+                SodiumGameOptionPages.advanced()
         ), new ModernDrawContext(null, Minecraft.getInstance().font)) {
             @Override
             protected void createExtraTabs(Map<String, List<Tab<?>>> tabs) {

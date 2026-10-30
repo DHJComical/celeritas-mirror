@@ -348,6 +348,26 @@ public class SodiumGameOptionPages {
         return new OptionPage(StandardOptions.Pages.QUALITY, TextComponent.translatable("sodium.options.pages.quality"), ImmutableList.copyOf(groups));
     }
 
+    public static OptionPage advanced() {
+        var sodiumOpts = Celeritas.options();
+
+        List<OptionGroup> groups = new ArrayList<>();
+
+        groups.add(OptionGroup.createBuilder()
+                .setId(StandardOptions.Group.CPU_SAVING)
+                .add(OptionImpl.createBuilder(int.class, sodiumOpts)
+                        .setId(StandardOptions.Option.CPU_FRAMES_AHEAD.cast())
+                        .setName(TextComponent.translatable("sodium.options.cpu_render_ahead_limit.name"))
+                        .setTooltip(TextComponent.translatable("sodium.options.cpu_render_ahead_limit.tooltip"))
+                        .setControl(opt -> new SliderControl(opt, 0, 9, 1, ControlValueFormatter.translateVariable("sodium.options.cpu_render_ahead_limit.value")))
+                        .setBinding((opts, value) -> opts.advanced.cpuRenderAheadLimit = value, opts -> opts.advanced.cpuRenderAheadLimit)
+                        .build()
+                )
+                .build());
+
+        return new OptionPage(StandardOptions.Pages.ADVANCED, TextComponent.translatable("sodium.options.pages.advanced"), ImmutableList.copyOf(groups));
+    }
+
     public static OptionStorage<Options> getVanillaOpts() {
         return vanillaOpts;
     }
