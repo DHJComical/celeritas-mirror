@@ -745,9 +745,13 @@ public class Iris {
                 return DimensionId.NETHER;
             }
             //?} else {
-            /*// 26.1 dimension types only choose a skybox, so nether-like dimensions can't be recognized.
-            if (level.dimensionType().skybox() == DimensionType.Skybox.END) {
+            /*if (level.dimensionType().skybox() == DimensionType.Skybox.END) {
                 return DimensionId.END;
+            }
+
+            // Dimension types have no effects field here; nether-like ones share the Nether's cardinal lighting.
+            if (level.dimensionType().cardinalLightType() == net.minecraft.world.level.CardinalLighting.Type.NETHER) {
+                return DimensionId.NETHER;
             }
             *///?}
 
