@@ -6,12 +6,54 @@ import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.util.ARGB;
 import net.neoforged.neoforge.client.model.quad.BakedNormals;
+import org.embeddedt.embeddium.impl.render.vertex.ParticleVertexWriter;
+import org.lwjgl.system.MemoryUtil;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(BufferBuilder.class)
-public abstract class BufferBuilderMixin implements VertexConsumer {
+public abstract class BufferBuilderMixin implements VertexConsumer, ParticleVertexWriter {
+    @Shadow
+    @Final
+    private VertexFormat format;
+
+    @Shadow
+    private long beginVertex() {
+        throw new AssertionError();
+    }
+
+    @Shadow
+    private static void putRgba(long pointer, int argb) {
+        throw new AssertionError();
+    }
+
+    @Shadow
+    private static void putPackedUv(long pointer, int packedUv) {
+        throw new AssertionError();
+    }
+
+    @Override
+    public boolean celeritas$putParticleVertex(float x, float y, float z, float u, float v, int color, int light) {
+        if (this.format != DefaultVertexFormat.PARTICLE) {
+            return false;
+        }
+
+        long pointer = this.beginVertex();
+        MemoryUtil.memPutFloat(pointer + 0L, x);
+        MemoryUtil.memPutFloat(pointer + 4L, y);
+        MemoryUtil.memPutFloat(pointer + 8L, z);
+        MemoryUtil.memPutFloat(pointer + 12L, u);
+        MemoryUtil.memPutFloat(pointer + 16L, v);
+        putRgba(pointer + 20L, color);
+        putPackedUv(pointer + 24L, light);
+        return true;
+    }
+
     /**
      * Same as the default implementation, but transforms positions and normals in scalars rather than allocating
      * vectors for every quad and vertex.
