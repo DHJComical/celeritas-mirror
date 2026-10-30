@@ -77,7 +77,6 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
     }
 
     private void triggerSpriteAnimation() {
-        //? if <1.21.11 {
         float uTotal = 0, vTotal = 0;
         var vertices = this.vertices;
         for(int i = 0; i < 4; i++) {
@@ -90,7 +89,6 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
             //noinspection unchecked
             ((Collection<TextureAtlasSprite>)mcData.animatedSprites).add(sprite);
         }
-        //?}
     }
 
     private int flushLastVertex() {
@@ -189,14 +187,6 @@ public class MojangVertexConsumer implements VertexConsumer, AutoCloseable {
         currentVertexObj.vanillaNormal = NormI8.pack(p_350429_, p_350286_, p_350836_);
         return this;
     }
-
-    //? if >=1.21.11 {
-    /*@Override
-    public VertexConsumer setLineWidth(float lineWidth) {
-        return this;
-    }
-    *///?}
-
 
     //? if >=1.17 <1.21 {
 
