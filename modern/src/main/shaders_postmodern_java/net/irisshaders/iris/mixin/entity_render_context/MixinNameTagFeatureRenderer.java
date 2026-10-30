@@ -12,7 +12,7 @@ public class MixinNameTagFeatureRenderer {
 	@Inject(method = "renderTranslucent", at = @At("HEAD"))
 	private void iris$setNameTagId(CallbackInfo ci) {
 		RenderContextIds.reset();
-		RenderContextIds.setNameTag();
+		RenderContextIds.setEntity(RenderContextIds.NAME_TAG);
 	}
 
 	@Inject(method = "renderTranslucent", at = @At("RETURN"))

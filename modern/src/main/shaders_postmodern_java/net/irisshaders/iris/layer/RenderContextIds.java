@@ -7,6 +7,8 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieVillagerRenderState;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -24,8 +26,11 @@ import org.jetbrains.annotations.Nullable;
  * when it's drawn.
  */
 public final class RenderContextIds {
+	public static final NamespacedId NAME_TAG = new NamespacedId("minecraft", "name_tag");
+	public static final NamespacedId ENTITY_FLAME = new NamespacedId("minecraft", "entity_flame");
+	public static final NamespacedId ENTITY_SHADOW = new NamespacedId("minecraft", "entity_shadow");
 	private static final NamespacedId CONVERTING_VILLAGER = new NamespacedId("minecraft", "zombie_villager_converting");
-	private static final NamespacedId NAME_TAG = new NamespacedId("minecraft", "name_tag");
+	private static final NamespacedId CURRENT_PLAYER = new NamespacedId("minecraft", "current_player");
 	private static final Reference2ObjectMap<EntityType<?>, NamespacedId> ENTITY_TYPE_IDS = new Reference2ObjectOpenHashMap<>();
 
 	private RenderContextIds() {
@@ -49,6 +54,8 @@ public final class RenderContextIds {
 
 		if (state instanceof ZombieVillagerRenderState zombie && zombie.isConverting && WorldRenderingSettings.INSTANCE.hasVillagerConversionId()) {
 			id = CONVERTING_VILLAGER;
+		} else if (state instanceof AvatarRenderState avatar && entityIds.containsKey(CURRENT_PLAYER) && isCameraEntity(avatar.id)) {
+			id = CURRENT_PLAYER;
 		} else {
 			id = ENTITY_TYPE_IDS.computeIfAbsent(state.entityType, type -> {
 				Identifier key = BuiltInRegistries.ENTITY_TYPE.getKey((EntityType<?>) type);
@@ -59,11 +66,19 @@ public final class RenderContextIds {
 		CapturedRenderingState.INSTANCE.setCurrentEntity(entityIds.applyAsInt(id));
 	}
 
-	public static void setNameTag() {
+	private static boolean isCameraEntity(int entityId) {
+		var camera = Minecraft.getInstance().getCameraEntity();
+		return camera != null && camera.getId() == entityId;
+	}
+
+	/**
+	 * Sets an entity ID that isn't an entity type's, such as for name tags.
+	 */
+	public static void setEntity(NamespacedId id) {
 		Object2IntFunction<NamespacedId> entityIds = WorldRenderingSettings.INSTANCE.getEntityIds();
 
 		if (entityIds != null) {
-			CapturedRenderingState.INSTANCE.setCurrentEntity(entityIds.applyAsInt(NAME_TAG));
+			CapturedRenderingState.INSTANCE.setCurrentEntity(entityIds.applyAsInt(id));
 		}
 	}
 

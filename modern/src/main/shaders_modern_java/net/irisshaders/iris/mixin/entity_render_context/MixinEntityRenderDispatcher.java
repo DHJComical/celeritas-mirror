@@ -8,12 +8,15 @@ import net.irisshaders.iris.shaderpack.materialmap.NamespacedId;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.vertices.ImmediateState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.ZombieVillager;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -26,6 +29,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(EntityRenderDispatcher.class)
 public class MixinEntityRenderDispatcher {
+	@Unique
+	private static final NamespacedId CURRENT_PLAYER = new NamespacedId("minecraft", "current_player");
+
 	// Inject after MatrixStack#push since at this point we know that most cancellation checks have already passed.
 	@ModifyVariable(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", shift = At.Shift.AFTER),
 		allow = 1, require = 1)
@@ -40,6 +46,8 @@ public class MixinEntityRenderDispatcher {
 
 		if (entity instanceof ZombieVillager zombie && zombie.isConverting() && WorldRenderingSettings.INSTANCE.hasVillagerConversionId()) {
 			intId = entityIds.applyAsInt(new NamespacedId("minecraft", "zombie_villager_converting"));
+		} else if (entity instanceof Player && entity == Minecraft.getInstance().getCameraEntity() && entityIds.containsKey(CURRENT_PLAYER)) {
+			intId = entityIds.getInt(CURRENT_PLAYER);
 		} else {
             //? if >=1.19.3 {
 			ResourceLocation entityId = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
