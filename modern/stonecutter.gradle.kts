@@ -26,7 +26,8 @@ stonecutter.parameters {
     constants["shaders"] = shaders
     // Whether the Iris Flywheel backend (Colorwheel) is compiled; "flywheel" is the older core Flywheel compat.
     constants["colorwheel"] = shaders && versionedProperty("flywheel_version") != null
-    constants["settings_gui"] = stonecutter.compare(current.version, "1.21.5") < 0
+    // 1.21.5 to 1.21.11 have no settings screen backend.
+    constants["settings_gui"] = stonecutter.compare(current.version, "1.21.5") < 0 || stonecutter.compare(current.version, "26.1") >= 0
 
     val fabricApiVersion =
         if (configuredModLoader == ModLoader.FABRIC) {

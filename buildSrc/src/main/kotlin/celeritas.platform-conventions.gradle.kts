@@ -146,17 +146,18 @@ val modMixinConfigs = mutableListOf("embeddium.mixins.json")
 project.extra.set("celeritasMixinConfigs", modMixinConfigs)
 
 if (generateSequence(project) { it.parent }.any { it.name == "modern" }) {
-    if (stonecutterExt?.constants?.get("settings_gui") ?: false) {
+    val platformVersionSourceDir = if((stonecutterExt?.compare(stonecutterExt.current.version, "1.21.11") ?: -1) >= 0) {
+        "postmodern"
+    } else {
+        "modern"
+    }
+    // The postmodern settings screen backend lives in postmodern_java.
+    if ((stonecutterExt?.constants?.get("settings_gui") ?: false) && platformVersionSourceDir == "modern") {
         sourceSets {
             main {
                 java.srcDir("src/main/gui_java")
             }
         }
-    }
-    val platformVersionSourceDir = if((stonecutterExt?.compare(stonecutterExt.current.version, "1.21.11") ?: -1) >= 0) {
-        "postmodern"
-    } else {
-        "modern"
     }
     sourceSets {
         main {
