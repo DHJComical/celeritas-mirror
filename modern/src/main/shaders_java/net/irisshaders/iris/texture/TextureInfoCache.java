@@ -7,7 +7,7 @@ import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL20C;
 
-import java.nio.IntBuffer;
+import java.nio.Buffer;
 
 public class TextureInfoCache {
 	public static final TextureInfoCache INSTANCE = new TextureInfoCache();
@@ -27,8 +27,9 @@ public class TextureInfoCache {
 	}
 
 	public void onTexImage2D(int target, int level, int internalformat, int width, int height, int border,
-							 int format, int type, @Nullable IntBuffer pixels) {
-		if (level == 0) {
+							 int format, int type, @Nullable Buffer pixels) {
+		// Only 2D uploads land on the texture tracked as the active unit's binding; cubemap faces and proxy queries don't.
+		if (level == 0 && target == GL20C.GL_TEXTURE_2D) {
 			int id = GlStateManagerAccessor.getTEXTURES()[GlStateManagerAccessor.getActiveTexture()].binding;
 			TextureInfo info = getInfo(id);
 			info.internalFormat = internalformat;
