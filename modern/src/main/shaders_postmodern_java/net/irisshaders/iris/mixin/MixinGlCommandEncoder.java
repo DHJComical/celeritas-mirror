@@ -50,8 +50,8 @@ public class MixinGlCommandEncoder {
 		// Vanilla binds sampler objects to its texture units for each draw and leaves them bound.
 		IrisRenderSystem.invalidateSamplerBindings();
 
-		if (cir.getReturnValueZ()) {
-			GbufferProgramBinder.afterSetup(renderPass);
+		if (cir.getReturnValueZ() && !GbufferProgramBinder.afterSetup(renderPass)) {
+			cir.setReturnValue(false);
 		}
 	}
 

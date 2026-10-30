@@ -59,22 +59,25 @@ public final class GbufferProgramBinder {
 		}
 	}
 
-	public static void afterSetup(GlRenderPass renderPass) {
+	/**
+	 * Binds the program chosen for the draw once vanilla has set it up.
+	 * @return false if the draw should be skipped
+	 */
+	public static boolean afterSetup(GlRenderPass renderPass) {
 		if (overridingPipeline == null) {
-			return;
+			return true;
 		}
 
 		boolean shadows = ShadowRenderingState.areShadowsCurrentlyBeingRendered();
 
 		if (program == null) {
-			if (shadows) {
-				overridingPipeline.bindDefaultShadow();
-				ShadowRenderingState.applyViewport();
-			} else {
-				overridingPipeline.bindDefault();
+			// Programs the pack has no replacement for don't draw into the shadow map, nor anywhere if the user blocks them.
+			if (shadows || Iris.getIrisConfig().isBlockUnknownShaders()) {
+				return false;
 			}
 
-			return;
+			overridingPipeline.bindDefault();
+			return true;
 		}
 
 		GlRenderPipeline compiled = renderPass.pipeline;
@@ -119,6 +122,7 @@ public final class GbufferProgramBinder {
 		}
 
 		IrisRenderSystem.invalidateVanillaRenderState();
+		return true;
 	}
 
 	private static int glId(GpuTextureView view) {
