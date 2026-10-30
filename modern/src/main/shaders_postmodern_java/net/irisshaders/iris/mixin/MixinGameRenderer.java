@@ -1,12 +1,17 @@
 package net.irisshaders.iris.mixin;
 
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.SystemTimeUniforms;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.util.Util;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,5 +37,11 @@ public class MixinGameRenderer {
 	@Inject(method = "renderLevel", at = @At("TAIL"))
 	private void iris$runColorSpace(CallbackInfo ci) {
 		Iris.getPipelineManager().getPipeline().ifPresent(WorldRenderingPipeline::finalizeGameRendering);
+	}
+
+	// The hand is drawn into the pack's gbuffers by HandRenderer instead.
+	@WrapWithCondition(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/player/LocalPlayer;I)V"))
+	private boolean iris$skipVanillaHand(ItemInHandRenderer renderer, float partialTick, PoseStack poseStack, SubmitNodeCollector submits, LocalPlayer player, int lightCoords) {
+		return !Iris.isPackInUseQuick();
 	}
 }

@@ -296,6 +296,12 @@ public class VanillaTransformer {
         if (parameters.isClouds() && parameters.type == ShaderType.VERTEX) {
             CloudVertices.patch(translationUnit);
         }
+
+        if (parameters.type == ShaderType.VERTEX) {
+            // Packs declare these as floats, but 26.1 binds non-normalized integer elements as integer attributes.
+            ShaderTransformer.patchIntegerAttribute(translationUnit, "mc_Entity", 2);
+            ShaderTransformer.patchIntegerAttribute(translationUnit, "at_midBlock", 3);
+        }
     }
     *///?}
 }

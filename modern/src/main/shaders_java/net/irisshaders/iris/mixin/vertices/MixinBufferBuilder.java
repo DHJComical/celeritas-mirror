@@ -360,7 +360,6 @@ public abstract class MixinBufferBuilder implements BlockSensitiveBufferBuilder,
 
 //?} else {
 /*import com.mojang.blaze3d.vertex.*;
-import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.vertices.BlockSensitiveBufferBuilder;
 import net.irisshaders.iris.vertices.BufferBuilderPolygonView;
@@ -369,8 +368,6 @@ import net.irisshaders.iris.vertices.ImmediateState;
 import net.irisshaders.iris.vertices.IrisVertexFormats;
 import net.irisshaders.iris.vertices.NormI8;
 import net.irisshaders.iris.vertices.NormalHelper;
-import org.embeddedt.embeddium.api.vertex.format.VertexFormatDescription;
-import org.embeddedt.embeddium.api.vertex.format.VertexFormatRegistry;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
 import org.spongepowered.asm.mixin.Final;
@@ -457,15 +454,17 @@ public abstract class MixinBufferBuilder implements VertexConsumer, BlockSensiti
         iris$isTerrain = false;
         injectNormalAndUV1 = false;
 
-        if (ImmediateState.skipExtension.get() || !WorldRenderingSettings.INSTANCE.shouldUseExtendedVertexFormat()) {
+        if (!ImmediateState.shouldExtendNewBuffers()) {
             return format;
         }
 
         if (format == DefaultVertexFormat.BLOCK || format == IrisVertexFormats.TERRAIN) {
             extending = true;
             iris$isTerrain = true;
+            // 26.1's block format has no normal.
+            injectNormalAndUV1 = true;
             return IrisVertexFormats.TERRAIN;
-        } else if (format == DefaultVertexFormat.NEW_ENTITY || format == IrisVertexFormats.ENTITY) {
+        } else if (format == IrisVertexFormats.VANILLA_ENTITY || format == IrisVertexFormats.ENTITY) {
             extending = true;
             return IrisVertexFormats.ENTITY;
         } else if (format == DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP || format == IrisVertexFormats.GLYPH) {
@@ -543,10 +542,9 @@ public abstract class MixinBufferBuilder implements VertexConsumer, BlockSensiti
     private void fillExtendedData(int vertexAmount) {
         // The format is final, so these are resolved once rather than per primitive
         if (iris$offsetMidTexture < 0) {
-            VertexFormatDescription description = VertexFormatRegistry.instance().get(format);
-            iris$offsetMidTexture = description.getElementOffset(IrisVertexFormats.MID_TEXTURE_ELEMENT);
-            iris$offsetNormal = description.getElementOffset(VertexFormatElement.NORMAL);
-            iris$offsetTangent = description.getElementOffset(IrisVertexFormats.TANGENT_ELEMENT);
+            iris$offsetMidTexture = offsetsByElement[IrisVertexFormats.MID_TEXTURE_ELEMENT.id()];
+            iris$offsetNormal = offsetsByElement[VertexFormatElement.NORMAL.id()];
+            iris$offsetTangent = offsetsByElement[IrisVertexFormats.TANGENT_ELEMENT.id()];
         }
 
         // The vertices of a primitive are contiguous, so the pointers are derived from the one that

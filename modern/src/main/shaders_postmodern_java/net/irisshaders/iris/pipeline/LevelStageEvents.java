@@ -2,6 +2,7 @@ package net.irisshaders.iris.pipeline;
 
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.layer.GbufferPrograms;
+import net.irisshaders.iris.pathways.HandRenderer;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -27,6 +28,7 @@ public final class LevelStageEvents {
 
 			if (pipeline != null) {
 				pipeline.beginHand();
+				HandRenderer.INSTANCE.renderSolid(event.getLevelRenderState().cameraRenderState);
 				pipeline.beginTranslucents();
 			}
 		});

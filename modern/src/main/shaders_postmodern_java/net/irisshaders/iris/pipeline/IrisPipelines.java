@@ -5,6 +5,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import net.irisshaders.iris.pathways.HandRenderer;
 import net.irisshaders.iris.pathways.HorizonRenderer;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
 import net.irisshaders.iris.shadows.ShadowRenderingState;
@@ -212,25 +213,43 @@ public final class IrisPipelines {
 		return equivalent;
 	}
 
-	// 26.1 doesn't render the hand separately yet, so these never choose hand keys.
-
 	private static ShaderKey cutout(IrisRenderingPipeline pipeline) {
+		if (HandRenderer.INSTANCE.isActive()) {
+			return HandRenderer.INSTANCE.isRenderingSolid() ? ShaderKey.HAND_CUTOUT_DIFFUSE : ShaderKey.HAND_WATER_DIFFUSE;
+		}
+
 		return isBlockEntities(pipeline) ? ShaderKey.BLOCK_ENTITY_DIFFUSE : ShaderKey.ENTITIES_CUTOUT_DIFFUSE;
 	}
 
 	private static ShaderKey solid(IrisRenderingPipeline pipeline) {
+		if (HandRenderer.INSTANCE.isActive()) {
+			return HandRenderer.INSTANCE.isRenderingSolid() ? ShaderKey.HAND_CUTOUT : ShaderKey.HAND_TRANSLUCENT;
+		}
+
 		return isBlockEntities(pipeline) ? ShaderKey.BLOCK_ENTITY : ShaderKey.ENTITIES_SOLID;
 	}
 
 	private static ShaderKey translucent(IrisRenderingPipeline pipeline) {
+		if (HandRenderer.INSTANCE.isActive()) {
+			return HandRenderer.INSTANCE.isRenderingSolid() ? ShaderKey.HAND_CUTOUT_DIFFUSE : ShaderKey.HAND_WATER_DIFFUSE;
+		}
+
 		return isBlockEntities(pipeline) ? ShaderKey.BE_TRANSLUCENT : ShaderKey.ENTITIES_TRANSLUCENT;
 	}
 
 	private static ShaderKey text(IrisRenderingPipeline pipeline) {
+		if (HandRenderer.INSTANCE.isActive()) {
+			return HandRenderer.INSTANCE.isRenderingSolid() ? ShaderKey.HAND_TEXT : ShaderKey.HAND_TEXT_TRANSLUCENT;
+		}
+
 		return isBlockEntities(pipeline) ? ShaderKey.TEXT_BE : ShaderKey.TEXT;
 	}
 
 	private static ShaderKey textIntensity(IrisRenderingPipeline pipeline) {
+		if (HandRenderer.INSTANCE.isActive()) {
+			return ShaderKey.HAND_TEXT_INTENSITY;
+		}
+
 		return isBlockEntities(pipeline) ? ShaderKey.TEXT_INTENSITY_BE : ShaderKey.TEXT_INTENSITY;
 	}
 

@@ -39,6 +39,10 @@ import java.util.function.Supplier;
 public class ShaderCreator {
 	// Gbuffer programs see these vertex attributes with an iris_ prefix, so that they can't clash with names in the
 	// shader pack's code.
+	//? if >=26.1 {
+	/*// The integer attributes are read through iris_-prefixed inputs, as declared by ShaderTransformer.patchIntegerAttribute.
+	private static final Set<String> PREFIXED_ATTRIBUTES = Set.of("Position", "Color", "Normal", "UV0", "UV1", "UV2", "LineWidth", "mc_Entity", "at_midBlock");
+	*///?} else
 	private static final Set<String> PREFIXED_ATTRIBUTES = Set.of("Position", "Color", "Normal", "UV0", "UV1", "UV2", "LineWidth");
 
 	public static PendingGbufferProgram create(IrisRenderingPipeline parent, String name, ProgramSource source, ProgramId programId,

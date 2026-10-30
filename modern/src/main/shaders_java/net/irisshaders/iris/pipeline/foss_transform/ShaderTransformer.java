@@ -359,6 +359,53 @@ public class ShaderTransformer {
 
     }
 
+    /**
+     * Declares an attribute the vertex format provides as integers with its integer type, and converts each use of it
+     * to the type the shader declared it with. Integer attributes are read through {@code iris_<name>}.
+     */
+    public static void patchIntegerAttribute(Transformer translationUnit, String name, int components) {
+        int type = translationUnit.findType(name);
+        String attribute = "iris_" + name;
+        String conversion = switch (type) {
+            case GLSLLexer.FLOAT -> "float(" + attribute + ".x)";
+            case GLSLLexer.INT -> attribute + ".x";
+            case GLSLLexer.VEC2 -> "vec2(" + padComponents(attribute, components, 2, "0.0", "1.0") + ")";
+            case GLSLLexer.VEC3 -> "vec3(" + padComponents(attribute, components, 3, "0.0", "1.0") + ")";
+            case GLSLLexer.VEC4 -> "vec4(" + padComponents(attribute, components, 4, "0.0", "1.0") + ")";
+            case GLSLLexer.IVEC2 -> "ivec2(" + padComponents(attribute, components, 2, "0", "1") + ")";
+            case GLSLLexer.IVEC3 -> "ivec3(" + padComponents(attribute, components, 3, "0", "1") + ")";
+            case GLSLLexer.IVEC4 -> "ivec4(" + padComponents(attribute, components, 4, "0", "1") + ")";
+            default -> null;
+        };
+
+        if (conversion == null) {
+            return;
+        }
+
+        translationUnit.removeVariable(name);
+        translationUnit.replaceExpression(name, conversion);
+        translationUnit.injectVariable("in ivec" + components + " " + attribute + ";");
+    }
+
+    // Missing components read as they would from a float attribute: zero, and one in the fourth.
+    private static String padComponents(String attribute, int available, int declared, String zero, String one) {
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < declared; i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+
+            if (i < available) {
+                builder.append(attribute).append('.').append("xyzw".charAt(i));
+            } else {
+                builder.append(i == 3 ? one : zero);
+            }
+        }
+
+        return builder.toString();
+    }
+
     public static void addIfNotExists(Transformer translationUnit, String name, String code) {
         if (!translationUnit.hasVariable(name)) {
             translationUnit.injectVariable(code);

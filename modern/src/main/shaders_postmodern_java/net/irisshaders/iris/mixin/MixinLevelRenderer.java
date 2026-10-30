@@ -13,12 +13,14 @@ import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.layer.GbufferPrograms;
+import net.irisshaders.iris.pathways.HandRenderer;
 import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
 import net.irisshaders.iris.pipeline.WorldRenderingPhase;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shadows.frustum.fallback.NonCullingFrustum;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.uniforms.IrisTimeUniforms;
+import net.irisshaders.iris.vertices.ImmediateState;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -74,6 +76,7 @@ public class MixinLevelRenderer {
 		CapturedRenderingState.INSTANCE.setCloudTime((ticks + fakeTickDelta) * 0.03F);
 
 		iris$pipeline = Iris.getPipelineManager().preparePipeline(Iris.getCurrentDimension());
+		ImmediateState.isRenderingLevel = true;
 
 		IrisRenderSystem.backupAndDisableCullingState(iris$pipeline.shouldDisableOcclusionCulling());
 
@@ -101,9 +104,12 @@ public class MixinLevelRenderer {
 
 	@Inject(method = "renderLevel", at = @At("RETURN"))
 	private void iris$endLevelRender(CallbackInfo ci) {
+		HandRenderer.INSTANCE.renderTranslucent();
+
 		Profiler.get().push("iris_final");
 		iris$pipeline.finalizeLevelRendering();
 		Profiler.get().pop();
+		ImmediateState.isRenderingLevel = false;
 		iris$pipeline = null;
 
 		IrisRenderSystem.restoreCullingState();

@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.opengl.GlCommandEncoder;
 import com.mojang.blaze3d.opengl.GlRenderPass;
 import com.mojang.blaze3d.textures.GpuTextureView;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.gl.IrisRenderSystem;
 import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
@@ -15,6 +16,7 @@ import org.lwjgl.opengl.GL40C;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Collection;
@@ -51,6 +53,13 @@ public class MixinGlCommandEncoder {
 		if (cir.getReturnValueZ()) {
 			GbufferProgramBinder.afterSetup(renderPass);
 		}
+	}
+
+	@ModifyArg(method = "drawFromBuffers", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/opengl/VertexArrayCache;bindVertexArray(Lcom/mojang/blaze3d/vertex/VertexFormat;Lcom/mojang/blaze3d/opengl/GlBuffer;)V"))
+	private VertexFormat iris$bindMeshFormat(VertexFormat format) {
+		VertexFormat meshFormat = ImmediateState.meshFormatOverride;
+
+		return meshFormat != null ? meshFormat : format;
 	}
 
 	@ModifyExpressionValue(method = "drawFromBuffers", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/opengl/GlConst;toGl(Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;)I"))

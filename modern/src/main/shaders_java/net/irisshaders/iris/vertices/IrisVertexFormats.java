@@ -19,6 +19,10 @@ public class IrisVertexFormats {
 	public static final VertexFormat ENTITY;
 	public static final VertexFormat GLYPH;
 	public static final VertexFormat CLOUDS;
+	//? if >=26.1 {
+	/*public static final VertexFormat VANILLA_ENTITY = DefaultVertexFormat.ENTITY;
+	*///?} else
+	public static final VertexFormat VANILLA_ENTITY = DefaultVertexFormat.NEW_ENTITY;
 
 	static {
         //? if <1.21 {
