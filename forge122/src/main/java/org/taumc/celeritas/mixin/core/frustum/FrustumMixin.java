@@ -4,6 +4,10 @@ import net.minecraft.client.renderer.culling.ClippingHelper;
 import net.minecraft.client.renderer.culling.Frustum;
 import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.embeddedt.embeddium.impl.render.viewport.ViewportProvider;
+import org.joml.FrustumIntersection;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.*;
 import org.taumc.celeritas.impl.render.frustum.IClippingHelper;
 import org.taumc.celeritas.impl.render.terrain.CameraHelper;
@@ -27,7 +31,13 @@ public class FrustumMixin implements ViewportProvider {
 
     @Override
     public Viewport sodium$createViewport() {
-        var frustum = ((IClippingHelper)clippingHelper).celeritas$getJomlFrustum();
-        return new Viewport(frustum::testAab, new org.joml.Vector3d(this.x, this.y, this.z).add(CameraHelper.getThirdPersonOffset()));
+        Vector3f eyeOffset = CameraHelper.getThirdPersonOffset();
+        // The clipping helper's modelview expects positions relative to the entity's feet, but the viewport
+        // passes positions relative to the eye.
+        Matrix4f viewProjection = new Matrix4f().set(clippingHelper.projectionMatrix)
+                .mul(new Matrix4f().set(clippingHelper.modelviewMatrix))
+                .translate(eyeOffset);
+        FrustumIntersection frustum = new FrustumIntersection(viewProjection, true);
+        return new Viewport(frustum::testAab, new Vector3d(this.x, this.y, this.z).add(eyeOffset));
     }
 }
