@@ -418,6 +418,7 @@ public class ShadowRenderer {
 
 		levelRenderer.getLevel().getProfiler().popPush("shadows");
 		ACTIVE = true;
+		RESOLUTION = resolution;
 
 		renderDistance = (int) ((halfPlaneLength * renderDistanceMultiplier) / 16);
 
