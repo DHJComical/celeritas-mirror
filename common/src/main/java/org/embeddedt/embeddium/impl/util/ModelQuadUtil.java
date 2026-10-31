@@ -97,6 +97,9 @@ public class ModelQuadUtil {
         return packedNormal;
     }
 
+    /**
+     * @param vanillaLightEmission a light level from 0 to 15, unlike the lightmap coordinates
+     */
     public static int mergeBakedLight(int packedLight, int vanillaLightEmission, int calcLight) {
         // bail early in most cases
         if (packedLight == 0 && vanillaLightEmission == 0)
@@ -106,8 +109,9 @@ public class ModelQuadUtil {
         int csl = (calcLight >> 16) & 0xFF;
         int pbl = (packedLight) & 0xFF;
         int cbl = (calcLight) & 0xFF;
-        int bl = Math.max(Math.max(pbl, cbl), vanillaLightEmission);
-        int sl = Math.max(Math.max(psl, csl), vanillaLightEmission);
+        int emission = vanillaLightEmission << 4;
+        int bl = Math.max(Math.max(pbl, cbl), emission);
+        int sl = Math.max(Math.max(psl, csl), emission);
         return (sl << 16) | bl;
     }
 
