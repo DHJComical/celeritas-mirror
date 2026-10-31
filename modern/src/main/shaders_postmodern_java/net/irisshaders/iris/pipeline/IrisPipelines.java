@@ -250,6 +250,11 @@ public final class IrisPipelines {
 		int level = 0;
 
 		if (isDefined(defines, "EMISSIVE") != isDefined(vanillaDefines, "EMISSIVE")) {
+			level |= 1 << 11;
+		}
+
+		// Packs often draw blended geometry with separate programs, and turn blending off for the opaque ones.
+		if (pipeline.getColorTargetState().blendFunction().isPresent() != vanilla.getColorTargetState().blendFunction().isPresent()) {
 			level |= 1 << 10;
 		}
 
