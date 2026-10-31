@@ -1,6 +1,7 @@
 package net.irisshaders.iris.pipeline;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
@@ -9,19 +10,21 @@ import net.irisshaders.iris.pathways.HorizonRenderer;
 import net.irisshaders.iris.pipeline.programs.ShaderKey;
 import net.irisshaders.iris.shadows.ShadowRenderingState;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.ShaderDefines;
 import net.neoforged.neoforge.client.NeoForgeRenderPipelines;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
 /**
  * The gbuffer program each render pipeline draws with in the main and shadow passes. A pipeline vanilla doesn't
- * define, such as a mod's, draws with the programs of the vanilla pipeline it most closely matches in shaders, vertex
- * format, defines and color target.
+ * define, such as a mod's, draws with the programs of the vanilla pipeline it was derived from, or failing that, the one
+ * it most closely matches in shaders, vertex format, defines and color target.
  */
 public final class IrisPipelines {
 	private static final Function<IrisRenderingPipeline, ShaderKey> NONE = pipeline -> null;
@@ -197,9 +200,17 @@ public final class IrisPipelines {
 	}
 
 	private static RenderPipeline findEquivalent(RenderPipeline renderPipeline) {
-		// Mods often name their pipelines in the minecraft namespace, so vanilla's are told apart by identity.
-		if (MAIN.containsKey(renderPipeline) || SHADOW.containsKey(renderPipeline) || VANILLA_PIPELINES.contains(renderPipeline)) {
-			return renderPipeline;
+		// As in upstream Iris, a pipeline derived with toBuilder() takes the assignments of the nearest known pipeline it
+		// was derived from, even if it changed the shaders. Programs are built for one vertex format, so not across them.
+		for (RenderPipeline ancestor = renderPipeline; ancestor != null; ancestor = ((DerivedPipeline) ancestor).getParentPipeline()) {
+			if (!ancestor.getVertexFormat().equals(renderPipeline.getVertexFormat())) {
+				break;
+			}
+
+			// Mods often name their pipelines in the minecraft namespace, so vanilla's are told apart by identity.
+			if (MAIN.containsKey(ancestor) || SHADOW.containsKey(ancestor) || VANILLA_PIPELINES.contains(ancestor)) {
+				return ancestor;
+			}
 		}
 
 		RenderPipeline equivalent = renderPipeline;
@@ -233,18 +244,49 @@ public final class IrisPipelines {
 			return NO_MATCH;
 		}
 
+		ShaderDefines defines = pipeline.getShaderDefines();
+		ShaderDefines vanillaDefines = vanilla.getShaderDefines();
+		// Most defines only adjust how a shader draws, but these two picked a different vanilla shader before 26.1.
 		int level = 0;
 
-		if (!pipeline.getShaderDefines().equals(vanilla.getShaderDefines())) {
-			level |= 1;
+		if (isDefined(defines, "EMISSIVE") != isDefined(vanillaDefines, "EMISSIVE")) {
+			level |= 1 << 10;
 		}
 
-		// Blend ranks below defines, since programs were chosen by shader alone before 26.1.
+		if (isDefined(defines, "ALPHA_CUTOUT") != isDefined(vanillaDefines, "ALPHA_CUTOUT")) {
+			level |= 1 << 9;
+		}
+
 		if (!pipeline.getColorTargetState().equals(vanilla.getColorTargetState())) {
-			level |= 2;
+			level |= 1 << 8;
 		}
 
-		return level;
+		return level | Math.min(countOtherDifferences(defines, vanillaDefines), 0xFF);
+	}
+
+	private static boolean isDefined(ShaderDefines defines, String name) {
+		return defines.flags().contains(name) || defines.values().containsKey(name);
+	}
+
+	private static int countOtherDifferences(ShaderDefines a, ShaderDefines b) {
+		Set<String> names = new ObjectOpenHashSet<>();
+		names.addAll(a.flags());
+		names.addAll(a.values().keySet());
+		names.addAll(b.flags());
+		names.addAll(b.values().keySet());
+		names.remove("EMISSIVE");
+		names.remove("ALPHA_CUTOUT");
+
+		int count = 0;
+
+		for (String name : names) {
+			if (a.flags().contains(name) != b.flags().contains(name)
+				|| !Objects.equals(a.values().get(name), b.values().get(name))) {
+				count++;
+			}
+		}
+
+		return count;
 	}
 
 	private static ShaderKey cutout(IrisRenderingPipeline pipeline) {
