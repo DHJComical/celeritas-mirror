@@ -71,16 +71,8 @@ void main() {
             - (v_QuadCoord.x * v_QuadCoord.y);
     m_color += v_RdhFactor * correctionWeight;
 
-#ifdef USE_VANILLA_COLOR_FORMAT
     // Apply per-vertex color. AO shade is applied ahead of time on the CPU.
     diffuseColor *= m_color;
-#else
-    // Apply per-vertex color
-    diffuseColor.rgb *= m_color.rgb;
-
-    // Apply ambient occlusion "shade"
-    diffuseColor.rgb *= m_color.a;
-#endif
 
 #ifdef USE_FOG
 
