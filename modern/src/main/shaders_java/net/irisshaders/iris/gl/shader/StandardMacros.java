@@ -182,7 +182,7 @@ public class StandardMacros {
 		String minor = group(matcher, "minor");
 		String bugfix = group(matcher, "bugfix");
 
-		if (bugfix == null) {
+		if (bugfix == null || bugfix.length() == 0) {
 			// if bugfix is not there, it is 0
 			bugfix = "0";
 		}
