@@ -15,6 +15,7 @@ import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderListIterable;
 import org.embeddedt.embeddium.impl.render.chunk.lists.ChunkRenderList;
 import org.embeddedt.embeddium.impl.render.chunk.multidraw.BatchAssembler;
+import org.embeddedt.embeddium.impl.render.chunk.multidraw.CachedBatch;
 import org.embeddedt.embeddium.impl.render.chunk.region.RenderRegion;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderTextureSlot;
@@ -56,8 +57,23 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         this.sharedIndexBuffers = new Reference2ReferenceOpenHashMap<>();
     }
 
+    /**
+     * The view returned by {@link #getRenderView()} when only the player camera is being rendered.
+     */
+    public static final Object DEFAULT_VIEW = new Object();
+
     protected boolean useBlockFaceCulling() {
         return true;
+    }
+
+    /**
+     * {@return the view being rendered} A view is a sentinel object that stands for one perspective the world is
+     * rendered from, such as the player camera or a shader pack's shadow camera. Each view keeps its own cached
+     * batches, so views that alternate within a frame don't rebuild each other's. Views are compared by identity and
+     * must come from a small fixed set, since every distinct view adds an entry to every region's batch cache.
+     */
+    protected Object getRenderView() {
+        return DEFAULT_VIEW;
     }
 
     protected final SharedQuadIndexBuffer getSharedIndexBuffer(ChunkPrimitiveType type, CommandList commandList) {
@@ -120,9 +136,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             long timestamp = System.nanoTime();
 
             useBlockFaceCulling = useBlockFaceCulling && !renderPass.isSorted();
-            var cacheParams = new SectionRenderDataStorage.BatchCacheParams(useBlockFaceCulling);
-
-            int numRebuilds = 0;
+            var cacheParams = new SectionRenderDataStorage.BatchCacheParams(useBlockFaceCulling, this.getRenderView());
 
             while (iterator.hasNext()) {
                 ChunkRenderList renderList = iterator.next();
@@ -134,16 +148,8 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
                     continue;
                 }
 
-                var cached = storage.getCachedMultiDrawBatch(cacheParams);
-
-                if (cached == null || !cached.isValidFor(renderList.getSectionsWithGeometry(), renderList.getSectionsWithGeometryCount(),
-                        occlusionCamera.intX, occlusionCamera.intY, occlusionCamera.intZ)) {
-                    numRebuilds++;
-                    cached = BatchAssembler.createCachedBatch(region, storage, renderList, occlusionCamera, renderPass,
-                            useBlockFaceCulling, commandList, this.tessellationProvider);
-
-                    storage.storeCachedMultiDrawBatch(cacheParams, cached);
-                }
+                var cached = this.getRegionBatch(commandList, region, storage, renderList, occlusionCamera, renderPass,
+                        useBlockFaceCulling, cacheParams);
 
                 var batch = cached.getBatch();
 
@@ -174,6 +180,27 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         }
 
         this.end(renderPass);
+    }
+
+    private CachedBatch getRegionBatch(CommandList commandList,
+                                       RenderRegion region,
+                                       SectionRenderDataStorage storage,
+                                       ChunkRenderList renderList,
+                                       CameraTransform occlusionCamera,
+                                       TerrainRenderPass renderPass,
+                                       boolean useBlockFaceCulling,
+                                       SectionRenderDataStorage.BatchCacheParams cacheParams) {
+        var cached = storage.getCachedMultiDrawBatch(cacheParams);
+
+        if (cached == null || !cached.isValidFor(renderList.getSectionsWithGeometry(), renderList.getSectionsWithGeometryCount(),
+                occlusionCamera.intX, occlusionCamera.intY, occlusionCamera.intZ)) {
+            cached = BatchAssembler.createCachedBatch(region, storage, renderList, occlusionCamera, renderPass,
+                    useBlockFaceCulling, commandList, this.tessellationProvider);
+
+            storage.storeCachedMultiDrawBatch(cacheParams, cached);
+        }
+
+        return cached;
     }
 
     /**

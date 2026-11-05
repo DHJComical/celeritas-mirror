@@ -34,6 +34,15 @@ public class ModernChunkRenderer extends DefaultChunkRenderer {
         return Celeritas.options().performance.useBlockFaceCulling /*? if shaders {*/ && !net.irisshaders.iris.shadows.ShadowRenderingState.areShadowsCurrentlyBeingRendered() /*?}*/;
     }
 
+    //? if shaders {
+    private static final Object SHADOW_VIEW = new Object();
+
+    @Override
+    protected Object getRenderView() {
+        return net.irisshaders.iris.shadows.ShadowRenderingState.areShadowsCurrentlyBeingRendered() ? SHADOW_VIEW : DEFAULT_VIEW;
+    }
+    //?}
+
     @Override
     protected int activateTextureUnit(int unit) {
         int previous = GL13C.GL_TEXTURE0 + GlStateManagerAccessor.celeritas$getActiveTexture();

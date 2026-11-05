@@ -1,5 +1,6 @@
 package org.embeddedt.embeddium.impl.render.chunk.data;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import org.embeddedt.embeddium.impl.gl.arena.GlBufferSegment;
 import org.embeddedt.embeddium.impl.gl.util.VertexRange;
 import org.embeddedt.embeddium.impl.model.quad.properties.ModelQuadFacing;
@@ -23,14 +24,14 @@ public class SectionRenderDataStorage {
 
     private int numAllocations;
 
-    public record BatchCacheParams(boolean useBlockFaceCulling) {}
+    /**
+     * @param view the render view the batch was built for, compared by identity; see
+     *             {@link org.embeddedt.embeddium.impl.render.chunk.DefaultChunkRenderer#getRenderView()}
+     */
+    public record BatchCacheParams(boolean useBlockFaceCulling, Object view) {}
 
-    // we only need to cache two batches in practice (shadow pass for shaders disables block face culling), so we unroll
-    // what would otherwise be an LRU for simplicity
-    private BatchCacheParams firstBatchParams;
-    private CachedBatch firstCachedBatch;
-    private BatchCacheParams secondBatchParams;
-    private CachedBatch secondCachedBatch;
+    // Views are a small fixed set of sentinels, so the key space is bounded and nothing needs evicting.
+    private final Object2ObjectArrayMap<BatchCacheParams, CachedBatch> cachedBatches = new Object2ObjectArrayMap<>(2);
 
     public SectionRenderDataStorage(ChunkPrimitiveType primitiveType, boolean sorted, int verticesPerArenaElement) {
         this.storageStrategy = sorted ? SectionRenderDataUnsafe.Strategy.FULL : SectionRenderDataUnsafe.Strategy.COMPACT;
@@ -158,42 +159,27 @@ public class SectionRenderDataStorage {
     }
 
     public @Nullable CachedBatch getCachedMultiDrawBatch(BatchCacheParams params) {
-        if (params.equals(firstBatchParams)) {
-            return firstCachedBatch;
-        } else if (params.equals(secondBatchParams)) {
-            return secondCachedBatch;
-        } else {
-            return null;
-        }
+        return this.cachedBatches.get(params);
     }
 
     public void storeCachedMultiDrawBatch(BatchCacheParams params, CachedBatch batch) {
-        if (params.equals(firstBatchParams) || firstBatchParams == null) {
-            if (firstCachedBatch != null) {
-                firstCachedBatch.delete();
-            }
-            firstBatchParams = params;
-            firstCachedBatch = batch;
-        } else {
-            if (secondCachedBatch != null) {
-                secondCachedBatch.delete();
-            }
-            secondBatchParams = params;
-            secondCachedBatch = batch;
+        var previous = this.cachedBatches.put(params, batch);
+
+        if (previous != null) {
+            previous.delete();
         }
     }
 
     public void invalidateCachedBatches() {
-        if (firstCachedBatch != null) {
-            firstCachedBatch.delete();
-            firstCachedBatch = null;
+        if (this.cachedBatches.isEmpty()) {
+            return;
         }
-        if (secondCachedBatch != null) {
-            secondCachedBatch.delete();
-            secondCachedBatch = null;
+
+        for (var batch : this.cachedBatches.values()) {
+            batch.delete();
         }
-        firstBatchParams = null;
-        secondBatchParams = null;
+
+        this.cachedBatches.clear();
     }
 
     public void delete() {
