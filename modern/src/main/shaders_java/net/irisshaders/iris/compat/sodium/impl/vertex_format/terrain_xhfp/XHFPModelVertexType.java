@@ -33,24 +33,14 @@ public class XHFPModelVertexType implements ChunkVertexType {
 
 	public static final ChunkVertexLayout LAYOUT = ChunkVertexLayout.withHeader(VERTEX_FORMAT, HEADER_FORMAT, 4);
 
-    @Override
-	public float getTextureScale() {
-		return 1f;
-	}
-
-	@Override
-	public float getPositionScale() {
-		return 1f;
-	}
-
-	@Override
-	public float getPositionOffset() {
-		return 0;
-	}
-
 	@Override
 	public ChunkVertexLayout getLayout() {
 		return LAYOUT;
+	}
+
+	@Override
+	public String getShaderLibrary() {
+		return BASE_VERTEX_TYPE.getShaderLibrary();
 	}
 
 	@Override

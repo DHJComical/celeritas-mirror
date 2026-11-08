@@ -26,23 +26,13 @@ public class VanillaLikeChunkVertex implements ChunkVertexType {
     public static final ChunkVertexLayout LAYOUT = ChunkVertexLayout.of(VERTEX_FORMAT);
 
     @Override
-    public float getPositionScale() {
-        return 1f;
-    }
-
-    @Override
-    public float getPositionOffset() {
-        return 0;
-    }
-
-    @Override
-    public float getTextureScale() {
-        return 1f;
-    }
-
-    @Override
     public ChunkVertexLayout getLayout() {
         return LAYOUT;
+    }
+
+    @Override
+    public String getShaderLibrary() {
+        return "sodium:include/vertex_format/vanilla_like.glsl";
     }
 
     @Override

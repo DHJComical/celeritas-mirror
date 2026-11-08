@@ -1,0 +1,11 @@
+Each file here decodes one ChunkVertexType's inputs, and is imported by chunk_vertex.glsl after the generated
+vertex fetch code. Iris inlines it into shader pack programs too, so it must not rely on Sodium program uniforms.
+
+Available: the a_* inputs and their VERT_HAS_* defines, _vert_fetch(), _vert_corner, _get_rdh_factor(), the
+type's getDefines(), and with VERT_CAN_FETCH_CORNERS, _vert_fetch_corner() and _VertInputs.
+
+Must define:
+- void _vert_init(): calls _vert_fetch(), then sets _vert_position, _vert_tex_diffuse_coord, _vert_tex_light_coord,
+  _vert_color, _vert_rdh_factor, _draw_id and _material_params.
+- If VERT_CAN_FETCH_CORNERS is defined, for corners 0-3 of the vertex's primitive:
+  vec3 _vert_corner_position(int corner) and vec2 _vert_corner_tex_coord(int corner).

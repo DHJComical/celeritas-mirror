@@ -22,6 +22,7 @@ import java.util.TreeSet;
  */
 public final class VertexFetchGenerator {
     public static final String IMPORT_NAME = "sodium:generated/vertex_fetch.glsl";
+    public static final String FORMAT_IMPORT_NAME = "sodium:generated/vertex_format.glsl";
 
     /**
      * The {@code usamplerBuffer} that pulled vertex data is read from.
@@ -124,16 +125,20 @@ public final class VertexFetchGenerator {
 
     private VertexFetchGenerator() {}
 
-    public static Map<String, String> sources(ChunkVertexLayout layout, int verticesPerPrimitive, VertexFetchMode mode, boolean legacyGlsl) {
-        return sources(layout, verticesPerPrimitive, mode, legacyGlsl, Map.of());
+    public static Map<String, String> sources(ChunkVertexType vertexType, int verticesPerPrimitive, VertexFetchMode mode, boolean legacyGlsl) {
+        return sources(vertexType, verticesPerPrimitive, mode, legacyGlsl, Map.of());
     }
 
     /**
+     * {@return the generated sources {@code chunk_vertex.glsl} imports} These are the vertex fetch code, and an alias of
+     * the type's {@link ChunkVertexType#getShaderLibrary() shader library}.
+     *
      * @param declaredTypes GLSL types to declare elements with instead of their own, by element name
      */
-    public static Map<String, String> sources(ChunkVertexLayout layout, int verticesPerPrimitive, VertexFetchMode mode, boolean legacyGlsl,
+    public static Map<String, String> sources(ChunkVertexType vertexType, int verticesPerPrimitive, VertexFetchMode mode, boolean legacyGlsl,
                                               Map<String, GlslType> declaredTypes) {
-        return Map.of(IMPORT_NAME, generate(layout, verticesPerPrimitive, mode, legacyGlsl, declaredTypes));
+        return Map.of(IMPORT_NAME, generate(vertexType.getLayout(), verticesPerPrimitive, mode, legacyGlsl, declaredTypes),
+                FORMAT_IMPORT_NAME, "#import <" + vertexType.getShaderLibrary() + ">\n");
     }
 
     public static List<Element> plan(ChunkVertexLayout layout) {

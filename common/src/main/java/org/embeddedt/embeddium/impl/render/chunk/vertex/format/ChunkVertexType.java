@@ -6,22 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public interface ChunkVertexType {
-    /**
-     * @return The scale to be applied to vertex coordinates
-     */
-    float getPositionScale();
-
-    /**
-     * @return The translation to be applied to vertex coordinates
-     */
-    float getPositionOffset();
-
-    /**
-     * @return The scale to be applied to texture coordinates
-     */
-    float getTextureScale();
-
     ChunkVertexLayout getLayout();
+
+    /**
+     * {@return the shader include that decodes this type's vertex inputs} {@code chunk_vertex.glsl} imports it as
+     * {@link VertexFetchGenerator#FORMAT_IMPORT_NAME}. See {@code include/vertex_format/api.txt} for what it must define.
+     */
+    String getShaderLibrary();
 
     /**
      * {@return a newly constructed instance of a vertex encoder for the given vertex type}
@@ -30,11 +21,6 @@ public interface ChunkVertexType {
 
     @MustBeInvokedByOverriders
     default Map<String, String> getDefines() {
-        var defines = new HashMap<String, String>();
-        defines.put("VERT_POS_SCALE", String.valueOf(this.getPositionScale()));
-        defines.put("VERT_POS_OFFSET", String.valueOf(this.getPositionOffset()));
-        defines.put("VERT_TEX_SCALE", String.valueOf(this.getTextureScale()));
-
-        return defines;
+        return new HashMap<>();
     }
 }

@@ -346,7 +346,7 @@ public class ShaderTransformer {
 
     private static String computeCeleritasHeader(SodiumParameters parameters, Map<String, VertexFetchGenerator.GlslType> vertexInputTypes) {
         var defines = parameters.vertexType.getDefines();
-        var generatedSources = VertexFetchGenerator.sources(parameters.vertexType.getLayout(),
+        var generatedSources = VertexFetchGenerator.sources(parameters.vertexType,
                 QuadPrimitiveType.TRIANGULATED.getVerticesPerPrimitive(), parameters.vertexFetchMode, false, vertexInputTypes);
         String chunkVertexHeader = org.embeddedt.embeddium.impl.gl.shader.ShaderParser.parseShader(ShaderLoader.getShaderSource("sodium:include/chunk_vertex.glsl"), ShaderLoader.sourceProvider(generatedSources),
                 ShaderConstants.builder().addAll(defines).build());

@@ -65,7 +65,7 @@ public abstract class ShaderChunkRenderer implements ChunkRenderer {
     protected GlProgram<ChunkShaderInterface> createShader(String path, ChunkShaderOptions options) {
         ShaderConstants constants = options.constants();
         var pass = options.pass();
-        var generatedSources = VertexFetchGenerator.sources(pass.vertexType().getLayout(),
+        var generatedSources = VertexFetchGenerator.sources(pass.vertexType(),
                 pass.primitiveType().getVerticesPerPrimitive(), pass.vertexFetchMode(), this.enableLegacyGLPatches);
 
         List<GlShader> loadedShaders = new ArrayList<>();

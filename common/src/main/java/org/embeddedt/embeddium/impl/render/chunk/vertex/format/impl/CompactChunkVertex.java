@@ -49,23 +49,13 @@ public class CompactChunkVertex implements ChunkVertexType {
     private static final float TEXTURE_SCALE = (1.0f / TEXTURE_MAX_VALUE);
 
     @Override
-    public float getTextureScale() {
-        return TEXTURE_SCALE;
-    }
-
-    @Override
-    public float getPositionScale() {
-        return MODEL_SCALE;
-    }
-
-    @Override
-    public float getPositionOffset() {
-        return -MODEL_ORIGIN;
-    }
-
-    @Override
     public ChunkVertexLayout getLayout() {
         return LAYOUT;
+    }
+
+    @Override
+    public String getShaderLibrary() {
+        return "sodium:include/vertex_format/compact.glsl";
     }
 
     @Override
@@ -107,7 +97,9 @@ public class CompactChunkVertex implements ChunkVertexType {
     @Override
     public Map<String, String> getDefines() {
         var map = ChunkVertexType.super.getDefines();
-        map.put("USE_VERTEX_COMPRESSION", "");
+        map.put("VERT_POS_SCALE", String.valueOf(MODEL_SCALE));
+        map.put("VERT_POS_OFFSET", String.valueOf(-MODEL_ORIGIN));
+        map.put("VERT_TEX_SCALE", String.valueOf(TEXTURE_SCALE));
         return map;
     }
 
