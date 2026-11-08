@@ -133,11 +133,6 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
         this.ignoreMidBlock = false;
     }
 
-    @Override
-	public boolean supportsBilinearCorrection() {
-		return false;
-	}
-
 	@Override
 	public long writePrimitive(long ptr, Material material, Vertex[] vertices, int chunkId) {
 		long vertexPtr = ptr + HEADER_STRIDE;

@@ -30,7 +30,7 @@ public final class BenchRenderPasses {
     }
 
     /**
-     * Selected with {@code -Dceleritas.bench.vertexType=COMPACT|VANILLA_LIKE}, since passes are built once per JVM.
+     * Selected with {@code -Dceleritas.bench.vertexType=COMPACT|VANILLA_LIKE|QUAD_RELATIVE}, since passes are built once per JVM.
      */
     private static ChunkVertexType vertexType() {
         String name = System.getProperty("celeritas.bench.vertexType", "COMPACT");
@@ -38,6 +38,7 @@ public final class BenchRenderPasses {
         return switch (name) {
             case "COMPACT" -> ChunkMeshFormats.COMPACT;
             case "VANILLA_LIKE" -> ChunkMeshFormats.VANILLA_LIKE;
+            case "QUAD_RELATIVE" -> ChunkMeshFormats.QUAD_RELATIVE;
             default -> throw new IllegalArgumentException("Unknown bench vertex type " + name);
         };
     }

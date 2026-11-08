@@ -61,8 +61,10 @@ public class CompactChunkVertex implements ChunkVertexType {
     @Override
     public ChunkVertexEncoder createEncoder() {
         return (ptr, material, vertices, sectionIndex) -> {
+            int rdhFactor = RdhFactor.encode(vertices);
+
             for (var vertex : vertices) {
-                writeVertex(ptr, material, vertex, sectionIndex);
+                writeVertex(ptr, material, vertex, sectionIndex, rdhFactor);
                 ptr += STRIDE;
             }
 
@@ -70,7 +72,7 @@ public class CompactChunkVertex implements ChunkVertexType {
         };
     }
 
-    private static void writeVertex(long ptr, Material material, ChunkVertexEncoder.Vertex vertex, int sectionIndex) {
+    private static void writeVertex(long ptr, Material material, ChunkVertexEncoder.Vertex vertex, int sectionIndex, int rdhFactor) {
         int x = encodePosition(vertex.x);
         int y = encodePosition(vertex.y);
         int z = encodePosition(vertex.z);
@@ -91,7 +93,7 @@ public class CompactChunkVertex implements ChunkVertexType {
         LWJGL.memPutShort(ptr + 14, (short) (v >>> TEXTURE_LOW_BITS));
 
         LWJGL.memPutInt(ptr + 16, (encodeDrawParameters(material, sectionIndex, u, v) << 0) | (encodeLight(vertex.light) << 16));
-        LWJGL.memPutInt(ptr + 20, vertex.rdhFactor);
+        LWJGL.memPutInt(ptr + 20, rdhFactor);
     }
 
     @Override

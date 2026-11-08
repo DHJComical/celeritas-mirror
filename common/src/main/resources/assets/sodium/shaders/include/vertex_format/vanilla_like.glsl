@@ -6,6 +6,10 @@ vec2 _vert_decode_tex_coord(vec2 tex_coord, uint light_coord) {
     return tex_coord;
 }
 
+ivec2 _vert_decode_light_coord(uint light_coord) {
+    return ivec2((uvec2((light_coord >> 16) & 0xFFFFu) >> uvec2(0, 8)) & uvec2(0xFFu));
+}
+
 void _vert_init() {
     _vert_fetch();
 
@@ -22,7 +26,7 @@ void _vert_init() {
     _draw_id  = (packed_draw_params >> 8) & 0xFFu;
 
     // Vertex Light
-    _vert_tex_light_coord = ivec2((uvec2((a_LightCoord >> 16) & 0xFFFFu) >> uvec2(0, 8)) & uvec2(0xFFu));
+    _vert_tex_light_coord = _vert_decode_light_coord(a_LightCoord);
 }
 
 #ifdef VERT_CAN_FETCH_CORNERS
@@ -34,5 +38,13 @@ vec3 _vert_corner_position(int corner) {
 vec2 _vert_corner_tex_coord(int corner) {
     _VertInputs v = _vert_fetch_corner(corner);
     return _vert_decode_tex_coord(v.a_TexCoord, v.a_LightCoord);
+}
+
+vec4 _vert_corner_color(int corner) {
+    return _vert_fetch_corner(corner).a_Color;
+}
+
+ivec2 _vert_corner_light_coord(int corner) {
+    return _vert_decode_light_coord(_vert_fetch_corner(corner).a_LightCoord);
 }
 #endif

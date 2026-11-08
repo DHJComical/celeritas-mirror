@@ -8,6 +8,7 @@
 #import <sodium:include/chunk_vertex.glsl>
 #import <sodium:include/chunk_matrices.glsl>
 #import <sodium:include/chunk_material.glsl>
+#import <sodium:include/terrain_lighting.glsl>
 
 // Avoid z-fighting between the solid and cutout copies of this program
 invariant gl_Position;
@@ -37,14 +38,6 @@ uniform int u_FogShape;
 
 uniform vec3 u_RegionOffset;
 
-#ifndef CELERITAS_NO_LIGHTMAP
-uniform sampler2D u_LightTex; // The light map texture sampler
-
-vec4 _sample_lightmap(sampler2D lightMap, ivec2 uv) {
-    return texture(lightMap, clamp(uv / 256.0, vec2(0.5 / 16.0), vec2(15.5 / 16.0)));
-}
-#endif
-
 #if defined(USE_FOG) && defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0
 uniform float celeritas_ChunkAges[REGION_SIZE];
 #endif
@@ -67,15 +60,10 @@ void main() {
     gl_Position = u_ProjectionMatrix * u_ModelViewMatrix * vec4(position, 1.0);
 
     // Add the light color to the vertex color, and pass the texture coordinates to the fragment shader
-    v_RdhFactor = _vert_rdh_factor * 2.0;
-#ifdef CELERITAS_NO_LIGHTMAP
-    v_Color = _vert_color;
-#else
-    vec4 lightColor = _sample_lightmap(u_LightTex, _vert_tex_light_coord);
+    vec4 lightColor = _light_color(_vert_tex_light_coord);
     v_Color = _vert_color * lightColor;
-    v_RdhFactor.rgb *= lightColor.rgb;
-#endif
-    
+    v_RdhFactor = _vert_lit_rdh_factor(lightColor);
+
     int corner = _vert_corner;
     v_QuadCoord = vec2(corner >= 2 ? 1.0 : 0.0,
             corner == 1 || corner == 2 ? 1.0 : 0.0);

@@ -7,6 +7,7 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.VertexFetchGenera
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.VertexFetchGenerator.Element;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.VertexFetchGenerator.Scope;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.impl.CompactChunkVertex;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.impl.QuadRelativeChunkVertex;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.impl.VanillaLikeChunkVertex;
 import org.junit.jupiter.api.Test;
 
@@ -45,6 +46,11 @@ class VertexFetchGeneratorTest {
     @Test
     void vanillaLikePlanMatchesAttributeFetch() {
         assertPlanMatchesAttributeFetch(VanillaLikeChunkVertex.LAYOUT, 4);
+    }
+
+    @Test
+    void quadRelativePlanMatchesAttributeFetch() {
+        assertPlanMatchesAttributeFetch(QuadRelativeChunkVertex.LAYOUT, 4);
     }
 
     @Test

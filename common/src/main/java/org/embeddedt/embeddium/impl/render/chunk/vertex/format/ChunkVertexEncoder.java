@@ -12,16 +12,11 @@ public interface ChunkVertexEncoder {
      */
     long writePrimitive(long ptr, Material material, Vertex[] vertices, int sectionIndex);
 
-    default boolean supportsBilinearCorrection() {
-        return true;
-    }
-
     class Vertex {
         public float x;
         public float y;
         public float z;
         public int color;
-        public int rdhFactor;
         public float u;
         public float v;
         public int light;

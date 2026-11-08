@@ -8,4 +8,5 @@ Must define:
 - void _vert_init(): calls _vert_fetch(), then sets _vert_position, _vert_tex_diffuse_coord, _vert_tex_light_coord,
   _vert_color, _vert_rdh_factor, _draw_id and _material_params.
 - If VERT_CAN_FETCH_CORNERS is defined, for corners 0-3 of the vertex's primitive:
-  vec3 _vert_corner_position(int corner) and vec2 _vert_corner_tex_coord(int corner).
+  vec3 _vert_corner_position(int corner), vec2 _vert_corner_tex_coord(int corner),
+  vec4 _vert_corner_color(int corner) and ivec2 _vert_corner_light_coord(int corner).

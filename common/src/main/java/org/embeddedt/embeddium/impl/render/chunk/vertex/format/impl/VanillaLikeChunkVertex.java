@@ -38,8 +38,10 @@ public class VanillaLikeChunkVertex implements ChunkVertexType {
     @Override
     public ChunkVertexEncoder createEncoder() {
         return (ptr, material, vertices, sectionIndex) -> {
+            int rdhFactor = RdhFactor.encode(vertices);
+
             for (var vertex : vertices) {
-                writeVertex(ptr, material, vertex, sectionIndex);
+                writeVertex(ptr, material, vertex, sectionIndex, rdhFactor);
                 ptr += STRIDE;
             }
 
@@ -47,9 +49,9 @@ public class VanillaLikeChunkVertex implements ChunkVertexType {
         };
     }
 
-    public static void writeVertex(long ptr, Material material, ChunkVertexEncoder.Vertex vertex, int sectionIndex) {
+    public static void writeVertex(long ptr, Material material, ChunkVertexEncoder.Vertex vertex, int sectionIndex, int rdhFactor) {
         writeVertexWithoutRdhFactor(ptr, material, vertex, sectionIndex);
-        LWJGL.memPutInt(ptr + 28, vertex.rdhFactor);
+        LWJGL.memPutInt(ptr + 28, rdhFactor);
     }
 
     public static void writeVertexWithoutRdhFactor(long ptr, Material material, ChunkVertexEncoder.Vertex vertex, int sectionIndex) {
