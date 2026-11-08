@@ -427,31 +427,45 @@ public class ShaderTransformer {
     }
 
     /**
-     * XHFP doesn't store {@code at_midBlock}: it is derived from the block's position within its section, which the vertex
-     * position is relative to, and stored in 1/64ths of a block with the block's light emission in {@code w}.
+     * XHFP stores {@code at_midBlock} and {@code mc_Entity} in its header rather than as inputs, so they are computed.
+     * {@code at_midBlock} is derived from the block's position within its section, which the vertex position is relative
+     * to, and stored in 1/64ths of a block with the block's light emission in {@code w}.
      */
-    public static void replaceMidBlock(Transformer translationUnit, SodiumParameters parameters) {
+    public static void replaceBlockInputs(Transformer translationUnit, SodiumParameters parameters) {
         if (!(parameters.vertexType instanceof XHFPModelVertexType)) {
             return;
         }
 
-        var declaredType = findInputType(translationUnit, "at_midBlock");
+        var midBlockType = findInputType(translationUnit, "at_midBlock");
 
-        if (declaredType == null) {
-            return;
+        if (midBlockType != null) {
+            translationUnit.removeVariable("at_midBlock");
+            translationUnit.injectVariable(midBlockType + " at_midBlock;");
+            translationUnit.injectFunction(String.join("\n",
+                    "vec4 iris_ComputeMidBlock() {",
+                    "    uint info = " + XHFPModelVertexType.EXTENSION + ";",
+                    "    ivec3 originBlock = _vert_quad_origin() >> 2;",
+                    "    ivec3 offset = ivec3(uvec3(info, info >> 2u, info >> 4u) & uvec3(3u)) - 1;",
+                    "    vec3 block = vec3(originBlock - offset);",
+                    "    vec3 mid = (info & 0x40u) != 0u ? (block + 0.5 - _vert_position) * 64.0 : vec3(0.0);",
+                    "    return vec4(mid, float((info >> 7u) & 0xFu));",
+                    "}"));
+            // Assigned in main, after _vert_init has provided _vert_position
+            translationUnit.prependMain("at_midBlock = " + midBlockType.adapt("iris_ComputeMidBlock()", VertexFetchGenerator.GlslType.parse("vec4")) + ";");
         }
 
-        translationUnit.removeVariable("at_midBlock");
-        translationUnit.injectVariable(declaredType + " at_midBlock;");
-        translationUnit.injectFunction(String.join("\n",
-                "vec4 iris_ComputeMidBlock() {",
-                "    uint info = " + XHFPModelVertexType.BLOCK_INFO + ";",
-                "    vec3 block = vec3(uvec3(info, info >> 4u, info >> 8u) & uvec3(15u));",
-                "    vec3 offset = (info & 0x1000u) != 0u ? (block + 0.5 - _vert_position) * 64.0 : vec3(0.0);",
-                "    return vec4(offset, float((info >> 16u) & 0xFFu));",
-                "}"));
-        // Assigned in main, after _vert_init has provided _vert_position
-        translationUnit.prependMain("at_midBlock = " + declaredType.adapt("iris_ComputeMidBlock()", VertexFetchGenerator.GlslType.parse("vec4")) + ";");
+        var entityType = findInputType(translationUnit, "mc_Entity");
+
+        if (entityType != null) {
+            translationUnit.removeVariable("mc_Entity");
+            translationUnit.injectVariable(entityType + " mc_Entity;");
+            translationUnit.injectFunction(String.join("\n",
+                    "vec2 iris_ComputeEntity() {",
+                    "    uint info = " + XHFPModelVertexType.EXTENSION + ";",
+                    "    return vec2(float(int(info << 4u) >> 16), float((info >> 11u) & 1u));",
+                    "}"));
+            translationUnit.prependMain("mc_Entity = " + entityType.adapt("iris_ComputeEntity()", VertexFetchGenerator.GlslType.parse("vec2")) + ";");
+        }
     }
 
     /**

@@ -14,18 +14,14 @@ import org.embeddedt.embeddium.impl.modern.render.chunk.ContextAwareChunkVertexE
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
-import org.embeddedt.embeddium.impl.render.chunk.vertex.format.impl.VanillaLikeChunkVertex;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.impl.QuadRelativeChunkVertex;
 //? if <26.1
 import org.embeddedt.embeddium.impl.render.texture.TextureAtlasExtended;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.system.MemoryUtil;
 import org.taumc.celeritas.shaders.CeleritasShaders;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp.XHFPModelVertexType.HEADER_STRIDE;
-import static net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp.XHFPModelVertexType.VERTEX_STRIDE;
 
 public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkVertexEncoder {
 
@@ -50,8 +46,7 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
 
     private final FallbackTextureMaterials fallbackMaterials = WorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
 
-    private static final int MC_ENTITY_OFFSET = XHFPModelVertexType.HEADER_FORMAT.getAttribute("mc_Entity").getPointer();
-    private static final int BLOCK_INFO_OFFSET = XHFPModelVertexType.HEADER_FORMAT.getAttribute(XHFPModelVertexType.BLOCK_INFO).getPointer();
+    private final QuadRelativeChunkVertex.Encoder baseEncoder = XHFPModelVertexType.BASE_VERTEX_TYPE.createEncoder();
 
     private static final ClassValue<AtomicBoolean> GET_APPEARANCE_CRASHED = new ClassValue<>() {
         @Override
@@ -135,17 +130,12 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
 
 	@Override
 	public long writePrimitive(long ptr, Material material, Vertex[] vertices, int chunkId) {
-		long vertexPtr = ptr + HEADER_STRIDE;
 		float uSum = 0.0f;
 		float vSum = 0.0f;
 
 		for (Vertex vertex : vertices) {
 			uSum += vertex.u;
 			vSum += vertex.v;
-
-			VanillaLikeChunkVertex.writeVertexWithoutRdhFactor(vertexPtr, material, vertex, chunkId);
-
-			vertexPtr += VERTEX_STRIDE;
 		}
 
 		float midU = uSum / vertices.length;
@@ -164,16 +154,26 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
 		}
 		//?}
 
-		MemoryUtil.memPutShort(ptr + MC_ENTITY_OFFSET, blockId);
-		MemoryUtil.memPutShort(ptr + MC_ENTITY_OFFSET + 2, renderType);
+		var baseEncoder = this.baseEncoder;
+		baseEncoder.prepare(vertices);
 
 		// Vertex positions are relative to the section, so only the block's position within it is needed
-		MemoryUtil.memPutInt(ptr + BLOCK_INFO_OFFSET, (localPosX & 15)
-				| ((localPosY & 15) << 4)
-				| ((localPosZ & 15) << 8)
-				| (ignoreMidBlock ? 0 : 1 << 12)
-				| ((lightValue & 0xFF) << 16));
+		int extension = encodeBlockOffset(baseEncoder.originBlock(0), localPosX)
+				| (encodeBlockOffset(baseEncoder.originBlock(1), localPosY) << 2)
+				| (encodeBlockOffset(baseEncoder.originBlock(2), localPosZ) << 4)
+				| (ignoreMidBlock ? 0 : 1 << 6)
+				| (Math.min(lightValue & 0xFF, 15) << 7)
+				| ((renderType & 1) << 11)
+				| ((blockId & 0xFFFF) << 12);
 
-		return vertexPtr;
+		return baseEncoder.writeQuad(ptr, material, vertices, chunkId, extension);
+	}
+
+	/**
+	 * Clamped for quads whose minimum lies outside [-1, 3) blocks of their block's corner, which leaves their
+	 * {@code at_midBlock} off by whole blocks.
+	 */
+	private static int encodeBlockOffset(int originBlock, int localPos) {
+		return Math.max(0, Math.min(3, originBlock - (localPos & 15) + 1));
 	}
 }

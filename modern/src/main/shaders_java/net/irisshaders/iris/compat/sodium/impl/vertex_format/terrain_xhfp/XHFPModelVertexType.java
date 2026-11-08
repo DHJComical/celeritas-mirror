@@ -1,41 +1,35 @@
 package net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp;
 
-import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeFormat;
-import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexLayout;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
+import org.embeddedt.embeddium.impl.render.chunk.vertex.format.impl.QuadRelativeChunkVertex;
 
 /**
  * Like HFPModelVertexType, but extended to support Iris.
+ * <p>
+ * The layout is {@link QuadRelativeChunkVertex}'s, with these fields in its extension bits:
+ * <ul>
+ *     <li>Bits 0-5: the block's position relative to the block containing the quad's origin, 2 bits per axis. The
+ *     value is the origin's block minus the block's own, plus 1.</li>
+ *     <li>Bit 6: whether {@code at_midBlock} has an offset.</li>
+ *     <li>Bits 7-10: the block's light emission.</li>
+ *     <li>Bit 11: the render type of {@code mc_Entity}.</li>
+ *     <li>Bits 12-27: the block ID of {@code mc_Entity}, signed.</li>
+ * </ul>
  */
 public class XHFPModelVertexType implements ChunkVertexType {
-    public static final ChunkVertexType BASE_VERTEX_TYPE = ChunkMeshFormats.VANILLA_LIKE;
-
-	public static final int HEADER_STRIDE = 8;
-	public static final int VERTEX_STRIDE = 28;
+	public static final QuadRelativeChunkVertex BASE_VERTEX_TYPE = ChunkMeshFormats.QUAD_RELATIVE;
 
 	/**
-	 * Packs the block's position within its section (4 bits per axis), whether {@code at_midBlock} has an offset
-	 * (bit 12), and the block's light emission (bits 16 to 23).
+	 * GLSL reading the extension bits, shifted down to bit 0.
 	 */
-	public static final String BLOCK_INFO = "celeritas_BlockInfo";
-
-	public static final GlVertexFormat HEADER_FORMAT = GlVertexFormat.builder(HEADER_STRIDE)
-		.addElement("mc_Entity", 0, GlVertexAttributeFormat.SHORT, 2, false, false)
-		.addElement(BLOCK_INFO, 4, GlVertexAttributeFormat.UNSIGNED_INT, 1, false, true)
-		.build();
-
-	public static final GlVertexFormat VERTEX_FORMAT = GlVertexFormat.builder(VERTEX_STRIDE)
-		.addElements(ChunkVertexLayout.requireAttributes(BASE_VERTEX_TYPE.getLayout()).getAttributes().stream().filter(a -> !a.getName().equals("a_RdhFactor")).toList())
-		.build();
-
-	public static final ChunkVertexLayout LAYOUT = ChunkVertexLayout.withHeader(VERTEX_FORMAT, HEADER_FORMAT, 4);
+	public static final String EXTENSION = "(" + QuadRelativeChunkVertex.QUAD_DATA + ".y >> " + QuadRelativeChunkVertex.EXTENSION_SHIFT + "u)";
 
 	@Override
 	public ChunkVertexLayout getLayout() {
-		return LAYOUT;
+		return BASE_VERTEX_TYPE.getLayout();
 	}
 
 	@Override

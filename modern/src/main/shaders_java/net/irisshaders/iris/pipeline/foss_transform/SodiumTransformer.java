@@ -27,7 +27,7 @@ public class SodiumTransformer {
             translationUnit.rename("vaUV2", "_vert_tex_light_coord");
 
             translationUnit.replaceExpression("textureMatrix", "mat4(1.0f)");
-            replaceMidBlock(translationUnit, parameters);
+            replaceBlockInputs(translationUnit, parameters);
             replaceQuadInputs(translationUnit, parameters);
 
             injectVertInit(translationUnit, parameters);
@@ -96,7 +96,7 @@ public class SodiumTransformer {
                     "vec4 getVertexPosition() { return vec4(_vert_position + u_RegionOffset + _get_draw_translation(_draw_id), 1.0f); }");
             translationUnit.replaceExpression("gl_Vertex", "getVertexPosition()");
 
-            replaceMidBlock(translationUnit, parameters);
+            replaceBlockInputs(translationUnit, parameters);
             replaceQuadInputs(translationUnit, parameters);
 
             // inject here so that _vert_position is available to the above. (injections
