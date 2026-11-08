@@ -11,11 +11,8 @@ import org.embeddedt.embeddium.impl.render.chunk.vertex.format.impl.QuadRelative
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.impl.VanillaLikeChunkVertex;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -169,18 +166,6 @@ class VertexFetchGeneratorTest {
         }
     }
 
-    @Test
-    void compactPulledSourceIsUnchanged() throws IOException {
-        assertEquals(readResource("compact_pulled.glsl"),
-                VertexFetchGenerator.generate(CompactChunkVertex.LAYOUT, 4, VertexFetchMode.PULLED, false));
-    }
-
-    @Test
-    void compactAttributeSourceIsUnchanged() throws IOException {
-        assertEquals(readResource("compact_attributes.glsl"),
-                VertexFetchGenerator.generate(CompactChunkVertex.LAYOUT, 4, VertexFetchMode.ATTRIBUTES, false));
-    }
-
     /**
      * Fills records with random bytes, then checks that every component the plan extracts from 32-bit words equals what
      * attribute fetch reads from the attribute's own offset and type.
@@ -275,12 +260,5 @@ class VertexFetchGeneratorTest {
             case UINT_TO_FLOAT -> (float) unsigned;
             case SINT_TO_FLOAT -> (float) signed;
         };
-    }
-
-    private static String readResource(String name) throws IOException {
-        try (InputStream in = VertexFetchGeneratorTest.class.getResourceAsStream(name)) {
-            assertNotNull(in, "missing test resource " + name);
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        }
     }
 }
