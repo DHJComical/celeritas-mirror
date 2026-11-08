@@ -8,6 +8,8 @@ package org.embeddedt.embeddium.impl.render.chunk.occlusion.geometry;
 import grondag.bitraster.PackedBox;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongArrays;
+import it.unimi.dsi.fastutil.longs.LongComparators;
 
 import java.util.Arrays;
 import java.util.function.IntConsumer;
@@ -100,7 +102,7 @@ public class BoxFinder {
             }
         }
 
-        sortedBoxes.sort((a, b) -> Long.compare(b, a));
+        LongArrays.quickSort(sortedBoxes.elements(), 0, sortedBoxes.size(), LongComparators.OPPOSITE_COMPARATOR);
     }
 
     private void markBoxNeighborSlices() {
@@ -168,7 +170,7 @@ public class BoxFinder {
             }
         }
 
-        sortedBoxes.sort((a, b) -> Long.compare(b, a));
+        LongArrays.quickSort(sortedBoxes.elements(), 0, sortedBoxes.size(), LongComparators.OPPOSITE_COMPARATOR);
     }
 
     private void addBoxesFromSlice(int areaKey, int slice) {
