@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.profiling.Profiler;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -154,5 +155,14 @@ public class HandRenderer {
 
 	public boolean isRenderingSolid() {
 		return renderingSolid;
+	}
+
+	/**
+	 * Never called. It exists only because mods inject into upstream Iris's method of this name, and their required
+	 * mixins fail without it. Hands are split into solid and translucent features rather than by item.
+	 */
+	@Deprecated
+	public boolean isHandTranslucent(ItemStack itemStack) {
+		return false;
 	}
 }
