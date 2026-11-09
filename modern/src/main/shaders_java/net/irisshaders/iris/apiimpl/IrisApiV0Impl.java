@@ -10,6 +10,13 @@ import net.irisshaders.iris.pipeline.WorldRenderingPipeline;
 import net.irisshaders.iris.shadows.ShadowRenderingState;
 import net.irisshaders.iris.vertices.IrisTextVertexSinkImpl;
 import net.minecraft.client.gui.screens.Screen;
+//? if >=26.1 {
+/*import com.mojang.blaze3d.pipeline.RenderPipeline;
+import net.irisshaders.iris.api.v0.IrisProgram;
+import net.irisshaders.iris.api.v0.IrisShadowProgram;
+import net.irisshaders.iris.api.v0.IrisShadowRenderCallback;
+import net.irisshaders.iris.shadows.ShadowRenderCallbacks;
+*///?}
 
 import java.nio.ByteBuffer;
 import java.util.function.IntFunction;
@@ -20,6 +27,9 @@ public class IrisApiV0Impl implements IrisApi {
 
 	@Override
 	public int getMinorApiRevision() {
+		//? if >=26.1 {
+		/*return 4;
+		*///?} else
 		return 2;
 	}
 
@@ -69,4 +79,21 @@ public class IrisApiV0Impl implements IrisApi {
 
 		return pipeline.getSunPathRotation();
 	}
+	//? if >=26.1 {
+
+	/*@Override
+	public void assignPipeline(RenderPipeline pipeline, IrisProgram program) {
+		IrisApiPipelines.assign(pipeline, program);
+	}
+
+	@Override
+	public void assignPipelineShadow(RenderPipeline pipeline, IrisShadowProgram program) {
+		IrisApiPipelines.assignShadow(pipeline, program);
+	}
+
+	@Override
+	public void registerShadowRenderCallback(IrisShadowRenderCallback callback) {
+		ShadowRenderCallbacks.register(callback);
+	}
+	*///?}
 }

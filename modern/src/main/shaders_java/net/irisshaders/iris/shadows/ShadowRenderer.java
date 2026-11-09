@@ -719,6 +719,13 @@ public class ShadowRenderer {
 			RenderDevice.exitManagedCode();
 		}
 
+		if (!ShadowRenderCallbacks.isEmpty()) {
+			profiler.popPush("iris_shadow_callbacks");
+			pipeline.setPhase(WorldRenderingPhase.TERRAIN_CUTOUT);
+			ShadowRenderCallbacks.invoke(MODELVIEW, shadowProjection, cameraX, cameraY, cameraZ, CapturedRenderingState.INSTANCE.getTickDelta());
+			pipeline.setPhase(WorldRenderingPhase.NONE);
+		}
+
 		profiler.popPush("entities");
 
 		// Create a constrained shadow frustum for entities to avoid rendering faraway entities in the shadow pass,

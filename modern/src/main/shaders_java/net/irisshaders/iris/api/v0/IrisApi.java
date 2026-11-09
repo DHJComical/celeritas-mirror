@@ -1,6 +1,8 @@
 package net.irisshaders.iris.api.v0;
 
 import net.irisshaders.iris.apiimpl.IrisApiV0Impl;
+//? if >=26.1
+//import com.mojang.blaze3d.pipeline.RenderPipeline;
 
 import java.nio.ByteBuffer;
 import java.util.function.IntFunction;
@@ -25,7 +27,7 @@ public interface IrisApi {
 	 * if they wish to check whether given API calls are available on
 	 * the currently installed Iris version.
 	 *
-	 * @return The current minor revision. Currently, revision 2.
+	 * @return The current minor revision. Currently, revision 4 on 26.1 and later, and 2 before.
 	 */
 	int getMinorApiRevision();
 
@@ -115,4 +117,27 @@ public interface IrisApi {
 	 * @since API v0.2
 	 */
 	float getSunPathRotation();
+	//? if >=26.1 {
+
+	/*/^*
+	 * Assigns a render pipeline to an Iris shader key.
+	 *
+	 * @since API v0.3
+	 ^/
+	void assignPipeline(RenderPipeline pipeline, IrisProgram program);
+
+	/^*
+	 * Assigns a render pipeline to an Iris shader key for the shadow pass.
+	 *
+	 * @since API v0.4
+	 ^/
+	void assignPipelineShadow(RenderPipeline pipeline, IrisShadowProgram program);
+
+	/^*
+	 * Registers a callback invoked during the shadow pass, after opaque terrain.
+	 *
+	 * @since API v0.4
+	 ^/
+	void registerShadowRenderCallback(IrisShadowRenderCallback callback);
+	*///?}
 }

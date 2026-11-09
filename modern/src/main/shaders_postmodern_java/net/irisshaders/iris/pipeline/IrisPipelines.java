@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -35,6 +36,8 @@ public final class IrisPipelines {
 	private static final Map<RenderPipeline, Function<IrisRenderingPipeline, ShaderKey>> MAIN = new Reference2ObjectLinkedOpenHashMap<>();
 	private static final Map<RenderPipeline, Function<IrisRenderingPipeline, ShaderKey>> SHADOW = new Reference2ObjectOpenHashMap<>();
 	private static final Set<RenderPipeline> VANILLA_PIPELINES = findVanillaPipelines();
+	// The built-in assignments, which unassigned pipelines are matched against. Mods' assignments only cover their own.
+	private static final List<RenderPipeline> MATCH_CANDIDATES;
 	// Each pipeline drawn with, and the one whose assignments it takes.
 	private static final Map<RenderPipeline, RenderPipeline> EQUIVALENTS = new Reference2ObjectOpenHashMap<>();
 
@@ -159,6 +162,8 @@ public final class IrisPipelines {
 		assignShadow(RenderPipelines.LIGHTNING, p -> ShaderKey.SHADOW_LIGHTNING);
 		assignShadow(RenderPipelines.DRAGON_RAYS, p -> ShaderKey.SHADOW_LIGHTNING);
 		assignShadow(RenderPipelines.DRAGON_RAYS_DEPTH, p -> ShaderKey.SHADOW_LIGHTNING);
+
+		MATCH_CANDIDATES = List.copyOf(MAIN.keySet());
 	}
 
 	private IrisPipelines() {
@@ -186,6 +191,32 @@ public final class IrisPipelines {
 
 	private static void assignShadow(RenderPipeline pipeline, Function<IrisRenderingPipeline, ShaderKey> key) {
 		SHADOW.put(pipeline, key);
+	}
+
+	/**
+	 * Makes the pipeline, and those derived from it, draw with the key in the main pass. A pipeline assigned for only
+	 * one pass draws with its own shaders in the other.
+	 *
+	 * @throws IllegalStateException if the pipeline already has a main pass assignment
+	 */
+	public static void assignPipeline(RenderPipeline pipeline, ShaderKey key) {
+		assignFromApi(MAIN, pipeline, key);
+	}
+
+	/**
+	 * Like {@link #assignPipeline}, for the shadow pass.
+	 */
+	public static void assignPipelineShadow(RenderPipeline pipeline, ShaderKey key) {
+		assignFromApi(SHADOW, pipeline, key);
+	}
+
+	private static void assignFromApi(Map<RenderPipeline, Function<IrisRenderingPipeline, ShaderKey>> keys, RenderPipeline pipeline, ShaderKey key) {
+		if (keys.putIfAbsent(pipeline, p -> key) != null) {
+			throw new IllegalStateException("Pipeline " + pipeline.getLocation() + " is already assigned an Iris program");
+		}
+
+		// Pipelines already resolved, including this one and those derived from it, may resolve differently now.
+		EQUIVALENTS.clear();
 	}
 
 	/**
@@ -217,7 +248,7 @@ public final class IrisPipelines {
 		int bestLevel = NO_MATCH;
 
 		// Where vanilla pipelines match equally well, the first assigned stands for all of them.
-		for (RenderPipeline vanilla : MAIN.keySet()) {
+		for (RenderPipeline vanilla : MATCH_CANDIDATES) {
 			int level = matchLevel(renderPipeline, vanilla);
 
 			if (level < bestLevel) {
