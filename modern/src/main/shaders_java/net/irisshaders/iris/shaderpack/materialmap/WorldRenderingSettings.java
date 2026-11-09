@@ -2,7 +2,7 @@ package net.irisshaders.iris.shaderpack.materialmap;
 
 import it.unimi.dsi.fastutil.objects.Object2IntFunction;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.irisshaders.iris.modern.materialmap.FallbackTextureMaterials;
+import net.irisshaders.iris.modern.materialmap.ShapeEquivalence;
 import net.minecraft.client.Minecraft;
 //? if <26.1 {
 import net.minecraft.client.renderer.RenderType;
@@ -20,7 +20,7 @@ public class WorldRenderingSettings {
 
 	private boolean reloadRequired;
     private Object2IntMap<BlockState> blockStateIds;
-    private FallbackTextureMaterials fallbackTextureMaterialMapping;
+    private ShapeEquivalence shapeEquivalence;
 	//? if <26.1 {
 	private Map<Block, RenderType> blockTypeIds;
 	//?} else
@@ -82,21 +82,13 @@ public class WorldRenderingSettings {
 
 		this.reloadRequired = true;
 		this.blockStateIds = blockStateIds;
+		this.shapeEquivalence = blockStateIds != null ? new ShapeEquivalence(blockStateIds) : null;
 	}
 
-    @Nullable
-    public FallbackTextureMaterials getFallbackTextureMaterialMapping() {
-        return fallbackTextureMaterialMapping;
-    }
-
-    public void setFallbackTextureMaterialMapping(FallbackTextureMaterials fallbackTextureMaterialMapping) {
-        if (Objects.equals(this.fallbackTextureMaterialMapping, fallbackTextureMaterialMapping)) {
-            return;
-        }
-
-        this.reloadRequired = true;
-        this.fallbackTextureMaterialMapping = fallbackTextureMaterialMapping;
-    }
+	@Nullable
+	public ShapeEquivalence getShapeEquivalence() {
+		return shapeEquivalence;
+	}
 
 
     @Nullable

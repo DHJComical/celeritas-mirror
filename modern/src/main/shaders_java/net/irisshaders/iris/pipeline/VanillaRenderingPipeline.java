@@ -30,7 +30,6 @@ public class VanillaRenderingPipeline implements WorldRenderingPipeline {
 		WorldRenderingSettings.INSTANCE.setUseExtendedVertexFormat(false);
 		WorldRenderingSettings.INSTANCE.setVoxelizeLightBlocks(false);
 		WorldRenderingSettings.INSTANCE.setBlockTypeIds(null);
-        WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(null);
 	}
 
 	@Override

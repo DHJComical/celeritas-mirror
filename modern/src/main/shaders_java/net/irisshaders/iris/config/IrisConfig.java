@@ -46,12 +46,6 @@ public class IrisConfig {
     @Setter
     private boolean blockUnknownShaders;
     /**
-     * Whether block ID selection can fall back to using textures to guess the material.
-     */
-    @Getter
-    @Setter
-    private boolean enableTextureMaterialFallback;
-    /**
      * Whether Flywheel content renders through a pack's regular gbuffers programs when the pack has no Flywheel
      * programs of its own.
      */
@@ -64,7 +58,6 @@ public class IrisConfig {
 		enableShaders = true;
 		enableDebugOptions = false;
 		disableUpdateMessage = false;
-        enableTextureMaterialFallback = true;
 		this.propertiesPath = propertiesPath;
 	}
 
@@ -158,7 +151,6 @@ public class IrisConfig {
 		enableDebugOptions = "true".equals(properties.getProperty("enableDebugOptions"));
         disableUpdateMessage = "true".equals(properties.getProperty("disableUpdateMessage"));
         blockUnknownShaders = "true".equals(properties.getProperty("blockUnknownShaders"));
-        enableTextureMaterialFallback = !"false".equals(properties.getProperty("enableTextureMaterialFallback"));
         flywheelFallbackMode = "true".equals(properties.getProperty("flywheelFallbackMode"));
 		try {
 			IrisVideoSettings.shadowDistance = Integer.parseInt(properties.getProperty("maxShadowRenderDistance", "32"));
@@ -201,7 +193,6 @@ public class IrisConfig {
 		properties.setProperty("enableDebugOptions", enableDebugOptions ? "true" : "false");
         properties.setProperty("disableUpdateMessage", disableUpdateMessage ? "true" : "false");
         properties.setProperty("blockUnknownShaders", blockUnknownShaders ? "true" : "false");
-        properties.setProperty("enableTextureMaterialFallback", enableTextureMaterialFallback ? "true" : "false");
         properties.setProperty("flywheelFallbackMode", flywheelFallbackMode ? "true" : "false");
 		properties.setProperty("maxShadowRenderDistance", String.valueOf(IrisVideoSettings.shadowDistance));
 		properties.setProperty("colorSpace", IrisVideoSettings.colorSpace.name());

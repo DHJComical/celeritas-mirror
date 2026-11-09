@@ -2,21 +2,20 @@ package net.irisshaders.iris.compat.sodium.impl.vertex_format.terrain_xhfp;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
-import net.irisshaders.iris.modern.materialmap.FallbackTextureMaterials;
+//? if >=26.1
+//import net.irisshaders.iris.compat.general.IrisModelPart;
+import net.irisshaders.iris.modern.materialmap.QuadAppearanceProvider;
+import net.irisshaders.iris.modern.materialmap.QuadAppearanceProviders;
+import net.irisshaders.iris.modern.materialmap.ShapeEquivalence;
 import net.irisshaders.iris.shaderpack.materialmap.WorldRenderingSettings;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.embeddedt.embeddium.impl.model.quad.BakedQuadView;
 import org.embeddedt.embeddium.impl.modern.render.chunk.ContextAwareChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.modern.render.chunk.compile.pipeline.BlockRenderContext;
 import org.embeddedt.embeddium.impl.render.chunk.terrain.material.Material;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexEncoder;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.impl.QuadRelativeChunkVertex;
-//? if <26.1
-import org.embeddedt.embeddium.impl.render.texture.TextureAtlasExtended;
 import org.jetbrains.annotations.Nullable;
 import org.taumc.celeritas.shaders.CeleritasShaders;
 
@@ -27,24 +26,28 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
 
 
 
-    private static final BlockState AIR = Blocks.AIR.defaultBlockState();
-
     private int localPosX;
     private int localPosY;
     private int localPosZ;
 
     private short blockId;
-    private BlockState blockState;
     private short renderType;
     private boolean ignoreMidBlock;
     private byte lightValue;
 
     private final Object2IntMap<BlockState> blockStateIds = Objects.requireNonNullElse(WorldRenderingSettings.INSTANCE.getBlockStateIds(), Object2IntMaps.emptyMap());
 
-    @SuppressWarnings("deprecation")
-    private final TextureAtlas blocksAtlas = (TextureAtlas)Minecraft.getInstance().getTextureManager().getTexture(TextureAtlas.LOCATION_BLOCKS);
+    private final @Nullable ShapeEquivalence shapeEquivalence = WorldRenderingSettings.INSTANCE.getShapeEquivalence();
+    private final ShapeEquivalence.Probe shapeProbe = new ShapeEquivalence.Probe();
 
-    private final FallbackTextureMaterials fallbackMaterials = WorldRenderingSettings.INSTANCE.getFallbackTextureMaterialMapping();
+    private final QuadAppearanceProviders.Lookup appearanceProviders = QuadAppearanceProviders.createLookup();
+
+    private BlockState appearanceShape;
+
+    // The last appearance resolved. Every quad of a block asks, nearly always with the same result.
+    private BlockState memoShapeState;
+    private BlockState memoAppearanceState;
+    private short memoBlockId;
 
     private final QuadRelativeChunkVertex.Encoder baseEncoder = XHFPModelVertexType.BASE_VERTEX_TYPE.createEncoder();
 
@@ -69,35 +72,77 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
     }
 
     @Override
-    public void prepareToRenderBlockFace(BlockRenderContext ctx, @Nullable Direction side) {
+    public void prepareToRenderBlockFace(BlockRenderContext ctx, @Nullable Direction side, BakedQuadView quad) {
         var state = ctx.state();
         this.blockId = (short) this.blockStateIds.getOrDefault(state, -1);
+        BlockState appearanceState = this.findAppearance(ctx, state, side, quad);
+        if (appearanceState != null) {
+            this.applyAppearance(ctx, this.appearanceShape, appearanceState);
+        }
+        this.renderType = 0;
+        this.lightValue = (byte)ctx.lightEmission();
+        this.setLocalPos(ctx);
+    }
+
+    // Returns the state this quad looks like if it should take that state's ID, or null to keep the block's own.
+    // Sets appearanceShape to the shape the quad belongs to.
+    private @Nullable BlockState findAppearance(BlockRenderContext ctx, BlockState state, @Nullable Direction side, BakedQuadView quad) {
+        this.appearanceShape = state;
+        //? if >=26.1 {
+        /*BlockState partAppearance = ((IrisModelPart) ctx.model()).getBlockAppearance();
+        if (partAppearance != null && !partAppearance.isAir()) {
+            return partAppearance;
+        }
+        *///?}
+        QuadAppearanceProvider provider = this.appearanceProviders.get(state.getBlock());
+        if (provider != null) {
+            BlockState appearanceState = provider.findAppearance(ctx, side, quad);
+            this.appearanceShape = provider.shapeState();
+            return appearanceState;
+        }
         //? if forgelike && >=1.19 {
+        // Fallback for blocks the pack doesn't map.
         if (this.blockId == -1 && side != null) {
-            // Attempt fallback using getAppearance. This is the plan B for block IDs; plan C will use the quad texture
-            // to deduce a material.
             try {
                 BlockState appearanceState = state.getAppearance(ctx.localSlice(), ctx.pos(), side, null, null);
                 if (appearanceState != state && !appearanceState.isAir()) {
-                    this.blockId = (short)this.blockStateIds.getOrDefault(appearanceState, -1);
-                    state = appearanceState;
+                    return appearanceState;
                 }
             } catch (Exception e) {
                 logGetAppearanceFailure(state, e);
             }
         }
         //?}
-        this.blockState = state;
-        this.renderType = 0;
-        this.lightValue = (byte)ctx.lightEmission();
-        this.setLocalPos(ctx);
+        return null;
+    }
+
+    // Sets blockId from the state a quad of this shape and appearance resolves to.
+    private void applyAppearance(BlockRenderContext ctx, BlockState shapeState, BlockState appearanceState) {
+        if (shapeState == this.memoShapeState && appearanceState == this.memoAppearanceState) {
+            this.blockId = this.memoBlockId;
+            return;
+        }
+
+        BlockState resolved = appearanceState;
+        if (this.shapeEquivalence != null) {
+            resolved = this.shapeEquivalence.resolve(shapeState, appearanceState, ctx.localSlice(), ctx.pos(), this.shapeProbe);
+        }
+        short id = (short) this.blockStateIds.getOrDefault(resolved, -1);
+
+        // Blocks with a dynamic shape can resolve differently by position, so the memo can't stand in for them.
+        if (!shapeState.getBlock().hasDynamicShape()) {
+            this.memoShapeState = shapeState;
+            this.memoAppearanceState = appearanceState;
+            this.memoBlockId = id;
+        }
+
+        this.blockId = id;
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public void prepareToVoxelizeLight(BlockState state) {
         this.blockId = (short)this.blockStateIds.getOrDefault(state, -1);
-        this.blockState = state;
         this.renderType = 0;
         this.lightValue = (byte)state.getLightEmission();
         this.ignoreMidBlock = true;
@@ -110,7 +155,6 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
     public void prepareToRenderFluidFace(BlockRenderContext ctx) {
         var state = ctx.state().getFluidState().createLegacyBlock();
         this.blockId = (short) this.blockStateIds.getOrDefault(state, -1);
-        this.blockState = state;
         this.renderType = 1;
         this.lightValue = (byte)ctx.lightEmission();
         this.setLocalPos(ctx);
@@ -119,7 +163,6 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
     @Override
     public void finishRenderingBlock() {
         this.blockId = -1;
-        this.blockState = AIR;
         this.renderType = -1;
         this.localPosX = 0;
         this.localPosY = 0;
@@ -130,29 +173,7 @@ public class XHFPTerrainVertex implements ChunkVertexEncoder, ContextAwareChunkV
 
 	@Override
 	public long writePrimitive(long ptr, Material material, Vertex[] vertices, int chunkId) {
-		float uSum = 0.0f;
-		float vSum = 0.0f;
-
-		for (Vertex vertex : vertices) {
-			uSum += vertex.u;
-			vSum += vertex.v;
-		}
-
-		float midU = uSum / vertices.length;
-		float midV = vSum / vertices.length;
-
 		short blockId = this.blockId;
-
-		//? if <26.1 {
-		if (blockId == -1 && fallbackMaterials != null) {
-			// Try to fall back to the "canonical" block ID for the texture, this can often greatly improve
-			// the visuals of facade-style blocks
-			TextureAtlasSprite sprite = ((TextureAtlasExtended)blocksAtlas).celeritas$findFromUV(midU, midV);
-			if (sprite != null) {
-				blockId = (short) fallbackMaterials.getFallbackId(sprite, this.blockState);
-			}
-		}
-		//?}
 
 		var baseEncoder = this.baseEncoder;
 		baseEncoder.prepare(vertices);

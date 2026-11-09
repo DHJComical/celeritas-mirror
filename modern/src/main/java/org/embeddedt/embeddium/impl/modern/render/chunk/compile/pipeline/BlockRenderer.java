@@ -277,7 +277,7 @@ public class BlockRenderer {
                 if (!usedContextEncoders.contains(encoder)) {
                     usedContextEncoders.add(encoder);
                 }
-                encoder.prepareToRenderBlockFace(ctx, cullFace);
+                encoder.prepareToRenderBlockFace(ctx, cullFace, quad);
             }
 
             this.writeGeometry(ctx, builder, offset, quadMaterial, quad, vertexColors, lightData, reorient);

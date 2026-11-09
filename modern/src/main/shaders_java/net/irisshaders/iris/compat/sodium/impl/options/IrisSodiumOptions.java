@@ -61,13 +61,6 @@ public class IrisSodiumOptions {
             ev.addPage(new OptionPage(StandardOptions.Pages.SHADERS, TextComponent.literal("Shaders"), ImmutableList.of(
                     OptionGroup.createBuilder()
                             .add(OptionImpl.createBuilder(boolean.class, irisOpts)
-                                    .setName(TextComponent.literal("Enable Texture Material Fallback"))
-                                    .setTooltip(TextComponent.literal("Uses textures to guess block.properties IDs if they are not set."))
-                                    .setControl(TickBoxControl::new)
-                                    .setBinding(IrisConfig::setEnableTextureMaterialFallback, IrisConfig::isEnableTextureMaterialFallback)
-                                    .setFlags(OptionFlag.REQUIRES_SHADER_PIPELINE_RELOAD)
-                                    .build())
-                            .add(OptionImpl.createBuilder(boolean.class, irisOpts)
                                     .setName(TextComponent.literal("Block Modded Core Shaders"))
                                     .setTooltip(TextComponent.literal("Prevents modded core shaders from being active with the Iris pipeline."))
                                     .setControl(TickBoxControl::new)

@@ -8,7 +8,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
-import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.compat.dh.DHCompat;
 import net.irisshaders.iris.features.FeatureFlags;
 import net.irisshaders.iris.gl.IrisRenderSystem;
@@ -34,8 +33,6 @@ import net.irisshaders.iris.helpers.OptionalBoolean;
 import net.irisshaders.iris.helpers.Tri;
 import net.irisshaders.iris.mixin.GlStateManagerAccessor;
 import net.irisshaders.iris.modern.materialmap.BlockMaterialMapping;
-//? if <26.1
-import net.irisshaders.iris.modern.materialmap.ModelTextureAnalyzer;
 import net.irisshaders.iris.pathways.CenterDepthSampler;
 import net.irisshaders.iris.pathways.HorizonRenderer;
 import net.irisshaders.iris.pathways.colorspace.ColorSpace;
@@ -940,14 +937,6 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
             WorldRenderingSettings.INSTANCE.setBlockStateIds(
                     BlockMaterialMapping.createBlockStateIdMap(pack.getIdMap().getBlockProperties()));
             WorldRenderingSettings.INSTANCE.setBlockTypeIds(BlockMaterialMapping.createBlockTypeMap(pack.getIdMap().getBlockRenderTypeMap()));
-            //? if <26.1 {
-            if (Iris.getIrisConfig().isEnableTextureMaterialFallback()) {
-                WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(ModelTextureAnalyzer.runAnalysisSync(WorldRenderingSettings.INSTANCE.getBlockStateIds()));
-            } else {
-                WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(null);
-            }
-            //?} else
-            //WorldRenderingSettings.INSTANCE.setFallbackTextureMaterialMapping(null);
             WorldRenderingSettings.INSTANCE.reloadRendererIfRequired();
             blockIdsNeedPopulation = false;
         }
