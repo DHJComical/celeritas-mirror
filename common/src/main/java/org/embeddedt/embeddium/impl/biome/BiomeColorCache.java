@@ -100,7 +100,9 @@ public abstract class BiomeColorCache<BIOME, RESOLVER> {
                 int relativeX = worldX - this.minX;
                 int relativeZ = worldZ - this.minZ;
 
-                int color = this.resolveColor(resolver, biome, worldX, worldY, worldZ);
+                // Opaque like the blurred colors. Biome colors written as plain integers in data packs decode with
+                // zero alpha, which would make tinted translucent geometry such as water invisible when unblurred.
+                int color = this.resolveColor(resolver, biome, worldX, worldY, worldZ) | 0xFF000000;
 
                 if (firstSeenColor == 0) {
                     firstSeenColor = color;
