@@ -746,7 +746,12 @@ public abstract class RenderSectionManager {
 
     @MustBeInvokedByOverriders
     protected boolean updateSectionInfo(RenderSection render, @Nullable BuiltRenderSectionData info) {
+        boolean firstBuild = render.getBuiltContext() == null && info != null;
         boolean changed = render.setInfo(info);
+
+        if (firstBuild && !this.isWithinFadeExemptDistance(render)) {
+            render.getRegion().updateSectionLoadTime(render);
+        }
 
         if (changed) {
             if (!(info instanceof MinecraftBuiltRenderSectionData<?, ?> data)) {
@@ -1011,6 +1016,12 @@ public abstract class RenderSectionManager {
     }
 
     private static final float NEARBY_REBUILD_DISTANCE = MathUtil.square(16.0f);
+
+    private static final float FADE_EXEMPT_DISTANCE = 768.0f;
+
+    private boolean isWithinFadeExemptDistance(RenderSection section) {
+        return this.cameraBlockPosition != null && section.getSquaredDistanceFromBlockCenter(this.cameraBlockPosition.x(), this.cameraBlockPosition.y(), this.cameraBlockPosition.z()) < FADE_EXEMPT_DISTANCE;
+    }
 
     private boolean shouldPrioritizeRebuild(RenderSection section) {
         return this.cameraBlockPosition != null && section.getSquaredDistanceFromBlockCenter(this.cameraBlockPosition.x(), this.cameraBlockPosition.y(), this.cameraBlockPosition.z()) < NEARBY_REBUILD_DISTANCE;
