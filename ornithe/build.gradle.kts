@@ -1,6 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.fabricmc.loom.task.RemapJarTask
-import org.embeddedt.embeddium.gradle.build.conventions.LWJGLHelper
 import java.net.URI
 
 plugins {
@@ -16,6 +15,19 @@ repositories {
             includeGroup("net.fabricmc")
         }
     }
+    exclusiveContent {
+        forRepository { maven("https://maven.cloverclient.com/releases") }
+        filter {
+            includeGroup("pl.tomgirl")
+        }
+    }
+}
+
+// Pylon bundles LWJGL3 and replaces the LWJGL2 API, so no LWJGL artifact from the version manifest may stay on the
+// classpath.
+configurations.configureEach {
+    exclude(group = "org.lwjgl.lwjgl")
+    exclude(group = "org.lwjgl")
 }
 
 group = "org.embeddedt"
@@ -45,6 +57,12 @@ loom {
     mixin {
         useLegacyMixinAp = false
     }
+    if (stonecutter.eval(project.name, "<1.6")) {
+        runs.configureEach {
+            // Required by LegacyFix
+            vmArg("--add-opens=java.base/java.lang=ALL-UNNAMED")
+        }
+    }
 }
 
 ploceus {
@@ -71,10 +89,11 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-api:2.0-beta9")
 
     modImplementation("net.fabricmc:fabric-loader:${rootProject.property("fabricloader")}")
-}
-
-listOf("minecraftClientLibraries", "minecraftClientRuntimeLibraries").forEach {
-    LWJGLHelper.convertLwjgl2To3(project, it)
+    modImplementation("pl.tomgirl:pylon:${rootProject.property("pylon_version")}")
+    if (stonecutter.eval(project.name, "<1.6")) {
+        // Pylon needs a deAWT mod before 1.6
+        modLocalRuntime("maven.modrinth:legacyfix:26.10")
+    }
 }
 
 tasks.named("validateAccessWidener") {
