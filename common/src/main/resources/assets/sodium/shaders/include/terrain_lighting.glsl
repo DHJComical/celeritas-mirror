@@ -4,7 +4,9 @@
 uniform sampler2D u_LightTex; // The light map texture sampler
 
 vec4 _sample_lightmap(sampler2D lightMap, ivec2 uv) {
-    return texture(lightMap, clamp(uv / 256.0, vec2(0.5 / 16.0), vec2(15.5 / 16.0)));
+    // Explicit LOD: Mesa's d3d12 driver lowers texture() on a linear GL_CLAMP sampler (the 1.8 lightmap) to a
+    // derivative-based sample even in vertex shaders, which then fails to compile.
+    return textureLod(lightMap, clamp(uv / 256.0, vec2(0.5 / 16.0), vec2(15.5 / 16.0)), 0.0);
 }
 #endif
 

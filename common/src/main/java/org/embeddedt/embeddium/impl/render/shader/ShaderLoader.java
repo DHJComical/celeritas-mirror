@@ -51,7 +51,8 @@ public class ShaderLoader {
             "#version 120",
             "#define LEGACY",
             "#define uint unsigned int",
-            "#define texture texture2D"
+            "#define texture texture2D",
+            "#define textureLod texture2DLod"
     ) + "\n";
 
     public static boolean useLegacyGlsl() {
