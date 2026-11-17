@@ -85,14 +85,14 @@ public class ArchaicRenderSectionManager extends RenderSectionManager {
     }
 
     @Override
-    protected @Nullable ChunkBuilderTask<ChunkBuildOutput> createRebuildTask(RenderSection render, int frame) {
+    protected @Nullable ChunkBuilderTask<ChunkBuildOutput> createRebuildTask(RenderSection render, int buildId) {
         if (isSectionVisuallyEmpty(render.getChunkX(), render.getChunkY(), render.getChunkZ())) {
             return null;
         }
 
         ChunkRenderContext context = new ChunkRenderContext(new SectionPos(render.getChunkX(), render.getChunkY(), render.getChunkZ()));
 
-        return new ChunkBuilderMeshingTask(render, context, frame, this.cameraPosition,
+        return new ChunkBuilderMeshingTask(render, context, buildId, this.cameraPosition,
                 this.useRasterOcclusionCulling());
     }
 

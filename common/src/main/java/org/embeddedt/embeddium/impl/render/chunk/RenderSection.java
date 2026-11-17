@@ -89,8 +89,8 @@ public class RenderSection extends AbstractSection {
     @Nullable
     private CancellationToken buildCancellationToken = null;
 
-    private int lastBuiltFrame = -1;
-    private int lastSubmittedFrame = -1;
+    private int lastBuiltId = -1;
+    private int lastSubmittedId = -1;
 
     // Lifetime state
     private boolean disposed;
@@ -256,19 +256,19 @@ public class RenderSection extends AbstractSection {
         }
     }
 
-    public int getLastBuiltFrame() {
-        return this.lastBuiltFrame;
+    public int getLastBuiltId() {
+        return this.lastBuiltId;
     }
 
-    public void setLastBuiltFrame(int lastBuiltFrame) {
-        this.lastBuiltFrame = lastBuiltFrame;
+    public void setLastBuiltId(int lastBuiltId) {
+        this.lastBuiltId = lastBuiltId;
     }
 
-    public int getLastSubmittedFrame() {
-        return this.lastSubmittedFrame;
+    public int getLastSubmittedId() {
+        return this.lastSubmittedId;
     }
 
-    public void setLastSubmittedFrame(int lastSubmittedFrame) {
-        this.lastSubmittedFrame = lastSubmittedFrame;
+    public void setLastSubmittedId(int lastSubmittedId) {
+        this.lastSubmittedId = lastSubmittedId;
     }
 }

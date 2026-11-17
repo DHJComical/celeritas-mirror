@@ -45,7 +45,6 @@ public class RenderListManager {
     @Setter
     private boolean needsUpdate = true;
 
-    @Getter
     private int lastUpdatedFrame;
 
     private int pendingLastUpdatedFrame;

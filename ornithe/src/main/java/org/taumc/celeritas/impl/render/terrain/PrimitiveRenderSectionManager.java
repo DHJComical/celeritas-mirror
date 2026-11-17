@@ -136,7 +136,7 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
     *///?}
 
     @Override
-    protected @Nullable ChunkBuilderTask<ChunkBuildOutput> createRebuildTask(RenderSection render, int frame) {
+    protected @Nullable ChunkBuilderTask<ChunkBuildOutput> createRebuildTask(RenderSection render, int buildId) {
         if (isSectionVisuallyEmpty(render.getChunkX(), render.getChunkY(), render.getChunkZ())) {
             return null;
         }
@@ -147,7 +147,7 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
         //? if >=1.8
         //populateTileEntities(this.world.getChunkAt(render.getChunkX(), render.getChunkZ()), render.getChunkY());
 
-        return new ChunkBuilderMeshingTask(render, context, frame, this.cameraPosition);
+        return new ChunkBuilderMeshingTask(render, context, buildId, this.cameraPosition);
     }
 
     @Override

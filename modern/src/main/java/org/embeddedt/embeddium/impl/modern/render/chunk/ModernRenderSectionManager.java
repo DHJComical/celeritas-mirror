@@ -107,14 +107,14 @@ public class ModernRenderSectionManager extends RenderSectionManager {
     }
 
     @Override
-    protected @Nullable ChunkBuilderMeshingTask createRebuildTask(RenderSection render, int frame) {
+    protected @Nullable ChunkBuilderMeshingTask createRebuildTask(RenderSection render, int buildId) {
         ChunkRenderContext context = WorldSlice.prepare(this.world, SectionPos.of(render.getChunkX(), render.getChunkY(), render.getChunkZ()), this.sectionCache);
 
         if (context == null) {
             return null;
         }
 
-        return new ChunkBuilderMeshingTask(render, context, frame, this.cameraPosition,
+        return new ChunkBuilderMeshingTask(render, context, buildId, this.cameraPosition,
                 this.useRasterOcclusionCulling());
     }
 

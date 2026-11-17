@@ -120,6 +120,10 @@ public abstract class RenderSectionManager {
 
     private boolean blockingResultsPending;
 
+    // Advanced once per submitRebuildTasks call, so a newer build of a section always carries a strictly larger id
+    // than an older one, whichever render pass submitted it.
+    private int lastBuildId;
+
     // Shared by every section (one allocation, not one per section); installed on each RenderSection so its
     // packedMetadata changes fan out to the list manager mirror(s).
     private final RenderSection.MetadataSink metadataSink = this::pushSectionMetadata;
@@ -652,7 +656,7 @@ public abstract class RenderSectionManager {
             var result = holder.output();
 
             // whether this result belongs to the most recently submitted build
-            boolean latest = result.buildTime >= result.render.getLastSubmittedFrame();
+            boolean latest = result.buildTime >= result.render.getLastSubmittedId();
 
             if (result instanceof ChunkBuildOutput buildResult) {
                 boolean changed = this.updateSectionInfo(result.render, buildResult.info);
@@ -674,7 +678,7 @@ public abstract class RenderSectionManager {
                 result.render.setBuildCancellationToken(null);
             }
 
-            result.render.setLastBuiltFrame(result.buildTime);
+            result.render.setLastBuiltId(result.buildTime);
             this.sectionMetricsTracker.updateSectionBuildDuration(result.render, holder.executionTimeNanos());
         }
     }
@@ -769,7 +773,7 @@ public abstract class RenderSectionManager {
 
         for (var holder : outputs) {
             var output = holder.output();
-            if (output.render.isDisposed() || output.render.getLastBuiltFrame() > output.buildTime) {
+            if (output.render.isDisposed() || output.render.getLastBuiltId() > output.buildTime) {
                 continue;
             }
 
@@ -809,7 +813,7 @@ public abstract class RenderSectionManager {
     private void submitRebuildTasks(ChunkJobCollector collector, ChunkUpdateType type) {
         var queue = this.getCurrentRenderListManager().getRebuildLists().byUpdateType().get(type);
 
-        int frame = this.getCurrentRenderListManager().getLastUpdatedFrame();
+        int buildId = ++this.lastBuildId;
 
         int cameraX = (int) Math.floor(this.cameraPosition.x);
         int cameraY = (int) Math.floor(this.cameraPosition.y);
@@ -833,7 +837,7 @@ public abstract class RenderSectionManager {
                 continue;
             }
 
-            ChunkBuilderTask<? extends ChunkTaskOutput> task = type.isSort() ? this.createSortTask(section, frame) : this.createRebuildTask(section, frame);
+            ChunkBuilderTask<? extends ChunkTaskOutput> task = type.isSort() ? this.createSortTask(section, buildId) : this.createRebuildTask(section, buildId);
 
             if (task == null && type.isSort()) {
                 // Ignore sorts that became invalid
@@ -860,23 +864,23 @@ public abstract class RenderSectionManager {
                     section.lastCameraZ = this.cameraPosition.z;
                 }
             } else {
-                var result = new ChunkJobResult.Success<>(new ChunkBuildOutput(section, RenderSection.EMPTY_DATA, Reference2ReferenceMaps.emptyMap(), frame), -1);
+                var result = new ChunkJobResult.Success<>(new ChunkBuildOutput(section, RenderSection.EMPTY_DATA, Reference2ReferenceMaps.emptyMap(), buildId), -1);
                 this.buildResults.add(result);
 
                 section.setBuildCancellationToken(null);
             }
 
-            section.setLastSubmittedFrame(frame);
+            section.setLastSubmittedId(buildId);
             section.setPendingUpdate(null);
         }
     }
 
-    protected abstract @Nullable ChunkBuilderTask<ChunkBuildOutput> createRebuildTask(RenderSection render, int frame);
+    protected abstract @Nullable ChunkBuilderTask<ChunkBuildOutput> createRebuildTask(RenderSection render, int buildId);
 
-    public ChunkBuilderSortTask createSortTask(RenderSection render, int frame) {
+    public ChunkBuilderSortTask createSortTask(RenderSection render, int buildId) {
         if(render.getTranslucencySortStates().isEmpty())
             return null;
-        return new ChunkBuilderSortTask(render, cameraPosition.x, cameraPosition.y, cameraPosition.z, frame, render.getTranslucencySortStates(), this.renderPassConfiguration);
+        return new ChunkBuilderSortTask(render, cameraPosition.x, cameraPosition.y, cameraPosition.z, buildId, render.getTranslucencySortStates(), this.renderPassConfiguration);
     }
 
     public void markGraphDirty() {
