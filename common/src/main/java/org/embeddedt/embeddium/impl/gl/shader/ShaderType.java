@@ -14,12 +14,12 @@ import lombok.AllArgsConstructor;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public enum ShaderType {
-    VERTEX(GL20.GL_VERTEX_SHADER, "vsh"),
-    FRAGMENT(GL20.GL_FRAGMENT_SHADER, "fsh"),
-    GEOM(GL32.GL_GEOMETRY_SHADER, "gsh"),
-    TESS_CTRL(GL42.GL_TESS_CONTROL_SHADER, "tcs"),
-    TESS_EVALUATE(GL42.GL_TESS_EVALUATION_SHADER, "tes"),
-    COMPUTE(GL43.GL_COMPUTE_SHADER, "csh");
+    VERTEX(GL20.GL_VERTEX_SHADER, "vsh", "VERTEX_SHADER"),
+    FRAGMENT(GL20.GL_FRAGMENT_SHADER, "fsh", "FRAGMENT_SHADER"),
+    GEOM(GL32.GL_GEOMETRY_SHADER, "gsh", "GEOMETRY_SHADER"),
+    TESS_CTRL(GL42.GL_TESS_CONTROL_SHADER, "tcs", "TESS_CONTROL_SHADER"),
+    TESS_EVALUATE(GL42.GL_TESS_EVALUATION_SHADER, "tes", "TESS_EVALUATION_SHADER"),
+    COMPUTE(GL43.GL_COMPUTE_SHADER, "csh", "COMPUTE_SHADER");
 
     @Deprecated
     public static final ShaderType TESSELATION_CONTROL = ShaderType.TESS_CTRL;
@@ -30,4 +30,5 @@ public enum ShaderType {
 
     public final int id;
     public final String fileExtension;
+    public final String stageDefine;
 }

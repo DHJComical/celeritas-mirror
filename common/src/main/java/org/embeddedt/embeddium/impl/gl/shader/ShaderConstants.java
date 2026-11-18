@@ -15,6 +15,12 @@ public class ShaderConstants {
         return this.defines;
     }
 
+    public ShaderConstants with(String name) {
+        List<String> defines = new ArrayList<>(this.defines);
+        defines.add("#define " + name);
+        return new ShaderConstants(Collections.unmodifiableList(defines));
+    }
+
     public static ShaderConstants.Builder builder() {
         return new Builder();
     }

@@ -34,7 +34,7 @@ public class ShaderLoader {
      * resolve to the given source instead of the classpath.
      */
     public static GlShader loadShader(ShaderType type, String name, ShaderConstants constants, Map<String, String> generatedSources) {
-        return new GlShader(type, name, downgradeIfNeeded(type, ShaderParser.parseShader(getShaderSource(name), sourceProvider(generatedSources), constants)));
+        return new GlShader(type, name, downgradeIfNeeded(type, ShaderParser.parseShader(getShaderSource(name), sourceProvider(generatedSources), constants.with(type.stageDefine))));
     }
 
     public static Function<String, String> sourceProvider(Map<String, String> generatedSources) {
