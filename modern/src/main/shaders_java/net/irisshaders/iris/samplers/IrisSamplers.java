@@ -32,9 +32,15 @@ public class IrisSamplers {
 	public static final int LIGHTMAP_TEXTURE_UNIT = 2;
 
 	public static final ImmutableSet<Integer> WORLD_RESERVED_TEXTURE_UNITS = ImmutableSet.of(0, 1, 2);
-	// Holds the buffer of cloud faces 26.1 generates cloud vertices from, in clouds programs only.
+	// Holds the buffer of cloud faces that clouds programs generate their vertices from.
 	public static final int CLOUD_FACES_TEXTURE_UNIT = 3;
-	public static final ImmutableSet<Integer> CLOUDS_RESERVED_TEXTURE_UNITS = ImmutableSet.of(0, 1, 2, CLOUD_FACES_TEXTURE_UNIT);
+	//? if >=26.1 {
+	/*public static final ImmutableSet<Integer> CLOUDS_RESERVED_TEXTURE_UNITS = ImmutableSet.of(0, 1, 2, CLOUD_FACES_TEXTURE_UNIT);
+	*///?} else {
+	// Celeritas's clouds also tint each cell by its pixel in the clouds texture
+	public static final int CLOUD_COLORS_TEXTURE_UNIT = 4;
+	public static final ImmutableSet<Integer> CLOUDS_RESERVED_TEXTURE_UNITS = ImmutableSet.of(0, 1, 2, CLOUD_FACES_TEXTURE_UNIT, CLOUD_COLORS_TEXTURE_UNIT);
+	//?}
 
 	/**
 	 * Terrain programs that pull vertex data also reserve the unit Celeritas binds it to.

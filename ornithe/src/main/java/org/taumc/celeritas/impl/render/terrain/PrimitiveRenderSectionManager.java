@@ -5,6 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+import org.embeddedt.embeddium.impl.gl.state.GlStateService;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.*;
@@ -177,7 +178,7 @@ public class PrimitiveRenderSectionManager extends RenderSectionManager {
     private static class ChunkRenderer extends DefaultChunkRenderer {
 
         public ChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
-            super(device, renderPassConfiguration, GLStateManagerFogService.INSTANCE);
+            super(device, renderPassConfiguration, GLStateManagerFogService.INSTANCE, GlStateService.UNCACHED);
         }
 
         @Override

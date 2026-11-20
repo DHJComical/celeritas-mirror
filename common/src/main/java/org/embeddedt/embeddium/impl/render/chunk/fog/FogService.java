@@ -14,5 +14,21 @@ public interface FogService {
     int getFogShapeIndex();
     float getFogCutoff();
     float[] getFogColor();
+
     ChunkShaderComponent.Factory<?> getFogMode();
+
+    /**
+     * {@return the GL handle for a viewport-sized texture with the sky, or 0 when not available}
+     */
+    default int getSkyTexture() {
+        return 0;
+    }
+
+    default float getSkyFogEdgeStart() {
+        return this.getFogStart();
+    }
+
+    default float getSkyFogEdgeEnd() {
+        return this.getFogEnd();
+    }
 }

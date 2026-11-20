@@ -30,25 +30,6 @@ in float v_FragDistance;
 
 uniform sampler2D u_BlockTex; // The block texture
 
-uniform int u_FogShape;
-uniform vec4 u_FogColor; // The color of the shader fog
-
-#ifdef USE_FOG_SMOOTH
-uniform float u_FogStart; // The starting position of the shader fog
-uniform float u_FogEnd; // The ending position of the shader fog
-#endif
-
-#ifdef USE_FOG_POSTMODERN
-uniform float u_RenderDistFogStart;
-uniform float u_RenderDistFogEnd;
-uniform float u_EnvFogStart;
-uniform float u_EnvFogEnd;
-#endif
-
-#if defined(USE_FOG_EXP) || defined(USE_FOG_EXP2)
-uniform float u_FogDensity; // The density of the shader fog
-#endif
-
 #ifndef LEGACY
 out vec4 fragColor; // The output fragment for the color framebuffer
 #else
@@ -78,14 +59,14 @@ void main() {
 
 #if defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0
     // Make chunk fade in over a short duration
-    diffuseColor = vec4(mix(u_FogColor.rgb, diffuseColor.rgb, (clamp(v_ChunkAgeMs, 0, CHUNK_FADE_IN_DURATION_MS) / CHUNK_FADE_IN_DURATION_MS)), diffuseColor.a);
+    diffuseColor = vec4(mix(_fogBackground(u_FogColor), diffuseColor.rgb, (clamp(v_ChunkAgeMs, 0, CHUNK_FADE_IN_DURATION_MS) / CHUNK_FADE_IN_DURATION_MS)), diffuseColor.a);
 #endif
 
 #if defined(USE_FOG_POSTMODERN)
-    float fogValue = max(_linearFogValue(v_CylindricalFragDistance, u_RenderDistFogStart, u_RenderDistFogEnd),
-                         _linearFogValue(v_SphericalFragDistance, u_EnvFogStart, u_EnvFogEnd));
-
-    fragColor = vec4(mix(diffuseColor.rgb, u_FogColor.rgb, fogValue * u_FogColor.a), diffuseColor.a);
+    fragColor = _blendFog(diffuseColor,
+                          _linearFogValue(v_SphericalFragDistance, u_EnvFogStart, u_EnvFogEnd),
+                          _linearFogValue(v_CylindricalFragDistance, u_RenderDistFogStart, u_RenderDistFogEnd),
+                          u_FogColor);
 #else // Legacy fog
     float fragDistance;
     if (u_FogShape == FOG_SHAPE_PLANAR) {

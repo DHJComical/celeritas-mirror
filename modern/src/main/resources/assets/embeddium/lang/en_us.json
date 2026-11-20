@@ -17,6 +17,8 @@
   "celeritas.options.async_graph_search.tooltip": "Performs occlusion/frustum culling asynchronously, up to one frame behind the current camera position. This can improve frametimes, particularly at higher render distances, but at the cost of chunks popping into view if the camera is turned too aggressively.",
   "celeritas.options.chunk_fade_in_duration.name": "Chunk Fade-In Duration",
   "celeritas.options.chunk_fade_in_duration.value": "%s ms",
+  "celeritas.options.sky_fog.name": "Sky Fog",
+  "celeritas.options.sky_fog.tooltip": "Makes distant terrain and clouds fade into the sky behind them instead of a single fog color. This removes miscolored terrain at the edge of the render distance during sunrise and sunset, in the End, and with custom skies. Has no effect while a shader pack is active.",
   "celeritas.options.rgss_texture_filtering.name": "RGSS Texture Filtering",
   "celeritas.options.rgss_texture_filtering.tooltip": "Smooths block textures in the distance by supersampling them, which reduces shimmering and jagged texel edges. Requires mipmaps, and has no effect while a shader pack is active.",
   "celeritas.options.chunk_fade_in_duration.tooltip": "Controls how long it takes for newly loaded chunks to fully appear. Longer durations create a smoother transition between unloaded and loaded chunks, reducing visual popping, but may make distant terrain appear to 'fade in' more slowly.",

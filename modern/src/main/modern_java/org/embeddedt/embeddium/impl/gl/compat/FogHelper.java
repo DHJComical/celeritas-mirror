@@ -2,7 +2,10 @@ package org.embeddedt.embeddium.impl.gl.compat;
 
 //? if >=1.17
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
+import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
+import org.embeddedt.embeddium.impl.render.chunk.fog.SkyTextureCopy;
 import org.lwjgl.opengl.GL20;
 
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -79,6 +82,11 @@ public class FogHelper implements FogService {
     }
 
     public ChunkFogMode getFogMode() {
+        ChunkFogMode mode = this.getVanillaFogMode();
+        return mode == ChunkFogMode.SMOOTH && this.getSkyTexture() != 0 ? ChunkFogMode.SMOOTH_SKY : mode;
+    }
+
+    private ChunkFogMode getVanillaFogMode() {
         //? if <1.17 {
         /*int mode = GlStateManager.FOG.mode;
 
@@ -97,5 +105,50 @@ public class FogHelper implements FogService {
         }
         *///?} else
         return ChunkFogMode.SMOOTH;
+    }
+
+    private final SkyTextureCopy skyTexture = new SkyTextureCopy(ModernGlStateService.INSTANCE);
+
+    @Override
+    public int getSkyTexture() {
+        return this.skyTexture.getTexture();
+    }
+
+    public void captureSkyTexture() {
+        if (!SkyTextureCopy.shouldProvide(Celeritas.options().quality.useSkyFog)) {
+            this.skyTexture.delete();
+            return;
+        }
+
+        var target = Minecraft.getInstance().getMainRenderTarget();
+        this.skyTexture.copy(target.width, target.height);
+    }
+
+    public void invalidateSkyTexture() {
+        this.skyTexture.invalidate();
+    }
+
+    public void deleteSkyTexture() {
+        this.skyTexture.delete();
+    }
+
+    @Override
+    public float getSkyFogEdgeStart() {
+        float end = this.getSkyFogEdgeEnd();
+        //? if >=1.18 {
+        return end - Mth.clamp(end / 10.0F, 4.0F, 64.0F);
+        //?} else {
+        /*return end * 0.75F;
+        *///?}
+    }
+
+    @Override
+    public float getSkyFogEdgeEnd() {
+        float renderDistance = Minecraft.getInstance().gameRenderer.getRenderDistance();
+        //? if >=1.18 {
+        return Math.max(renderDistance, 32.0F);
+        //?} else {
+        /*return Math.max(renderDistance - 16.0F, 32.0F);
+        *///?}
     }
 }

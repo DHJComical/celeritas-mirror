@@ -1,21 +1,19 @@
 package org.embeddedt.embeddium.impl.modern.render.chunk;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
+import org.embeddedt.embeddium.impl.gl.compat.ModernGlStateService;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
-import org.embeddedt.embeddium.impl.mixin.core.GlStateManagerAccessor;
 import org.embeddedt.embeddium.impl.render.chunk.DefaultChunkRenderer;
 import org.embeddedt.embeddium.impl.render.chunk.RenderPassConfiguration;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderInterface;
 import org.embeddedt.embeddium.impl.render.chunk.shader.ChunkShaderTextureSlot;
-import org.lwjgl.opengl.GL13C;
 
 public class ModernChunkRenderer extends DefaultChunkRenderer {
     public static final int ATLAS_EDGE_MASK_TEXTURE_UNIT = 3;
 
     public ModernChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
-        super(device, renderPassConfiguration, FogHelper.INSTANCE);
+        super(device, renderPassConfiguration, FogHelper.INSTANCE, ModernGlStateService.INSTANCE);
     }
 
     /*
@@ -42,13 +40,6 @@ public class ModernChunkRenderer extends DefaultChunkRenderer {
         return net.irisshaders.iris.shadows.ShadowRenderingState.areShadowsCurrentlyBeingRendered() ? SHADOW_VIEW : DEFAULT_VIEW;
     }
     //?}
-
-    @Override
-    protected int activateTextureUnit(int unit) {
-        int previous = GL13C.GL_TEXTURE0 + GlStateManagerAccessor.celeritas$getActiveTexture();
-        GlStateManager._activeTexture(unit);
-        return previous;
-    }
 
     @Override
     protected void configureShaderInterface(ChunkShaderInterface shader) {

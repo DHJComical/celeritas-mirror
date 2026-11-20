@@ -49,7 +49,7 @@ public class ShaderCreator {
 											   GlFramebuffer writingToBeforeTranslucent, GlFramebuffer writingToAfterTranslucent,
 											   AlphaTest fallbackAlpha, VertexFormat vertexFormat, ShaderAttributeInputs inputs,
 											   Supplier<ImmutableSet<Integer>> flipped, boolean isIntensity, boolean isShadowPass,
-											   boolean isLines, boolean isClouds, CustomUniforms customUniforms) {
+											   boolean isLines, boolean generatesClouds, CustomUniforms customUniforms) {
 		AlphaTest alpha = source.getDirectives().getAlphaTestOverride().orElse(fallbackAlpha);
 		BlendModeOverride blendModeOverride = source.getDirectives().getBlendModeOverride().orElse(programId.getBlendModeOverride());
 
@@ -63,18 +63,16 @@ public class ShaderCreator {
 
 		CompletableFuture<Map<ShaderType, String>> transformed = CompletableFuture.supplyAsync(() -> {
 			Preconditions.checkArgument(source.isValid());
-			return TransformPatcherBridge.patchVanilla(name, source.getSourcesMap(), alpha, isLines, isClouds, true, inputs, parent.getTextureMap());
+			return TransformPatcherBridge.patchVanilla(name, source.getSourcesMap(), alpha, isLines, generatesClouds, true, inputs, parent.getTextureMap());
 		}, TransformPatcherBridge.EXECUTOR);
 
-		//? if >=26.1 {
-		/*boolean generatesClouds = isClouds;
-		*///?} else
-		boolean generatesClouds = false;
 		ImmutableSet<Integer> reservedTextureUnits = generatesClouds ? IrisSamplers.CLOUDS_RESERVED_TEXTURE_UNITS : IrisSamplers.WORLD_RESERVED_TEXTURE_UNITS;
 
 		return new PendingGbufferProgram(name, attributeLocations(vertexFormat), reservedTextureUnits, transformed, (builder, sources) -> {
 			if (generatesClouds) {
 				builder.addExternalSampler(IrisSamplers.CLOUD_FACES_TEXTURE_UNIT, CloudVertices.CLOUD_FACES_SAMPLER);
+				//? if <26.1
+				builder.addExternalSampler(IrisSamplers.CLOUD_COLORS_TEXTURE_UNIT, CloudVertices.CLOUD_COLORS_SAMPLER);
 			}
 
 			CommonUniforms.addDynamicUniforms(builder, FogMode.PER_VERTEX);

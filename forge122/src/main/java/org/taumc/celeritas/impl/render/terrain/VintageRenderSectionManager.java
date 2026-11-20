@@ -162,7 +162,7 @@ public class VintageRenderSectionManager extends RenderSectionManager {
     private static class ChunkRenderer extends DefaultChunkRenderer {
 
         public ChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
-            super(device, renderPassConfiguration, GLStateManagerFogService.INSTANCE);
+            super(device, renderPassConfiguration, GLStateManagerFogService.INSTANCE, GLStateManagerGlStateService.INSTANCE);
         }
 
         @Override

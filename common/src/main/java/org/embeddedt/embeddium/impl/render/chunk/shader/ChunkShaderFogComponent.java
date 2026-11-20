@@ -5,6 +5,7 @@ import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat4v;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformInt;
 import org.embeddedt.embeddium.impl.render.chunk.fog.FogService;
+import org.embeddedt.embeddium.impl.render.chunk.DefaultChunkRenderer;
 
 /**
  * These shader implementations try to remain compatible with the deprecated fixed function pipeline by manually
@@ -81,7 +82,7 @@ public abstract class ChunkShaderFogComponent implements ChunkShaderComponent {
             super(environment.fogService());
 
             this.uFogColor = context.bindUniform("u_FogColor", GlUniformFloat4v::new);
-            this.uFogShape = context.bindUniform("u_FogShape", GlUniformInt::new);
+            this.uFogShape = context.bindUniformIfPresent("u_FogShape", GlUniformInt::new);
             this.uFogStart = context.bindUniform("u_FogStart", GlUniformFloat::new);
             this.uFogEnd = context.bindUniform("u_FogEnd", GlUniformFloat::new);
         }
@@ -89,11 +90,55 @@ public abstract class ChunkShaderFogComponent implements ChunkShaderComponent {
         @Override
         public void setup() {
             this.uFogColor.set(this.fogService.getFogColor());
-            this.uFogShape.set(this.fogService.getFogShapeIndex());
+            if (this.uFogShape != null) {
+                this.uFogShape.set(this.fogService.getFogShapeIndex());
+            }
 
             this.uFogStart.set(this.fogService.getFogStart());
             this.uFogEnd.set(this.fogService.getFogEnd());
         }
     }
 
+    public static class SmoothSky extends Smooth {
+        private final SkyUniforms skyFog;
+
+        public SmoothSky(ShaderBindingContext context, ChunkShaderEnvironment environment) {
+            super(context, environment);
+
+            this.skyFog = new SkyUniforms(context, environment.fogService());
+        }
+
+        @Override
+        public void setup() {
+            super.setup();
+            this.skyFog.setup();
+        }
+    }
+
+    public static final class SkyUniforms {
+        private final FogService fogService;
+        private final GlUniformInt sampler;
+        private final GlUniformFloat edgeStart, edgeEnd;
+
+        public SkyUniforms(ShaderBindingContext context, FogService fogService) {
+            this.fogService = fogService;
+            this.sampler = context.bindUniformIfPresent("u_SkyTex", GlUniformInt::new);
+            this.edgeStart = context.bindUniformIfPresent("u_SkyFogEdgeStart", GlUniformFloat::new);
+            this.edgeEnd = context.bindUniformIfPresent("u_SkyFogEdgeEnd", GlUniformFloat::new);
+        }
+
+        public void setup() {
+            if (this.sampler != null) {
+                this.sampler.setInt(DefaultChunkRenderer.SKY_TEXTURE_UNIT);
+            }
+
+            if (this.edgeStart != null) {
+                this.edgeStart.setFloat(this.fogService.getSkyFogEdgeStart());
+            }
+
+            if (this.edgeEnd != null) {
+                this.edgeEnd.setFloat(this.fogService.getSkyFogEdgeEnd());
+            }
+        }
+    }
 }

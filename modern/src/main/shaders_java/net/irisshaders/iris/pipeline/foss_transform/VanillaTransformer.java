@@ -209,8 +209,13 @@ public class VanillaTransformer {
         translationUnit.injectVariable(
                 "uniform mat4 iris_ProjMat;");
 
-        //? if >=26.1
-        //patchVanillaBlocks(translationUnit, parameters);
+        //? if >=26.1 {
+        /*patchVanillaBlocks(translationUnit, parameters);
+        *///?} else {
+        if (parameters.isClouds() && parameters.type == ShaderType.VERTEX) {
+            CloudVertices.patch(translationUnit);
+        }
+        //?}
     }
 
     public static void patchVanillaCore(Transformer translationUnit, VanillaParameters parameters) {
@@ -285,8 +290,13 @@ public class VanillaTransformer {
             addIfNotExistsType(translationUnit, "iris_UV2", "in vec2");
         }
 
-        //? if >=26.1
-        //patchVanillaBlocks(translationUnit, parameters);
+        //? if >=26.1 {
+        /*patchVanillaBlocks(translationUnit, parameters);
+        *///?} else {
+        if (parameters.isClouds() && parameters.type == ShaderType.VERTEX) {
+            CloudVertices.patch(translationUnit);
+        }
+        //?}
     }
 
     //? if >=26.1 {

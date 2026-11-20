@@ -1,6 +1,7 @@
 package org.embeddedt.embeddium.impl.render.chunk.draw.bench;
 
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.gl.state.GlStateService;
 import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
 import org.embeddedt.embeddium.impl.render.chunk.DefaultChunkRenderer;
 import org.embeddedt.embeddium.impl.render.chunk.bench.voxel.BenchRenderPasses;
@@ -132,7 +133,7 @@ public class TerrainDrawBench {
             this.height = this.width * 9 / 16;
             this.matrices = createMatrices(this.renderDistance);
 
-            this.renderer = new DefaultChunkRenderer(RenderDevice.INSTANCE, BenchRenderPasses.configuration(), NO_FOG) {
+            this.renderer = new DefaultChunkRenderer(RenderDevice.INSTANCE, BenchRenderPasses.configuration(), NO_FOG, GlStateService.UNCACHED) {
                 @Override
                 protected void configureShaderInterface(ChunkShaderInterface shader) {
                     shader.setTextureSlot(ChunkShaderTextureSlot.BLOCK, 0);

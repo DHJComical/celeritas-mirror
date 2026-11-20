@@ -12,7 +12,8 @@ public enum ChunkFogMode implements ChunkShaderComponent.Factory<ChunkShaderFogC
     NONE(ChunkShaderFogComponent.None::new, List.of()),
     EXP(ChunkShaderFogComponent.Exp::new, List.of("USE_FOG", "USE_FOG_EXP")),
     EXP2(ChunkShaderFogComponent.Exp2::new, List.of("USE_FOG", "USE_FOG_EXP2")),
-    SMOOTH(ChunkShaderFogComponent.Smooth::new, List.of("USE_FOG", "USE_FOG_SMOOTH"));
+    SMOOTH(ChunkShaderFogComponent.Smooth::new, List.of("USE_FOG", "USE_FOG_SMOOTH")),
+    SMOOTH_SKY(ChunkShaderFogComponent.SmoothSky::new, List.of("USE_FOG", "USE_FOG_SMOOTH", "USE_SKY_FOG"));
 
     private final BiFunction<ShaderBindingContext, ChunkShaderEnvironment, ChunkShaderFogComponent> factory;
     private final List<String> defines;

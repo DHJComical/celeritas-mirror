@@ -23,10 +23,14 @@ public class GlBufferTexture extends GlObject {
      * are compared by identity, because a deleted buffer's name may be reused by the buffer that replaces it.
      */
     public void bind(TextureBufferFunctions functions, GlBuffer buffer) {
+        this.bind(functions, buffer, GL30.GL_R32UI);
+    }
+
+    public void bind(TextureBufferFunctions functions, GlBuffer buffer, int internalFormat) {
         LWJGL.glBindTexture(GL31.GL_TEXTURE_BUFFER, this.handle());
 
         if (this.attachedBuffer != buffer) {
-            functions.texBuffer(GL31.GL_TEXTURE_BUFFER, GL30.GL_R32UI, buffer);
+            functions.texBuffer(GL31.GL_TEXTURE_BUFFER, internalFormat, buffer);
             this.attachedBuffer = buffer;
         }
     }

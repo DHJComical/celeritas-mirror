@@ -59,6 +59,13 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
     }
 
     @Override
+    protected void unloadWorld() {
+        super.unloadWorld();
+
+        GLStateManagerFogService.INSTANCE.deleteSkyTexture();
+    }
+
+    @Override
     protected ChunkRenderMatrices createChunkRenderMatrices() {
         return new ChunkRenderMatrices(ActiveRenderInfoAccessor.getProjectionMatrix(), ActiveRenderInfoAccessor.getModelViewMatrix());
     }

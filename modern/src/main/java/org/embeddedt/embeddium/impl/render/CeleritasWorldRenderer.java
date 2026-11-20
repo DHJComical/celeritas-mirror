@@ -25,6 +25,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import org.embeddedt.embeddium.impl.Celeritas;
+import org.embeddedt.embeddium.impl.gl.compat.FogHelper;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.model.color.BlendedColorProvider;
 //? if <1.21.11
@@ -129,6 +130,13 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
         }
 
         BlendedColorProvider.checkBlendingEnabled();
+    }
+
+    @Override
+    protected void unloadWorld() {
+        super.unloadWorld();
+
+        FogHelper.INSTANCE.deleteSkyTexture();
     }
 
     @Override

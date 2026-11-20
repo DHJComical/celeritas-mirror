@@ -2,6 +2,7 @@ package org.taumc.celeritas.impl.render.terrain;
 
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.world.chunk.Chunk;
+import org.embeddedt.embeddium.impl.gl.state.GlStateService;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
 import org.embeddedt.embeddium.impl.render.chunk.*;
@@ -109,7 +110,7 @@ public class ArchaicRenderSectionManager extends RenderSectionManager {
     private static class ChunkRenderer extends DefaultChunkRenderer {
 
         public ChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration) {
-            super(device, renderPassConfiguration, GLStateManagerFogService.INSTANCE);
+            super(device, renderPassConfiguration, GLStateManagerFogService.INSTANCE, GlStateService.UNCACHED);
         }
 
         @Override

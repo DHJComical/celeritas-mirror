@@ -3,16 +3,28 @@ package net.irisshaders.iris.pipeline.foss_transform;
 import org.taumc.glsl.Transformer;
 
 /**
- * Generates the vertices of 26.1's clouds in a shader pack's vertex shader. Vanilla draws clouds without vertex data,
- * building each vertex from {@code gl_VertexID}, the cloud cells in the {@code CloudFaces} texel buffer and the
- * {@code CloudInfo} block, as its {@code rendertype_clouds} shader does. This feeds the results to the pack's shader in
- * place of the position, color, normal and texture coordinate attributes.
+ * Generates the vertices of clouds in a shader pack's vertex shader. 26.1's vanilla clouds and Celeritas's clouds before
+ * that are drawn without vertex data, building each vertex from {@code gl_VertexID}, the cloud cells in the
+ * {@code CloudFaces} texel buffer and the cloud info, as vanilla's {@code rendertype_clouds} shader does. This feeds the
+ * results to the pack's shader in place of the position, color, normal and texture coordinate attributes.
+ * <p>
+ * Before 26.1, the cloud info is plain uniforms, and each cell is also tinted by its pixel in the clouds texture.
  */
 public final class CloudVertices {
 	/**
 	 * The name of the texel buffer sampler, which must be bound to vanilla's cloud faces buffer.
 	 */
 	public static final String CLOUD_FACES_SAMPLER = "iris_CloudFaces";
+
+	//? if <26.1 {
+	/**
+	 * The name of the clouds texture sampler, which must be bound to Celeritas's cloud colors texture.
+	 */
+	public static final String CLOUD_COLORS_SAMPLER = "iris_CloudColors";
+
+	private static final String CELL_COLOR = " * iris_cloudCellColor(cellX, cellZ)";
+	//?} else
+	//private static final String CELL_COLOR = "";
 
 	private CloudVertices() {
 	}
@@ -30,7 +42,15 @@ public final class CloudVertices {
 			translationUnit.rename(attribute[0], attribute[1]);
 		}
 
-		translationUnit.injectVariable(VanillaUniformBlocks.CLOUD_INFO.getDeclaration());
+		//? if >=26.1 {
+		/*translationUnit.injectVariable(VanillaUniformBlocks.CLOUD_INFO.getDeclaration());
+		*///?} else {
+		translationUnit.injectVariable("uniform vec4 iris_CloudColor;");
+		translationUnit.injectVariable("uniform vec3 iris_CloudOffset;");
+		translationUnit.injectVariable("uniform vec3 iris_CloudCellSize;");
+		translationUnit.injectVariable("uniform ivec2 iris_CloudCenterCell;");
+		translationUnit.injectVariable("uniform sampler2D " + CLOUD_COLORS_SAMPLER + ";");
+		//?}
 		translationUnit.injectVariable("uniform isamplerBuffer " + CLOUD_FACES_SAMPLER + ";");
 		translationUnit.injectVariable("vec3 iris_cloudPosition;");
 		translationUnit.injectVariable("vec4 iris_cloudColor;");
@@ -68,8 +88,20 @@ public final class CloudVertices {
 			    vec3 faceVertex = vertices[(direction * 4) + (isInsideFace ? 3 - quadVertex : quadVertex)];
 			    iris_cloudPosition = (faceVertex + vec3(cellX, 0, cellZ)) * iris_CloudCellSize + iris_CloudOffset;
 			    iris_cloudNormal = isInsideFace ? -normals[direction] : normals[direction];
-			    iris_cloudColor = (useTopColor ? faceColors[1] : faceColors[direction]) * iris_CloudColor;
+			    iris_cloudColor = (useTopColor ? faceColors[1] : faceColors[direction]) * iris_CloudColor""" + CELL_COLOR + """
+			;
 			}""");
+		//? if <26.1 {
+		// injectFunction inserts each function before the previously injected one, so this ends up ahead of
+		// iris_generateCloudVertex, which calls it.
+		translationUnit.injectFunction("""
+			vec4 iris_cloudCellColor(int cellX, int cellZ) {
+			    ivec2 size = textureSize(iris_CloudColors, 0);
+			    ivec2 cell = iris_CloudCenterCell + ivec2(cellX, cellZ);
+			    cell -= size * ivec2(floor(vec2(cell) / vec2(size)));
+			    return texelFetch(iris_CloudColors, cell, 0);
+			}""");
+		//?}
 		translationUnit.prependMain("iris_generateCloudVertex();");
 	}
 }

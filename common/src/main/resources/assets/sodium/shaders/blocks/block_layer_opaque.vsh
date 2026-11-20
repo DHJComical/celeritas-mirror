@@ -34,8 +34,6 @@ out float v_CylindricalFragDistance;
 out float v_FragDistance;
 #endif
 
-uniform int u_FogShape;
-
 uniform vec3 u_RegionOffset;
 
 #if defined(USE_FOG) && defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0

@@ -28,6 +28,12 @@ public final class VanillaDrawState {
 	public float glintAlpha = 1.0F;
 	public float fogStart;
 	public float fogEnd = 1.0F;
+	// What clouds programs generate their vertices from, as the cloud info uniforms
+	public final Vector4f cloudColor = new Vector4f(1.0F);
+	public final Vector3f cloudOffset = new Vector3f();
+	public final Vector3f cloudCellSize = new Vector3f();
+	public int cloudCenterCellX;
+	public int cloudCenterCellZ;
 	//?} else {
 	/*// The program vanilla set up the draw for, whose uniform block bindings hold vanilla's values.
 	public GlProgram vanillaProgram;

@@ -8,6 +8,7 @@ import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.debug.GLDebug;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
 import org.embeddedt.embeddium.impl.gl.device.RenderDevice;
+import org.embeddedt.embeddium.impl.gl.state.GlStateService;
 import org.embeddedt.embeddium.impl.gl.tessellation.*;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.ChunkPrimitiveType;
 import org.embeddedt.embeddium.impl.render.chunk.data.SectionRenderDataStorage;
@@ -23,9 +24,8 @@ import org.embeddedt.embeddium.impl.render.chunk.terrain.TerrainRenderPass;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexLayout;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.VertexFetchMode;
 import org.embeddedt.embeddium.impl.render.viewport.CameraTransform;
+import org.taumc.celeritas.lwjgl.GL11;
 import org.taumc.celeritas.lwjgl.GL13;
-
-import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 import java.util.Iterator;
 
@@ -40,6 +40,8 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
      */
     public static final int VERTEX_DATA_TEXTURE_UNIT = 15;
 
+    public static final int SKY_TEXTURE_UNIT = 14;
+
     /**
      * Stands in for vertex attributes in pulled passes. Compatibility profiles leave a draw undefined when attribute
      * array 0 is disabled, and pulled shaders don't declare any attributes.
@@ -48,11 +50,15 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             .addElement("celeritas_Placeholder", 0, GlVertexAttributeFormat.UNSIGNED_BYTE, 4, true, false)
             .build();
 
+    private final GlStateService glState;
+
     private TerrainRenderPass currentRenderPass;
     private GlVertexFormat currentVertexFormat;
 
-    public DefaultChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration, FogService fogService) {
+    public DefaultChunkRenderer(RenderDevice device, RenderPassConfiguration<?> renderPassConfiguration, FogService fogService, GlStateService glState) {
         super(device, renderPassConfiguration, fogService);
+
+        this.glState = glState;
 
         this.sharedIndexBuffers = new Reference2ReferenceOpenHashMap<>();
     }
@@ -118,11 +124,13 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
 
             boolean pulled = renderPass.vertexFetchMode() == VertexFetchMode.PULLED;
 
+            this.bindSkyTexture();
+
             int previousActiveTexture = 0;
 
             if (pulled) {
                 this.currentVertexFormat = PLACEHOLDER_ATTRIBUTE_FORMAT;
-                previousActiveTexture = this.activateTextureUnit(GL13.GL_TEXTURE0 + VERTEX_DATA_TEXTURE_UNIT);
+                previousActiveTexture = this.glState.activateTextureUnit(GL13.GL_TEXTURE0 + VERTEX_DATA_TEXTURE_UNIT);
             } else {
                 this.currentVertexFormat = ChunkVertexLayout.requireAttributes(renderPass.vertexType().getLayout());
             }
@@ -170,7 +178,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
             }
 
             if (pulled) {
-                this.activateTextureUnit(previousActiveTexture);
+                this.glState.activateTextureUnit(previousActiveTexture);
             }
 
             this.currentVertexFormat = null;
@@ -203,16 +211,12 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         return cached;
     }
 
-    /**
-     * Makes the given texture unit active. Platforms whose renderer caches the active unit must update that cache.
-     *
-     * @param unit the unit, as {@code GL_TEXTURE0 + n}
-     * @return the unit that was active before, in the same form
-     */
-    protected int activateTextureUnit(int unit) {
-        LWJGL.glActiveTexture(unit);
-        // TODO: don't assume unit 0 was active before the pass
-        return GL13.GL_TEXTURE0;
+    private void bindSkyTexture() {
+        int skyTexture = this.environment.fogService().getSkyTexture();
+
+        if (skyTexture != 0) {
+            this.glState.bindTexture(SKY_TEXTURE_UNIT, GL11.GL_TEXTURE_2D, skyTexture);
+        }
     }
 
     private static void setModelMatrixUniforms(ChunkShaderInterface shader, RenderRegion region, CameraTransform camera) {

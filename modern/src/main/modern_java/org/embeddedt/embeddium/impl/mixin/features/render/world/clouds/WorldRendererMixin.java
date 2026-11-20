@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import org.embeddedt.embeddium.api.math.JomlHelper;
 import org.embeddedt.embeddium.impl.Celeritas;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
-import org.embeddedt.embeddium.impl.render.immediate.CloudRenderer;
+import org.embeddedt.embeddium.impl.render.immediate.ModernCloudRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -32,7 +32,7 @@ public class WorldRendererMixin {
     private Minecraft minecraft;
 
     @Unique
-    private CloudRenderer cloudRenderer;
+    private ModernCloudRenderer cloudRenderer;
 
     /**
      * @author jellysquid3
@@ -41,7 +41,7 @@ public class WorldRendererMixin {
     @Inject(method = "renderClouds", at = @At(value = "INVOKE", target = "Ljava/lang/Float;isNaN(F)Z", ordinal = 0), cancellable = true)
     public void renderCloudsFast(PoseStack matrices, /*? if >=1.20.6 {*/ /*Matrix4f modelViewMatrix, *//*?}*/ Matrix4f projectionMatrix, float tickDelta, double x, double y, double z, CallbackInfo ci) {
         if (this.cloudRenderer == null) {
-            this.cloudRenderer = new CloudRenderer(this.minecraft.getResourceManager());
+            this.cloudRenderer = new ModernCloudRenderer(this.minecraft.getResourceManager());
         }
 
         boolean renderFasterClouds = Celeritas.options().performance.useFasterClouds;

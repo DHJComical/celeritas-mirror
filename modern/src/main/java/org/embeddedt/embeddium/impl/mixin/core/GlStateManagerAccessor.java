@@ -13,4 +13,9 @@ public interface GlStateManagerAccessor {
     static int celeritas$getActiveTexture() {
         throw new AssertionError();
     }
+
+    @Accessor("TEXTURES")
+    static GlStateManager.TextureState[] celeritas$getTextures() {
+        throw new AssertionError();
+    }
 }

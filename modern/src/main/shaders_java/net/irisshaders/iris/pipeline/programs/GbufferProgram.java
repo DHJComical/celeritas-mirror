@@ -71,6 +71,10 @@ public final class GbufferProgram {
 	private final int fogColorLocation;
 	private final int light0DirectionLocation;
 	private final int light1DirectionLocation;
+	private final int cloudColorLocation;
+	private final int cloudOffsetLocation;
+	private final int cloudCellSizeLocation;
+	private final int cloudCenterCellLocation;
 
 	private final Matrix4f scratchMatrix = new Matrix4f();
 	private final Matrix3f scratchNormalMatrix = new Matrix3f();
@@ -127,6 +131,10 @@ public final class GbufferProgram {
 		this.fogColorLocation = GlStateManager._glGetUniformLocation(id, "iris_FogColor");
 		this.light0DirectionLocation = GlStateManager._glGetUniformLocation(id, "iris_Light0_Direction");
 		this.light1DirectionLocation = GlStateManager._glGetUniformLocation(id, "iris_Light1_Direction");
+		this.cloudColorLocation = GlStateManager._glGetUniformLocation(id, "iris_CloudColor");
+		this.cloudOffsetLocation = GlStateManager._glGetUniformLocation(id, "iris_CloudOffset");
+		this.cloudCellSizeLocation = GlStateManager._glGetUniformLocation(id, "iris_CloudCellSize");
+		this.cloudCenterCellLocation = GlStateManager._glGetUniformLocation(id, "iris_CloudCenterCell");
 		//?} else {
 		/*for (VanillaUniformBlocks block : BLOCKS) {
 			int index = IrisRenderSystem.getUniformBlockIndex(id, block.getBlockName());
@@ -218,6 +226,13 @@ public final class GbufferProgram {
 		uploadFloat(glintAlphaLocation, state.glintAlpha);
 		uploadFloat(fogStartLocation, state.fogStart);
 		uploadFloat(fogEndLocation, state.fogEnd);
+		uploadVector(cloudColorLocation, state.cloudColor);
+		uploadVector(cloudOffsetLocation, state.cloudOffset);
+		uploadVector(cloudCellSizeLocation, state.cloudCellSize);
+
+		if (cloudCenterCellLocation != -1) {
+			GL20C.glUniform2i(cloudCenterCellLocation, state.cloudCenterCellX, state.cloudCenterCellZ);
+		}
 	}
 
 	private void uploadMatrix(int location, Matrix4f matrix) {

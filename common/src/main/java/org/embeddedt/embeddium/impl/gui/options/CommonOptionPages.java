@@ -37,6 +37,14 @@ public class CommonOptionPages {
                         .setBinding((opts, value) -> opts.quality.chunkFadeInDuration = value, opts -> opts.quality.chunkFadeInDuration)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
+                .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
+                        .setId(StandardOptions.Option.SKY_FOG.cast())
+                        .setName(TextComponent.translatable("celeritas.options.sky_fog.name"))
+                        .setTooltip(TextComponent.translatable("celeritas.options.sky_fog.tooltip"))
+                        .setControl(TickBoxControl::new)
+                        .setImpact(OptionImpact.LOW)
+                        .setBinding((opts, value) -> opts.quality.useSkyFog = value, opts -> opts.quality.useSkyFog)
+                        .build())
                 .build();
     }
 

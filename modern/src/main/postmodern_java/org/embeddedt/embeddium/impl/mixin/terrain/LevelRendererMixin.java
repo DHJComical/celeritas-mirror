@@ -163,7 +163,18 @@ public abstract class LevelRendererMixin implements WorldRendererExtended {
         return new ChunkSectionsToRender(blocksAtlas, new EnumMap<>(ChunkSectionLayer.class), 0, new GpuBufferSlice[0]);
     }
 
-    @Redirect(method = "lambda$addMainPass$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;Lcom/mojang/blaze3d/textures/GpuSampler;)V"))
+    @Inject(method = "renderLevel", at = { @At("HEAD"), @At("RETURN") })
+    private void invalidateSkyTexture(CallbackInfo ci) {
+        FogHelper.INSTANCE.invalidateSkyTexture();
+    }
+
+    // Runs after the clear and sky passes
+    @Inject(method = "lambda$addMainPass$0", at = @At("HEAD"))
+    private void captureSkyTexture(CallbackInfo ci) {
+        FogHelper.INSTANCE.captureSkyTexture();
+    }
+
+    @Redirect(method = "lambda$addMainPass$0", at =@At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/chunk/ChunkSectionsToRender;renderGroup(Lnet/minecraft/client/renderer/chunk/ChunkSectionLayerGroup;Lcom/mojang/blaze3d/textures/GpuSampler;)V"))
     private void renderChunksWithCeleritas(ChunkSectionsToRender sectionsToRender, ChunkSectionLayerGroup group, GpuSampler terrainSampler) {
         RenderDevice.enterManagedCode();
         var cameraPos = this.levelRenderState.cameraRenderState.pos;

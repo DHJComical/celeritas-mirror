@@ -692,18 +692,27 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 
 	private PendingGbufferProgram createShader(String name, Optional<ProgramSource> source, ShaderKey key) {
 		if (source.isEmpty()) {
-			//? if >=26.1 {
-			/*// Synthesized programs can't generate 26.1's clouds, so vanilla's draws them.
-			if (key == ShaderKey.CLOUDS) {
+			// Synthesized programs can't generate clouds, so the clouds are drawn without the pack.
+			if (generatesClouds(key)) {
 				return null;
 			}
-			*///?}
 
 			return createFallbackShader(name, key);
 		}
 
 		return createShader(name, source.get(), key.getProgram(), key.getAlphaTest(), key.getVertexFormat(),
-			key.isIntensity(), key.shouldIgnoreLightmap(), key.isGlint(), key.isText());
+			key.isIntensity(), key.shouldIgnoreLightmap(), key.isGlint(), key.isText(), generatesClouds(key));
+	}
+
+	/**
+	 * Whether the key's program generates its vertices from cloud faces, as vanilla's clouds do on 26.1 and
+	 * Celeritas's do before that.
+	 */
+	private static boolean generatesClouds(ShaderKey key) {
+		//? if >=26.1 {
+		/*return key.getProgram() == ProgramId.Clouds;
+		*///?} else
+		return key == ShaderKey.CLOUDS_SODIUM;
 	}
 
 	@Override
@@ -712,7 +721,8 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 	}
 
 	private PendingGbufferProgram createShader(String name, ProgramSource source, ProgramId programId, AlphaTest fallbackAlpha,
-											   VertexFormat vertexFormat, boolean isIntensity, boolean isFullbright, boolean isGlint, boolean isText) {
+											   VertexFormat vertexFormat, boolean isIntensity, boolean isFullbright, boolean isGlint, boolean isText,
+											   boolean generatesClouds) {
 		GlFramebuffer beforeTranslucent = renderTargets.createGbufferFramebuffer(flippedAfterPrepare, source.getDirectives().getDrawBuffers());
 		GlFramebuffer afterTranslucent = renderTargets.createGbufferFramebuffer(flippedAfterTranslucent, source.getDirectives().getDrawBuffers());
 		boolean isLines = programId == ProgramId.Line && resolver.has(ProgramId.Line);
@@ -723,7 +733,7 @@ public class IrisRenderingPipeline implements WorldRenderingPipeline, ShaderRend
 			() -> isBeforeTranslucent ? flippedAfterPrepare : flippedAfterTranslucent;
 
 		return ShaderCreator.create(this, name, source, programId, beforeTranslucent, afterTranslucent,
-			fallbackAlpha, vertexFormat, inputs, flipped, isIntensity, false, isLines, programId == ProgramId.Clouds, customUniforms);
+			fallbackAlpha, vertexFormat, inputs, flipped, isIntensity, false, isLines, generatesClouds, customUniforms);
 	}
 
 	private PendingGbufferProgram createFallbackShader(String name, ShaderKey key) {

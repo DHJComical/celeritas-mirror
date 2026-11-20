@@ -10,6 +10,7 @@ import org.taumc.celeritas.api.options.control.SliderControl;
 import org.taumc.celeritas.api.options.control.TickBoxControl;
 import org.embeddedt.embeddium.impl.gui.SodiumGameOptions;
 import org.embeddedt.embeddium.impl.gui.framework.TextComponent;
+import org.embeddedt.embeddium.impl.gui.options.CommonOptionPages;
 import org.lwjgl.opengl.Display;
 import org.taumc.celeritas.CeleritasVintage;
 import org.taumc.celeritas.api.options.structure.OptionFlag;
@@ -220,6 +221,14 @@ public class SodiumGameOptionPages {
                         .setImpact(OptionImpact.LOW)
                         .setBinding((opts, value) -> opts.quality.chunkFadeInDuration = value, opts -> opts.quality.chunkFadeInDuration)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
+                        .build())
+                .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
+                        .setId(StandardOptions.Option.SKY_FOG.cast())
+                        .setName(TextComponent.translatable("celeritas.options.sky_fog.name"))
+                        .setTooltip(TextComponent.translatable("celeritas.options.sky_fog.tooltip"))
+                        .setControl(TickBoxControl::new)
+                        .setImpact(OptionImpact.LOW)
+                        .setBinding((opts, value) -> opts.quality.useSkyFog = value, opts -> opts.quality.useSkyFog)
                         .build())
                 .add(OptionImpl.createBuilder(boolean.class, vanillaOpts)
                         .setId(StandardOptions.Option.ENTITY_SHADOWS.cast())
