@@ -35,8 +35,8 @@ public final class CloudTexture {
                     continue;
                 }
 
-                // A side is open where the neighbor differs. Between two filled cells of different colors, only the
-                // side of the cell to the south or east is open, so the boundary is drawn once.
+                // A side is open where the neighbor differs. Between two filled cells of different colors, both
+                // sides are open, and the renderer only draws the one facing the camera.
                 int flags = FILLED;
                 int north = this.pixel(x, z - 1);
                 int south = this.pixel(x, z + 1);
@@ -47,7 +47,7 @@ public final class CloudTexture {
                     flags |= OPEN_NORTH;
                 }
 
-                if (!isFilled(south) && south != pixel) {
+                if (south != pixel) {
                     flags |= OPEN_SOUTH;
                 }
 
@@ -55,7 +55,7 @@ public final class CloudTexture {
                     flags |= OPEN_WEST;
                 }
 
-                if (!isFilled(east) && east != pixel) {
+                if (east != pixel) {
                     flags |= OPEN_EAST;
                 }
 
