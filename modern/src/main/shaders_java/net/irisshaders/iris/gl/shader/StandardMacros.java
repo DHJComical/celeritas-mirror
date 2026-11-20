@@ -218,12 +218,20 @@ public class StandardMacros {
 	 */
 	public static String getOsString() {
 		return switch (Util.getPlatform()) {
-			case OSX -> "MC_OS_MAC";
+			// Packs use MC_OS_MAC to work around Apple's GL 4.1 driver. If something newer than 4.1 is running on
+			// macOS (e.g. a mod providing a newer GL implementation), those workarounds don't apply, so hide the OS.
+			case OSX -> isGlNewerThan41() ? "MC_OS_UNKNOWN" : "MC_OS_MAC";
 			case LINUX -> "MC_OS_LINUX";
 			case WINDOWS ->
 				"MC_OS_WINDOWS"; // Note: Optifine doesn't have a macro for Solaris. https://github.com/sp614x/optifine/blob/9c6a5b5326558ccc57c6490b66b3be3b2dc8cbef/OptiFineDoc/doc/shaders.txt#L709-L714
 			default -> "MC_OS_UNKNOWN";
 		};
+	}
+
+	private static boolean isGlNewerThan41() {
+		int major = GL11C.glGetInteger(GL30C.GL_MAJOR_VERSION);
+		int minor = GL11C.glGetInteger(GL30C.GL_MINOR_VERSION);
+		return major > 4 || (major == 4 && minor > 1);
 	}
 
 	/**

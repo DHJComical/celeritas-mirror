@@ -86,6 +86,15 @@ public final class CloudRenderer {
     private int centerCellX, centerCellZ;
     private float offsetX, offsetY, offsetZ;
 
+    /**
+     * {@return whether the context can run this renderer} It needs GLSL 1.50 for buffer textures, {@code texelFetch} and
+     * {@code gl_VertexID}, which can't be downgraded to the GLSL 1.20 used on old GL. Platforms should fall back to
+     * vanilla clouds otherwise.
+     */
+    public static boolean isSupported() {
+        return !ShaderLoader.useLegacyGlsl();
+    }
+
     public CloudRenderer(CommandList commandList, GlStateService glState, CloudTexture texture) {
         this.glState = glState;
         this.texture = texture;
