@@ -91,6 +91,34 @@ configurations {
     }
 }
 
+// RFG swaps in arm64 LWJGL 2 and jinput natives on Apple Silicon, but not these, which only ship x86 natives in the
+// versions Minecraft pins. The replacements are the ones Prism Launcher uses. Upstream java-objc-bridge 1.1 is
+// universal but built for Java 11, so this is MinecraftMachina's Java 8 build of it.
+if (System.getProperty("os.name").startsWith("Mac") && System.getProperty("os.arch") == "aarch64") {
+    repositories {
+        exclusiveContent {
+            forRepository {
+                ivy {
+                    name = "java-objc-bridge-mmachina"
+                    url = uri("https://github.com/MinecraftMachina/Java-Objective-C-Bridge/releases/download/")
+                    patternLayout { artifact("[revision]/[module]-1.1.[ext]") }
+                    metadataSources { artifact() }
+                }
+            }
+            filter { includeVersion("ca.weblite", "java-objc-bridge", "1.1.0-mmachina.1") }
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute(module("net.java.dev.jna:jna")).using(module("net.java.dev.jna:jna:5.13.0"))
+                .because("JNA 4.4.0 has no darwin-aarch64 native")
+            substitute(module("ca.weblite:java-objc-bridge")).using(module("ca.weblite:java-objc-bridge:1.1.0-mmachina.1"))
+                .because("java-objc-bridge 1.0.0 has no arm64 native")
+        }
+    }
+}
+
 dependencies {
     val lombokVersion = rootProject.findProperty("lombok_version").toString()
     compileOnly("org.projectlombok:lombok:${lombokVersion}")
