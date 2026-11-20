@@ -75,7 +75,9 @@ vec4 _blendFog(vec4 fragColor, float environment, float edge, vec4 fogColor) {
     // fogged terrain matches the background.
     float skyWeight = edge >= environment ? 1.0 : edge / environment;
     skyWeight = max(skyWeight, smoothstep(0.9, 1.0, environment));
-    target = mix(target, _skyColor(), skyWeight);
+    if (skyWeight > 0.0) {
+        target = mix(target, _skyColor(), skyWeight);
+    }
 #endif
 
     return vec4(mix(fragColor.rgb, target, fogValue * fogColor.a), fragColor.a);

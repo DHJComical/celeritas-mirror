@@ -59,7 +59,9 @@ void main() {
 
 #if defined(CHUNK_FADE_IN_DURATION_MS) && CHUNK_FADE_IN_DURATION_MS > 0
     // Make chunk fade in over a short duration
-    diffuseColor = vec4(mix(_fogBackground(u_FogColor), diffuseColor.rgb, (clamp(v_ChunkAgeMs, 0, CHUNK_FADE_IN_DURATION_MS) / CHUNK_FADE_IN_DURATION_MS)), diffuseColor.a);
+    if (v_ChunkAgeMs < CHUNK_FADE_IN_DURATION_MS) {
+        diffuseColor = vec4(mix(_fogBackground(u_FogColor), diffuseColor.rgb, (clamp(v_ChunkAgeMs, 0, CHUNK_FADE_IN_DURATION_MS) / CHUNK_FADE_IN_DURATION_MS)), diffuseColor.a);
+    }
 #endif
 
 #if defined(USE_FOG_POSTMODERN)
