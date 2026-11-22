@@ -1,7 +1,8 @@
 package org.embeddedt.embeddium.impl.render.clouds;
 
 import org.embeddedt.embeddium.impl.gl.array.GlVertexArray;
-import org.embeddedt.embeddium.impl.gl.buffer.GlBufferTarget;
+import org.embeddedt.embeddium.impl.gl.attribute.GlVertexAttributeFormat;
+import org.embeddedt.embeddium.impl.gl.attribute.GlVertexFormat;
 import org.embeddedt.embeddium.impl.gl.buffer.GlBufferUsage;
 import org.embeddedt.embeddium.impl.gl.buffer.GlMutableBuffer;
 import org.embeddedt.embeddium.impl.gl.device.CommandList;
@@ -17,6 +18,8 @@ import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformFloat4v;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformInt;
 import org.embeddedt.embeddium.impl.gl.shader.uniform.GlUniformMatrix4f;
 import org.embeddedt.embeddium.impl.gl.state.GlStateService;
+import org.embeddedt.embeddium.impl.gl.tessellation.GlVertexArrayTessellation;
+import org.embeddedt.embeddium.impl.gl.tessellation.TessellationBinding;
 import org.embeddedt.embeddium.impl.gl.texture.GlBufferTexture;
 import org.embeddedt.embeddium.impl.render.chunk.SharedQuadIndexBuffer;
 import org.embeddedt.embeddium.impl.render.chunk.compile.sorting.QuadPrimitiveType;
@@ -72,6 +75,15 @@ public final class CloudRenderer {
     private static final int BYTES_PER_FACE = Integer.BYTES;
     private static final int INDICES_PER_FACE = 6;
 
+    /**
+     * Stands in for vertex attributes, since compatibility profiles leave a draw undefined when attribute array 0 is
+     * disabled. It reads one byte of the face buffer per vertex, and a face is 4 bytes for its 4 vertices, so it never
+     * reads past the faces. The shader doesn't use it.
+     */
+    private static final GlVertexFormat PLACEHOLDER_ATTRIBUTE_FORMAT = GlVertexFormat.builder(1)
+            .addElement("celeritas_Placeholder", 0, GlVertexAttributeFormat.UNSIGNED_BYTE, 1, true, false)
+            .build();
+
     private enum CameraPosition {
         ABOVE_CLOUDS,
         INSIDE_CLOUDS,
@@ -86,7 +98,7 @@ public final class CloudRenderer {
     private final GlMutableBuffer faceBuffer;
     private final GlBufferTexture faceTexture;
     private final SharedQuadIndexBuffer.Handle indexBuffer;
-    private final GlVertexArray vertexArray;
+    private final GlVertexArrayTessellation tessellation;
     private final int colorTexture;
 
     private ByteBuffer faceData = ByteBuffer.allocateDirect(1024 * BYTES_PER_FACE).order(ByteOrder.nativeOrder());
@@ -120,7 +132,11 @@ public final class CloudRenderer {
         this.faceBuffer = commandList.createMutableBuffer();
         this.faceTexture = new GlBufferTexture();
         this.indexBuffer = SharedQuadIndexBuffer.acquire(commandList, QuadPrimitiveType.TRIANGULATED);
-        this.vertexArray = new GlVertexArray();
+        this.tessellation = new GlVertexArrayTessellation(new GlVertexArray(), new TessellationBinding[] {
+                TessellationBinding.forVertexBuffer(this.faceBuffer, PLACEHOLDER_ATTRIBUTE_FORMAT),
+                TessellationBinding.forElementBuffer(this.indexBuffer.getBufferObject())
+        });
+        this.tessellation.init(commandList);
         this.colorTexture = this.createColorTexture();
     }
 
@@ -229,11 +245,9 @@ public final class CloudRenderer {
      * Draws the faces with the bound program.
      */
     public void draw(CommandList commandList) {
-        // Core profile needs a vertex array bound, even with no attributes
-        commandList.bindVertexArray(this.vertexArray);
-        commandList.bindBuffer(GlBufferTarget.ELEMENT_BUFFER, this.indexBuffer.getBufferObject());
+        this.tessellation.bind(commandList);
         LWJGL.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, this.faceCount * INDICES_PER_FACE, GL11.GL_UNSIGNED_INT, 0L, 0);
-        commandList.unbindVertexArray();
+        this.tessellation.unbind(commandList);
     }
 
     public int getCenterCellX() {
@@ -273,11 +287,11 @@ public final class CloudRenderer {
     }
 
     public void delete(CommandList commandList) {
+        this.tessellation.delete(commandList);
         this.program.delete();
         commandList.deleteBuffer(this.faceBuffer);
         this.faceTexture.delete();
         this.indexBuffer.release(commandList);
-        commandList.deleteVertexArray(this.vertexArray);
         LWJGL.glDeleteTextures(this.colorTexture);
     }
 
