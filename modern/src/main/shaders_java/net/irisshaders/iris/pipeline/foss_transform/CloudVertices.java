@@ -8,7 +8,7 @@ import org.taumc.glsl.Transformer;
  * {@code CloudFaces} texel buffer and the cloud info, as vanilla's {@code rendertype_clouds} shader does. This feeds the
  * results to the pack's shader in place of the position, color, normal and texture coordinate attributes.
  * <p>
- * Before 26.1, the cloud info is plain uniforms, and each cell is also tinted by its pixel in the clouds texture.
+ * Before 26.1, the faces use Celeritas's packed format (see {@code CloudRenderer}), the cloud info is plain uniforms, and each cell is also tinted by its pixel in the clouds texture.
  */
 public final class CloudVertices {
 	/**
@@ -23,8 +23,32 @@ public final class CloudVertices {
 	public static final String CLOUD_COLORS_SAMPLER = "iris_CloudColors";
 
 	private static final String CELL_COLOR = " * iris_cloudCellColor(cellX, cellZ)";
-	//?} else
-	//private static final String CELL_COLOR = "";
+
+	private static final String DECODE_FACE = """
+		    int quadVertex = gl_VertexID % 4;
+		    int face = texelFetch(iris_CloudFaces, gl_VertexID / 4).r;
+		    int direction = face & 7;
+		    bool isInsideFace = (face & (1 << 3)) != 0;
+		    bool useTopColor = (face & (1 << 4)) != 0;
+		    int cellX = (face << 12) >> 20;
+		    int cellZ = face >> 20;
+		""";
+	//?} else {
+	/*private static final String CELL_COLOR = "";
+
+	private static final String DECODE_FACE = """
+		    int quadVertex = gl_VertexID % 4;
+		    int index = (gl_VertexID / 4) * 3;
+		    int cellX = texelFetch(iris_CloudFaces, index).r;
+		    int cellZ = texelFetch(iris_CloudFaces, index + 1).r;
+		    int dirAndFlags = texelFetch(iris_CloudFaces, index + 2).r;
+		    int direction = dirAndFlags & 7;
+		    bool isInsideFace = (dirAndFlags & (1 << 4)) != 0;
+		    bool useTopColor = (dirAndFlags & (1 << 5)) != 0;
+		    cellX = (cellX << 1) | ((dirAndFlags & (1 << 7)) >> 7);
+		    cellZ = (cellZ << 1) | ((dirAndFlags & (1 << 6)) >> 6);
+		""";
+	*///?}
 
 	private CloudVertices() {
 	}
@@ -74,17 +98,7 @@ public final class CloudVertices {
 			        vec4(0.8, 0.8, 0.8, 1.0), vec4(0.9, 0.9, 0.9, 1.0), vec4(0.9, 0.9, 0.9, 1.0)
 			    );
 
-			    int quadVertex = gl_VertexID % 4;
-			    int index = (gl_VertexID / 4) * 3;
-			    int cellX = texelFetch(iris_CloudFaces, index).r;
-			    int cellZ = texelFetch(iris_CloudFaces, index + 1).r;
-			    int dirAndFlags = texelFetch(iris_CloudFaces, index + 2).r;
-			    int direction = dirAndFlags & 7;
-			    bool isInsideFace = (dirAndFlags & (1 << 4)) != 0;
-			    bool useTopColor = (dirAndFlags & (1 << 5)) != 0;
-			    cellX = (cellX << 1) | ((dirAndFlags & (1 << 7)) >> 7);
-			    cellZ = (cellZ << 1) | ((dirAndFlags & (1 << 6)) >> 6);
-
+			""" + DECODE_FACE + """
 			    vec3 faceVertex = vertices[(direction * 4) + (isInsideFace ? 3 - quadVertex : quadVertex)];
 			    iris_cloudPosition = (faceVertex + vec3(cellX, 0, cellZ)) * iris_CloudCellSize + iris_CloudOffset;
 			    iris_cloudNormal = isInsideFace ? -normals[direction] : normals[direction];

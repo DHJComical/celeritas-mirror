@@ -32,9 +32,14 @@ import java.nio.ByteOrder;
 import static org.taumc.celeritas.lwjgl.LWJGLServiceProvider.LWJGL;
 
 /**
- * Draws clouds without vertex data, like vanilla since 1.21.6. The visible faces are written to a buffer texture, and
- * the vertex shader builds each vertex from {@code gl_VertexID}. The face format matches vanilla's, so shader packs can
- * generate the same vertices. Unlike vanilla, each cell is tinted by its pixel in the clouds texture.
+ * Draws clouds without vertex data, like vanilla since 1.21.6. The visible faces are written to a buffer texture, one
+ * {@code int} each, and the vertex shader builds each of a face's 4 vertices from {@code gl_VertexID}. Faces are
+ * drawn with the {@link SharedQuadIndexBuffer} the chunk renderer also uses. Unlike vanilla, each cell is tinted by its
+ * pixel in the clouds texture.
+ * <p>
+ * A face packs the direction in bits 0-2, {@link #FLAG_INSIDE_FACE} and {@link #FLAG_USE_TOP_COLOR}, and the cell's
+ * position relative to the center cell as signed 12-bit X and Z in bits 8-19 and 20-31. Iris's {@code CloudVertices}
+ * decodes the same format for shader packs.
  */
 public final class CloudRenderer {
     public static final int FACES_TEXTURE_UNIT = 3;
@@ -47,8 +52,14 @@ public final class CloudRenderer {
     private static final int DIRECTION_WEST = 4;
     private static final int DIRECTION_EAST = 5;
 
-    private static final int FLAG_INSIDE_FACE = 1 << 4;
-    private static final int FLAG_USE_TOP_COLOR = 1 << 5;
+    private static final int FLAG_INSIDE_FACE = 1 << 3;
+    private static final int FLAG_USE_TOP_COLOR = 1 << 4;
+
+    private static final int CELL_X_SHIFT = 8;
+    private static final int CELL_Z_SHIFT = 20;
+    private static final int CELL_MASK = 0xFFF;
+    // The largest offset that fits in the signed 12-bit cell position
+    private static final int MAX_RADIUS = 2047;
 
     // A 256 px clouds texture makes 12 block cells
     private static final float TEXTURE_SIZE_IN_BLOCKS = 3072.0f;
@@ -58,7 +69,8 @@ public final class CloudRenderer {
     // Inside faces are kept this far outside the clouds, so the near plane clipping a face doesn't show a hole
     private static final float INSIDE_FACE_MARGIN = 0.1f;
 
-    private static final int BYTES_PER_FACE = 3 * Short.BYTES;
+    private static final int BYTES_PER_FACE = Integer.BYTES;
+    private static final int INDICES_PER_FACE = 6;
 
     private enum CameraPosition {
         ABOVE_CLOUDS,
@@ -158,7 +170,7 @@ public final class CloudRenderer {
         // Cells past the fade end are invisible. Rounding up keeps a fade end that changes gradually, like water fog
         // while the player's eyes adjust, from rebuilding the faces every frame.
         int fadeRadius = ((int) Math.ceil(frame.fogEnd() / cellSize) + 1 + 15) & ~15;
-        int radius = Math.min(maxRadius, fadeRadius);
+        int radius = Math.min(Math.min(maxRadius, fadeRadius), MAX_RADIUS);
 
         if (this.needsRebuild || cellX != this.prevCellX || cellZ != this.prevCellZ || radius != this.prevRadius
                 || cameraPosition != this.prevCameraPosition || insideFaces != this.prevInsideFaces
@@ -175,7 +187,7 @@ public final class CloudRenderer {
 
             this.faceData.flip();
             commandList.uploadData(this.faceBuffer, this.faceData, GlBufferUsage.DYNAMIC_DRAW);
-            this.indexBuffer.ensureCapacity(commandList, this.faceCount * 6);
+            this.indexBuffer.ensureCapacity(commandList, this.faceCount * INDICES_PER_FACE);
         }
 
         this.centerCellX = cellX;
@@ -209,7 +221,7 @@ public final class CloudRenderer {
         this.glState.bindTexture(COLORS_TEXTURE_UNIT, GL11.GL_TEXTURE_2D, this.colorTexture);
 
         int previous = this.glState.activateTextureUnit(GL13.GL_TEXTURE0 + FACES_TEXTURE_UNIT);
-        this.faceTexture.bind(RenderDevice.INSTANCE.getDeviceFunctions().textureBufferFunctions(), this.faceBuffer, GL30.GL_R16I);
+        this.faceTexture.bind(RenderDevice.INSTANCE.getDeviceFunctions().textureBufferFunctions(), this.faceBuffer, GL30.GL_R32I);
         this.glState.activateTextureUnit(previous);
     }
 
@@ -217,9 +229,10 @@ public final class CloudRenderer {
      * Draws the faces with the bound program.
      */
     public void draw(CommandList commandList) {
+        // Core profile needs a vertex array bound, even with no attributes
         commandList.bindVertexArray(this.vertexArray);
         commandList.bindBuffer(GlBufferTarget.ELEMENT_BUFFER, this.indexBuffer.getBufferObject());
-        LWJGL.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, this.faceCount * 6, GL11.GL_UNSIGNED_INT, 0L, 0);
+        LWJGL.glDrawElementsBaseVertex(GL11.GL_TRIANGLES, this.faceCount * INDICES_PER_FACE, GL11.GL_UNSIGNED_INT, 0L, 0);
         commandList.unbindVertexArray();
     }
 
@@ -343,12 +356,7 @@ public final class CloudRenderer {
             this.faceData = grown;
         }
 
-        // The low bits of the cell position are stored with the flags, as vanilla does
-        int directionAndFlags = direction | flags | ((x & 1) << 7) | ((z & 1) << 6);
-
-        this.faceData.putShort((short) (x >> 1));
-        this.faceData.putShort((short) (z >> 1));
-        this.faceData.putShort((short) directionAndFlags);
+        this.faceData.putInt(direction | flags | ((x & CELL_MASK) << CELL_X_SHIFT) | ((z & CELL_MASK) << CELL_Z_SHIFT));
         this.faceCount++;
     }
 

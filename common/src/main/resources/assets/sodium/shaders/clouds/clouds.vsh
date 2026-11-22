@@ -1,10 +1,8 @@
 #version 150
 
 const int FLAG_MASK_DIR = 7;
-const int FLAG_INSIDE_FACE = 1 << 4;
-const int FLAG_USE_TOP_COLOR = 1 << 5;
-const int FLAG_EXTRA_Z = 1 << 6;
-const int FLAG_EXTRA_X = 1 << 7;
+const int FLAG_INSIDE_FACE = 1 << 3;
+const int FLAG_USE_TOP_COLOR = 1 << 4;
 
 uniform mat4 ModelViewMat;
 uniform mat4 ProjMat;
@@ -43,16 +41,14 @@ int wrap(int value, int size) {
 
 void main() {
     int quadVertex = gl_VertexID % 4;
-    int index = (gl_VertexID / 4) * 3;
+    int face = texelFetch(CloudFaces, gl_VertexID / 4).r;
 
-    int cellX = texelFetch(CloudFaces, index).r;
-    int cellZ = texelFetch(CloudFaces, index + 1).r;
-    int dirAndFlags = texelFetch(CloudFaces, index + 2).r;
-    int direction = dirAndFlags & FLAG_MASK_DIR;
-    bool isInsideFace = (dirAndFlags & FLAG_INSIDE_FACE) == FLAG_INSIDE_FACE;
-    bool useTopColor = (dirAndFlags & FLAG_USE_TOP_COLOR) == FLAG_USE_TOP_COLOR;
-    cellX = (cellX << 1) | ((dirAndFlags & FLAG_EXTRA_X) >> 7);
-    cellZ = (cellZ << 1) | ((dirAndFlags & FLAG_EXTRA_Z) >> 6);
+    int direction = face & FLAG_MASK_DIR;
+    bool isInsideFace = (face & FLAG_INSIDE_FACE) != 0;
+    bool useTopColor = (face & FLAG_USE_TOP_COLOR) != 0;
+    // Arithmetic shifts sign extend the 12-bit cell position
+    int cellX = (face << 12) >> 20;
+    int cellZ = face >> 20;
 
     vec3 faceVertex = vertices[(direction * 4) + (isInsideFace ? 3 - quadVertex : quadVertex)];
     vec3 pos = (faceVertex * CellSize) + (vec3(cellX, 0, cellZ) * CellSize) + CloudOffset;
