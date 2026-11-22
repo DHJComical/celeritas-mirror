@@ -10,6 +10,11 @@ public final class CloudTexture {
     static final int OPEN_EAST = 8;
     static final int FILLED = 16;
 
+    // The alpha below which cloud fragments used to be discarded
+    private static final float MIN_VISIBLE_ALPHA = 0.1f;
+    // The lowest texture alpha that is still visible after the cloud alpha is applied
+    private static final int MIN_FILLED_ALPHA = (int) Math.ceil(MIN_VISIBLE_ALPHA * 255.0f / CloudRenderer.getAlpha());
+
     final int width, height;
     final int[] pixels;
     final byte[] cells;
@@ -72,7 +77,11 @@ public final class CloudTexture {
         return this.pixels[Math.floorMod(x, this.width) + Math.floorMod(z, this.height) * this.width];
     }
 
+    /**
+     * {@return whether the cell is drawn} Cells whose final alpha would be below {@link #MIN_VISIBLE_ALPHA} are left
+     * empty here, so the fragment shader doesn't have to discard them.
+     */
     private static boolean isFilled(int abgr) {
-        return (abgr >>> 24) > 1;
+        return (abgr >>> 24) >= MIN_FILLED_ALPHA;
     }
 }
