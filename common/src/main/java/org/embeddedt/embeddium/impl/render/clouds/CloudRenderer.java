@@ -73,7 +73,7 @@ public final class CloudRenderer {
     private final GlProgram<ShaderInterface> program;
     private final GlMutableBuffer faceBuffer;
     private final GlBufferTexture faceTexture;
-    private final SharedQuadIndexBuffer indexBuffer;
+    private final SharedQuadIndexBuffer.Handle indexBuffer;
     private final GlVertexArray vertexArray;
     private final int colorTexture;
 
@@ -107,7 +107,7 @@ public final class CloudRenderer {
         this.program = createProgram();
         this.faceBuffer = commandList.createMutableBuffer();
         this.faceTexture = new GlBufferTexture();
-        this.indexBuffer = new SharedQuadIndexBuffer(commandList, QuadPrimitiveType.TRIANGULATED);
+        this.indexBuffer = SharedQuadIndexBuffer.acquire(commandList, QuadPrimitiveType.TRIANGULATED);
         this.vertexArray = new GlVertexArray();
         this.colorTexture = this.createColorTexture();
     }
@@ -263,7 +263,7 @@ public final class CloudRenderer {
         this.program.delete();
         commandList.deleteBuffer(this.faceBuffer);
         this.faceTexture.delete();
-        this.indexBuffer.delete(commandList);
+        this.indexBuffer.release(commandList);
         commandList.deleteVertexArray(this.vertexArray);
         LWJGL.glDeleteTextures(this.colorTexture);
     }

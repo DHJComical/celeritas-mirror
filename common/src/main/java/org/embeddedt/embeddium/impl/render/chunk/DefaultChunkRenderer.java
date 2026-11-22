@@ -30,7 +30,7 @@ import org.taumc.celeritas.lwjgl.GL13;
 import java.util.Iterator;
 
 public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
-    private final Reference2ReferenceMap<ChunkPrimitiveType, SharedQuadIndexBuffer> sharedIndexBuffers;
+    private final Reference2ReferenceMap<ChunkPrimitiveType, SharedQuadIndexBuffer.Handle> sharedIndexBuffers;
 
     private final BatchAssembler.TessellationProvider tessellationProvider = this::prepareTessellation;
 
@@ -82,10 +82,10 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
         return DEFAULT_VIEW;
     }
 
-    protected final SharedQuadIndexBuffer getSharedIndexBuffer(ChunkPrimitiveType type, CommandList commandList) {
+    protected final SharedQuadIndexBuffer.Handle getSharedIndexBuffer(ChunkPrimitiveType type, CommandList commandList) {
         var buffer = this.sharedIndexBuffers.get(type);
         if (buffer == null) {
-            buffer = new SharedQuadIndexBuffer(commandList, type);
+            buffer = SharedQuadIndexBuffer.acquire(commandList, type);
             this.sharedIndexBuffers.put(type, buffer);
         }
         return buffer;
@@ -264,6 +264,7 @@ public abstract class DefaultChunkRenderer extends ShaderChunkRenderer {
     public void delete(CommandList commandList) {
         super.delete(commandList);
 
-        this.sharedIndexBuffers.values().forEach(buffer -> buffer.delete(commandList));
+        this.sharedIndexBuffers.values().forEach(buffer -> buffer.release(commandList));
+        this.sharedIndexBuffers.clear();
     }
 }
