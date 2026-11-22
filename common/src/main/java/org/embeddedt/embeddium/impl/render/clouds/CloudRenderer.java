@@ -55,6 +55,8 @@ public final class CloudRenderer {
     private static final float CLOUD_THICKNESS = 4.0f;
     private static final float CLOUD_ALPHA = 0.8f;
     private static final double BLOCKS_PER_TICK = 0.03;
+    // Inside faces are kept this far outside the clouds, so the near plane clipping a face doesn't show a hole
+    private static final float INSIDE_FACE_MARGIN = 0.1f;
 
     private static final int BYTES_PER_FACE = 3 * Short.BYTES;
 
@@ -81,6 +83,7 @@ public final class CloudRenderer {
     private boolean needsRebuild = true;
     private int prevCellX, prevCellZ, prevRadius;
     private CameraPosition prevCameraPosition;
+    private boolean prevInsideFaces;
     private boolean prevFancy;
 
     private int centerCellX, centerCellZ;
@@ -148,6 +151,8 @@ public final class CloudRenderer {
             return false;
         }
 
+        boolean insideFaces = verticalDistance <= INSIDE_FACE_MARGIN;
+
         float cellSize = Math.min(this.cellSizeX, this.cellSizeZ);
         int maxRadius = (int) Math.ceil(frame.range() / cellSize);
         // Cells past the fade end are invisible. Rounding up keeps a fade end that changes gradually, like water fog
@@ -156,15 +161,17 @@ public final class CloudRenderer {
         int radius = Math.min(maxRadius, fadeRadius);
 
         if (this.needsRebuild || cellX != this.prevCellX || cellZ != this.prevCellZ || radius != this.prevRadius
-                || cameraPosition != this.prevCameraPosition || frame.fancy() != this.prevFancy) {
+                || cameraPosition != this.prevCameraPosition || insideFaces != this.prevInsideFaces
+                || frame.fancy() != this.prevFancy) {
             this.needsRebuild = false;
             this.prevCellX = cellX;
             this.prevCellZ = cellZ;
             this.prevRadius = radius;
             this.prevCameraPosition = cameraPosition;
+            this.prevInsideFaces = insideFaces;
             this.prevFancy = frame.fancy();
 
-            this.buildFaces(cameraPosition, cellX, cellZ, frame.fancy(), radius);
+            this.buildFaces(cameraPosition, insideFaces, cellX, cellZ, frame.fancy(), radius);
 
             this.faceData.flip();
             commandList.uploadData(this.faceBuffer, this.faceData, GlBufferUsage.DYNAMIC_DRAW);
@@ -261,7 +268,7 @@ public final class CloudRenderer {
         LWJGL.glDeleteTextures(this.colorTexture);
     }
 
-    private void buildFaces(CameraPosition cameraPosition, int centerCellX, int centerCellZ, boolean fancy, int radius) {
+    private void buildFaces(CameraPosition cameraPosition, boolean insideFaces, int centerCellX, int centerCellZ, boolean fancy, int radius) {
         this.faceData.clear();
         this.faceCount = 0;
 
@@ -275,15 +282,15 @@ public final class CloudRenderer {
                 }
 
                 if (z != 0) {
-                    this.buildCell(cameraPosition, centerCellX, centerCellZ, fancy, x, -z);
+                    this.buildCell(cameraPosition, insideFaces, centerCellX, centerCellZ, fancy, x, -z);
                 }
 
-                this.buildCell(cameraPosition, centerCellX, centerCellZ, fancy, x, z);
+                this.buildCell(cameraPosition, insideFaces, centerCellX, centerCellZ, fancy, x, z);
             }
         }
     }
 
-    private void buildCell(CameraPosition cameraPosition, int centerCellX, int centerCellZ, boolean fancy, int x, int z) {
+    private void buildCell(CameraPosition cameraPosition, boolean insideFaces, int centerCellX, int centerCellZ, boolean fancy, int x, int z) {
         int cell = this.texture.cell(centerCellX + x, centerCellZ + z);
 
         if (cell == 0) {
@@ -320,8 +327,8 @@ public final class CloudRenderer {
             this.addFace(x, z, DIRECTION_EAST, 0);
         }
 
-        // Seen from inside the clouds
-        if (Math.abs(x) <= 1 && Math.abs(z) <= 1) {
+        // Seen from inside the clouds, or just outside them where the near plane can clip the outer faces
+        if (insideFaces && Math.abs(x) <= 1 && Math.abs(z) <= 1) {
             for (int direction = DIRECTION_DOWN; direction <= DIRECTION_EAST; direction++) {
                 this.addFace(x, z, direction, FLAG_INSIDE_FACE);
             }
