@@ -1758,6 +1758,44 @@ public abstract class AbstractRasterizer {
 		return true;
 	}
 
+	/**
+	 * Span end for an edge that is vertical on screen, at precise x. Span ends sample pixel centres: a left edge
+	 * keeps the first pixel whose centre is at or right of it, {@code ceil(x - 0.5)}, and a right edge the last
+	 * pixel whose centre is strictly left of it, one less. A centre on an edge shared by two polygons then goes to
+	 * exactly one of them, so abutting occluders leave no seam. No polygon reaches a pixel whose centre is outside
+	 * it either, which matters because the test dilation reaches only one pixel past what it tests: an occluder
+	 * rounded outward can close a gap the test would otherwise find.
+	 */
+	private static int verticalEdgePixel(int x, boolean left) {
+		return left
+				? (x + SCANT_PRECISE_PIXEL_CENTER) >> PRECISION_BITS
+				: (x - PRECISE_PIXEL_CENTER - 1) >> PRECISION_BITS;
+	}
+
+	/**
+	 * Intercept at row zero of a sloped edge through precise {@code (x0, y0)} with 16.16 slope {@code n}, in 20-bit
+	 * fixed point, so that adding {@code step} per row and truncating gives each row's span end under the rule in
+	 * {@link #verticalEdgePixel}.
+	 *
+	 * <p>A shallow edge crosses many pixels within one row, so where in the row it is read matters. A drawn
+	 * occluder reads it at the row centre, the height of the pixel centres it covers. A test reads it at the top
+	 * or bottom of the row, whichever is farther out, so its span holds every pixel centre the polygon passes in
+	 * that row. Reading the edge's line past the edge's own end is still conservative for a test, since the line
+	 * of every edge of a convex polygon lies outside it.
+	 */
+	private long slopedEdgeIntercept(int x0, int y0, long n, long step, boolean left) {
+		// ceil(x - 0.5) is floor(x + 0.5 - ulp) on this grid; the right end is one less
+		final long bias = left ? 0x7FFFFL : -0x80001L;
+
+		if (!dilate) {
+			return ((long) x0 << 16) - n * (y0 - PRECISE_PIXEL_CENTER) + bias;
+		}
+
+		// stepping from this intercept reads each row's top; its bottom is one step further
+		final long farthest = left ? Math.min(0, step) : Math.max(0, step);
+		return ((long) x0 << 16) - n * y0 + farthest + bias;
+	}
+
 	/** Slope and intercept of each non-flat edge of the current quad, in 20-bit fixed point, so bands only step them. */
 	private void prepareEdges() {
 		final int eventKey = this.eventKey;
@@ -1776,16 +1814,17 @@ public abstract class AbstractRasterizer {
 			final int x0 = data[i];
 			final int y0 = data[i + 1];
 			final int dx = data[i + 2] - x0;
+			final boolean left = role == EVENT_0_LEFT;
 
 			if (dx == 0) {
 				edgeStep[e] = 0;
-				edgeX0[e] = (long) ((x0 + SCANT_PRECISE_PIXEL_CENTER) >> PRECISION_BITS) << 20;
+				edgeX0[e] = (long) verticalEdgePixel(x0, left) << 20;
 			} else {
 				// exact for these magnitudes and far cheaper than a 64-bit integer divide
 				final long n = (long) ((double) (((long) dx) << 16) / (data[i + 3] - y0));
-				edgeStep[e] = n << PRECISION_BITS;
-				// left edges round up; right edges lose the tie
-				edgeX0[e] = ((long) x0 << 16) - n * y0 + (role == EVENT_0_LEFT ? 0x100000L : 0x7FFFFL);
+				final long step = n << PRECISION_BITS;
+				edgeStep[e] = step;
+				edgeX0[e] = slopedEdgeIntercept(x0, y0, n, step, left);
 			}
 		}
 	}
@@ -1876,13 +1915,13 @@ public abstract class AbstractRasterizer {
 
 			if (dx == 0) {
 				stepOut[emitted] = 0;
-				x0Out[emitted] = (long) ((ex0 + SCANT_PRECISE_PIXEL_CENTER) >> PRECISION_BITS) << 20;
+				x0Out[emitted] = (long) verticalEdgePixel(ex0, left) << 20;
 			} else {
 				// exact for these magnitudes and far cheaper than a 64-bit integer divide
 				final long n = (long) ((double) (((long) dx) << 16) / (ey1 - ey0));
-				stepOut[emitted] = n << PRECISION_BITS;
-				// left edges round up; right edges lose the tie
-				x0Out[emitted] = ((long) ex0 << 16) - n * ey0 + (left ? 0x100000L : 0x7FFFFL);
+				final long step = n << PRECISION_BITS;
+				stepOut[emitted] = step;
+				x0Out[emitted] = slopedEdgeIntercept(ex0, ey0, n, step, left);
 			}
 
 			endOut[emitted++] = rowHigh;
