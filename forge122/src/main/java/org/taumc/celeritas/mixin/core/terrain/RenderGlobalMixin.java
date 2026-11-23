@@ -28,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.taumc.celeritas.impl.render.entity.EntityGatherer;
+import org.taumc.celeritas.impl.render.entity.EntityShadowBatch;
 import org.taumc.celeritas.impl.render.terrain.CeleritasWorldRenderer;
 
 import java.util.*;
@@ -245,6 +246,9 @@ public abstract class RenderGlobalMixin implements SimpleWorldRenderer.Provider<
         // Apply entity distance scaling
         Entity.setRenderDistanceWeight(MathHelper.clamp((double)this.mc.gameSettings.renderDistanceChunks / 8.0D, 1.0D, 2.5D) * 1);
 
+        EntityShadowBatch shadowBatch = this.renderer.getEntityShadowBatch();
+        shadowBatch.begin();
+
         for(Entity entity : celeritas$collectedEntities[pass]) {
             // Do regular vanilla checks for visibility
             if(!this.renderManager.shouldRender(entity, camera, renderViewX, renderViewY, renderViewZ) && !entity.isRidingOrBeingRiddenBy(player)) {
@@ -262,7 +266,9 @@ public abstract class RenderGlobalMixin implements SimpleWorldRenderer.Provider<
                     && (entity.posY < 0.0D || entity.posY >= 256.0D || this.world.isBlockLoaded(entityBlockPos.setPos(entity))))
             {
                 ++this.countEntitiesRendered;
+                shadowBatch.setTopLevelEntity(entity);
                 this.renderManager.renderEntityStatic(entity, partialTicks, false);
+                shadowBatch.setTopLevelEntity(null);
 
                 if (this.isOutlineActive(entity, renderViewEntity, camera))
                 {
@@ -274,6 +280,8 @@ public abstract class RenderGlobalMixin implements SimpleWorldRenderer.Provider<
                 }
             }
         }
+
+        shadowBatch.flush();
     }
 }
 

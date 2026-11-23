@@ -16,6 +16,7 @@ import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
+import org.taumc.celeritas.impl.render.entity.EntityShadowBatch;
 import org.taumc.celeritas.impl.render.terrain.fog.GLStateManagerFogService;
 import org.taumc.celeritas.CeleritasVintage;
 import org.taumc.celeritas.mixin.core.terrain.ActiveRenderInfoAccessor;
@@ -41,6 +42,12 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
      */
     public static CeleritasWorldRenderer instanceNullable() {
         return SimpleWorldRenderer.Provider.getWorldRendererNullable(Minecraft.getMinecraft().renderGlobal);
+    }
+
+    private final EntityShadowBatch entityShadowBatch = new EntityShadowBatch();
+
+    public EntityShadowBatch getEntityShadowBatch() {
+        return this.entityShadowBatch;
     }
 
     @Override
