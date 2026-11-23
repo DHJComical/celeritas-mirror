@@ -145,17 +145,14 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
             return true;
         }
 
-        // Ensure entities with outlines or nametags are always visible
-        if (entity.isGlowing() || entity.getAlwaysRenderNameTagForRender()) {
-            return true;
-        }
-
         //? if <1.21.2
         AxisAlignedBB box = entity.getRenderBoundingBox();
         //? if >=1.21.2
         /*AABB box = renderer.getBoundingBoxForCulling(entity);*/
 
-        return this.isBoxVisible(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
+        // Entities with outlines or nametags are always visible
+        return this.isBoxVisible(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ)
+                || entity.isGlowing() || entity.getAlwaysRenderNameTagForRender();
     }
 
     private ChunkVertexType chooseVertexType() {
