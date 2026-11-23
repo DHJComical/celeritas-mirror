@@ -33,8 +33,8 @@ public class ColorProviderRegistry {
         //? if (forgelike && <26.1) || >=26.1 {
         for (var entry : providers.entrySet()) {
             var block = entry.getKey()
-                    /*? if forge && >=1.17 && <26.1 {*/.value()/*?}*/
-                    /*? if forge && <1.17 {*//*.get()*//*?}*/;
+                    /*? if forge && >=1.19 && <26.1 {*/.value()/*?}*/
+                    /*? if forge && <1.19 {*//*.get()*//*?}*/;
             if (!DefaultColorProviders.isVanillaProvider(entry.getValue())) {
                 overridenBlocks.add(block);
             }

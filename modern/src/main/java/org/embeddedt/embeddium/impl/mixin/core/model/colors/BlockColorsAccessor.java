@@ -13,6 +13,9 @@ public interface BlockColorsAccessor {
     //? if forge && <1.17 {
     /*@Accessor("field_186725_a")
     Map<net.minecraftforge.registries.IRegistryDelegate<Block>, net.minecraft.client.color.block.BlockColor>
+    *///?} else if forge && <1.19 {
+    /*@Accessor("blockColors")
+    Map<net.minecraftforge.registries.IRegistryDelegate<Block>, net.minecraft.client.color.block.BlockColor>
     *///?} else if forge && <26.1 {
     @Accessor("blockColors")
     Map<net.minecraft.core.Holder.Reference<Block>, net.minecraft.client.color.block.BlockColor>
