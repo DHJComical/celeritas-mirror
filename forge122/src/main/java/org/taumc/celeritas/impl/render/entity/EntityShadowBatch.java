@@ -25,7 +25,11 @@ public class EntityShadowBatch {
     private static final ResourceLocation SHADOW_TEXTURES = new ResourceLocation("textures/misc/shadow.png");
     private static final int NO_LIGHT = -1;
 
+    // A POSITION_TEX_COLOR vertex: 3 position floats, 2 texture floats, packed color
+    private static final int INTS_PER_VERTEX = 6;
+
     private final BufferBuilder buffer = new BufferBuilder(0x4000);
+    private final int[] quad = new int[4 * INTS_PER_VERTEX];
     private final WorldVertexBufferUploader uploader = new WorldVertexBufferUploader();
     private final Long2IntOpenHashMap lightCache = new Long2IntOpenHashMap();
     private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
@@ -131,13 +135,25 @@ public class EntityShadowBatch {
         float u1 = (float)((x - x1) / 2.0D / (double)size + 0.5D);
         float v0 = (float)((z - z0) / 2.0D / (double)size + 0.5D);
         float v1 = (float)((z - z1) / 2.0D / (double)size + 0.5D);
-        float a = (float)alpha;
+        // White with the shadow's alpha, rounded like BufferBuilder.color(float...)
+        int color = 0x00FFFFFF | ((int)((float)alpha * 255.0F) << 24);
 
-        BufferBuilder buffer = this.buffer;
-        buffer.pos(x0, surfaceY, z0).tex(u0, v0).color(1.0F, 1.0F, 1.0F, a).endVertex();
-        buffer.pos(x0, surfaceY, z1).tex(u0, v1).color(1.0F, 1.0F, 1.0F, a).endVertex();
-        buffer.pos(x1, surfaceY, z1).tex(u1, v1).color(1.0F, 1.0F, 1.0F, a).endVertex();
-        buffer.pos(x1, surfaceY, z0).tex(u1, v0).color(1.0F, 1.0F, 1.0F, a).endVertex();
+        this.putVertex(0, x0, surfaceY, z0, u0, v0, color);
+        this.putVertex(1, x0, surfaceY, z1, u0, v1, color);
+        this.putVertex(2, x1, surfaceY, z1, u1, v1, color);
+        this.putVertex(3, x1, surfaceY, z0, u1, v0, color);
+        this.buffer.addVertexData(this.quad);
+    }
+
+    private void putVertex(int vertex, double x, double y, double z, float u, float v, int color) {
+        int[] quad = this.quad;
+        int i = vertex * INTS_PER_VERTEX;
+        quad[i] = Float.floatToRawIntBits((float)x);
+        quad[i + 1] = Float.floatToRawIntBits((float)y);
+        quad[i + 2] = Float.floatToRawIntBits((float)z);
+        quad[i + 3] = Float.floatToRawIntBits(u);
+        quad[i + 4] = Float.floatToRawIntBits(v);
+        quad[i + 5] = color;
     }
 
     private int getLight(World world, BlockPos pos) {
