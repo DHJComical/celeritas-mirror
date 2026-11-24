@@ -64,8 +64,6 @@ public final class CloudRenderer {
     // The largest offset that fits in the signed 12-bit cell position
     private static final int MAX_RADIUS = 2047;
 
-    // A 256 px clouds texture makes 12 block cells
-    private static final float TEXTURE_SIZE_IN_BLOCKS = 3072.0f;
     private static final float CLOUD_THICKNESS = 4.0f;
     private static final float CLOUD_ALPHA = 0.8f;
     private static final double BLOCKS_PER_TICK = 0.03;
@@ -92,7 +90,7 @@ public final class CloudRenderer {
 
     private final GlStateService glState;
     private final CloudTexture texture;
-    private final float cellSizeX, cellSizeZ;
+    private float cellSizeX, cellSizeZ;
 
     private final GlProgram<ShaderInterface> program;
     private final GlMutableBuffer faceBuffer;
@@ -125,8 +123,6 @@ public final class CloudRenderer {
     public CloudRenderer(CommandList commandList, GlStateService glState, CloudTexture texture) {
         this.glState = glState;
         this.texture = texture;
-        this.cellSizeX = TEXTURE_SIZE_IN_BLOCKS / texture.width;
-        this.cellSizeZ = TEXTURE_SIZE_IN_BLOCKS / texture.height;
 
         this.program = createProgram();
         this.faceBuffer = commandList.createMutableBuffer();
@@ -146,13 +142,17 @@ public final class CloudRenderer {
      * @return whether there is anything to draw
      */
     public boolean prepare(CommandList commandList, CloudFrame frame) {
-        double textureWidthBlocks = this.texture.width * this.cellSizeX;
-        double textureHeightBlocks = this.texture.height * this.cellSizeZ;
+        float textureSize = frame.textureSize();
+        float cellSizeX = textureSize / this.texture.width;
+        float cellSizeZ = textureSize / this.texture.height;
+        boolean cellSizeChanged = cellSizeX != this.cellSizeX || cellSizeZ != this.cellSizeZ;
+        this.cellSizeX = cellSizeX;
+        this.cellSizeZ = cellSizeZ;
 
         double cloudX = frame.cameraX() + frame.ticks() * BLOCKS_PER_TICK;
-        double cloudZ = frame.cameraZ() + 3.96;
-        cloudX -= Math.floor(cloudX / textureWidthBlocks) * textureWidthBlocks;
-        cloudZ -= Math.floor(cloudZ / textureHeightBlocks) * textureHeightBlocks;
+        double cloudZ = frame.cameraZ() + frame.textureOffsetZ();
+        cloudX -= Math.floor(cloudX / textureSize) * textureSize;
+        cloudZ -= Math.floor(cloudZ / textureSize) * textureSize;
 
         int cellX = (int) Math.floor(cloudX / this.cellSizeX);
         int cellZ = (int) Math.floor(cloudZ / this.cellSizeZ);
@@ -188,7 +188,7 @@ public final class CloudRenderer {
         int fadeRadius = ((int) Math.ceil(frame.fogEnd() / cellSize) + 1 + 15) & ~15;
         int radius = Math.min(Math.min(maxRadius, fadeRadius), MAX_RADIUS);
 
-        if (this.needsRebuild || cellX != this.prevCellX || cellZ != this.prevCellZ || radius != this.prevRadius
+        if (this.needsRebuild || cellSizeChanged || cellX != this.prevCellX || cellZ != this.prevCellZ || radius != this.prevRadius
                 || cameraPosition != this.prevCameraPosition || insideFaces != this.prevInsideFaces
                 || frame.fancy() != this.prevFancy) {
             this.needsRebuild = false;

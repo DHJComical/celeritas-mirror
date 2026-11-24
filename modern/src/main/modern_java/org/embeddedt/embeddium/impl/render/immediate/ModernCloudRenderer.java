@@ -109,7 +109,8 @@ public class ModernCloudRenderer {
         boolean fancy = Minecraft.getInstance().options.getCloudsType() == CloudStatus.FANCY;
 
         CloudFrame frame = new CloudFrame(modelViewMatrix, projectionMatrix, cameraX, cameraY, cameraZ, cloudHeight,
-                ticks + tickDelta, (float) color.x, (float) color.y, (float) color.z, fancy, range, fogEnd);
+                ticks + tickDelta, (float) color.x, (float) color.y, (float) color.z, fancy, range, fogEnd,
+                CloudFrame.DEFAULT_TEXTURE_SIZE, CloudFrame.DEFAULT_TEXTURE_OFFSET_Z);
 
         RenderDevice.enterManagedCode();
 

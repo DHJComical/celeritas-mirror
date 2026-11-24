@@ -32,6 +32,9 @@ public class VintageCloudRenderer {
     // Vanilla's default cloud range since 1.21.6
     private static final int CLOUD_RANGE_CHUNKS = 128;
 
+    // Vanilla's fast clouds span 2048 blocks, making 8 block cells, and aren't shifted along Z like fancy clouds
+    private static final float FAST_TEXTURE_SIZE = 2048.0f;
+
     // Where exponential fog has hidden everything, as exp(-x) < 1/255
     private static final float EXP_FOG_OPAQUE_DEPTH = (float) Math.log(255.0);
 
@@ -124,7 +127,9 @@ public class VintageCloudRenderer {
         this.projectionMatrix.set(ActiveRenderInfoAccessor.getProjectionMatrix());
 
         CloudFrame frame = new CloudFrame(this.modelViewMatrix, this.projectionMatrix, cameraX, cameraY, cameraZ,
-                world.provider.getCloudHeight(), ticks + partialTicks, red, green, blue, fancy, range, fogEnd);
+                world.provider.getCloudHeight(), ticks + partialTicks, red, green, blue, fancy, range, fogEnd,
+                fancy ? CloudFrame.DEFAULT_TEXTURE_SIZE : FAST_TEXTURE_SIZE,
+                fancy ? CloudFrame.DEFAULT_TEXTURE_OFFSET_Z : 0.0f);
 
         RenderDevice.enterManagedCode();
 
