@@ -12,12 +12,11 @@ public sealed interface ChunkJobResult<OUTPUT> permits ChunkJobResult.Success, C
             Objects.requireNonNull(throwable);
         }
 
-        public void abort() {
+        public RuntimeException asException() {
             if (this.throwable instanceof RuntimeException crashException) {
-                // Propagate RuntimeExceptions directly to provide extra information if they are a vanilla crash exception
-                throw crashException;
+                return crashException;
             } else {
-                throw new RuntimeException("Exception thrown while executing job", this.throwable);
+                return new RuntimeException("Exception thrown while executing job", this.throwable);
             }
         }
     }

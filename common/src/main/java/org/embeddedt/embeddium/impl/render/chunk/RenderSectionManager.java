@@ -789,22 +789,43 @@ public abstract class RenderSectionManager {
     }
 
     private ArrayList<ChunkJobResult.Success<? extends ChunkTaskOutput>> collectChunkBuildResults() {
+        var results = drainChunkBuildResults(this.buildResults);
+
+        for (var successfulResult : results) {
+            this.jobMetricsTracker.collectMetrics(successfulResult);
+
+            if (successfulResult.output() instanceof ChunkSortOutput sort && sort.render.isTreeSorted() && successfulResult.executionTimeNanos() >= 0) {
+                this.treeSortMetrics.collect(successfulResult.executionTimeNanos());
+            }
+        }
+
+        return results;
+    }
+
+    static ArrayList<ChunkJobResult.Success<? extends ChunkTaskOutput>> drainChunkBuildResults(Queue<ChunkJobResult<? extends ChunkTaskOutput>> buildResults) {
         ArrayList<ChunkJobResult.Success<? extends ChunkTaskOutput>> results = new ArrayList<>();
+        RuntimeException firstFailure = null;
         ChunkJobResult<? extends ChunkTaskOutput> result;
 
-        while ((result = this.buildResults.poll()) != null) {
+        while ((result = buildResults.poll()) != null) {
             if (result instanceof ChunkJobResult.Success<? extends ChunkTaskOutput> successfulResult) {
-                this.jobMetricsTracker.collectMetrics(successfulResult);
-
-                if (successfulResult.output() instanceof ChunkSortOutput sort && sort.render.isTreeSorted() && successfulResult.executionTimeNanos() >= 0) {
-                    this.treeSortMetrics.collect(successfulResult.executionTimeNanos());
-                }
                 results.add(successfulResult);
             } else if (result instanceof ChunkJobResult.Failure<? extends ChunkTaskOutput> failure) {
-                failure.abort();
+                if (firstFailure == null) {
+                    firstFailure = failure.asException();
+                } else if (firstFailure != failure.throwable()) {
+                    firstFailure.addSuppressed(failure.throwable());
+                }
             } else {
                 throw new AssertionError();
             }
+        }
+
+        if (firstFailure != null) {
+            for (var successfulResult : results) {
+                successfulResult.output().delete();
+            }
+            throw firstFailure;
         }
 
         return results;
@@ -917,25 +938,27 @@ public abstract class RenderSectionManager {
 
         this.builder.shutdown(); // stop all the workers, and cancel any tasks
 
-        for (var result : this.collectChunkBuildResults()) {
-            result.output().delete(); // delete resources for any pending tasks (including those that were cancelled)
+        try {
+            for (var result : this.collectChunkBuildResults()) {
+                result.output().delete(); // delete resources for any pending tasks (including those that were cancelled)
+            }
+        } finally {
+            this.renderListManager.destroy();
+            if (this.shadowRenderListManager != null) {
+                this.shadowRenderListManager.destroy();
+            }
+            this.sectionGraph.destroy();
+
+            try (CommandList commandList = RenderDevice.INSTANCE.createCommandList()) {
+                this.regions.delete(commandList);
+                this.chunkRenderer.delete(commandList);
+            }
+
+            this.renderPassDrawTimers.values().forEach(TimerQueryManager::close);
+            this.renderPassDrawTimers.clear();
+
+            this.sectionsWithGlobalEntities.clear();
         }
-
-        this.renderListManager.destroy();
-        if (this.shadowRenderListManager != null) {
-            this.shadowRenderListManager.destroy();
-        }
-        this.sectionGraph.destroy();
-
-        try (CommandList commandList = RenderDevice.INSTANCE.createCommandList()) {
-            this.regions.delete(commandList);
-            this.chunkRenderer.delete(commandList);
-        }
-
-        this.renderPassDrawTimers.values().forEach(TimerQueryManager::close);
-        this.renderPassDrawTimers.clear();
-
-        this.sectionsWithGlobalEntities.clear();
     }
 
     public int getTotalSections() {
