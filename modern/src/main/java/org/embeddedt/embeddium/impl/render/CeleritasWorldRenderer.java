@@ -201,7 +201,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<ClientLevel,
     }
 
     @Override
-    protected void renderBlockEntityList(List<BlockEntity> list, BlockEntityRenderContext blockEntityRenderContext) {
+    protected void renderBlockEntityList(List<BlockEntity> list, boolean global, BlockEntityRenderContext blockEntityRenderContext) {
         var blockEntityFilter = blockEntityRenderContext.blockEntityFilter();
         var viewport = this.currentViewport;
         //? if >=1.18 {

@@ -107,7 +107,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
 
 
     @Override
-    protected void renderBlockEntityList(List<TileEntity> list, TileEntityRenderContext tileEntityRenderContext) {
+    protected void renderBlockEntityList(List<TileEntity> list, boolean global, TileEntityRenderContext tileEntityRenderContext) {
         int pass = MinecraftForgeClient.getRenderPass();
         float partialTicks = tileEntityRenderContext.partialTicks;
 

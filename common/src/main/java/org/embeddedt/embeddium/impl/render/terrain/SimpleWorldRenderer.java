@@ -259,7 +259,7 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
         MinecraftBuiltRenderSectionData.forEachBlockEntity(consumer, this.renderSectionManager.getRenderLists(), this.renderSectionManager.getSectionsWithGlobalEntities());
     }
 
-    protected abstract void renderBlockEntityList(List<BLOCKENTITY> list, BLOCKENTITY_RENDER_CONTEXT context);
+    protected abstract void renderBlockEntityList(List<BLOCKENTITY> list, boolean global, BLOCKENTITY_RENDER_CONTEXT context);
 
     private int renderCulledBlockEntities(BLOCKENTITY_RENDER_CONTEXT renderContext) {
         int count = 0;
@@ -298,7 +298,7 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
 
                 count += blockEntities.size();
 
-                this.renderBlockEntityList(blockEntities, renderContext);
+                this.renderBlockEntityList(blockEntities, false, renderContext);
             }
         }
 
@@ -322,7 +322,7 @@ public abstract class SimpleWorldRenderer<WORLD, SECTIONMANAGER extends RenderSe
 
             count += blockEntities.size();
 
-            this.renderBlockEntityList(blockEntities, renderContext);
+            this.renderBlockEntityList(blockEntities, true, renderContext);
         }
 
         return count;

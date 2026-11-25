@@ -116,7 +116,7 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<World, Primitive
     }
 
     @Override
-    protected void renderBlockEntityList(List<BlockEntity> list, Float partialTicksBoxed) {
+    protected void renderBlockEntityList(List<BlockEntity> list, boolean global, Float partialTicksBoxed) {
         float partialTicks = partialTicksBoxed;
         for (var blockEntity : list) {
             try {
