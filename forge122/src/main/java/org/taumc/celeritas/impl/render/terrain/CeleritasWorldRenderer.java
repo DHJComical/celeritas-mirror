@@ -16,6 +16,7 @@ import org.embeddedt.embeddium.impl.render.chunk.ChunkRenderMatrices;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkMeshFormats;
 import org.embeddedt.embeddium.impl.render.chunk.vertex.format.ChunkVertexType;
 import org.embeddedt.embeddium.impl.render.terrain.SimpleWorldRenderer;
+import org.embeddedt.embeddium.impl.render.viewport.Viewport;
 import org.taumc.celeritas.impl.render.entity.EntityShadowBatch;
 import org.taumc.celeritas.impl.render.terrain.fog.GLStateManagerFogService;
 import org.taumc.celeritas.CeleritasVintage;
@@ -110,9 +111,13 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
     protected void renderBlockEntityList(List<TileEntity> list, boolean global, TileEntityRenderContext tileEntityRenderContext) {
         int pass = MinecraftForgeClient.getRenderPass();
         float partialTicks = tileEntityRenderContext.partialTicks;
+        Viewport cullingViewport = global && !this.renderSectionManager.isInShadowPass() ? this.currentViewport : null;
 
         for (TileEntity tileEntity : list) {
             if(!tileEntity.shouldRenderInPass(pass))
+                continue;
+
+            if(cullingViewport != null && !isBlockEntityVisible(tileEntity, cullingViewport))
                 continue;
 
             try {
@@ -125,6 +130,19 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
                 }
             }
         }
+    }
+
+    private static boolean isBlockEntityVisible(TileEntity tileEntity, Viewport viewport) {
+        AxisAlignedBB box = tileEntity.getRenderBoundingBox();
+
+        // Infinite boxes (e.g. INFINITE_EXTENT_AABB) can make the frustum test produce NaN and cull wrongly
+        if (box == TileEntity.INFINITE_EXTENT_AABB
+                || !Double.isFinite(box.minX) || !Double.isFinite(box.minY) || !Double.isFinite(box.minZ)
+                || !Double.isFinite(box.maxX) || !Double.isFinite(box.maxY) || !Double.isFinite(box.maxZ)) {
+            return true;
+        }
+
+        return viewport.isBoxVisible(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
     }
 
     @Override
