@@ -46,7 +46,8 @@ public class MappedStagingBuffer implements StagingBuffer {
         GlBufferMapping map = commandList.mapBuffer(buffer, 0, capacity, MAP_FLAGS);
 
         this.mappedBuffer = new MappedBuffer(buffer, map);
-        this.fallbackStagingBuffer = new FallbackStagingBuffer(commandList);
+        // Only used when the ring is full, which is rare, so don't hold a scratch buffer for it
+        this.fallbackStagingBuffer = new FallbackStagingBuffer(commandList, 0);
         this.capacity = capacity;
         this.remaining = this.capacity;
     }
@@ -94,6 +95,8 @@ public class MappedStagingBuffer implements StagingBuffer {
 
     @Override
     public void flush(CommandList commandList) {
+        this.fallbackStagingBuffer.flush(commandList);
+
         if (this.pendingCopies.isEmpty()) {
             return;
         }
