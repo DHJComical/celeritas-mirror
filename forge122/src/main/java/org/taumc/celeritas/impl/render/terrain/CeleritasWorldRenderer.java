@@ -113,7 +113,9 @@ public class CeleritasWorldRenderer extends SimpleWorldRenderer<WorldClient, Vin
         float partialTicks = tileEntityRenderContext.partialTicks;
         Viewport cullingViewport = global && !this.renderSectionManager.isInShadowPass() ? this.currentViewport : null;
 
-        for (TileEntity tileEntity : list) {
+        //noinspection ForLoopReplaceableByForEach
+        for (int i = 0; i < list.size(); i++) {
+            var tileEntity = list.get(i);
             if(!tileEntity.shouldRenderInPass(pass))
                 continue;
 
