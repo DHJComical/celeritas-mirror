@@ -21,6 +21,11 @@ public interface GlStateService {
             LWJGL.glBindTexture(target, texture);
             LWJGL.glActiveTexture(GL13.GL_TEXTURE0);
         }
+
+        @Override
+        public void deleteTexture(int texture) {
+            LWJGL.glDeleteTextures(texture);
+        }
     };
 
     /**
@@ -33,4 +38,10 @@ public interface GlStateService {
      * @param unit the unit, as an index
      */
     void bindTexture(int unit, int target, int texture);
+
+    /**
+     * Deletes a texture bound with {@link #bindTexture}, forgetting any cached bindings of it. Otherwise a cache would
+     * skip binding a new texture that reuses the name, which some drivers (such as Apple's) do right away.
+     */
+    void deleteTexture(int texture);
 }

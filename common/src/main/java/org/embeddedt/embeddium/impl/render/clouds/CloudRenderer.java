@@ -292,7 +292,7 @@ public final class CloudRenderer {
         commandList.deleteBuffer(this.faceBuffer);
         this.faceTexture.delete();
         this.indexBuffer.release(commandList);
-        LWJGL.glDeleteTextures(this.colorTexture);
+        this.glState.deleteTexture(this.colorTexture);
     }
 
     private void buildFaces(CameraPosition cameraPosition, boolean insideFaces, int centerCellX, int centerCellZ, boolean fancy, int radius) {

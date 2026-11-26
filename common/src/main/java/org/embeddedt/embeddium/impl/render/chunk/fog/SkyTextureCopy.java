@@ -58,7 +58,7 @@ public final class SkyTextureCopy {
 
     public void delete() {
         if (this.texture != 0) {
-            LWJGL.glDeleteTextures(this.texture);
+            this.glState.deleteTexture(this.texture);
             this.texture = 0;
             this.width = 0;
             this.height = 0;

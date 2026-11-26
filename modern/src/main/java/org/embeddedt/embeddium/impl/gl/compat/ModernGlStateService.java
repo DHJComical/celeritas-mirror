@@ -34,4 +34,9 @@ public final class ModernGlStateService implements GlStateService {
 
         this.activateTextureUnit(previous);
     }
+
+    @Override
+    public void deleteTexture(int texture) {
+        GlStateManager._deleteTexture(texture);
+    }
 }

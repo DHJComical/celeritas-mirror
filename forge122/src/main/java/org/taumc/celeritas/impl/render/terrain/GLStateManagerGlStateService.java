@@ -34,4 +34,9 @@ public final class GLStateManagerGlStateService implements GlStateService {
 
         this.activateTextureUnit(previous);
     }
+
+    @Override
+    public void deleteTexture(int texture) {
+        GlStateManager.deleteTexture(texture);
+    }
 }
