@@ -71,6 +71,7 @@ public final class CloudRenderer {
     private static final float INSIDE_FACE_MARGIN = 0.1f;
 
     private static final int BYTES_PER_FACE = Integer.BYTES;
+    private static final int MIN_FACE_CAPACITY = 1024;
     private static final int INDICES_PER_FACE = 6;
 
     /**
@@ -99,7 +100,8 @@ public final class CloudRenderer {
     private final GlVertexArrayTessellation tessellation;
     private final int colorTexture;
 
-    private ByteBuffer faceData = ByteBuffer.allocateDirect(1024 * BYTES_PER_FACE).order(ByteOrder.nativeOrder());
+    // Only allocated while the faces are built, as the GPU copy is all that's needed after
+    private ByteBuffer faceData;
     private int faceCount;
 
     private boolean needsRebuild = true;
@@ -199,10 +201,19 @@ public final class CloudRenderer {
             this.prevInsideFaces = insideFaces;
             this.prevFancy = frame.fancy();
 
-            this.buildFaces(cameraPosition, insideFaces, cellX, cellZ, frame.fancy(), radius);
+            // The last build's face count is a good guess for this one, which usually differs by a few cells
+            this.faceData = LWJGL.memAlloc(Math.max(this.faceCount, MIN_FACE_CAPACITY) * BYTES_PER_FACE);
 
-            this.faceData.flip();
-            commandList.uploadData(this.faceBuffer, this.faceData, GlBufferUsage.DYNAMIC_DRAW);
+            try {
+                this.buildFaces(cameraPosition, insideFaces, cellX, cellZ, frame.fancy(), radius);
+
+                this.faceData.flip();
+                commandList.uploadData(this.faceBuffer, this.faceData, GlBufferUsage.DYNAMIC_DRAW);
+            } finally {
+                LWJGL.memFree(this.faceData);
+                this.faceData = null;
+            }
+
             this.indexBuffer.ensureCapacity(commandList, this.faceCount * INDICES_PER_FACE);
         }
 
@@ -296,7 +307,6 @@ public final class CloudRenderer {
     }
 
     private void buildFaces(CameraPosition cameraPosition, boolean insideFaces, int centerCellX, int centerCellZ, boolean fancy, int radius) {
-        this.faceData.clear();
         this.faceCount = 0;
 
         // Rings of cells around the camera, so the faces are drawn front to back
@@ -364,10 +374,7 @@ public final class CloudRenderer {
 
     private void addFace(int x, int z, int direction, int flags) {
         if (this.faceData.remaining() < BYTES_PER_FACE) {
-            ByteBuffer grown = ByteBuffer.allocateDirect(this.faceData.capacity() * 2).order(ByteOrder.nativeOrder());
-            this.faceData.flip();
-            grown.put(this.faceData);
-            this.faceData = grown;
+            this.faceData = LWJGL.memRealloc(this.faceData, this.faceData.capacity() * 2);
         }
 
         this.faceData.putInt(direction | flags | ((x & CELL_MASK) << CELL_X_SHIFT) | ((z & CELL_MASK) << CELL_Z_SHIFT));
@@ -377,10 +384,6 @@ public final class CloudRenderer {
     private int createColorTexture() {
         int texture = LWJGL.glGenTextures();
 
-        ByteBuffer pixels = ByteBuffer.allocateDirect(this.texture.pixels.length * 4).order(ByteOrder.LITTLE_ENDIAN);
-        // ABGR as little endian ints is RGBA in memory
-        pixels.asIntBuffer().put(this.texture.pixels);
-
         this.glState.bindTexture(COLORS_TEXTURE_UNIT, GL11.GL_TEXTURE_2D, texture);
         int previous = this.glState.activateTextureUnit(GL13.GL_TEXTURE0 + COLORS_TEXTURE_UNIT);
 
@@ -388,7 +391,17 @@ public final class CloudRenderer {
         LWJGL.glPixelStorei(GL11.GL_UNPACK_ROW_LENGTH, 0);
         LWJGL.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
         LWJGL.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
-        LWJGL.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, this.texture.width, this.texture.height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixels);
+
+        ByteBuffer pixels = LWJGL.memAlloc(this.texture.pixels.length * 4).order(ByteOrder.LITTLE_ENDIAN);
+
+        try {
+            // ABGR as little endian ints is RGBA in memory
+            pixels.asIntBuffer().put(this.texture.pixels);
+            LWJGL.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, this.texture.width, this.texture.height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixels);
+        } finally {
+            LWJGL.memFree(pixels);
+        }
+
         LWJGL.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
         LWJGL.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         LWJGL.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL, 0);
