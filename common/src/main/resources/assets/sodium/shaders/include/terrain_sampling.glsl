@@ -124,7 +124,36 @@ vec4 _sample_nearest(sampler2D tex, vec2 uv, vec2 du, vec2 dv, vec2 texelScreenS
     vec2 sampleUv = _atlas_clamp((texelCenter + texelOffset) * ATLAS_TEXEL_SIZE,
             _atlas_tap_bounds(_atlas_grad_level(du, dv)));
     _atlas_limit_footprint(du, dv);
-    return textureGrad(tex, sampleUv, du, dv);
+    vec4 color = textureGrad(tex, sampleUv, du, dv);
+
+#ifdef USE_FRAGMENT_DISCARD
+    // The edge blend mixes in the color of transparent texels, which is often black, so the part of a cutout edge
+    // that passes the alpha test would be darkened. Redo the blend between the surrounding level 0 texels weighted by
+    // alpha. Further away, mip levels darken edges in the same way, so the correction fades out over the same range
+    // where RGSS takes over, leaving no visible boundary.
+    float correction = 1.0 - smoothstep(1.0, 2.0, max(texelScreenSize.x, texelScreenSize.y) * ATLAS_MAX_DIMENSION);
+
+    if (correction > 0.0 && color.a > 0.0 && color.a < 1.0) {
+        vec2 weight = clamp(sampleUv * CELERITAS_ATLAS_SIZE - texelCenter, 0.0, 1.0);
+        vec4 bounds = _atlas_tap_bounds(0.0);
+
+        vec4 t00 = textureLod(tex, _atlas_clamp(texelCenter * ATLAS_TEXEL_SIZE, bounds), 0.0);
+        vec4 t10 = textureLod(tex, _atlas_clamp((texelCenter + vec2(1.0, 0.0)) * ATLAS_TEXEL_SIZE, bounds), 0.0);
+        vec4 t01 = textureLod(tex, _atlas_clamp((texelCenter + vec2(0.0, 1.0)) * ATLAS_TEXEL_SIZE, bounds), 0.0);
+        vec4 t11 = textureLod(tex, _atlas_clamp((texelCenter + vec2(1.0, 1.0)) * ATLAS_TEXEL_SIZE, bounds), 0.0);
+
+        vec4 premultiplied = mix(
+                mix(vec4(t00.rgb * t00.a, t00.a), vec4(t10.rgb * t10.a, t10.a), weight.x),
+                mix(vec4(t01.rgb * t01.a, t01.a), vec4(t11.rgb * t11.a, t11.a), weight.x),
+                weight.y);
+
+        if (premultiplied.a > 0.0) {
+            color.rgb = mix(color.rgb, premultiplied.rgb / premultiplied.a, correction);
+        }
+    }
+#endif
+
+    return color;
 }
 
 // Rotated-grid supersampling. du and dv are unbiased; biasScale is exp2(bias).
